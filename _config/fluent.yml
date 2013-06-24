@@ -10,6 +10,17 @@ Fluent:
     - fr_FR
     - zh_CN
     - es_ES
+  # Filter in(or out) field names to translate
+  field_include: []
+  field_exclude:
+    - '/.+ID$/'
+    - 'Theme'
+  # Filter in(or out) data types to translate
+  data_include:
+    - 'Varchar'
+    - 'HTMLText'
+    - 'HTMLVarchar'
+  data_exclude: []
 ---
 Name: fluenti18nconfig
 ---

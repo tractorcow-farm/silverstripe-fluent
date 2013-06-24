@@ -68,6 +68,11 @@ class Fluent extends Object {
 		self::regenerate_routes();
 	}
 	
+	/**
+	 * Gets the current locale
+	 * 
+	 * @return string i18n locale code
+	 */
 	public static function current_locale() {
 		
 		if(!Controller::has_curr()) return Fluent::config()->default_locale;
@@ -76,7 +81,7 @@ class Fluent extends Object {
 		$request = $controller->getRequest();
 		$locale = null;
 		
-		if($controller instanceof ModelAsController || $controller instanceof ContentController) {
+		if(self::is_frontend()) {
 			// If viewing the site on the front end, determine the locale from the viewing parameters
 			$locale = $request->param('Locale');
 		}
@@ -96,8 +101,41 @@ class Fluent extends Object {
 		if(empty($locale)) $locale = Fluent::config()->default_locale;
 		
 		// Save locale
-		Session::set('Locale', $locale);
-		Cookie::set('Locale', $locale);
+		if(!headers_sent()) {
+			Session::set('Locale', $locale);
+			Cookie::set('Locale', $locale);
+		}
 		return $locale;
+	}
+	
+	/**
+	 * Determines field replacement method.
+	 * If viewing on the front end, blank values for a translation will be replaced with the default value.
+	 * If viewing in the CMS they will be left blank for filling in
+	 * 
+	 * @return boolean Flag indicating if the translation should act on the frontend
+	 */
+	public static function is_frontend() {
+		if(!Controller::has_curr()) return false;
+		$controller = Controller::curr();
+		return ($controller instanceof ModelAsController || $controller instanceof ContentController);
+	}
+	
+	/**
+	 * Helper function to check if the value given is present in any of the patterns
+	 * 
+	 * @param string $value
+	 * @param array $patterns
+	 * @return boolean
+	 */
+	public static function any_match($value, $patterns) {
+		foreach($patterns as $pattern) {
+			if(strpos($pattern, '/') === 0) {
+				if(preg_match($pattern, $value)) return true;
+			} else {
+				if($value === $pattern) return true;
+			}
+		}
+		return false;
 	}
 }
