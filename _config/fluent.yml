@@ -1,0 +1,29 @@
+---
+Name: fluentconfig
+---
+Fluent:
+  # Don't forget to set i18n->default_locale too!
+  default_locale: en_NZ
+  generate_routes: true
+  locales:
+    - en_NZ
+    - fr_FR
+    - zh_CN
+    - es_ES
+---
+Name: fluenti18nconfig
+---
+i18n:
+  default_locale: en_NZ
+---
+Name: fluentextensions
+---
+SiteTree:
+  extensions:
+    - FluentSiteTree
+SiteConfig:
+  extensions:
+    - FluentExtension
+ContentController:
+  extensions:
+    - FluentContentController
