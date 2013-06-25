@@ -15,8 +15,10 @@ Fluent:
   field_exclude:
     - '/.+ID$/'
     - 'Theme'
+    - 'URLSegment'
   # Filter in(or out) data types to translate
   data_include:
+    - 'Text'
     - 'Varchar'
     - 'HTMLText'
     - 'HTMLVarchar'

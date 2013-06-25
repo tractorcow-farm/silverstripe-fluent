@@ -1,5 +1,12 @@
 <?php
 
+/**
+ * SiteTree extension class for translatable objects
+ * 
+ * @see SiteTree
+ * @package fluent
+ * @author Damian Mooyman <damian.mooyman@gmail.com>
+ */
 class FluentSiteTree extends FluentExtension {
 	
 	public function updateRelativeLink(&$base, &$action) {
@@ -26,7 +33,7 @@ class FluentSiteTree extends FluentExtension {
 	 */
 	public function Locales() {
 		$data = array();
-		foreach(Fluent::config()->locales as $locale) {
+		foreach(Fluent::locales() as $locale) {
 			$data[] = new ArrayData(array(
 				'Locale' => $locale,
 				'Title' => i18n::get_locale_name($locale),

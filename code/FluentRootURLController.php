@@ -2,6 +2,9 @@
 
 /**
  * Home page controller for multiple locales
+ * 
+ * @package fluent
+ * @author Damian Mooyman <damian.mooyman@gmail.com>
  */
 class FluentRootURLController extends RootURLController {
 	
@@ -11,11 +14,10 @@ class FluentRootURLController extends RootURLController {
 		$this->setDataModel($model);
 		
 		// Check locale, redirecting to locale root if necessary
-		$locale = $request->param('Locale');
+		$locale = $request->param('FluentLocale');
 		if(empty($locale)) {
-			$locale = Fluent::config()->default_locale;
-			$this->redirect($locale.'/');
-			return $this->response;
+			$locale = Fluent::current_locale();
+			return $this->redirect($locale.'/');
 		}
 		
 		$this->pushCurrent();

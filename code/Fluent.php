@@ -2,6 +2,9 @@
 
 /**
  * Bootstrapping and configuration object for Fluet localisation
+ *
+ * @package fluent
+ * @author Damian Mooyman <damian.mooyman@gmail.com>
  */
 class Fluent extends Object {
 	
@@ -35,11 +38,11 @@ class Fluent extends Object {
 		foreach(self::config()->locales as $locale) {
 			$routes[$locale.'/$URLSegment!//$Action/$ID/$OtherID'] = array(
 				'Controller' => 'ModelAsController',
-				'Locale' => $locale
+				'FluentLocale' => $locale
 			);
 			$routes[$locale] = array(
 				'Controller' => 'FluentRootURLController',
-				'Locale' => $locale
+				'FluentLocale' => $locale
 			);
 		}
 		
@@ -68,6 +71,8 @@ class Fluent extends Object {
 		self::regenerate_routes();
 	}
 	
+	protected static $last_set_locale = null;
+	
 	/**
 	 * Gets the current locale
 	 * 
@@ -75,37 +80,65 @@ class Fluent extends Object {
 	 */
 	public static function current_locale() {
 		
-		if(!Controller::has_curr()) return Fluent::config()->default_locale;
-		
-		$controller = Controller::curr();
-		$request = $controller->getRequest();
 		$locale = null;
 		
-		if(self::is_frontend()) {
-			// If viewing the site on the front end, determine the locale from the viewing parameters
-			$locale = $request->param('Locale');
-		}
-		
-		if(empty($locale)) {
-			// If viewing the site from the CMS, determine the locale using the session or posted parameters
-			$locale = $request->requestVar('Locale');
+		// Check controller and current request
+		if(Controller::has_curr()) {
+			$controller = Controller::curr();
+			$request = $controller->getRequest();
+
+			if(self::is_frontend()) {
+				// If viewing the site on the front end, determine the locale from the viewing parameters
+				$locale = $request->param('FluentLocale');
+			}
+
+			if(empty($locale)) {
+				// If viewing the site from the CMS, determine the locale using the session or posted parameters
+				$locale = $request->requestVar('FluentLocale');
+			}
 		}
 		
 		// check session
-		if(empty($locale)) $locale = Session::get('Locale');
+		if(empty($locale)) $locale = Session::get('FluentLocale');
 		
 		// Check cookies
-		if(empty($locale)) $locale = Cookie::get('Locale');
+		if(empty($locale)) $locale = Cookie::get('FluentLocale');
 		
 		// Check result
-		if(empty($locale)) $locale = Fluent::config()->default_locale;
+		if(empty($locale)) $locale = self::default_locale();
+		
+		// Reset to default locale if not listed in the specified list
+		$allowedLocales = self::locales();
+		if(!in_array($locale, $allowedLocales)) $locale = self::default_locale();
 		
 		// Save locale
-		if(!headers_sent()) {
-			Session::set('Locale', $locale);
-			Cookie::set('Locale', $locale);
+		Session::set('FluentLocale', $locale);
+		
+		// Prevent unnecessarily excessive cookie assigment
+		if(!headers_sent() && self::$last_set_locale !== $locale) {
+			self::$last_set_locale = $locale;
+			Cookie::set('FluentLocale', $locale);
 		}
+		
 		return $locale;
+	}
+	
+	/**
+	 * Retrieves the list of locales
+	 * 
+	 * @return array
+	 */
+	public static function locales() {
+		return self::config()->locales;
+	}
+	
+	/**
+	 * Retrieves the default locale
+	 * 
+	 * @return string
+	 */
+	public static function default_locale() {
+		return self::config()->default_locale;
 	}
 	
 	/**
