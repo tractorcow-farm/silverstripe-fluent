@@ -40,8 +40,9 @@
 				var self = this;
 				var selector = 
 					$("<div class='cms-fluent-selector'>\
-						<label class='cms-fluent-selector-label'></label>\
-						<button class='cms-fluent-selector-flydown' type='button'>Change Locale</button>\
+						<span class='icon icon-16 icon-fluent-translate'>&nbsp;</span>\
+						<span class='text'></span>\
+						<a class='cms-fluent-selector-flydown' type='button' title='Change Locale'><span class='icon icon-fluent-select'>Change Locale</span></a>\
 						<ul class='cms-fluent-selector-locales'></ul>\
 					</div>");
 				// Create options
@@ -53,9 +54,17 @@
 					$(".cms-fluent-selector-locales", selector).append(item);
 				});
 				// Display selected locale
-				$(".cms-fluent-selector-label", selector).text(fluentLocales[fluentLocale]);
+				$(".text", selector).text(fluentLocales[fluentLocale]);
 				
 				this.prepend(selector);
+				
+				// Setup click events
+				$(".cms-fluent-selector").each(function() {
+					var self = $(this);
+					self.click(function(event){
+						self.toggleClass('active');
+					});
+				});
 			}
 		});
 	});

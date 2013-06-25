@@ -9,9 +9,11 @@
  */
 class FluentLeftAndMain extends LeftAndMainExtension {
 	public function init() {
+		$dirName = basename(dirname(dirname(dirname(__FILE__))));
 		$locales = json_encode(Fluent::locale_names());
 		$locale = json_encode(Fluent::current_locale());
 		Requirements::customScript("var fluentLocales = $locales;var fluentLocale = $locale;", 'FluentHeadScript');
-		Requirements::javascript(basename(dirname(dirname(dirname(__FILE__)))) . '/javascript/fluent.js');
+		Requirements::javascript("$dirName/javascript/fluent.js");
+		Requirements::css("$dirName/css/fluent.css");
 	}
 }
