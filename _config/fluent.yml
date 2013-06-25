@@ -40,3 +40,6 @@ SiteConfig:
 ContentController:
   extensions:
     - FluentContentController
+LeftAndMain:
+  extensions:
+    - FluentLeftAndMain

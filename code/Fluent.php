@@ -133,6 +133,19 @@ class Fluent extends Object {
 	}
 	
 	/**
+	 * Retrieves the list of locale names as an associative array
+	 * 
+	 * @return array
+	 */
+	public static function locale_names() {
+		$locales = array();
+		foreach (self::locales() as $locale) {
+			$locales[$locale] = i18n::get_locale_name($locale);
+		}
+		return $locales;
+	}
+	
+	/**
 	 * Retrieves the default locale
 	 * 
 	 * @return string
