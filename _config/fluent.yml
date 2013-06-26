@@ -13,7 +13,6 @@ Fluent:
   # Filter in(or out) field names to translate
   field_include: []
   field_exclude:
-    - '/.+ID$/'
     - 'Theme'
     - 'URLSegment'
   # Filter in(or out) data types to translate
@@ -22,6 +21,8 @@ Fluent:
     - 'Varchar'
     - 'HTMLText'
     - 'HTMLVarchar'
+    # Allow has_one items to be translated
+    #- 'ForeignKey'
   data_exclude: []
 ---
 Name: fluenti18nconfig
@@ -34,6 +35,9 @@ Name: fluentextensions
 SiteTree:
   extensions:
     - FluentSiteTree
+  # Extend this to explicitly specify translatable fields for any class
+  # This will ignore all data_ and field_ filters for that class
+  translate: []
 SiteConfig:
   extensions:
     - FluentExtension

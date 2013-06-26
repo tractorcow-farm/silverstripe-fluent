@@ -24,9 +24,10 @@ class FluentExtension extends DataExtension {
 	 * @return mixed
 	 */
 	protected static function without_fluent_fields($callback) {
+		$before = self::$disable_fluent_fields;
 		self::$disable_fluent_fields = true;
 		$result = $callback();
-		self::$disable_fluent_fields = false;
+		self::$disable_fluent_fields = $before;
 		return $result;
 	}
 	
@@ -47,7 +48,7 @@ class FluentExtension extends DataExtension {
 			return self::$translated_fields_for_cache[$class];
 		}
 		return self::$translated_fields_for_cache[$class] = self::without_fluent_fields(function() use ($class) {
-			$db = Config::inst()->get($class, 'db', Config::UNINHERITED);
+			$db = DataObject::custom_database_fields($class);
 			$filter = Config::inst()->get($class, 'translate', Config::UNINHERITED);
 
 			// Data and field filters
@@ -120,7 +121,7 @@ class FluentExtension extends DataExtension {
 		$db = array();
 		
 		if($baseFields) foreach($baseFields as $field => $type) {
-			foreach(Fluent::config()->locales as $locale) {
+			foreach(Fluent::locales() as $locale) {
 				// Copy field to translated field
 				$db["{$field}_{$locale}"] = $type;
 			}
@@ -137,6 +138,9 @@ class FluentExtension extends DataExtension {
 			$db = self::generate_extra_config($subClass);
 			Config::inst()->update($subClass, 'db', $db);
 		}
+		
+		// Force all subclass DB caches to invalidate themselves since their db attribute is now expired
+		DataObject::reset();
 		
 		return array(
 			'db' => self::generate_extra_config($class)
