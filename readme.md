@@ -95,7 +95,8 @@ BlogHolder:
     - 'OwnerID'
 ```
 
-Note: `has_many` and `many_many` localisation is in development.
+Note: If you wish to translate `has_many` or `many_many` then those objects will need
+to be filtered via another method. See [Locale based filter configuration](#locale-based-filter-configuration)
 
 If you want to localise a dataobject that doesn't extend sitetree then you'll need
 to add the appropriate extension
