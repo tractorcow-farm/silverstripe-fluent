@@ -1,0 +1,23 @@
+{
+	"name": "tractorcow/silverstripe-fluent",
+	"description": "Simple localisation for Silverstripe",
+	"type": "silverstripe-module",
+	"keywords": ["silverstripe", "localisation", "localization", "translation", "language", "locale", "multilingual"],
+	"license": "BSD",
+	"authors": [
+		{
+			"name": "Damian Mooyman",
+			"email": "damian.mooyman@gmail.com"
+		}
+	],
+	"support": {
+		"issues": "http://github.com/tractorcow/silverstripe-fluent/issues"
+	},
+	"require": {	
+		"silverstripe/framework": ">=3.1",
+		"composer/installers": "*"
+	},
+	"extra": {
+		"installer-name": "fluent"
+	}
+}

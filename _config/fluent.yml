@@ -5,11 +5,12 @@ Fluent:
   # Don't forget to set i18n->default_locale too!
   default_locale: en_NZ
   generate_routes: true
-  locales:
-    - en_NZ
-    - fr_FR
-    - zh_CN
-    - es_ES
+  locales: []
+  # Add your locales as necessary
+  #  - en_NZ
+  #  - fr_FR
+  #  - zh_CN
+  #  - es_ES
   # Filter in(or out) field names to translate
   field_include: []
   field_exclude:

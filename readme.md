@@ -1,0 +1,194 @@
+# Silverstripe Fluent - Simple localisation for Silverstripe
+
+This module allows websites to manage translation of content, and navigation between translations,
+in a similar fashion to [Translatable](https://github.com/silverstripe/silverstripe-translatable)
+or [Multilingual](https://github.com/kreationsbyran/multilingual).
+
+Locales are distinguished by a url prefix, that of the selected locale, at the start
+of all page links. E.g. `http://damian.geek.nz/en_NZ/about-me` would be the NZ English
+version of a page. This could be translated into Maori at `http://damian.geek.nz/mi_NZ/about-me`
+
+Back end control is provided by a simple CMS filter.
+
+_Please read the [Configuration](#configuration) section before trying to install!_
+
+Also, please [report any issues](https://github.com/tractorcow/silverstripe-fluent/issues)
+you may encounter, as it helps us all out!
+
+## Credits and Authors
+
+ * Damian Mooyman - <https://github.com/tractorcow/silverstripe-fluent>
+
+## Requirements
+
+ * SilverStripe 3.1
+ * PHP 5.3
+
+## Configuration
+
+Installation runs more smoothly if you configure your site for translation before
+installing the module, as it will rebuild the database based on configuration.
+Good to read this bit first!
+
+Please check [fluent.yml](_config/fluent.yml) for the default configuration settings.
+
+### Locale configuration
+
+Firstly, you'll need to configure the locales that should be included, as well as
+the default locale.
+
+By default the list is blank. You should add the following to your mysite/_config/fluent.yaml
+
+It's advisable to set the default i18n locale to match your site locale
+
+Below demonstrates a typical north american website.
+
+```yaml
+---
+Name: myfluentconfig
+After: '#fluentconfig'
+---
+Fluent:
+  default_locale: en_US
+  locales:
+    - en_US
+    - es_US
+	- en_CA
+    - fr_CA
+---
+Name: myfluenti18nconfig
+After: '#fluenti18nconfig'
+---
+i18n:
+  default_locale: en_US
+```
+
+### DataObject configuration
+
+Great, now we've setup our languages. Our next job is to decide which dataobjects, and which
+fields of those dataobjects, should be translated.
+
+The best way to do this is to set the 'translate' config option on the dataobject,
+set to the fields you want translated. Note that this must be on the same class
+as the database field is specified.
+
+```yaml
+---
+Name: myblogconfig
+---
+BlogEntry:
+  translate:
+    - 'Tags'
+BlogTree:
+  translate:
+    - 'Name'
+```
+
+If you want to translate a `has_one` relation then you can add the field (with 'ID'
+suffix included).
+
+```yaml
+BlogHolder:
+  translate:
+    - 'OwnerID'
+```
+
+Note: `has_many` and `many_many` translation is in development.
+
+If you want to translate a dataobject that doesn't extend sitetree then you'll need
+to add the appropriate extension
+
+
+```yaml
+---
+Name: myextensions
+---
+MyDataObject:
+  extensions:
+    - 'FluentExtension'
+```
+
+If you are using custom controllers (such as for rendering rss, ajax data, etc) you
+should probably also add the `FluentContentController` extension in order to ensure
+the locale is set correctly for generated content.
+
+```yaml
+---
+Name: mycontrollerconfig
+---
+MyAjaxController:
+  extensions:
+    - 'FluentContentController'
+```
+
+## Installation Instructions
+
+Fluent can be easily installed on any already-developed website
+
+ * Either extract the module into the `fluent` folder, or install using composer
+
+```bash
+composer require "tractorcow/silverstripe-fluent": "3.1.*@dev"
+```
+
+ * Ensure that all dataobjects have been correctly configured for translation
+   (see [Configuration](#configuration) for details)
+
+ * Run a dev/build to ensure all additional table fields have been generated
+
+## How it works
+
+As opposed to Translatable which manages separate `SiteTree` objects for multiple 
+translations, Fluent stores all translations for properties on the same table row.
+
+This method has the following benefits:
+
+ * Seamless integration with other modules and extensions (such as Versioned)
+ * Allows for installation easily on existing websites, 
+ * Minimises the amount of special case code to handle translations; A page has the 
+   same ID no matter the current locale!
+ * The simplicity of the method means that any object can be easily and transparently
+   translated, even non-SiteTree dataobjects.
+ * There is only ever one sitemap, so the page hierarchy doesn't need to be 
+   duplicated for each additional locale.
+
+Fluent has a couple of built in rules for determining which fields to translate, but
+these can be easily customised on a per-object bases (or even by customising the 
+global ruleset).
+
+When querying data the SQL is augmented to replace all SELECT fragments for those
+fields with conditionals; It will detect if a value for the translated field (such
+as `Title_en_NZ`) exists, and use this if it does, otherwise using the base field
+(`Title`) as the default. When a dataobject is written, the inverse is performed,
+ensuring that the field related to the current locale is correctly written to.
+
+Unfortunately, there's currently no translation mechanism for sitetree urls
+(for the sake of simplicity). This could be implemented if requested however. :)
+
+## License
+
+Copyright (c) 2013, Damian Mooyman
+All rights reserved.
+
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+    * Redistributions of source code must retain the above copyright
+      notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+      notice, this list of conditions and the following disclaimer in the
+      documentation and/or other materials provided with the distribution.
+    * The name of Damian Mooyman may not be used to endorse or promote products
+      derived from this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL <COPYRIGHT HOLDER> BE LIABLE FOR ANY
+DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
