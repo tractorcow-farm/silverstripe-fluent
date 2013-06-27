@@ -1,4 +1,6 @@
-# Fluent - Simple Silverstripe Localisation
+# Fluent
+
+## Simple Silverstripe Localisation
 
 This module allows websites to manage localisation of content, and navigation between localisations,
 in a similar fashion to [Translatable](https://github.com/silverstripe/silverstripe-translatable)
