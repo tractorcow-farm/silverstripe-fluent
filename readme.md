@@ -63,7 +63,7 @@ i18n:
   default_locale: en_US
 ```
 
-### DataObject configuration
+### Field localisation configuration
 
 Great, now we've setup our languages. Our next job is to decide which dataobjects, and which
 fields of those dataobjects, should be localised.
@@ -98,7 +98,6 @@ Note: `has_many` and `many_many` localisation is in development.
 If you want to localise a dataobject that doesn't extend sitetree then you'll need
 to add the appropriate extension
 
-
 ```yaml
 ---
 Name: myextensions
@@ -121,6 +120,47 @@ MyAjaxController:
     - 'FluentContentController'
 ```
 
+### Locale based filter configuration
+
+In addition to localising fields within a DataObject, a filter can also be applied
+to conditionally show or hide DataObjects within specific locales.
+
+For instance, if there's an object that could potentially be visible only on
+certain locations (such as a product with limited availability in other countries)
+then you can add the `FluentFilteredExtension` in order to add additional filter
+options in the CMS.
+
+Note: It's not necessary to actually localise this object in order for it to be
+filterable; `FluentFilteredExtension` and `FluentExtension` each work independently.
+
+```yaml
+---
+Name: myproductconfiguration
+---
+ProductObject:
+  extensions:
+    - 'FluentFilteredExtension'
+```
+
+Make sure that if you are filtering a non-sitetree object that you use the following
+in your getCMSFields in order to add the necessary filter:
+
+```php
+function getCMSFields() {
+	$fields = new FieldList(
+		new TextField('Title', 'Title', null, 255)
+	);
+	$this->extend('updateCMSFields', $fields);
+	return $fields;
+}
+```
+
+Now when editing this item in the CMS there will be an additional set of checkboxes
+labelled "Locale filter".
+
+Note: Although these objects will be filtered in the front end, this filter is disabled
+in the CMS in order to allow access by site administrators in all locales.
+
 ## Installation Instructions
 
 Fluent can be easily installed on any already-developed website
@@ -135,6 +175,15 @@ composer require "tractorcow/silverstripe-fluent": "3.1.*@dev"
    (see [Configuration](#configuration) for details)
 
  * Run a dev/build to ensure all additional table fields have been generated
+
+## Website template
+
+On the front end of the website you can include the `LocaleMenu.ss` template to provide
+a simple locale navigation.
+
+```html
+<% include LocaleMenu %>
+```
 
 ## How it works
 

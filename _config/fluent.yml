@@ -16,6 +16,7 @@ Fluent:
   field_exclude:
     - 'Theme'
     - 'URLSegment'
+    - '/^LocaleFilter_/i'
   # Filter in(or out) data types to translate
   data_include:
     - 'Text'
