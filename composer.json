@@ -3,7 +3,7 @@
 	"description": "Simple localisation for Silverstripe",
 	"type": "silverstripe-module",
 	"keywords": ["silverstripe", "localisation", "localization", "translation", "language", "locale", "multilingual"],
-	"license": "BSD",
+	"license": "BSD-3-Clause",
 	"authors": [
 		{
 			"name": "Damian Mooyman",

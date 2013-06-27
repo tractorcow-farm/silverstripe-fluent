@@ -20,6 +20,7 @@ you may encounter, as it helps us all out!
 ## Credits and Authors
 
  * Damian Mooyman - <https://github.com/tractorcow/silverstripe-fluent>
+ * Attribution to Michael (dAKirby309) for his metro translate icon - <http://dakirby309.deviantart.com/>
 
 ## Requirements
 
