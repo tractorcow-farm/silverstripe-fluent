@@ -1,12 +1,12 @@
 # Silverstripe Fluent - Simple localisation for Silverstripe
 
-This module allows websites to manage translation of content, and navigation between translations,
+This module allows websites to manage localisation of content, and navigation between localisations,
 in a similar fashion to [Translatable](https://github.com/silverstripe/silverstripe-translatable)
 or [Multilingual](https://github.com/kreationsbyran/multilingual).
 
 Locales are distinguished by a url prefix, that of the selected locale, at the start
 of all page links. E.g. `http://damian.geek.nz/en_NZ/about-me` would be the NZ English
-version of a page. This could be translated into Maori at `http://damian.geek.nz/mi_NZ/about-me`
+version of a page. This could be localised into Maori at `http://damian.geek.nz/mi_NZ/about-me`
 
 Back end control is provided by a simple CMS filter.
 
@@ -26,7 +26,7 @@ you may encounter, as it helps us all out!
 
 ## Configuration
 
-Installation runs more smoothly if you configure your site for translation before
+Installation runs more smoothly if you configure your site for localisation before
 installing the module, as it will rebuild the database based on configuration.
 Good to read this bit first!
 
@@ -66,10 +66,10 @@ i18n:
 ### DataObject configuration
 
 Great, now we've setup our languages. Our next job is to decide which dataobjects, and which
-fields of those dataobjects, should be translated.
+fields of those dataobjects, should be localised.
 
 The best way to do this is to set the 'translate' config option on the dataobject,
-set to the fields you want translated. Note that this must be on the same class
+set to the fields you want localised. Note that this must be on the same class
 as the database field is specified.
 
 ```yaml
@@ -84,7 +84,7 @@ BlogTree:
     - 'Name'
 ```
 
-If you want to translate a `has_one` relation then you can add the field (with 'ID'
+If you want to localise a `has_one` relation then you can add the field (with 'ID'
 suffix included).
 
 ```yaml
@@ -93,9 +93,9 @@ BlogHolder:
     - 'OwnerID'
 ```
 
-Note: `has_many` and `many_many` translation is in development.
+Note: `has_many` and `many_many` localisation is in development.
 
-If you want to translate a dataobject that doesn't extend sitetree then you'll need
+If you want to localise a dataobject that doesn't extend sitetree then you'll need
 to add the appropriate extension
 
 
@@ -131,7 +131,7 @@ Fluent can be easily installed on any already-developed website
 composer require "tractorcow/silverstripe-fluent": "3.1.*@dev"
 ```
 
- * Ensure that all dataobjects have been correctly configured for translation
+ * Ensure that all dataobjects have been correctly configured for localisation
    (see [Configuration](#configuration) for details)
 
  * Run a dev/build to ensure all additional table fields have been generated
@@ -139,30 +139,30 @@ composer require "tractorcow/silverstripe-fluent": "3.1.*@dev"
 ## How it works
 
 As opposed to Translatable which manages separate `SiteTree` objects for multiple 
-translations, Fluent stores all translations for properties on the same table row.
+localisations, Fluent stores all localisations for properties on the same table row.
 
 This method has the following benefits:
 
  * Seamless integration with other modules and extensions (such as Versioned)
- * Allows for installation easily on existing websites, 
- * Minimises the amount of special case code to handle translations; A page has the 
+ * Allows for installation easily on existing websites
+ * Minimises the amount of special case code to handle localisations; A page has the 
    same ID no matter the current locale!
- * The simplicity of the method means that any object can be easily and transparently
-   translated, even non-SiteTree dataobjects.
+ * The simplicity of the single-table method means that any object can be easily
+   and transparently localised, even non-SiteTree dataobjects.
  * There is only ever one sitemap, so the page hierarchy doesn't need to be 
    duplicated for each additional locale.
 
-Fluent has a couple of built in rules for determining which fields to translate, but
+Fluent has a couple of built in rules for determining which fields to localise, but
 these can be easily customised on a per-object bases (or even by customising the 
 global ruleset).
 
 When querying data the SQL is augmented to replace all SELECT fragments for those
-fields with conditionals; It will detect if a value for the translated field (such
+fields with conditionals; It will detect if a value for the localised field (such
 as `Title_en_NZ`) exists, and use this if it does, otherwise using the base field
 (`Title`) as the default. When a dataobject is written, the inverse is performed,
 ensuring that the field related to the current locale is correctly written to.
 
-Unfortunately, there's currently no translation mechanism for sitetree urls
+Unfortunately, there's currently no localisation mechanism for sitetree urls
 (for the sake of simplicity). This could be implemented if requested however. :)
 
 ## License
