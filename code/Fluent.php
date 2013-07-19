@@ -158,14 +158,19 @@ class Fluent extends Object {
 	/**
 	 * Determines field replacement method.
 	 * If viewing on the front end, blank values for a translation will be replaced with the default value.
-	 * If viewing in the CMS they will be left blank for filling in
+	 * If viewing in the CMS they will be left blank for filling in.
+	 * 
+	 * For the sake of unit tests Fluent assumes a frontend execution environment.
 	 * 
 	 * @return boolean Flag indicating if the translation should act on the frontend
 	 */
 	public static function is_frontend() {
 		if(!Controller::has_curr()) return false;
 		$controller = Controller::curr();
-		return ($controller instanceof ModelAsController || $controller instanceof ContentController);
+		return 
+			$controller instanceof ModelAsController
+			|| $controller instanceof ContentController
+			|| $controller instanceof TestRunner; // For the purposes of test, assume this is a frontend request
 	}
 	
 	/**

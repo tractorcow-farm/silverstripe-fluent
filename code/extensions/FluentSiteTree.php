@@ -30,7 +30,7 @@ class FluentSiteTree extends FluentExtension {
 		$link = $this->owner->Link();
 		$currentURL = Fluent::alias(Fluent::current_locale());
 		$localeURL = Fluent::alias($locale);
-		return preg_replace('/^\/'.$currentURL.'/i', $localeURL, $link);
+		return preg_replace('/^\/'.$currentURL.'/i', "/$localeURL", $link);
 	}
 	
 	/**
