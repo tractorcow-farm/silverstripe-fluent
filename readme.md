@@ -66,6 +66,30 @@ i18n:
   default_locale: en_US
 ```
 
+Additionally, if you prefer to customise the urls (such as having 'english' instead of 'en_US' as a prefix) you can use
+the Fluent.aliases configuration to specify url aliases for any locale.
+
+E.g.
+
+```yaml
+---
+Name: myfluentconfig
+After: '#fluentconfig'
+---
+Fluent:
+  default_locale: en_US
+  locales:
+    - en_US
+    - es_US
+	- en_CA
+    - fr_CA
+  aliases:
+    en_US: english
+    es_US: spanish
+```
+
+The home pages for the above locales will be /english/, /spanish/, /en_CA/, and /fr_CA/
+
 ### Field localisation configuration
 
 Great, now we've setup our languages. Our next job is to decide which dataobjects, and which

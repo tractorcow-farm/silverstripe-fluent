@@ -36,11 +36,12 @@ class Fluent extends Object {
 		
 		// Explicit routes
 		foreach(self::config()->locales as $locale) {
-			$routes[$locale.'/$URLSegment!//$Action/$ID/$OtherID'] = array(
+			$url = self::alias($locale);
+			$routes[$url.'/$URLSegment!//$Action/$ID/$OtherID'] = array(
 				'Controller' => 'ModelAsController',
 				'FluentLocale' => $locale
 			);
-			$routes[$locale] = array(
+			$routes[$url] = array(
 				'Controller' => 'FluentRootURLController',
 				'FluentLocale' => $locale
 			);
@@ -183,5 +184,18 @@ class Fluent extends Object {
 			}
 		}
 		return false;
+	}
+	
+	/**
+	 * Determine the alias to use for a specific locale
+	 * 
+	 * @param string $locale Locale in language_Country format
+	 * @return string Locale in its original form, or its alias if one exists
+	 */
+	public static function alias($locale) {
+		$aliases = self::config()->aliases;
+		return empty($aliases[$locale])
+			? $locale
+			: $aliases[$locale];
 	}
 }

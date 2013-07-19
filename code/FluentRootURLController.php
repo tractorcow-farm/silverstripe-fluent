@@ -17,7 +17,8 @@ class FluentRootURLController extends RootURLController {
 		$locale = $request->param('FluentLocale');
 		if(empty($locale)) {
 			$locale = Fluent::current_locale();
-			return $this->redirect($locale.'/');
+			$localeURL = Fluent::alias($locale);
+			return $this->redirect($localeURL.'/');
 		}
 		
 		$this->pushCurrent();
@@ -29,8 +30,9 @@ class FluentRootURLController extends RootURLController {
 			return $this->response;
 		}
 		
-		$request->setUrl($locale.'/home/');
-		$request->match($locale.'/$URLSegment//$Action', true);
+		$localeURL = Fluent::alias($locale);
+		$request->setUrl($localeURL.'/home/');
+		$request->match($localeURL.'/$URLSegment//$Action', true);
 		
 		$controller = new ModelAsController();
 		$result = $controller->handleRequest($request, $model);

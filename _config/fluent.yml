@@ -11,6 +11,12 @@ Fluent:
   #  - fr_FR
   #  - zh_CN
   #  - es_ES
+  aliases: []
+  # Set aliases for each locale url as necessary
+  #  en_NZ: 'en'
+  #  fr_FR: 'fr'
+  #  zh_CN: 'cn'
+  #  es_ES: 'es'
   # Filter in(or out) field names to translate
   field_include: []
   field_exclude:

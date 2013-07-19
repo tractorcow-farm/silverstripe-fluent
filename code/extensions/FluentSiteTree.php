@@ -10,8 +10,14 @@
 class FluentSiteTree extends FluentExtension {
 	
 	public function updateRelativeLink(&$base, &$action) {
+		
+		// Don't inject locale to subpages
+		if($this->owner->ParentID && SiteTree::config()->nested_urls) {
+			return;
+		}
 		$locale = Fluent::current_locale();
-		$base = Controller::join_links($locale, $base);
+		$localeURL = Fluent::alias($locale);
+		$base = Controller::join_links($localeURL, $base);
 	}
 	
 	/**
@@ -22,8 +28,9 @@ class FluentSiteTree extends FluentExtension {
 	 */
 	public function LocaleLink($locale) {
 		$link = $this->owner->Link();
-		$currentLocale = Fluent::current_locale();
-		return preg_replace('/^\/'.$currentLocale.'/i', $locale, $link);
+		$currentURL = Fluent::alias(Fluent::current_locale());
+		$localeURL = Fluent::alias($locale);
+		return preg_replace('/^\/'.$currentURL.'/i', $localeURL, $link);
 	}
 	
 	/**
