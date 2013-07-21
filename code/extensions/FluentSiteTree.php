@@ -43,6 +43,7 @@ class FluentSiteTree extends FluentExtension {
 		foreach(Fluent::locales() as $locale) {
 			$data[] = new ArrayData(array(
 				'Locale' => $locale,
+				'Alias' => Fluent::alias($locale),
 				'Title' => i18n::get_locale_name($locale),
 				'Link' => $this->LocaleLink($locale)
 			));
