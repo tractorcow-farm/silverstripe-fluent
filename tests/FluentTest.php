@@ -96,6 +96,33 @@ class FluentTest extends SapphireTest {
 	}
 	
 	/**
+	 * Test that alternate baseurls work
+	 */
+	public function testAlternateBaseURLS() {
+		$oldURL = Director::baseURL();
+		Config::inst()->update('Director', 'alternate_base_url', '/mysite/mvc1');
+		
+		$home = $this->objFromFixture('Page', 'home');
+		$about = $this->objFromFixture('Page', 'about');
+		$staff = $this->objFromFixture('Page', 'staff');
+		
+		// Test Link
+		$this->assertEquals('/mysite/mvc1/fr_CA/', $home->Link());
+		$this->assertEquals('/mysite/mvc1/fr_CA/about-us/', $about->Link());
+		$this->assertEquals('/mysite/mvc1/fr_CA/about-us/my-staff/', $staff->Link());
+		
+		// Test LocaleLink
+		$this->assertEquals('/mysite/mvc1/en_NZ/', $home->LocaleLink('en_NZ'));
+		$this->assertEquals('/mysite/mvc1/es_ES/', $home->LocaleLink('es_ES'));
+		$this->assertEquals('/mysite/mvc1/en_NZ/about-us/', $about->LocaleLink('en_NZ'));
+		$this->assertEquals('/mysite/mvc1/es_ES/about-us/', $about->LocaleLink('es_ES'));
+		$this->assertEquals('/mysite/mvc1/en_NZ/about-us/my-staff/', $staff->LocaleLink('en_NZ'));
+		$this->assertEquals('/mysite/mvc1/es_ES/about-us/my-staff/', $staff->LocaleLink('es_ES'));
+		
+		Config::inst()->update('Director', 'alternate_base_url', $oldURL);
+	}
+	
+	/**
 	 * Test that aliases for a URL work
 	 */
 	public function testAliases() {
