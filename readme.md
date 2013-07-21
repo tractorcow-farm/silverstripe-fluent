@@ -95,21 +95,43 @@ The home pages for the above locales will be /english/, /spanish/, /en_CA/, and 
 Great, now we've setup our languages. Our next job is to decide which dataobjects, and which
 fields of those dataobjects, should be localised.
 
-The best way to do this is to set the 'translate' config option on the dataobject,
-set to the fields you want localised. Note that this must be on the same class
-as the database field is specified.
+By default Fluent will attempt to analyse the field type and name of each `DBField` specified in your `DataObject`.
+Rules specified by `Fluent.field_include`, `Fluent.field_exclude`, `Fluent.data_include`, and `Fluent.data_exclude`
+can be customised to tweak this automatic detection behaviour. This filter is used to specify filters based on field
+type.
+
+Fields can also be filtered directly by name by using the 'translate' config option, set to the fields you want
+localised. Note that this must be on the same class as the database field is specified (not subclasses).
 
 ```yaml
 ---
 Name: myblogconfig
 ---
-BlogEntry:
+Page:
   translate:
-    - 'Tags'
-BlogTree:
-  translate:
-    - 'Name'
+    - 'Heading'
+    - 'Description'
 ```
+
+or via PHP
+
+```php
+class Page extends SiteTree {
+
+	static $db = array(
+		'Heading' => 'Varchar(255)',
+		'Description' => 'Text',
+		'MetaNotes' => 'Text'
+	);
+
+	private static $translate = array(
+		'Heading',
+		'Description'
+	);
+}
+```
+
+In the above example, Heading and Description will be translated but not MetaNotes.
 
 If you want to localise a `has_one` relation then you can add the field (with 'ID'
 suffix included).
