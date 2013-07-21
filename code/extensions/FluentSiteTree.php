@@ -21,7 +21,8 @@ class FluentSiteTree extends FluentExtension {
 	}
 	
 	/**
-	 * Determine the link to this page given the specified $locale
+	 * Determine the link to this page given the specified $locale.
+	 * Override this in your Page class to customise.
 	 * 
 	 * @param string $locale
 	 * @return string
@@ -45,7 +46,7 @@ class FluentSiteTree extends FluentExtension {
 				'Locale' => $locale,
 				'Alias' => Fluent::alias($locale),
 				'Title' => i18n::get_locale_name($locale),
-				'Link' => $this->LocaleLink($locale)
+				'Link' => $this->owner->LocaleLink($locale)
 			));
 		}
 		return new ArrayList($data);
