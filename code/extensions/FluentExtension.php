@@ -171,13 +171,66 @@ class FluentExtension extends DataExtension {
 	// </editor-fold>
 
 	// <editor-fold defaultstate="collapsed" desc="SQL Augmentations">
+	
+	protected static $_enable_write_augmentation = true;
+	
+	/*
+	 * Enable or disable write augmentations. Useful for setting up test cases with specific hard coded values.
+	 * 
+	 * @param boolean $enabled
+	 */
+	public static function set_enable_write_augmentation($enabled) {
+		self::$_enable_write_augmentation = $enabled;
+	}
+	
+	/**
+	 * Determines the table/column identifier that first appears in the $condition, and returns the localised version
+	 * of that column.
+	 * 
+	 * @param string $condition Condition SQL string
+	 * @param array $includedTables
+	 * @param string $locale Locale to localise to
+	 * @return string Column identifier in "table"."column" format if it exists in this condition
+	 */
+	protected function detectFilterColumn($condition, $includedTables, $locale) {
+		foreach($includedTables as $table => $columns) {
+			foreach($columns as $column) {
+				$identifier = "\"$table\".\"$column\"";
+				if(stripos($condition, $identifier) !== false) {
+					// Localise column
+					return "\"$table\".\"".Fluent::db_field_for_locale($column, $locale)."\"";
+				}
+			}
+		}
+		return false;
+	}
+	
+	/**
+	 * Replaces all columns in the given condition with any localised
+	 * 
+	 * @param string $condition Condition SQL string
+	 * @param array $includedTables
+	 * @param string $locale Locale to localise to
+	 * @return string $condition parameter with column names replaced
+	 */
+	protected function localiseFilterCondition($condition, $includedTables, $locale) {
+		foreach($includedTables as $table => $columns) {
+			foreach($columns as $column) {
+				$columnLocalised = Fluent::db_field_for_locale($column, $locale);
+				$identifier = "\"$table\".\"$column\"";
+				$identifierLocalised = "\"$table\".\"$columnLocalised\"";
+				$condition = preg_replace("/".preg_quote($identifier, '/')."/", $identifierLocalised, $condition);
+			}
+		}
+		return $condition;
+	}
 
 	public function augmentSQL(SQLQuery &$query, DataQuery &$dataQuery = null) {
 		
 		// Get locale and translation zone to use
 		$dataQuery->setQueryParam('Fluent.Locale', $locale = Fluent::current_locale());
 		$dataQuery->setQueryParam('Fluent.IsFrontend', Fluent::is_frontend());
-							
+		
 		// Get all tables to translate fields for, and their respective field names
 		$includedTables = $this->getTranslatedTables();
 		
@@ -197,14 +250,40 @@ class FluentExtension extends DataExtension {
 			if(!in_array($field, $includedTables[$class])) continue;
 
 			$translatedField = Fluent::db_field_for_locale($field, $locale);
-			$expression = "CASE WHEN (\"{$class}\".\"{$translatedField}\" IS NOT NULL AND \"{$class}\".\"{$translatedField}\" != '')
+			$expression = "CASE
+				WHEN (\"{$class}\".\"{$translatedField}\" IS NOT NULL AND \"{$class}\".\"{$translatedField}\" != '')
 				THEN \"{$class}\".\"{$translatedField}\"
 				ELSE \"$class\".\"$field\" END";
 			$query->selectField($expression, $alias);
 		}
+		
+		// Rewrite where conditions
+		$where = $query->getWhere();
+		foreach($where as $index => $condition) {
+			
+			// determine the table/column this condition is against
+			$filterColumn = $this->detectFilterColumn($condition, $includedTables, $locale);
+			if(empty($filterColumn)) continue;
+			
+			// Duplicate the condition with all localisable fields replaced
+			$localisedCondition = $this->localiseFilterCondition($condition, $includedTables, $locale);
+			if($localisedCondition === $condition) continue;
+			
+			// Generate new condition that conditionally executes one of the two conditions
+			// depending on field nullability
+			$where[$index] = "
+				($filterColumn IS NOT NULL AND $filterColumn != '' AND ($localisedCondition))
+				OR (
+					($filterColumn IS NULL OR $filterColumn = '') AND ($condition)
+				)";
+		}
+		$query->setWhere($where);
 	}
 
 	public function augmentWrite(&$manipulation) {
+		
+		// Bypass augment write if requested
+		if(!self::$_enable_write_augmentation) return;
 		
 		// Get locale and translation zone to use
 		$locale = Fluent::current_locale();

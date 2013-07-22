@@ -30,6 +30,18 @@ FluentTest_FilteredObject:
     LocaleFilter_es_ES: 0
 FluentTest_TranslatedObject:
   translated1:
-    Title: 'my translated'
+    Title: 'this is an object'
+    Title_fr_CA: 'il s''agit d''un objet'
+    Title_en_NZ: 'this is an object'
+    Title_en_US: ''
+    Title_es_ES: 'este es un objeto'
     Description: 'what a wonderful object'
     URLKey: 'my-translated'
+  translated2:
+    Title: 'This colour is blue'
+    Title_fr_CA: 'Cette couleur est le bleu'
+    Title_en_NZ: ''
+    Title_en_US: 'This color is blue'
+    Title_es_ES: 'Este color es azul'
+    Description: 'Second object'
+    URLKey: 'my-translated-2'

@@ -29,6 +29,9 @@ class FluentTest extends SapphireTest {
 	
 	public function setUpOnce() {
 		
+		// Ensure that Fluent doesn't interfere with scaffolding records from FluentTest.yml
+		FluentExtension::set_enable_write_augmentation(false);
+		
 		$this->_original_config_locales = Fluent::config()->locales;
 		$this->_original_config_default = Fluent::config()->default_locale;
 		$this->_original_config_aliases = Fluent::config()->aliases;
@@ -50,6 +53,16 @@ class FluentTest extends SapphireTest {
 		$this->resetDBSchema(true);
 		
 		parent::setUpOnce();
+		
+		FluentExtension::set_enable_write_augmentation(true);
+	}
+	
+	public function setUp() {
+		
+		// Ensure that Fluent doesn't interfere with scaffolding records from FluentTest.yml
+		FluentExtension::set_enable_write_augmentation(false);
+		parent::setUp();
+		FluentExtension::set_enable_write_augmentation(true);
 	}
 	
 	public function tearDownOnce() {
@@ -195,6 +208,63 @@ class FluentTest extends SapphireTest {
 		
 		$this->assertEquals('Title_en_NZ', Fluent::db_field_for_locale('Title', 'en_NZ'));
 		$this->assertEquals('ParentID_en_NZ', Fluent::db_field_for_locale('ParentID', 'en_NZ'));
+	}
+	/**
+	 * Test that different filters against 
+	 */
+	public function testFilterConditions() {
+		
+		// In en_NZ locale
+		Session::set('FluentLocale', 'en_NZ');
+		
+		// Test basic search for english string
+		$urls = DataObject::get('FluentTest_TranslatedObject')
+			->filter('Title', 'this is an object')
+			->column('URLKey');
+		$this->assertEquals(array('my-translated'), $urls);
+		
+		// Test basic search where language specific field is blank
+		$urls = DataObject::get('FluentTest_TranslatedObject')
+			->filter('Title', 'This colour is blue')
+			->column('URLKey');
+		$this->assertEquals(array('my-translated-2'), $urls);
+		
+		// In en_US locale
+		Session::set('FluentLocale', 'en_US');
+		
+		// Test basic search for english string
+		$urls = DataObject::get('FluentTest_TranslatedObject')
+			->filter('Title', 'this is an object')
+			->column('URLKey');
+		$this->assertEquals(array('my-translated'), $urls);
+		
+		// Default value differs from locale specific value
+		$urls = DataObject::get('FluentTest_TranslatedObject')
+			->filter('Title', 'This colour is blue')
+			->column('URLKey');
+		$this->assertEquals(array(), $urls);
+		
+		$urls = DataObject::get('FluentTest_TranslatedObject')
+			->filter('Title', 'This color is blue')
+			->column('URLKey');
+		$this->assertEquals(array('my-translated-2'), $urls);
+		
+		// In fr_CA locales
+		Session::set('FluentLocale', 'fr_CA');
+		
+		// Default value differs from locale specific value
+		$urls = DataObject::get('FluentTest_TranslatedObject')
+			->filter('Title', "il s'agit d'un objet")
+			->column('URLKey');
+		$this->assertEquals(array('my-translated'), $urls);
+		
+		$urls = DataObject::get('FluentTest_TranslatedObject')
+			->filter('Title', 'this is an object')
+			->column('URLKey');
+		$this->assertEquals(array(), $urls);
+		
+		// Put default locale back
+		Session::set('FluentLocale', 'fr_CA');
 	}
 }
 
