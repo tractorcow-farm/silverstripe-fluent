@@ -39,7 +39,7 @@ class FluentSiteTree extends FluentExtension {
 	 *
 	 * @return string
 	 */
-	public function BaseURLforLocale() {
+	public function BaseURLForLocale() {
 		return Controller::join_links(Director::baseURL(), Fluent::alias(Fluent::current_locale(), '/'));
 	}
 	
