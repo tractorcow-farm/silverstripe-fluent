@@ -122,8 +122,10 @@ class FluentExtension extends DataExtension {
 		
 		if($baseFields) foreach($baseFields as $field => $type) {
 			foreach(Fluent::locales() as $locale) {
-				// Copy field to translated field
-				$db["{$field}_{$locale}"] = $type;
+				// Transform has_one relations into basic int fields to prevent interference with ORM
+				if($type === 'ForeignKey') $type = 'Int';
+				$translatedName = Fluent::db_field_for_locale($field, $locale);
+				$db[$translatedName] = $type;;
 			}
 		}
 		
@@ -160,6 +162,7 @@ class FluentExtension extends DataExtension {
 		foreach (Fluent::locales() as $locale) {
 			$data[] = new ArrayData(array(
 				'Locale' => $locale,
+				'Alias' => Fluent::alias($locale),
 				'Title' => i18n::get_locale_name($locale)
 			));
 		}
@@ -193,8 +196,9 @@ class FluentExtension extends DataExtension {
 			// If this field shouldn't be translated, skip
 			if(!in_array($field, $includedTables[$class])) continue;
 
-			$expression = "CASE WHEN (\"{$class}\".\"{$field}_{$locale}\" IS NOT NULL AND \"{$class}\".\"{$field}_{$locale}\" != '')
-				THEN \"{$class}\".\"{$field}_{$locale}\"
+			$translatedField = Fluent::db_field_for_locale($field, $locale);
+			$expression = "CASE WHEN (\"{$class}\".\"{$translatedField}\" IS NOT NULL AND \"{$class}\".\"{$translatedField}\" != '')
+				THEN \"{$class}\".\"{$translatedField}\"
 				ELSE \"$class\".\"$field\" END";
 			$query->selectField($expression, $alias);
 		}
@@ -219,7 +223,7 @@ class FluentExtension extends DataExtension {
 
 				// Unset any direct translation updates
 				foreach($locales as $checkLocale) {
-					$checkField = "{$field}_{$checkLocale}";
+					$checkField = Fluent::db_field_for_locale($field, $checkLocale);
 					if(isset($updates['fields'][$checkField])) {
 						unset($updates['fields'][$checkField]);
 					}
@@ -228,7 +232,8 @@ class FluentExtension extends DataExtension {
 				// Check if this field is updated
 				if(isset($updates['fields'][$field])) {
 					// Copy the updated value to the appropriate locale
-					$updates['fields']["{$field}_{$locale}"] = $updates['fields'][$field];
+					$updateField = Fluent::db_field_for_locale($field, $locale);
+					$updates['fields'][$updateField] = $updates['fields'][$field];
 					
 					// If not on the default locale we should prevent the default field being written to
 					// unless it's an insert
@@ -245,4 +250,22 @@ class FluentExtension extends DataExtension {
 
 	// </editor-fold>
 
+	// <editor-fold defaultstate="collapsed" desc="CMS Field Augmentation">
+	
+	public function updateCMSFields(FieldList $fields) {
+		// get all fields to translate and remove
+		$translated = $this->getTranslatedTables();
+		foreach($translated as $table => $translatedFields) {
+			foreach($translatedFields as $translatedField) {
+				foreach(Fluent::locales() as $locale) {
+					// Remove translation DBField from automatic scaffolded fields
+					$fieldName = Fluent::db_field_for_locale($translatedField, $locale);
+					$fields->removeByName($fieldName, true);
+				}
+			}
+		}
+	}
+	
+	// </editor-fold>
+	
 }

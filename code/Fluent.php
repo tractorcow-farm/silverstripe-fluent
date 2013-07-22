@@ -203,4 +203,14 @@ class Fluent extends Object {
 			? $locale
 			: $aliases[$locale];
 	}
+	
+	/**
+	 * Determine the DB field name to use for the given base field
+	 * 
+	 * @param string $field DB field name
+	 * @param string $locale Locale to use
+	 */
+	public static function db_field_for_locale($field, $locale) {
+		return "{$field}_{$locale}";
+	}
 }

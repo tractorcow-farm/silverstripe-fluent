@@ -149,10 +149,10 @@ class FluentTest extends SapphireTest {
 			'Description_es_ES' => 'Text',
 			'Description_fr_CA' => 'Text',
 			'ImageID' => 'ForeignKey',
-			'ImageID_en_NZ' => 'ForeignKey',
-			'ImageID_en_US' => 'ForeignKey',
-			'ImageID_es_ES' => 'ForeignKey',
-			'ImageID_fr_CA' => 'ForeignKey',
+			'ImageID_en_NZ' => 'Int',
+			'ImageID_en_US' => 'Int',
+			'ImageID_es_ES' => 'Int',
+			'ImageID_fr_CA' => 'Int',
 			'Title' => 'Varchar(255)',
 			'Title_en_NZ' => 'Varchar(255)',
 			'Title_en_US' => 'Varchar(255)',
@@ -176,6 +176,25 @@ class FluentTest extends SapphireTest {
 		
 		// Put default locale back
 		Session::set('FluentLocale', 'fr_CA');
+	}
+	
+	/**
+	 * Test auto-scaffolding of CMS fields
+	 */
+	public function testCMSFields() {
+		$filtered1 = $this->objFromFixture('FluentTest_TranslatedObject', 'translated1');
+		$fields = $filtered1->getCMSFields()->dataFields();
+		
+		$this->assertEquals(array('Title', 'Description', 'URLKey', 'Image'), array_keys($fields));
+	}
+	
+	/**
+	 * Tests that DB fields are properly named
+	 */
+	public function testDBFieldNaming() {
+		
+		$this->assertEquals('Title_en_NZ', Fluent::db_field_for_locale('Title', 'en_NZ'));
+		$this->assertEquals('ParentID_en_NZ', Fluent::db_field_for_locale('ParentID', 'en_NZ'));
 	}
 }
 

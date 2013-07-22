@@ -28,3 +28,8 @@ FluentTest_FilteredObject:
     LocaleFilter_en_NZ: 0
     LocaleFilter_en_US: 0
     LocaleFilter_es_ES: 0
+FluentTest_TranslatedObject:
+  translated1:
+    Title: 'my translated'
+    Description: 'what a wonderful object'
+    URLKey: 'my-translated'

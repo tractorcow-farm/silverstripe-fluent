@@ -12,6 +12,7 @@ class FluentContentController extends Extension {
 		// Ensure the locale is set correctly given the designated parameters
 		$locale = Fluent::current_locale();
 		i18n::set_locale($locale);
+		setlocale(LC_ALL, $locale);
 		
 		// Get date/time formats from Zend
 		require_once 'Zend/Date.php';
