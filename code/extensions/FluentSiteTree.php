@@ -35,6 +35,19 @@ class FluentSiteTree extends FluentExtension {
 	}
 	
 	/**
+	 * Determine the baseurl within a specified $locale.
+	 *
+	 * @return string
+	 */
+	public function BaseURLForLocale() {
+		return Controller::join_links(
+			Director::baseURL(),
+			Fluent::alias(Fluent::current_locale()),
+			'/'
+		);
+	}
+	
+	/**
 	 * Templatable list of all locales
 	 * 
 	 * @return ArrayList
