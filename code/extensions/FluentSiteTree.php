@@ -9,6 +9,15 @@
  */
 class FluentSiteTree extends FluentExtension {
 	
+	/**
+	 * Ensure that the controller is correctly initialised
+	 * 
+	 * @param ContentController $controller
+	 */
+	public function contentcontrollerInit($controller) {
+		Fluent::install_locale();
+	}
+	
 	public function updateRelativeLink(&$base, &$action) {
 		
 		// Don't inject locale to subpages
