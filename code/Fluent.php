@@ -62,6 +62,10 @@ class Fluent extends Object {
 	 */
 	public static function init() {
 		
+		// Attempt to do pre-emptive i18n bootstrapping, in case session locale is available and 
+		// only non-sitetree actions will be executed this request (e.g. MemberForm::forgotPassword)
+		self::install_locale(false);
+		
 		// Allow route generation to be turned off
 		if(!self::config()->generate_routes) return;
 		
@@ -72,14 +76,20 @@ class Fluent extends Object {
 		self::regenerate_routes();
 	}
 	
+	/**
+	 * Indicates the last locale set via Cookies, in order to prevent excessive Cookie setting
+	 * 
+	 * @var boolean 
+	 */
 	protected static $last_set_locale = null;
 	
 	/**
 	 * Gets the current locale
 	 * 
+	 * @param boolean $persist Attempt to persist any detected locale within session / cookies
 	 * @return string i18n locale code
 	 */
-	public static function current_locale() {
+	public static function current_locale($persist = true) {
 		
 		$locale = null;
 		
@@ -112,13 +122,15 @@ class Fluent extends Object {
 		$allowedLocales = self::locales();
 		if(!in_array($locale, $allowedLocales)) $locale = self::default_locale();
 		
-		// Save locale
-		Session::set('FluentLocale', $locale);
+		if($persist) {
+			// Save locale
+			Session::set('FluentLocale', $locale);
 		
-		// Prevent unnecessarily excessive cookie assigment
-		if(!headers_sent() && self::$last_set_locale !== $locale) {
-			self::$last_set_locale = $locale;
-			Cookie::set('FluentLocale', $locale);
+			// Prevent unnecessarily excessive cookie assigment
+			if(!headers_sent() && self::$last_set_locale !== $locale) {
+				self::$last_set_locale = $locale;
+				Cookie::set('FluentLocale', $locale);
+			}
 		}
 		
 		return $locale;
@@ -216,11 +228,15 @@ class Fluent extends Object {
 	
 	/**
 	 * Installs the current locale into i18n
+	 * 
+	 * @param boolean $persist Attempt to persist any detected locale within session / cookies
 	 */
-	public static function install_locale() {
+	public static function install_locale($persist = true) {
 		
 		// Ensure the locale is set correctly given the designated parameters
-		$locale = self::current_locale();
+		$locale = self::current_locale($persist);
+		if(empty($locale)) return;
+		
 		i18n::set_locale($locale);
 		setlocale(LC_ALL, $locale);
 		

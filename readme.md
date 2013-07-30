@@ -35,6 +35,9 @@ Good to read this bit first!
 
 Please check [fluent.yml](_config/fluent.yml) for the default configuration settings.
 
+Please make sure to REMOVE any `i18n::set_locale` calls from your `_config.php` file, as it
+will interfere with locale bootstrapping in certain situations (such as `Security` controller actions).
+
 ### Locale configuration
 
 Firstly, you'll need to configure the locales that should be included, as well as
