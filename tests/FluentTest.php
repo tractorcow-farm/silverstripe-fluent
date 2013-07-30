@@ -63,6 +63,9 @@ class FluentTest extends SapphireTest {
 		FluentExtension::set_enable_write_augmentation(false);
 		parent::setUp();
 		FluentExtension::set_enable_write_augmentation(true);
+		
+		// Reset fluent locale
+		Session::set('FluentLocale', 'fr_CA');
 	}
 	
 	public function tearDownOnce() {
@@ -132,7 +135,11 @@ class FluentTest extends SapphireTest {
 		$this->assertEquals('/mysite/mvc1/en_NZ/about-us/my-staff/', $staff->LocaleLink('en_NZ'));
 		$this->assertEquals('/mysite/mvc1/es_ES/about-us/my-staff/', $staff->LocaleLink('es_ES'));
 		
-		Config::inst()->update('Director', 'alternate_base_url', $oldURL);
+		if($oldURL) {
+			Config::inst()->update('Director', 'alternate_base_url', $oldURL);
+		} else {
+			Config::inst()->remove('Director', 'alternate_base_url');
+		}
 	}
 	
 	/**
@@ -265,6 +272,43 @@ class FluentTest extends SapphireTest {
 		
 		// Put default locale back
 		Session::set('FluentLocale', 'fr_CA');
+	}
+	
+	protected function withBrowserHTTPLanguage($lang, $callback) {
+		$old = $_SERVER['HTTP_ACCEPT_LANGUAGE'];
+		$_SERVER['HTTP_ACCEPT_LANGUAGE'] = $lang;
+		$callback($this);
+		$_SERVER['HTTP_ACCEPT_LANGUAGE'] = $old;
+	}
+	
+	/**
+	 * Test browser detection of locale
+	 */
+	public function testDetectBrowserLocale() {
+		
+		$this->withBrowserHTTPLanguage('en-us;q=1,en;q=0.50', function($test) {
+			$test->assertEquals('en_US', Fluent::detect_browser_locale());
+		});
+		
+		$this->withBrowserHTTPLanguage('fr,en', function($test) {
+			$test->assertEquals('fr_CA', Fluent::detect_browser_locale());
+		});
+		
+		$this->withBrowserHTTPLanguage('en,fr-ca', function($test) {
+			$test->assertEquals('en_NZ', Fluent::detect_browser_locale());
+		});
+		
+		$this->withBrowserHTTPLanguage('en-nz,fr,en', function($test) {
+			$test->assertEquals('en_NZ', Fluent::detect_browser_locale());
+		});
+		
+		$this->withBrowserHTTPLanguage('fr-fr,en,fr', function($test) {
+			$test->assertEquals('en_NZ', Fluent::detect_browser_locale());
+		});
+		
+		$this->withBrowserHTTPLanguage('fr-fr,en-uk,ms', function($test) {
+			$test->assertEmpty(Fluent::detect_browser_locale());
+		});
 	}
 }
 

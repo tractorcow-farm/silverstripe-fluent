@@ -229,4 +229,31 @@ class Fluent extends Object {
 		i18n::set_date_format(Zend_Locale_Format::getDateFormat($locale));
 		i18n::set_time_format(Zend_Locale_Format::getTimeFormat($locale));
 	}
+	
+	/**
+	 * Determines the locale best matching the given list of browser locales
+	 * 
+	 * @return string The matching locale, or null if none could be determined
+	 */
+	public static function detect_browser_locale() {
+		
+		// Given multiple canditates, narrow down the final result using the client's preferred languages
+		$browserLanguages = $_SERVER['HTTP_ACCEPT_LANGUAGE'];
+		if(empty($browserLanguages)) return null;
+		
+		// Explode and cleanup locales
+		$browserLocales = array_map(function($input) {
+			// convert from en-nz:q=0.8 format into same format as our locales 
+			return preg_replace(array('/\-/', '/;.+/'), array('_', ''), $input);
+		}, explode(',', $browserLanguages));
+		
+		// Check each requested locale against loaded locales
+		foreach ($browserLocales as $browserLocale) {
+			foreach (self::locales() as $locale) {
+				if (stripos($locale, $browserLocale) === 0) return $locale;
+			}
+		}
+		
+		return null;
+	}
 }
