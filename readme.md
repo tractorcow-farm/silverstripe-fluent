@@ -266,6 +266,8 @@ Unfortunately, there's currently no localisation mechanism for sitetree urls
 
 ## License
 
+Revised BSD License
+
 Copyright (c) 2013, Damian Mooyman
 All rights reserved.
 
