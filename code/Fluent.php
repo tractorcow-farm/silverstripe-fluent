@@ -91,6 +91,9 @@ class Fluent extends Object {
 	 */
 	public static function current_locale($persist = true) {
 		
+		// Check overridden locale
+		if(self::$_override_locale) return self::$_override_locale;
+		
 		$locale = null;
 		
 		// Check controller and current request
@@ -298,5 +301,41 @@ class Fluent extends Object {
 		}
 		
 		return null;
+	}
+	
+	/**
+	 * Temporary override variable
+	 *
+	 * @var boolean
+	 */
+	private static $_override_locale = null;
+	
+	/**
+	 * Executes a callback with a locale to temporarily emulate.
+	 * 
+	 * Warning: Existing DataObjects will contain fields in the actual locale if already lazily loaded, or if
+	 * used within the callback, will populate itself with the overriding locale. The inverse will occur once the
+	 * callback is complete. The best practice is to consider this a sandbox, and re-requery all objects required,
+	 * discarding these afterwards.
+	 * 
+	 * @param string $locale The locale to set
+	 * @param callable $callback The callback
+	 * @return mixed The returned value from the $callback
+	 */
+	public static function with_locale($locale, $callback) {
+		
+		// Check and set locale
+		if(self::$_override_locale) throw new BadMethodCallException("Fluent::with_locale cannot be nested");
+		if(!in_array($locale, self::locales())) throw new BadMethodCallException("Invalid locale $locale");
+		self::$_override_locale = $locale;
+		DataObject::flush_and_destroy_cache();
+		
+		// Callback
+		$result = call_user_func($callback);
+		
+		// Reset
+		self::$_override_locale = null;
+		DataObject::flush_and_destroy_cache();
+		return $result;
 	}
 }

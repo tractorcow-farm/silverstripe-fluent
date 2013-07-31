@@ -310,6 +310,27 @@ class FluentTest extends SapphireTest {
 			$test->assertEmpty(Fluent::detect_browser_locale());
 		});
 	}
+	
+	/**
+	 * Tests overriding locale values
+	 */
+	public function testWithLocale() {
+				
+		// Default value differs from locale specific value
+		$names = DataObject::get('FluentTest_TranslatedObject')->sort('ID')->column('Title');
+		self::assertEquals(array("il s'agit d'un objet", "Cette couleur est le bleu"), $names);
+				
+		// In en_NZ locale
+		$names = Fluent::with_locale('en_NZ', function() {
+			return DataObject::get('FluentTest_TranslatedObject')->sort('ID')->column('Title');
+		});
+		$this->assertEquals(array("this is an object", "This colour is blue"), $names);
+		
+		// Use default locale again
+		$names = DataObject::get('FluentTest_TranslatedObject')->sort('ID')->column('Title');
+		$this->assertEquals(array("il s'agit d'un objet", "Cette couleur est le bleu"), $names);
+		
+	}
 }
 
 /**
