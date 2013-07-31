@@ -115,6 +115,9 @@ class Fluent extends Object {
 		// Check cookies
 		if(empty($locale)) $locale = Cookie::get('FluentLocale');
 		
+		// Check browser headers
+		if(empty($locale)) $locale = self::detect_browser_locale();
+		
 		// Check result
 		if(empty($locale)) $locale = self::default_locale();
 		
@@ -254,19 +257,43 @@ class Fluent extends Object {
 	public static function detect_browser_locale() {
 		
 		// Given multiple canditates, narrow down the final result using the client's preferred languages
-		$browserLanguages = $_SERVER['HTTP_ACCEPT_LANGUAGE'];
-		if(empty($browserLanguages)) return null;
+		$inputLocales = $_SERVER['HTTP_ACCEPT_LANGUAGE'];
+		if(empty($inputLocales)) return null;
 		
-		// Explode and cleanup locales
-		$browserLocales = array_map(function($input) {
-			// convert from en-nz:q=0.8 format into same format as our locales 
-			return preg_replace(array('/\-/', '/;.+/'), array('_', ''), $input);
-		}, explode(',', $browserLanguages));
+		// Generate mapping of priority => list of locales at this priority
+		// break up string into pieces (languages and q factors)
+		preg_match_all(
+			'/(?<code>[a-z]{1,8}(-[a-z]{1,8})?)\s*(;\s*q\s*=\s*(?<priority>1|0\.[0-9]+))?/i',
+			$inputLocales,
+			$parsedLocales
+		);
+
+		$prioritisedLocales = array();
+		if (count($parsedLocales['code'])) {
+			// create a list like "en" => 0.8
+			$parsedLocales = array_combine($parsedLocales['code'], $parsedLocales['priority']);
+
+			// Generate nested list of priorities => [locales]
+			foreach ($parsedLocales as $locale => $priority) {
+				$priority = empty($priority) ? 1.0 : floatval($priority);
+				if(empty($prioritisedLocales[$priority])) {
+					$prioritisedLocales[$priority] = array();
+				}
+				$prioritisedLocales[$priority][] = $locale;
+			}
+			
+			// sort list based on value	
+			krsort($prioritisedLocales, SORT_NUMERIC);
+		}
 		
 		// Check each requested locale against loaded locales
-		foreach ($browserLocales as $browserLocale) {
-			foreach (self::locales() as $locale) {
-				if (stripos($locale, $browserLocale) === 0) return $locale;
+		foreach ($prioritisedLocales as $priority => $parsedLocales) {
+			foreach($parsedLocales as $browserLocale) {
+				foreach (self::locales() as $locale) {
+					if (stripos(preg_replace('/_/', '-', $locale), $browserLocale) === 0) {
+						return $locale;
+					}
+				}
 			}
 		}
 		
