@@ -83,6 +83,12 @@ class FluentExtension extends DataExtension {
 		});
 	}
 	
+	public static function base_indexes($class) {
+		return self::without_fluent_fields(function() use ($class) {
+			return Config::inst()->get($class, 'indexes', Config::UNINHERITED);
+		});
+	}
+	
 	/**
 	 * Get all database tables in the class ancestry and their respective
 	 * translatable fields
@@ -106,6 +112,86 @@ class FluentExtension extends DataExtension {
 		return $includedTables;
 	}
 
+	/**
+	 * Splits a spec string safely, considering quoted columns, whitespace, 
+	 * and cleaning brackets
+	 * 
+	 * @param string $spec The input index specification
+	 * @return array List of columns in the spec
+	 */
+	protected static function explode_column_string($spec) {
+		// Remove any leading/trailing brackets and outlying modifiers
+		// E.g. 'unique (Title, "QuotedColumn");' => 'Title, "QuotedColumn"'
+		$containedSpec = preg_replace('/(.*\(\s*)|(\s*\).*)/', '', $spec);
+
+		// Split potentially quoted modifiers
+		// E.g. 'Title, "QuotedColumn"' => array('Title', 'QuotedColumn')
+		return preg_split('/"?\s*,\s*"?/', trim($containedSpec, '(") '));
+	}
+
+	/**
+	 * Builds a properly quoted column list from an array
+	 * 
+	 * @param array $columns List of columns to implode
+	 * @return string A properly quoted list of column names
+	 */
+	protected static function implode_column_list($columns) {
+		if(empty($columns)) return '';
+		return '"' . implode('","', $columns) . '"';
+	}
+
+	/**
+	 * Given an index specification in the form of a string ensure that each
+	 * column name is property quoted, stripping brackets and modifiers.
+	 * This index may also be in the form of a "CREATE INDEX..." sql fragment
+	 * 
+	 * @param string $spec The input specification or query. E.g. 'unique (Column1, Column2)'
+	 * @return string The properly quoted column list. E.g. '"Column1", "Column2"'
+	 */
+	protected static function quote_column_spec_string($spec) {
+		$bits = self::explode_column_string($spec);
+		return self::implode_column_list($bits);
+	}
+
+	/**
+	 * Given an index spec determines the index type
+	 * 
+	 * @param type $spec
+	 * @return string 
+	 */
+	protected static function determine_index_type($spec) {
+		// check array spec
+		if(is_array($spec) && isset($spec['type'])) {
+			return $spec['type'];
+		} elseif (!is_array($spec) && preg_match('/(?<type>\w+)\s*\(/', $spec, $matchType)) {
+			return strtolower($matchType['type']);
+		} else {
+			return 'index';
+		}
+	}
+	
+	/**
+	 * Converts an array or string index spec into a universally useful array
+	 * 
+	 * @param string|array $spec
+	 * @return array The resulting spec array with the required fields name, type, and value
+	 */
+	protected static function parse_index_spec($name, $spec) {
+
+		// Do minimal cleanup on any already parsed spec
+		if(is_array($spec)) {
+			$spec['value'] = self::quote_column_spec_string($spec['value']);
+			return $spec;
+		}
+
+		// Nicely formatted spec!
+		return array(
+			'name' => $name,
+			'value' => self::quote_column_spec_string($spec),
+			'type' => self::determine_index_type($spec)
+		);
+	}
+
 	// </editor-fold>
 	
 	// <editor-fold defaultstate="collapsed" desc="Database Field Generation">
@@ -116,10 +202,10 @@ class FluentExtension extends DataExtension {
 	 * @param string $class
 	 */
 	public static function generate_extra_config($class) {
+		
+		// Generate $db for class
 		$baseFields = self::translated_fields_for($class);
-		
 		$db = array();
-		
 		if($baseFields) foreach($baseFields as $field => $type) {
 			foreach(Fluent::locales() as $locale) {
 				// Transform has_one relations into basic int fields to prevent interference with ORM
@@ -129,7 +215,52 @@ class FluentExtension extends DataExtension {
 			}
 		}
 		
-		return $db;
+		// Generate $indexes for class
+		$baseIndexes = self::base_indexes($class);
+		$indexes = array();
+		if($baseIndexes) foreach($baseIndexes as $baseIndex => $baseSpec) {
+			if($baseSpec === 1 || $baseSpec === true) {
+				if(isset($baseFields[$baseIndex])) {
+					// Single field is translated, so add multiple indexes for each locale
+					foreach(Fluent::locales() as $locale) {
+						// Transform has_one relations into basic int fields to prevent interference with ORM
+						$translatedName = Fluent::db_field_for_locale($baseIndex, $locale);
+						$indexes[$translatedName] = $baseSpec;
+					}
+				}
+			} else {
+				// Check format of spec
+				$baseSpec = self::parse_index_spec($baseIndex, $baseSpec);
+				
+				// Check if columns overlap with translated
+				$columns = self::explode_column_string($baseSpec['value']);
+				$translatedColumns = array_intersect(array_keys($baseFields), $columns);
+				if($translatedColumns) {
+					// Generate locale specific version of this index
+					foreach(Fluent::locales() as $locale) {
+						$newColumns = array();
+						foreach($columns as $column) {
+							$newColumns[] = isset($baseFields[$column])
+								? Fluent::db_field_for_locale($column, $locale)
+								: $column;
+						}
+						
+						// Inject new columns and save
+						$newSpec = array_merge($baseSpec, array(
+							'name' => Fluent::db_field_for_locale($baseIndex, $locale),
+							'value' => self::implode_column_list($newColumns)
+						));
+						$indexes[$newSpec['name']] = $newSpec;
+					}
+				}
+			}
+			
+		}
+		
+		return array(
+			'db' => $db,
+			'indexes' => $indexes
+		);
 	}
 	
 	public static function get_extra_config($class, $extension, $args) {
@@ -137,16 +268,16 @@ class FluentExtension extends DataExtension {
 		
 		// Merge all config values for subclasses
 		foreach (ClassInfo::subclassesFor($class) as $subClass) {
-			$db = self::generate_extra_config($subClass);
-			Config::inst()->update($subClass, 'db', $db);
+			$config = self::generate_extra_config($subClass);
+			foreach($config as $name => $value) {
+				Config::inst()->update($subClass, $name, $value);
+			}
 		}
 		
 		// Force all subclass DB caches to invalidate themselves since their db attribute is now expired
 		DataObject::reset();
 		
-		return array(
-			'db' => self::generate_extra_config($class)
-		);
+		return self::generate_extra_config($class);
 	}
 	
 	// </editor-fold>
