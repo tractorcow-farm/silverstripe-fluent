@@ -331,6 +331,68 @@ class FluentTest extends SapphireTest {
 		$this->assertEquals(array("il s'agit d'un objet", "Cette couleur est le bleu"), $names);
 		
 	}
+	
+	/**
+	 * Test write operations with overriding locale values
+	 */
+	public function testWriteWithLocale() {
+		
+		// Test creation in default locale
+		$item = new FluentTest_TranslatedObject();
+		$item->Title = 'Test Title';
+		$item->write();
+		$itemID = $item->ID;
+		
+		// Test basic detail
+		$item = FluentTest_TranslatedObject::get()->byId($itemID);
+		$this->assertEquals('Test Title', $item->Title);
+		
+		// Test update in alternate locale
+		Fluent::with_locale('es_ES', function() use ($itemID) {
+			$item = FluentTest_TranslatedObject::get()->byId($itemID);
+			$item->Title = 'Spanish Title';
+			$item->write();
+		});
+		
+		// Default title is unchanged
+		$item = FluentTest_TranslatedObject::get()->byId($itemID);
+		$this->assertEquals('Test Title', $item->Title);
+		
+		// Test previously set alternate locale title change persists
+		$esTitle = Fluent::with_locale('es_ES', function() use ($itemID) {
+			$item = FluentTest_TranslatedObject::get()->byId($itemID);
+			return $item->Title;
+		});
+		$this->assertEquals('Spanish Title', $esTitle);
+		
+		// Test object created in alternate locale
+		$item2ID = Fluent::with_locale('es_ES', function() {
+			$item2 = new FluentTest_TranslatedObject();
+			$item2->Title = 'Spanish 2';
+			$item2->write();
+			return $item2->ID;
+		});
+		
+		// Default title should be set 
+		$item2 = FluentTest_TranslatedObject::get()->byId($item2ID);
+		$this->assertEquals('Spanish 2', $item2->Title);
+		
+		// Change title
+		$item2->Title = 'English 2';
+		$item2->write();
+		
+		// check alternate locale title unchanged
+		$es2Title = Fluent::with_locale('es_ES', function() use ($item2ID) {
+			$item2 = FluentTest_TranslatedObject::get()->byId($item2ID);
+			return $item2->Title;
+		});
+		$this->assertEquals($es2Title, 'Spanish 2');
+		
+		// Test that object selected in default locale has the recently changed title
+		$item2 = FluentTest_TranslatedObject::get()->byId($item2ID);
+		$this->assertEquals('English 2', $item2->Title);
+		
+	}
 }
 
 /**
