@@ -365,4 +365,17 @@ class Fluent extends Object {
 		DataObject::flush_and_destroy_cache();
 		return $result;
 	}
+	
+	/**
+	 * Retrieves a search adapter for the current database adapter
+	 * 
+	 * @return FluentSearchAdapter
+	 */
+	public static function search_adapter() {
+		foreach(self::config()->search_adapters as $connector => $adapter) {
+			if(DB::getConn() instanceof $connector) {
+				return new $adapter();
+			}
+		}
+	}
 }

@@ -31,6 +31,8 @@ Fluent:
     # Allow has_one items to be translated
     #- 'ForeignKey'
   data_exclude: []
+  search_adapters:
+    MySQLDatabase: FluentMySQLSearch
 ---
 Name: fluenti18nconfig
 ---

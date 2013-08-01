@@ -409,6 +409,11 @@ class FluentExtension extends DataExtension {
 				)";
 		}
 		$query->setWhere($where);
+		
+		// Augment search if applicable
+		if($adapter = Fluent::search_adapter()) {
+			$adapter->augmentSearch($query, $dataQuery);
+		}
 	}
 
 	public function augmentWrite(&$manipulation) {
