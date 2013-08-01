@@ -205,7 +205,8 @@ class Fluent extends Object {
 		
 		// No controller - Possibly pre-route phase, so check URL
 		if(!Controller::has_curr()) {
-			return !preg_match('/^(\/?)admin(\/|$)/i', $_SERVER['REQUEST_URI']);
+			$base = preg_quote(Director::baseURL(), '/');
+			return !preg_match('/^'.$base.'admin(\/|$)/i', $_SERVER['REQUEST_URI']);
 		}
 		
 		// Detect all admin controllers
