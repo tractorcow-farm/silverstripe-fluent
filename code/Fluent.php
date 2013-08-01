@@ -9,24 +9,20 @@
 class Fluent extends Object {
 	
 	/**
-	 * Determine if routes are invalid and require regeneration
+	 * ID to persist the locale in cookies / session in the front end
 	 */
-	protected static function routes_invalidated() {
-		
-		// If flushing the application, force routes to become invalidated
-		if(	!empty($_GET['flush']) || isset($_REQUEST['url'])
-			&& ($_REQUEST['url'] == 'dev/build' || $_REQUEST['url'] == BASE_URL . '/dev/build')
-		) {
-			return true;
-		}
-		
-		// If routes are not initialised then generate
-		if(empty(self::config()->routes)) {
-			return true;
-		}
-		
-		return false;
-	}
+	const PERSIST_ID = 'FluentLocale';
+	
+	/**
+	 * ID to persist the locale in cookies / session in the CMS
+	 */
+	const PERSIST_ID_CMS = 'FluentLocale_CMS';
+	
+	
+	/**
+	 * Request parameter to store the locale in
+	 */
+	const PARAM = 'FluentLocale';
 	
 	/**
 	 * Forces regeneration of all locale routes
@@ -39,11 +35,11 @@ class Fluent extends Object {
 			$url = self::alias($locale);
 			$routes[$url.'/$URLSegment!//$Action/$ID/$OtherID'] = array(
 				'Controller' => 'ModelAsController',
-				'FluentLocale' => $locale
+				self::PARAM => $locale
 			);
 			$routes[$url] = array(
 				'Controller' => 'FluentRootURLController',
-				'FluentLocale' => $locale
+				self::PARAM => $locale
 			);
 		}
 		
@@ -66,12 +62,6 @@ class Fluent extends Object {
 		// only non-sitetree actions will be executed this request (e.g. MemberForm::forgotPassword)
 		self::install_locale(false);
 		
-		// Allow route generation to be turned off
-		if(!self::config()->generate_routes) return;
-		
-		// Determine if routes are valid
-		if(!self::routes_invalidated()) return;
-		
 		// Regenerate routes
 		self::regenerate_routes();
 	}
@@ -79,9 +69,9 @@ class Fluent extends Object {
 	/**
 	 * Indicates the last locale set via Cookies, in order to prevent excessive Cookie setting
 	 * 
-	 * @var boolean 
+	 * @var array Map of [cookie keys => value assigned for that key]
 	 */
-	protected static $last_set_locale = null;
+	protected static $last_set_locale = array();
 	
 	/**
 	 * Gets the current locale
@@ -103,49 +93,78 @@ class Fluent extends Object {
 
 			if(self::is_frontend()) {
 				// If viewing the site on the front end, determine the locale from the viewing parameters
-				$locale = $request->param('FluentLocale');
-			}
-
-			if(empty($locale)) {
+				$locale = $request->param(self::PARAM);
+			} else {
 				// If viewing the site from the CMS, determine the locale using the session or posted parameters
-				$locale = $request->requestVar('FluentLocale');
+				$locale = $request->requestVar(self::PARAM);
 			}
 		}
 		
-		// check session
-		if(empty($locale)) $locale = Session::get('FluentLocale');
-		
-		// Check cookies
-		if(empty($locale)) $locale = Cookie::get('FluentLocale');
+		// Persistant variables
+		if(empty($locale)) $locale = self::get_persist_locale();
 		
 		// Check browser headers
 		if(empty($locale)) $locale = self::detect_browser_locale();
 		
-		// Check result
-		if(empty($locale)) $locale = self::default_locale();
-		
-		// Reset to default locale if not listed in the specified list
-		$allowedLocales = self::locales();
-		if(!in_array($locale, $allowedLocales)) $locale = self::default_locale();
-		
-		if($persist) {
-			// Save locale
-			Session::set('FluentLocale', $locale);
-		
-			// Prevent unnecessarily excessive cookie assigment
-			if(!headers_sent() && self::$last_set_locale !== $locale) {
-				self::$last_set_locale = $locale;
-				Cookie::set('FluentLocale', $locale);
-			}
+		// Fallback to default if empty or invalid
+		if(empty($locale) || !in_array($locale, self::locales())) {
+			$locale = self::default_locale();
 		}
+		
+		// Persist locale if requested
+		if($persist) self::set_persist_locale($locale);
 		
 		return $locale;
 	}
 	
 	/**
+	 * Gets the locale currently set within either the session or cookie.
+	 * 
+	 * @param string $key ID to retrieve persistant locale from. Will automatically detect if omitted.
+	 * Either Fluent:PERSIST_ID or Fluent::PERSIST_ID_CMS.
+	 * @return string The locale, if available
+	 */
+	public static function get_persist_locale($key = null) {
+		if(empty($key)) $key = self::is_frontend() ? self::PERSIST_ID : self::PERSIST_ID_CMS;
+		
+		// check session then cookies
+		if($locale = Session::get($key)) return $locale;
+		if($locale = Cookie::get($key)) return $locale;
+	}
+	
+	/**
+	 * Specify the locale to persist between sessions, or to use for the locale outside of locale-routed pages
+	 * (such as in unit tests, custom controllers, etc).
+	 * 
+	 * Not to be confused with the temporary locale assigned with {@see Fluent::with_locale} .
+	 * 
+	 * @param string $locale Locale to assign
+	 * @param string $key ID to set the locale against. Will automatically detect if omitted.
+	 * Either Fluent:PERSIST_ID or Fluent::PERSIST_ID_CMS.
+	 */
+	public static function set_persist_locale($locale, $key = null) {
+		if(empty($key)) $key = self::is_frontend() ? self::PERSIST_ID : self::PERSIST_ID_CMS;
+			
+		// Save locale
+		if($locale) {
+			Session::set($key, $locale);
+		} else {
+			Session::clear($key);
+		}
+
+		// Prevent unnecessarily excessive cookie assigment
+		if(!headers_sent() && (
+			!isset(self::$last_set_locale[$key]) || self::$last_set_locale[$key] !== $locale
+		)) {
+			self::$last_set_locale[$key] = $locale;
+			Cookie::set($key, $locale);
+		}
+	}
+	
+	/**
 	 * Retrieves the list of locales
 	 * 
-	 * @return array
+	 * @return array List of locales
 	 */
 	public static function locales() {
 		return self::config()->locales;
@@ -154,7 +173,7 @@ class Fluent extends Object {
 	/**
 	 * Retrieves the list of locale names as an associative array
 	 * 
-	 * @return array
+	 * @return array List of locale names mapped by locale code
 	 */
 	public static function locale_names() {
 		$locales = array();
@@ -175,34 +194,41 @@ class Fluent extends Object {
 	
 	/**
 	 * Determines field replacement method.
-	 * If viewing on the front end, blank values for a translation will be replaced with the default value.
-	 * If viewing in the CMS they will be left blank for filling in.
+	 * If viewing in the CMS items filtered by locale will always be visible, but in the frontend will be filtered
+	 * as expected.
 	 * 
 	 * For the sake of unit tests Fluent assumes a frontend execution environment.
 	 * 
 	 * @return boolean Flag indicating if the translation should act on the frontend
 	 */
 	public static function is_frontend() {
-		if(!Controller::has_curr()) return false;
+		
+		// No controller - Possibly pre-route phase, so check URL
+		if(!Controller::has_curr()) {
+			return !preg_match('/^(\/?)admin(\/|$)/i', $_SERVER['REQUEST_URI']);
+		}
+		
+		// Detect all admin controllers
 		$controller = Controller::curr();
-		return 
-			$controller instanceof ModelAsController
-			|| $controller instanceof ContentController
-			|| $controller instanceof TestRunner; // For the purposes of test, assume this is a frontend request
+		return !($controller instanceof AdminRootController)
+			&& !($controller instanceof LeftAndMain);
 	}
 	
 	/**
-	 * Helper function to check if the value given is present in any of the patterns
+	 * Helper function to check if the value given is present in any of the patterns.
+	 * This function is case sensitive by default.
 	 * 
-	 * @param string $value
-	 * @param array $patterns
-	 * @return boolean
+	 * @param string $value A string value to check against
+	 * @param array $patterns A list of strings, some of which may be regular expressions
+	 * @return boolean True if this $value is present in any of the $patterns
 	 */
 	public static function any_match($value, $patterns) {
 		foreach($patterns as $pattern) {
 			if(strpos($pattern, '/') === 0) {
+				// Assume valiase prefaced with '/' are regexp
 				if(preg_match($pattern, $value)) return true;
 			} else {
+				// Assume simple string comparison otherwise
 				if($value === $pattern) return true;
 			}
 		}

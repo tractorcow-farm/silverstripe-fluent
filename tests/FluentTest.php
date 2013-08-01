@@ -45,7 +45,7 @@ class FluentTest extends SapphireTest {
 		Config::inst()->update('Fluent', 'aliases', array(
 			'en_US' => 'usa'
 		));
-		Session::set('FluentLocale', 'fr_CA');
+		Fluent::set_persist_locale('fr_CA');
 		
 		// Force db regeneration using the above values
 		self::kill_temp_db();
@@ -65,7 +65,7 @@ class FluentTest extends SapphireTest {
 		FluentExtension::set_enable_write_augmentation(true);
 		
 		// Reset fluent locale
-		Session::set('FluentLocale', 'fr_CA');
+		Fluent::set_persist_locale('fr_CA');
 	}
 	
 	public function tearDownOnce() {
@@ -75,7 +75,7 @@ class FluentTest extends SapphireTest {
 		Config::inst()->update('Fluent', 'locales', $this->_original_config_locales);
 		Config::inst()->update('Fluent', 'default_locale', $this->_original_config_default);
 		Config::inst()->update('Fluent', 'aliases', $this->_original_config_aliases);
-		Session::clear('FluentLocale');
+		Fluent::set_persist_locale(null);
 		
 		self::kill_temp_db();
 		self::create_temp_db();
@@ -185,17 +185,17 @@ class FluentTest extends SapphireTest {
 	public function testFilteredObjects() {
 		
 		// Check locale that should have some items
-		Session::set('FluentLocale', 'en_NZ');
+		Fluent::set_persist_locale('en_NZ');
 		$ids = DataObject::get('FluentTest_FilteredObject')->sort('Title')->column('Title');
 		$this->assertEquals(array('filtered 1', 'filtered 2'), $ids);
 		
 		// Check locale that has some items
-		Session::set('FluentLocale', 'fr_CA');
+		Fluent::set_persist_locale('fr_CA');
 		$ids = DataObject::get('FluentTest_FilteredObject')->sort('Title')->column('Title');
 		$this->assertEquals(array('filtered 2'), $ids);
 		
 		// Put default locale back
-		Session::set('FluentLocale', 'fr_CA');
+		Fluent::set_persist_locale('fr_CA');
 	}
 	
 	/**
@@ -222,7 +222,7 @@ class FluentTest extends SapphireTest {
 	public function testFilterConditions() {
 		
 		// In en_NZ locale
-		Session::set('FluentLocale', 'en_NZ');
+		Fluent::set_persist_locale('en_NZ');
 		
 		// Test basic search for english string
 		$urls = DataObject::get('FluentTest_TranslatedObject')
@@ -237,7 +237,7 @@ class FluentTest extends SapphireTest {
 		$this->assertEquals(array('my-translated-2'), $urls);
 		
 		// In en_US locale
-		Session::set('FluentLocale', 'en_US');
+		Fluent::set_persist_locale('en_US');
 		
 		// Test basic search for english string
 		$urls = DataObject::get('FluentTest_TranslatedObject')
@@ -257,7 +257,7 @@ class FluentTest extends SapphireTest {
 		$this->assertEquals(array('my-translated-2'), $urls);
 		
 		// In fr_CA locales
-		Session::set('FluentLocale', 'fr_CA');
+		Fluent::set_persist_locale('fr_CA');
 		
 		// Default value differs from locale specific value
 		$urls = DataObject::get('FluentTest_TranslatedObject')
@@ -271,7 +271,7 @@ class FluentTest extends SapphireTest {
 		$this->assertEquals(array(), $urls);
 		
 		// Put default locale back
-		Session::set('FluentLocale', 'fr_CA');
+		Fluent::set_persist_locale('fr_CA');
 	}
 	
 	protected function withBrowserHTTPLanguage($lang, $callback) {
