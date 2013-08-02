@@ -12,13 +12,9 @@ version of a page. This could be localised into Maori at `http://damian.geek.nz/
 
 Back end control is provided by a simple CMS filter.
 
-**Locale Menu**
-
-![Locale Menu](screenshots/menu.jpg "Locale menu")
-
-**Locale Menu (expanded)**
-
-![Locale Menu](screenshots/menu-expanded.jpg "Locale menu (expanded)")
+| **Locale Menu** | **Locale Menu (expanded)** |
+| --------------- | -------------------------- |
+| ![Locale Menu](screenshots/menu.jpg "Locale menu") | ![Locale Menu](screenshots/menu-expanded.jpg "Locale menu (expanded)") |
 
 _Please read the [Configuration](#configuration) section before trying to install!_
 
