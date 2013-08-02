@@ -12,6 +12,14 @@ version of a page. This could be localised into Maori at `http://damian.geek.nz/
 
 Back end control is provided by a simple CMS filter.
 
+**Locale Menu**
+
+![Locale Menu](screenshots/menu.jpg "Locale menu")
+
+**Locale Menu (expanded)**
+
+![Locale Menu](screenshots/menu-expanded.jpg "Locale menu (expanded)")
+
 _Please read the [Configuration](#configuration) section before trying to install!_
 
 Also, please [report any issues](https://github.com/tractorcow/silverstripe-fluent/issues)
@@ -176,12 +184,16 @@ MyAjaxController:
 ### Locale based filter configuration
 
 In addition to localising fields within a DataObject, a filter can also be applied
-to conditionally show or hide DataObjects within specific locales.
+with the `FluentFilteredExtension` extension to conditionally show or hide DataObjects
+within specific locales.
 
-For instance, if there's an object that could potentially be visible only on
-certain locations (such as a product with limited availability in other countries)
-then you can add the `FluentFilteredExtension` in order to add additional filter
-options in the CMS.
+For example, this could be applied to a `Product` with limited availability in other countries.
+
+This feature is also necessary in cases where has_many or many_many relationships will need
+to be customised for each locale. Rather than creating a `ThisClass_OtherClass_{en_NZ}` table
+for each locale, the `DataObject` on each (or one) end will have this filter applied
+to it. Internally this will create a `LocaleFilter_{en_NZ}` column on the specified
+`DataObject` table for each locale.
 
 Note: It's not necessary to actually localise this object in order for it to be
 filterable; `FluentFilteredExtension` and `FluentExtension` each work independently.
@@ -190,13 +202,13 @@ filterable; `FluentFilteredExtension` and `FluentExtension` each work independen
 ---
 Name: myproductconfiguration
 ---
-ProductObject:
+Product:
   extensions:
     - 'FluentFilteredExtension'
 ```
 
-Make sure that if you are filtering a non-sitetree object that you use the following
-in your getCMSFields in order to add the necessary filter:
+Make sure that if you are filtering a non-sitetree object that your code calls
+`extend('updateCMSFields', $fields)` as demonstrated below.
 
 ```php
 function getCMSFields() {
@@ -210,6 +222,8 @@ function getCMSFields() {
 
 Now when editing this item in the CMS there will be an additional set of checkboxes
 labelled "Locale filter".
+
+![Locale Filter](screenshots/locale-filter.jpg "Locale filter")
 
 Note: Although these objects will be filtered in the front end, this filter is disabled
 in the CMS in order to allow access by site administrators in all locales.
