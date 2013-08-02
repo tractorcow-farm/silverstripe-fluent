@@ -95,7 +95,7 @@ Fluent:
     es_US: spanish
 ```
 
-The home pages for the above locales will be /english/, /spanish/, /en_CA/, and /fr_CA/
+The home pages for the above locales will be `/english/`, `/spanish/`, `/en_CA/`, and `/fr_CA/`
 
 ### Field localisation configuration
 
@@ -105,7 +105,8 @@ fields of those dataobjects, should be localised.
 By default Fluent will attempt to analyse the field type and name of each `DBField` specified in your `DataObject`.
 Rules specified by `Fluent.field_include`, `Fluent.field_exclude`, `Fluent.data_include`, and `Fluent.data_exclude`
 can be customised to tweak this automatic detection behaviour. This filter is used to specify filters based on field
-type.
+type. `data_` filters filter fields by `DBField` type, where `field_` filters are by name. Regular expressions may
+be specified by surrounding your filter with `/filter/`.
 
 Fields can also be filtered directly by name by using the 'translate' config option, set to the fields you want
 localised. Note that this must be on the same class as the database field is specified (not subclasses).
@@ -223,6 +224,27 @@ labelled "Locale filter".
 
 Note: Although these objects will be filtered in the front end, this filter is disabled
 in the CMS in order to allow access by site administrators in all locales.
+
+### Fulltext Search
+
+Since full text search queries are very distinct, DB specific filters must be assigned to handle these queries.
+
+By default there is only a `FluentMySQLSearch` to handle MySQL search transformations, but adapters for other DBs can
+be specified by adding a class to the `Fluent.search_adapters` config.
+
+Adapters can be disabled by setting the appropriate option to null.
+
+```yaml
+---
+Name: mysearchadapter
+---
+Fluent:
+  search_adapters:
+    MySQLDatabase: null
+    PostgreSQLDatabase: MyPostgreAdapter
+```
+
+Search localisation is quite fragile, and is likely to break with future framework updates!
 
 ## Installation Instructions
 
