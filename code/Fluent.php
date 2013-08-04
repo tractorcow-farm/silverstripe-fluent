@@ -367,14 +367,22 @@ class Fluent extends Object {
 	}
 	
 	/**
+	 * Cached search adapter
+	 *
+	 * @var FluentSearchAdapter
+	 */
+	protected static $_search_dapter = null;
+	
+	/**
 	 * Retrieves a search adapter for the current database adapter
 	 * 
 	 * @return FluentSearchAdapter
 	 */
 	public static function search_adapter() {
+		if(self::$_search_dapter) return self::$_search_dapter;
 		foreach(self::config()->search_adapters as $connector => $adapter) {
 			if($connector && $adapter && DB::getConn() instanceof $connector) {
-				return new $adapter();
+				return self::$_search_dapter = new $adapter();
 			}
 		}
 	}

@@ -8,6 +8,37 @@
  */
 class FluentFilteredExtension extends DataExtension {
 	
+	/**
+	 * Set the filter of locales to the specified locale, or array of locales
+	 * 
+	 * @param string|array $locale Locale, or list of locales
+	 * @param string $locale... Additional locales
+	 */
+	public function setFilteredLocales($locales) {
+		$locales = is_array($locales) ? $locales : func_get_args();
+		foreach(Fluent::locales() as $locale) {
+			$field = Fluent::db_field_for_locale("LocaleFilter", $locale);
+			$this->owner->$field = in_array($locale, $locales);
+		}
+	}
+	
+	/**
+	 * Gets the list of locales this items is filtered against
+	 * 
+	 * @param boolean $excluded Set to true to get excluded instead of included locales
+	 * @return array List of locales
+	 */
+	public function getFilteredLocales($excluded = false) {
+		$locales = array();
+		foreach(Fluent::locales() as $locale) {
+			$field = Fluent::db_field_for_locale("LocaleFilter", $locale);
+			if($this->owner->$field xor $excluded) {
+				$locales[] = $locale;
+			}
+		}
+		return $locales;
+	}
+	
 	public static function get_extra_config($class, $extension, $args) {
 		
 		// Create a separate boolean field to indicate visibility in each field
@@ -15,7 +46,7 @@ class FluentFilteredExtension extends DataExtension {
 		$defaults = array();
 		
 		foreach(Fluent::locales() as $locale) {
-			$field = "LocaleFilter_{$locale}";
+			$field = Fluent::db_field_for_locale("LocaleFilter", $locale);
 			// Copy field to translated field
 			$db[$field] = 'Boolean(1)';
 			$defaults[$field] = '1';
@@ -33,7 +64,9 @@ class FluentFilteredExtension extends DataExtension {
 		$filterField = new FieldGroup();
 		$filterField->setTitle('Locale filter');
 		foreach(Fluent::locales() as $locale) {
-			$filterField->push(new CheckboxField("LocaleFilter_{$locale}", $locale, 1));
+			$id = Fluent::db_field_for_locale("LocaleFilter", $locale);
+			$title = i18n::get_locale_name($locale);
+			$filterField->push(new CheckboxField($id, $title));
 		}
 		$filterField->push($descriptionField = new LiteralField(
 			'LocaleFilterDescription',

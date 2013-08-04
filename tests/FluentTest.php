@@ -182,6 +182,9 @@ class FluentTest extends SapphireTest {
 		), $db);
 	}
 	
+	/**
+	 * Test that filtered objects are queried correctly
+	 */
 	public function testFilteredObjects() {
 		
 		// Check locale that should have some items
@@ -196,6 +199,31 @@ class FluentTest extends SapphireTest {
 		
 		// Put default locale back
 		Fluent::set_persist_locale('fr_CA');
+	}
+	
+	/*
+	 * Test that locale filter can be augmented properly
+	 */
+	public function testUpdateFilteredObject() {
+		
+		// Test basic filter
+		$ids = DataObject::get('FluentTest_FilteredObject')->sort('Title')->column('Title');
+		$this->assertEquals(array('filtered 2'), $ids);
+		
+		// Test that item can have filter changed
+		$item = $this->objFromFixture('FluentTest_FilteredObject', 'filtered2');
+		$item->setFilteredLocales('fr_CA');
+		$this->assertTrue($item->LocaleFilter_fr_CA);
+		$this->assertEquals(array('fr_CA'), $item->getFilteredLocales());
+		
+		// Test exclusion
+		$this->assertEquals(array('en_NZ', 'en_US', 'es_ES'), $item->getFilteredLocales(true));
+		
+		// Test item set to foreign locale limits this item
+		$item->setFilteredLocales('en_NZ', 'en_US');
+		$item->write();
+		$ids = DataObject::get('FluentTest_FilteredObject')->sort('Title')->column('Title');
+		$this->assertEquals(array(), $ids);
 	}
 	
 	/**
