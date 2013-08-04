@@ -240,7 +240,7 @@ Name: mysearchadapter
 ---
 Fluent:
   search_adapters:
-    MySQLDatabase: null
+    MySQLDatabase: ''
     PostgreSQLDatabase: MyPostgreAdapter
 ```
 

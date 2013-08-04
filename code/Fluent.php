@@ -373,7 +373,7 @@ class Fluent extends Object {
 	 */
 	public static function search_adapter() {
 		foreach(self::config()->search_adapters as $connector => $adapter) {
-			if(DB::getConn() instanceof $connector) {
+			if($connector && $adapter && DB::getConn() instanceof $connector) {
 				return new $adapter();
 			}
 		}
