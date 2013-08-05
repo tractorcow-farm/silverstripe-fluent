@@ -195,6 +195,9 @@ to it. Internally this will create a `LocaleFilter_{en_NZ}` column on the specif
 Note: It's not necessary to actually localise this object in order for it to be
 filterable; `FluentFilteredExtension` and `FluentExtension` each work independently.
 
+Warning: This must be added to the base class, such as `SiteTree` in order for it to filter
+for pages, or for queries of that base type.
+
 ```yaml
 ---
 Name: myproductconfiguration
