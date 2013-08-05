@@ -38,20 +38,22 @@ class FluentSiteTree extends FluentExtension {
 	 */
 	public function LocaleLink($locale) {
 		$link = $this->owner->Link();
-		$currentURL = Controller::join_links(Director::baseURL(), Fluent::alias(Fluent::current_locale()));
-		$localeURL = Controller::join_links(Director::baseURL(), Fluent::alias($locale));
+		$currentURL = $this->owner->BaseURLForLocale();
+		$localeURL = $this->owner->BaseURLForLocale($locale);
 		return preg_replace('/^('.preg_quote($currentURL, '/').')/i', $localeURL, $link);
 	}
 	
 	/**
 	 * Determine the baseurl within a specified $locale.
 	 *
+	 * @param string $locale Locale, or null to use current locale
 	 * @return string
 	 */
-	public function BaseURLForLocale() {
+	public function BaseURLForLocale($locale = null) {
+		if(empty($locale)) $locale = Fluent::current_locale();
 		return Controller::join_links(
 			Director::baseURL(),
-			Fluent::alias(Fluent::current_locale()),
+			Fluent::alias($locale),
 			'/'
 		);
 	}
@@ -62,13 +64,34 @@ class FluentSiteTree extends FluentExtension {
 	 * @return ArrayList
 	 */
 	public function Locales() {
+		// Check any locale this page is not available in
+		$invalidLocales = $this->owner->hasMethod('getFilteredLocales')
+				? $this->owner->getFilteredLocales(true)
+				: array();
+		
 		$data = array();
 		foreach(Fluent::locales() as $locale) {
+			
+			// Check url: Invalid urls should point to the baseurl for that locale
+			$link = in_array($locale, $invalidLocales)
+					? $this->owner->BaseURLForLocale($locale)
+					: $this->owner->LocaleLink($locale);
+			
+			// Check linking mode
+			$linkingMode = 'link';
+			if(in_array($locale, $invalidLocales)) {
+				$linkingMode = 'invalid';
+			} elseif($locale === Fluent::current_locale()) {
+				$linkingMode = 'current';
+			}
+			
+			// Build object
 			$data[] = new ArrayData(array(
 				'Locale' => $locale,
 				'Alias' => Fluent::alias($locale),
 				'Title' => i18n::get_locale_name($locale),
-				'Link' => $this->owner->LocaleLink($locale)
+				'Link' => $link,
+				'LinkingMode' => $linkingMode
 			));
 		}
 		return new ArrayList($data);

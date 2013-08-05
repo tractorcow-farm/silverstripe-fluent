@@ -3,7 +3,7 @@
 	<nav class="primary">
 		<ul>
 			<% loop Locales %>
-				<li><a href="$Link">$Title</a></li>
+				<li class="$LinkingMode"><a href="$Link.ATT">$Title.XML</a></li>
 			<% end_loop %>
 		</ul>
 	</nav>
