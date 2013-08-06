@@ -24,7 +24,15 @@ class FluentSiteTree extends FluentExtension {
 		if($this->owner->ParentID && SiteTree::config()->nested_urls) {
 			return;
 		}
+		
+		// For blank/temp pages such as Security controller fallback to querystring
 		$locale = Fluent::current_locale();
+		if(!$this->owner->exists()) {
+			$base = Controller::join_links($base, '?'.Fluent::config()->query_param.'='.urlencode($locale));
+			return;
+		}
+		
+		// Simply join locale root with base relative URL
 		$localeURL = Fluent::alias($locale);
 		$base = Controller::join_links($localeURL, $base);
 	}
@@ -37,10 +45,19 @@ class FluentSiteTree extends FluentExtension {
 	 * @return string
 	 */
 	public function LocaleLink($locale) {
-		$link = $this->owner->Link();
-		$currentURL = $this->owner->BaseURLForLocale();
-		$localeURL = $this->owner->BaseURLForLocale($locale);
-		return preg_replace('/^('.preg_quote($currentURL, '/').')/i', $localeURL, $link);
+		
+		// For blank/temp pages such as Security controller fallback to querystring
+		if(!$this->owner->exists()) {
+			$url = Controller::curr()->getRequest()->getURL();
+			return Controller::join_links($url, '?'.Fluent::config()->query_param.'='.urlencode($locale));
+		}
+		
+		// Mock locale and recalculate link
+		$id = $this->owner->ID;
+		return Fluent::with_locale($locale, function() use ($id) {
+			$page = SiteTree::get()->byID($id);
+			return $page->Link();
+		});
 	}
 	
 	/**

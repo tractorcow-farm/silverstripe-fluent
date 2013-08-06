@@ -9,22 +9,6 @@
 class Fluent extends Object {
 	
 	/**
-	 * ID to persist the locale in cookies / session in the front end
-	 */
-	const PERSIST_ID = 'FluentLocale';
-	
-	/**
-	 * ID to persist the locale in cookies / session in the CMS
-	 */
-	const PERSIST_ID_CMS = 'FluentLocale_CMS';
-	
-	
-	/**
-	 * Request parameter to store the locale in
-	 */
-	const PARAM = 'FluentLocale';
-	
-	/**
 	 * Forces regeneration of all locale routes
 	 */
 	public static function regenerate_routes() {
@@ -35,11 +19,11 @@ class Fluent extends Object {
 			$url = self::alias($locale);
 			$routes[$url.'/$URLSegment!//$Action/$ID/$OtherID'] = array(
 				'Controller' => 'ModelAsController',
-				self::PARAM => $locale
+				self::config()->query_param => $locale
 			);
 			$routes[$url] = array(
 				'Controller' => 'FluentRootURLController',
-				self::PARAM => $locale
+				self::config()->query_param => $locale
 			);
 		}
 		
@@ -93,11 +77,16 @@ class Fluent extends Object {
 
 			if(self::is_frontend()) {
 				// If viewing the site on the front end, determine the locale from the viewing parameters
-				$locale = $request->param(self::PARAM);
+				$locale = $request->param(self::config()->query_param);
 			} else {
 				// If viewing the site from the CMS, determine the locale using the session or posted parameters
-				$locale = $request->requestVar(self::PARAM);
+				$locale = $request->requestVar(self::config()->query_param);
 			}
+		}
+		
+		// Without controller check querystring the old fashioned way
+		if(empty($locale) && isset($_REQUEST[self::config()->query_param])) {
+			$locale = $_REQUEST[self::config()->query_param];
 		}
 		
 		// Persistant variables
@@ -121,11 +110,13 @@ class Fluent extends Object {
 	 * Gets the locale currently set within either the session or cookie.
 	 * 
 	 * @param string $key ID to retrieve persistant locale from. Will automatically detect if omitted.
-	 * Either Fluent:PERSIST_ID or Fluent::PERSIST_ID_CMS.
+	 * Either Fluent::config()->persist_id or Fluent::config()->persist_id_cms.
 	 * @return string The locale, if available
 	 */
 	public static function get_persist_locale($key = null) {
-		if(empty($key)) $key = self::is_frontend() ? self::PERSIST_ID : self::PERSIST_ID_CMS;
+		if(empty($key)) $key = self::is_frontend()
+			? self::config()->persist_id
+			: self::config()->persist_id_cms;
 		
 		// check session then cookies
 		if($locale = Session::get($key)) return $locale;
@@ -140,10 +131,12 @@ class Fluent extends Object {
 	 * 
 	 * @param string $locale Locale to assign
 	 * @param string $key ID to set the locale against. Will automatically detect if omitted.
-	 * Either Fluent:PERSIST_ID or Fluent::PERSIST_ID_CMS.
+	 * Either Fluent:::config()->persist_id or Fluent::::config()->persist_id_cms.
 	 */
 	public static function set_persist_locale($locale, $key = null) {
-		if(empty($key)) $key = self::is_frontend() ? self::PERSIST_ID : self::PERSIST_ID_CMS;
+		if(empty($key)) $key = self::is_frontend()
+			? self::config()->persist_id
+			: self::config()->persist_id_cms;
 			
 		// Save locale
 		if($locale) {

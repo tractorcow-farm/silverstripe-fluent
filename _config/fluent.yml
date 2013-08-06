@@ -33,6 +33,12 @@ Fluent:
   data_exclude: []
   search_adapters:
     MySQLDatabase: FluentMySQLSearch
+  # ID to persist the locale in cookies / session in the front end
+  persist_id: 'FluentLocale'
+  # ID to persist the locale in cookies / session in the CMS
+  persist_id_cms: 'FluentLocale_CMS'
+  # Request parameter to store the locale in. Used for some Controllers
+  query_param: 'l'
 ---
 Name: fluenti18nconfig
 ---

@@ -13,8 +13,9 @@
 	"support": {
 		"issues": "http://github.com/tractorcow/silverstripe-fluent/issues"
 	},
-	"require": {	
+	"require": {
 		"silverstripe/framework": ">=3.1",
+		"silverstripe/cms": ">=3.1",
 		"composer/installers": "*"
 	},
 	"extra": {

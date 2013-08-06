@@ -14,7 +14,7 @@ class FluentRootURLController extends RootURLController {
 		$this->setDataModel($model);
 		
 		// Check locale, redirecting to locale root if necessary
-		$locale = $request->param(Fluent::PARAM);
+		$locale = $request->param(Fluent::config()->query_param);
 		if(empty($locale)) {
 			$locale = Fluent::current_locale();
 			$localeURL = Fluent::alias($locale);
