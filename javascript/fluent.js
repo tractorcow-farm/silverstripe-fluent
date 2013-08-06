@@ -66,10 +66,10 @@
 			urlForLocale: function(locale) {
 				
 				// Get new locale code
-				param = {FluentLocale: locale};
+				param = {l: locale};
 
 				// Check existing url
-				search = /FluentLocale=[^&]*/;
+				search = /\bl=[^&]*/;
 				url = document.location.href;
 				if(url.match(search)) {
 					// Replace locale code
