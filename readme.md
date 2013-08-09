@@ -207,8 +207,9 @@ Product:
     - 'FluentFilteredExtension'
 ```
 
-Make sure that if you are filtering a non-sitetree object that your code calls
-`extend('updateCMSFields', $fields)` as demonstrated below.
+Make sure that if (and only if) you are filtering a DataObject that doesn't call the default field scaffolder (such
+as by calling `parent::getCMSFields()`), make sure that your code calls `extend('updateCMSFields', $fields)`
+as demonstrated below.
 
 ```php
 function getCMSFields() {
