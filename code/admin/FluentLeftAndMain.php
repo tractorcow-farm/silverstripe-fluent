@@ -12,6 +12,7 @@ class FluentLeftAndMain extends LeftAndMainExtension {
 		$dirName = basename(dirname(dirname(dirname(__FILE__))));
 		$locales = json_encode(Fluent::locale_names());
 		$locale = json_encode(Fluent::current_locale());
+		$param = json_encode(Fluent::config()->query_param);
 		
 		// Force the variables to be written to the head, to ensure these are available for other scripts to pick up.
 		Requirements::insertHeadTags(<<<EOT
@@ -19,6 +20,7 @@ class FluentLeftAndMain extends LeftAndMainExtension {
 //<![CDATA[
 	var fluentLocales = $locales;
 	var fluentLocale = $locale;
+	var fluentParam = $param;
 //]]>
 </script>
 EOT
