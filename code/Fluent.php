@@ -192,14 +192,17 @@ class Fluent extends Object {
 	 * 
 	 * For the sake of unit tests Fluent assumes a frontend execution environment.
 	 * 
+	 * @param boolean $ignoreController Flag to indicate whether the current controller should be ignored,
+	 * and detection should be performed by inspecting the URL. Used for testing. Defaults to false.
 	 * @return boolean Flag indicating if the translation should act on the frontend
 	 */
-	public static function is_frontend() {
+	public static function is_frontend($ignoreController = false) {
 		
 		// No controller - Possibly pre-route phase, so check URL
-		if(!Controller::has_curr()) {
-			$base = preg_quote(Director::baseURL(), '/');
-			return !preg_match('/^'.$base.'admin(\/|$)/i', $_SERVER['REQUEST_URI']);
+		if($ignoreController || !Controller::has_curr()) {
+			// $_SERVER['REQUEST_URI'] indeterminatelys lead with '/', so trim here
+			$base = preg_quote(ltrim(Director::baseURL(), '/'), '/');
+			return !preg_match('/^(\/)?'.$base.'admin(\/|$)/i', $_SERVER['REQUEST_URI']);
 		}
 		
 		// Detect all admin controllers

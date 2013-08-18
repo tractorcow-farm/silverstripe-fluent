@@ -302,11 +302,68 @@ class FluentTest extends SapphireTest {
 		Fluent::set_persist_locale('fr_CA');
 	}
 	
-	protected function withBrowserHTTPLanguage($lang, $callback) {
+	/**
+	 * Mock a browser HTTP locale (Accept-Language header) for the purpose of a test
+	 * 
+	 * @param string $lang Accept-Language header value
+	 * @param callable $callback Callback
+	 */
+	public function withBrowserHTTPLanguage($lang, $callback) {
 		$old = $_SERVER['HTTP_ACCEPT_LANGUAGE'];
 		$_SERVER['HTTP_ACCEPT_LANGUAGE'] = $lang;
-		$callback($this);
+		try { // Ensure failed test don't break state
+			$callback($this);
+		} catch(Exception $ex) {}
 		$_SERVER['HTTP_ACCEPT_LANGUAGE'] = $old;
+		if(!empty($ex)) throw $ex;
+	}
+	
+	/**
+	 * Mock a request URL for the purpose of a test
+	 * 
+	 * @param string $baseURL BaseURL to use
+	 * @param string $url Request URL relative to BaseURL
+	 * @param callable $callback Callback
+	 */
+	public function withURL($baseURL, $url, $callback) {
+		
+		// Set base URL
+		$oldBaseURL = Config::inst()->get('Director', 'alternate_base_url');
+		Config::inst()->update('Director', 'alternate_base_url', $baseURL);
+		
+		// Set URL
+		$oldURL = $_SERVER['REQUEST_URI'];
+		$_SERVER['REQUEST_URI'] = $url;
+		
+		try { // Ensure failed test don't break state
+			$callback($this);
+		} catch(Exception $ex) {}
+		
+		// Revert URL
+		$_SERVER['REQUEST_URI'] = $oldURL;
+		
+		// Revert baseURL
+		if($oldBaseURL) {
+			Config::inst()->update('Director', 'alternate_base_url', $oldBaseURL);
+		} else {
+			Config::inst()->remove('Director', 'alternate_base_url');
+		}
+		if(!empty($ex)) throw $ex;
+	}
+	
+	/**
+	 * Push a controller onto the stack to mock a particular request
+	 * 
+	 * @param Controller $controller
+	 * @param callback $callback
+	 */
+	public function withController(Controller $controller, $callback) {
+		$controller->pushCurrent();
+		try { // Ensure failed test don't break state
+			$callback($this);
+		} catch(Exception $ex) {}
+		$controller->popCurrent();
+		if(!empty($ex)) throw $ex;
 	}
 	
 	/**
@@ -420,6 +477,49 @@ class FluentTest extends SapphireTest {
 		$item2 = FluentTest_TranslatedObject::get()->byId($item2ID);
 		$this->assertEquals('English 2', $item2->Title);
 		
+	}
+	
+	public function testFrontendDetection() {
+		
+		// Check that test controller counts as frontend
+		$this->assertTrue(Fluent::is_frontend());
+		$this->assertTrue(Fluent::is_frontend(true));
+		
+		// Check detection based on URL - frontend
+		$this->withURL('/mybase/', '/mybase/about/us', function($test) {
+			$test->assertTrue(Fluent::is_frontend(true));
+		});
+		$this->withURL('/mybase/', 'mybase/about/us', function($test) {
+			$test->assertTrue(Fluent::is_frontend(true));
+		});
+		$this->withURL('/', '/about/us', function($test) {
+			$test->assertTrue(Fluent::is_frontend(true));
+		});
+		$this->withURL('/', 'about/us', function($test) {
+			$test->assertTrue(Fluent::is_frontend(true));
+		});
+		
+		// Check detection based on URL - admin
+		$this->withURL('/mybase/', '/mybase/admin/pages', function($test) {
+			$test->assertFalse(Fluent::is_frontend(true));
+		});
+		$this->withURL('/mybase/', 'mybase/admin/pages', function($test) {
+			$test->assertFalse(Fluent::is_frontend(true));
+		});
+		$this->withURL('/', '/admin/pages', function($test) {
+			$test->assertFalse(Fluent::is_frontend(true));
+		});
+		$this->withURL('/', 'admin/pages', function($test) {
+			$test->assertFalse(Fluent::is_frontend(true));
+		});
+		
+		// Test detection based on controller
+		$this->withController(new ModelAsController(), function($test) {
+			$test->assertTrue(Fluent::is_frontend());
+		});
+		$this->withController(new LeftAndMain(), function($test) {
+			$test->assertFalse(Fluent::is_frontend());
+		});
 	}
 }
 
