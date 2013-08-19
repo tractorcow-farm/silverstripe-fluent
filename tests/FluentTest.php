@@ -520,6 +520,12 @@ class FluentTest extends SapphireTest {
 		$this->withController(new LeftAndMain(), function($test) {
 			$test->assertFalse(Fluent::is_frontend());
 		});
+		$this->withController(new FluentTest_CMSController(), function($test) {
+			$test->assertFalse(Fluent::is_frontend());
+		});
+		$this->withController(new FluentTest_FrontendController(), function($test) {
+			$test->assertTrue(Fluent::is_frontend());
+		});
 	}
 }
 
@@ -559,4 +565,16 @@ class FluentTest_FilteredObject extends DataObject implements TestOnly {
 		'Title' => 'Varchar(255)'
 	);
 	
+}
+
+class FluentTest_CMSController extends Controller {
+	public function isFrontend() {
+		return false;
+	}
+}
+
+class FluentTest_FrontendController extends Controller {
+	public function isFrontend() {
+		return true;
+	}
 }

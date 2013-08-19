@@ -191,7 +191,9 @@ class Fluent extends Object {
 	}
 	
 	/**
-	 * Determines field replacement method.
+	 * Determines behaviour of locale filter in this request, by detecting whether to present an admin view of the
+	 * site, or a frontend view.
+	 * 
 	 * If viewing in the CMS items filtered by locale will always be visible, but in the frontend will be filtered
 	 * as expected.
 	 * 
@@ -210,8 +212,11 @@ class Fluent extends Object {
 			return !preg_match('/^(\/)?'.$base.'admin(\/|$)/i', $_SERVER['REQUEST_URI']);
 		}
 		
-		// Detect all admin controllers
+		// Check if controller is aware of its own role
 		$controller = Controller::curr();
+		if($controller->hasMethod('isFrontend')) return $controller->isFrontend();
+		
+		// Default to return false for any CMS controller
 		return !($controller instanceof AdminRootController)
 			&& !($controller instanceof LeftAndMain);
 	}

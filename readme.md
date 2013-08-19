@@ -168,6 +168,8 @@ MyDataObject:
     - 'FluentExtension'
 ```
 
+### Using custom controllers
+
 If you are using custom controllers (such as for rendering rss, ajax data, etc) you
 should probably also add the `FluentContentController` extension in order to ensure
 the locale is set correctly for generated content.
@@ -179,6 +181,22 @@ Name: mycontrollerconfig
 MyAjaxController:
   extensions:
     - 'FluentContentController'
+```
+
+If you are using your custom controller in the CMS then you should implement 
+an `isFrontend` method in your class in order to tell Fluent to treat it as an
+admin's view. This means:
+
+ * It will respect the value selected in the CMS locale dropdown.
+ * It won't interfere with the view of the website in the frontend.
+ * All locale-filtered objects will be available unfiltered to this controller.
+
+```php
+class MyAdminController extends Controller {
+	public function isFrontend() {
+		return false;
+	}
+}
 ```
 
 ### Locale based filter configuration
