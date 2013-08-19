@@ -10,6 +10,9 @@ Locales are distinguished by a url prefix, that of the selected locale, at the s
 of all page links. E.g. `http://damian.geek.nz/en_NZ/about-me` would be the NZ English
 version of a page. This could be localised into Maori at `http://damian.geek.nz/mi_NZ/about-me`
 
+Fluent also integrates nicely with Google Sitemaps module, linking localisations for each page as per 
+[Google's internationalisation guidelines](https://support.google.com/webmasters/answer/182192?hl=en&ref_topic=2370587)
+
 Back end control is provided by a simple CMS filter.
 
 | **Locale Menu** | **Locale Menu (expanded)** |

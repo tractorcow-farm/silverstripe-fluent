@@ -3,7 +3,9 @@
 	<nav class="primary">
 		<ul>
 			<% loop Locales %>
-				<li class="$LinkingMode"><a href="$Link.ATT">$Title.XML</a></li>
+				<li class="$LinkingMode">
+					<a href="$Link.ATT" <% if $LinkingMode != 'invalid' %>rel="alternate" hreflang="$LocaleRFC1766"<% end_if %>>$Title.XML</a>
+				</li>
 			<% end_loop %>
 		</ul>
 	</nav>

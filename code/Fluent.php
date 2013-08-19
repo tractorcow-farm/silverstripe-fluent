@@ -15,7 +15,7 @@ class Fluent extends Object {
 		$routes = array();
 		
 		// Explicit routes
-		foreach(self::config()->locales as $locale) {
+		foreach(self::locales() as $locale) {
 			$url = self::alias($locale);
 			$routes[$url.'/$URLSegment!//$Action/$ID/$OtherID'] = array(
 				'Controller' => 'ModelAsController',
@@ -29,6 +29,11 @@ class Fluent extends Object {
 		
 		// Default route
 		$routes[''] = 'FluentRootURLController';
+
+		// If Google sitemap module is installed then replace default controller with custom controller
+		if(class_exists('GoogleSitemapController')) {
+			$routes['sitemap.xml'] = 'FluentSitemapController';
+		}
 		
 		// Set routes locally
 		self::config()->routes = $routes;

@@ -105,9 +105,11 @@ class FluentSiteTree extends FluentExtension {
 			// Build object
 			$data[] = new ArrayData(array(
 				'Locale' => $locale,
+				'LocaleRFC1766' => i18n::convert_rfc1766($locale),
 				'Alias' => Fluent::alias($locale),
 				'Title' => i18n::get_locale_name($locale),
 				'Link' => $link,
+				'AbsoluteLink' => Director::absoluteURL($link),
 				'LinkingMode' => $linkingMode
 			));
 		}

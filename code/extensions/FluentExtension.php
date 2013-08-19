@@ -293,6 +293,7 @@ class FluentExtension extends DataExtension {
 		foreach (Fluent::locales() as $locale) {
 			$data[] = new ArrayData(array(
 				'Locale' => $locale,
+				'LocaleRFC1766' => i18n::convert_rfc1766($locale),
 				'Alias' => Fluent::alias($locale),
 				'Title' => i18n::get_locale_name($locale)
 			));

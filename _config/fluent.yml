@@ -22,6 +22,7 @@ Fluent:
     - 'Theme'
     - 'URLSegment'
     - '/^LocaleFilter_/i'
+    - 'Priority'
   # Filter in(or out) data types to translate
   data_include:
     - 'Text'
