@@ -356,10 +356,26 @@ class FluentExtension extends DataExtension {
 		}
 		return $condition;
 	}
+	
+	/**
+	 * Generates a select fragment based on a field with a fallback
+	 * 
+	 * @param string $class Table/Class name
+	 * @param string $select Column to select from
+	 * @param string $fallback Column to fallback to if $select is empty
+	 * @return string Select fragment
+	 */
+	protected function localiseSelect($class, $select, $fallback) {
+		return "CASE
+				WHEN (\"{$class}\".\"{$select}\" IS NOT NULL AND \"{$class}\".\"{$select}\" != '')
+				THEN \"{$class}\".\"{$select}\"
+				ELSE \"{$class}\".\"{$fallback}\" END";
+	}
 
 	public function augmentSQL(SQLQuery &$query, DataQuery &$dataQuery = null) {
 		
 		// Get locale and translation zone to use
+		$defaultLocale = Fluent::default_locale();
 		$dataQuery->setQueryParam('Fluent.Locale', $locale = Fluent::current_locale());
 		$dataQuery->setQueryParam('Fluent.IsFrontend', Fluent::is_frontend());
 		
@@ -381,12 +397,18 @@ class FluentExtension extends DataExtension {
 			// If this field shouldn't be translated, skip
 			if(!in_array($field, $includedTables[$class])) continue;
 
+			// Select visible field from translated fields (Title_fr_FR || Title => Title)
 			$translatedField = Fluent::db_field_for_locale($field, $locale);
-			$expression = "CASE
-				WHEN (\"{$class}\".\"{$translatedField}\" IS NOT NULL AND \"{$class}\".\"{$translatedField}\" != '')
-				THEN \"{$class}\".\"{$translatedField}\"
-				ELSE \"$class\".\"$field\" END";
+			$expression = $this->localiseSelect($class, $translatedField, $field);
 			$query->selectField($expression, $alias);
+			
+			// If selecting in a non-default locale, then ensure we maintain the default locale value
+			// (Title_en_NZ || Title => Title_en_NZ)
+			if($defaultLocale !== $locale) {
+				$defaultField = Fluent::db_field_for_locale($field, $defaultLocale);
+				$defaultExpression = $this->localiseSelect($class, $defaultField, $field);
+				$query->selectField($defaultExpression, $defaultField);
+			}
 		}
 		
 		// Rewrite where conditions
@@ -424,7 +446,7 @@ class FluentExtension extends DataExtension {
 		
 		// Get locale and translation zone to use
 		$locale = Fluent::current_locale();
-		$locales = Fluent::locales();
+		$defaultLocale = Fluent::default_locale();
 							
 		// Get all tables to translate fields for, and their respective field names
 		$includedTables = $this->getTranslatedTables();
@@ -436,25 +458,21 @@ class FluentExtension extends DataExtension {
 			if(empty($includedTables[$class])) continue;
 			
 			foreach($includedTables[$class] as $field) {
-
-				// Unset any direct translation updates
-				foreach($locales as $checkLocale) {
-					$checkField = Fluent::db_field_for_locale($field, $checkLocale);
-					if(isset($updates['fields'][$checkField])) {
-						unset($updates['fields'][$checkField]);
-					}
-				}
 				
-				// Check if this field is updated
-				if(isset($updates['fields'][$field])) {
-					// Copy the updated value to the appropriate locale
-					$updateField = Fluent::db_field_for_locale($field, $locale);
-					$updates['fields'][$updateField] = $updates['fields'][$field];
+				// Skip translated field if not updated in this request
+				if(!isset($updates['fields'][$field])) continue;
 					
-					// If not on the default locale we should prevent the default field being written to
-					// unless it's an insert
-					if($locale !== Fluent::default_locale() && $updates['command'] === 'update') {
-						unset($updates['fields'][$field]);
+				// Copy the updated value to the locale specific field
+				// (Title => Title_fr_FR)
+				$updateField = Fluent::db_field_for_locale($field, $locale);
+				$updates['fields'][$updateField] = $updates['fields'][$field];
+
+				// If not on the default locale, write the stored default field back to the main field
+				// (if Title_en_NZ then Title_en_NZ => Title)
+				if($locale !== $defaultLocale) {
+					$defaultField = Fluent::db_field_for_locale($field, $defaultLocale);
+					if(!empty($updates['fields'][$defaultField])) {
+						$updates['fields'][$field] = $updates['fields'][$defaultField];
 					}
 				}
 			}

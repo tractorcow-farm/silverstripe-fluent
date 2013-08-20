@@ -527,6 +527,64 @@ class FluentTest extends SapphireTest {
 			$test->assertTrue(Fluent::is_frontend());
 		});
 	}
+	
+	/**
+	 * Test versioning of localised objects
+	 */
+	public function testPublish() {
+		
+		// == Setup ==
+		
+		Fluent::set_persist_locale('fr_CA');
+		Versioned::reading_stage('Stage');
+		
+		// Create new record in non-default locale
+		$id = Fluent::with_locale('es_ES', function() {
+			$page = new Page();
+			$page->Title = 'ES Title';
+			$page->write();
+			return $page->ID;
+		});
+		
+		// == Check stage ==
+		
+		// Check that the record has a title in the default locale
+		$page = Versioned::get_one_by_stage("SiteTree", "Stage", "\"SiteTree\".\"ID\" = $id");
+		$this->assertEquals('ES Title', $page->Title);
+		
+		// Check that the record has a title in the foreign locale
+		$title = Fluent::with_locale('es_ES', function() use($id) {
+			$page = Versioned::get_one_by_stage("SiteTree", "Stage", "\"SiteTree\".\"ID\" = $id");
+			return $page->Title;
+		});
+		$this->assertEquals('ES Title', $title);
+		
+		// == Publish ==
+		
+		// Save title in default locale
+		$page = Versioned::get_one_by_stage("SiteTree", "Stage", "\"SiteTree\".\"ID\" = $id");
+		$page->Title = 'Default Title';
+		$page->write();
+		
+		// Publish this record in the custom locale
+		Fluent::with_locale('es_ES', function() use($id) {
+			$page = Versioned::get_one_by_stage("SiteTree", "Stage", "\"SiteTree\".\"ID\" = $id");
+			$page->doPublish();
+		});
+		
+		// == Check live ==
+		
+		// Check the live record has the correct title in the default locale
+		$page = Versioned::get_one_by_stage("SiteTree", "Live", "\"SiteTree\".\"ID\" = $id");
+		$this->assertEquals('Default Title', $page->Title);
+		
+		// Check the live record has the correct title in the custom locale
+		$title = Fluent::with_locale('es_ES', function() use($id) {
+			$page = Versioned::get_one_by_stage("SiteTree", "Live", "\"SiteTree\".\"ID\" = $id");
+			return $page->Title;
+		});
+		$this->assertEquals('ES Title', $title);
+	}
 }
 
 /**
