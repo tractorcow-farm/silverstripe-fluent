@@ -115,4 +115,15 @@ class FluentSiteTree extends FluentExtension {
 		}
 		return new ArrayList($data);
 	}
+	
+	public function updateCMSFields(FieldList $fields) {
+		parent::updateCMSFields($fields);
+		
+		// Fix URLSegment field issue for root pages
+		if(!SiteTree::config()->nested_urls || empty($this->owner->ParentID)) {
+			$baseLink = Director::absoluteURL($this->owner->BaseURLForLocale());
+			$urlsegment = $fields->dataFieldByName('URLSegment');
+			$urlsegment->setURLPrefix($baseLink);
+		}
+	}
 }
