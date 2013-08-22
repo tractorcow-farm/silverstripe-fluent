@@ -35,9 +35,6 @@ class Fluent extends Object {
 			$routes['sitemap.xml'] = 'FluentSitemapController';
 		}
 		
-		// Set routes locally
-		self::config()->routes = $routes;
-		
 		// Load into core routes
 		Config::inst()->update('Director', 'rules', $routes);
 	}

@@ -283,6 +283,7 @@ class FluentExtension extends DataExtension {
 	// </editor-fold>
 	
 	// <editor-fold defaultstate="collapsed" desc="Template Accessors">
+	
 	/**
 	 * Templatable list of all locales
 	 * 
@@ -300,6 +301,16 @@ class FluentExtension extends DataExtension {
 		}
 		return new ArrayList($data);
 	}
+	
+	/**
+	 * Current locale code
+	 * 
+	 * @return string Locale code
+	 */
+	public function CurrentLocale() {
+		return Fluent::current_locale();
+	}
+	
 	// </editor-fold>
 
 	// <editor-fold defaultstate="collapsed" desc="SQL Augmentations">
