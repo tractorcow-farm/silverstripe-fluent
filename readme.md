@@ -17,7 +17,7 @@ Back end control is provided by a simple CMS filter.
 
 | **Locale Menu** | **Locale Menu (expanded)** |
 | --------------- | -------------------------- |
-| ![Locale Menu](screenshots/menu.jpg "Locale menu") | ![Locale Menu](screenshots/menu-expanded.jpg "Locale menu (expanded)") |
+| ![Locale Menu](docs/en/images/menu.jpg "Locale menu") | ![Locale Menu](docs/en/images/menu-expanded.jpg "Locale menu (expanded)") |
 
 _Please read the [Configuration](docs/en/configuration.md) section before trying to install!_
 

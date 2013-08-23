@@ -4,7 +4,7 @@ Installation runs more smoothly if you configure your site for localisation befo
 installing the module, as it will rebuild the database based on configuration.
 Good to read this bit first!
 
-Please check [fluent.yml](_config/fluent.yml) for the default configuration settings.
+Please check [fluent.yml](../../_config/fluent.yml) for the default configuration settings.
 
 Please make sure to REMOVE any `i18n::set_locale` calls from your `_config.php` file, as it
 will interfere with locale bootstrapping in certain situations (such as `Security` controller actions).
@@ -209,7 +209,7 @@ function getCMSFields() {
 Now when editing this item in the CMS there will be an additional set of checkboxes
 labelled "Locale filter".
 
-![Locale Filter](screenshots/locale-filter.jpg "Locale filter")
+![Locale Filter](images/locale-filter.jpg "Locale filter")
 
 Note: Although these objects will be filtered in the front end, this filter is disabled
 in the CMS in order to allow access by site administrators in all locales.

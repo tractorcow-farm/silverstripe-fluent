@@ -4,7 +4,7 @@ Fluent can be easily installed on any already-developed website
 
 Please ensure that your site is configured before attempting to install fluent.
 
-Read the [configuration documentation here](docs/en/configuration.md).
+Read the [configuration documentation here](configuration.md).
 
  * Either extract the module into the `fluent` folder, or install using composer
 
