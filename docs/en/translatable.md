@@ -11,7 +11,7 @@ The steps to follow are:
 3. Remove the `Translatable` module completely prior to progressing.
 4. [Configure](configuration.md) Fluent, taking care to apply the `FluentExtension` to any class previously extended
    by `Translatable` (`SiteTree` and `SiteConfig` are included by default).
-5. [Install](docs/en/installation.md) the Fluent module.
+5. [Install](installation.md) the Fluent module.
 6. Run a dev/build to ensure all additional table fields have been generated.
 7. Back up your DB again.
 8. Run the `ConvertTranslatableTask` either by visiting `dev/tasks/ConvertTranslatableTask` or by sake.
