@@ -31,7 +31,7 @@ you may encounter, as it helps us all out!
 
 ## Requirements
 
- * SilverStripe 3.1
+ * SilverStripe 3.1 RC1 (beta versions will not work).
  * PHP 5.3
 
 ## Documentation
