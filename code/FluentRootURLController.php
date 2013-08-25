@@ -19,7 +19,7 @@ class FluentRootURLController extends RootURLController {
 			$locale = Fluent::current_locale();
 			if(!isset($_GET['flush'])) {
 				$localeURL = Fluent::alias($locale);
-				return $this->redirect($localeURL.'/');
+				return $this->redirect($localeURL.'/', 301);
 			}
 		}
 		
