@@ -217,7 +217,7 @@ class FluentTest extends SapphireTest {
 		$this->assertEquals(array('fr_CA'), $item->getFilteredLocales());
 		
 		// Test exclusion
-		$this->assertEquals(array('en_NZ', 'en_US', 'es_ES'), $item->getFilteredLocales(true));
+		$this->assertEquals(array('en_NZ', 'en_US', 'es_ES'), $item->getFilteredLocales(false));
 		
 		// Test item set to foreign locale limits this item
 		$item->setFilteredLocales('en_NZ', 'en_US');

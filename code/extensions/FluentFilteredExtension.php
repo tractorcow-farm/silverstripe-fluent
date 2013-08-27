@@ -25,18 +25,28 @@ class FluentFilteredExtension extends DataExtension {
 	/**
 	 * Gets the list of locales this items is filtered against
 	 * 
-	 * @param boolean $excluded Set to true to get excluded instead of included locales
+	 * @param boolean $visible Set to false to get excluded instead of included locales
 	 * @return array List of locales
 	 */
-	public function getFilteredLocales($excluded = false) {
+	public function getFilteredLocales($visible = true) {
 		$locales = array();
 		foreach(Fluent::locales() as $locale) {
-			$field = Fluent::db_field_for_locale("LocaleFilter", $locale);
-			if($this->owner->$field xor $excluded) {
+			if($this->owner->canViewInLocale($locale) == $visible) {
 				$locales[] = $locale;
 			}
 		}
 		return $locales;
+	}
+	
+	/**
+	 * Determine if this object is visible (or excluded) in the specified locale
+	 * 
+	 * @param string $locale Locale to check against
+	 * @return boolean True if the object is visible in the specified locale
+	 */
+	public function canViewInLocale($locale) {
+		$field = Fluent::db_field_for_locale("LocaleFilter", $locale);
+		return $this->owner->$field;
 	}
 	
 	public static function get_extra_config($class, $extension, $args) {

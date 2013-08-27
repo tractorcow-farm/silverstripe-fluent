@@ -292,14 +292,85 @@ class FluentExtension extends DataExtension {
 	public function Locales() {
 		$data = array();
 		foreach (Fluent::locales() as $locale) {
-			$data[] = new ArrayData(array(
-				'Locale' => $locale,
-				'LocaleRFC1766' => i18n::convert_rfc1766($locale),
-				'Alias' => Fluent::alias($locale),
-				'Title' => i18n::get_locale_name($locale)
-			));
+			$data[] = $this->owner->LocaleInformation($locale);
 		}
 		return new ArrayList($data);
+	}
+	
+	/**
+	 * Determine the link to this object given the specified $locale.
+	 * Returns null for DataObjects that do not have a 'Link' function.
+	 * 
+	 * @param string $locale
+	 * @return string
+	 */
+	public function LocaleLink($locale) {
+		
+		// Skip dataobjects that do not have the Link method
+		if(!$this->owner->hasMethod('Link')) return null;
+		
+		// Return locale root url if unable to view this item in this locale
+		if($this->owner->hasMethod('canViewInLocale') && !$this->owner->canViewInLocale($locale)) {
+			return $this->owner->BaseURLForLocale($locale);
+		}
+		
+		// Mock locale and recalculate link
+		$id = $this->owner->ID;
+		$class = $this->owner->ClassName;
+		return Fluent::with_locale($locale, function() use ($id, $class) {
+			return DataObject::get($class)->byID($id)->Link();
+		});
+	}
+	
+	/**
+	 * Determine the baseurl within a specified $locale.
+	 *
+	 * @param string $locale Locale, or null to use current locale
+	 * @return string
+	 */
+	public function BaseURLForLocale($locale = null) {
+		if(empty($locale)) $locale = Fluent::current_locale();
+		return Controller::join_links(
+			Director::baseURL(),
+			Fluent::alias($locale),
+			'/'
+		);
+	}
+	
+	/**
+	 * Retrieves information about this object in the specified locale
+	 * 
+	 * @param string $locale The locale information to request, or null to use the default locale
+	 * @return ArrayData Mapped list of locale properties
+	 */
+	public function LocaleInformation($locale = null) {
+		
+		// Check locale
+		if(empty($locale)) $locale = Fluent::default_locale();
+		
+		// Check linking mode
+		$linkingMode = 'link';
+		if($this->owner->hasMethod('canViewInLocale') && !$this->owner->canViewInLocale($locale)) {
+			$linkingMode = 'invalid';
+		} elseif($locale === Fluent::current_locale()) {
+			$linkingMode = 'current';
+		}
+		
+		// Check link
+		$link = $this->owner->LocaleLink($locale);
+		
+		// Store basic locale information
+		$data = array(
+			'Locale' => $locale,
+			'LocaleRFC1766' => i18n::convert_rfc1766($locale),
+			'Alias' => Fluent::alias($locale),
+			'Title' => i18n::get_locale_name($locale),
+			'Link' => $link,
+			'AbsoluteLink' => $link ? Director::absoluteURL($link) : null,
+			'LinkingMode' => $linkingMode
+		);
+		
+		return new ArrayData($data);
 	}
 	
 	/**
