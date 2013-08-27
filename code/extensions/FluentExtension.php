@@ -65,8 +65,6 @@ class FluentExtension extends DataExtension {
 						unset($db[$field]);
 					}
 				} else {
-					// Split out arguments from type specifications to get the DBField class name
-					$type = preg_replace('/\(.*/', '', $type);
 
 					// Without a name filter then check against each filter type
 					if(	($fieldsInclude && !Fluent::any_match($field, $fieldsInclude))

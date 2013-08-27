@@ -222,18 +222,20 @@ class Fluent extends Object {
 	 * Helper function to check if the value given is present in any of the patterns.
 	 * This function is case sensitive by default.
 	 * 
-	 * @param string $value A string value to check against
+	 * @param string $value A string value to check against, potentially with parameters (E.g. 'Varchar(1023)')
 	 * @param array $patterns A list of strings, some of which may be regular expressions
 	 * @return boolean True if this $value is present in any of the $patterns
 	 */
 	public static function any_match($value, $patterns) {
+		// Test both explicit value, as well as the value stripped of any trailing parameters
+		$valueBase = preg_replace('/\(.*/', '', $value);
 		foreach($patterns as $pattern) {
 			if(strpos($pattern, '/') === 0) {
 				// Assume valiase prefaced with '/' are regexp
-				if(preg_match($pattern, $value)) return true;
+				if(preg_match($pattern, $value) || preg_match($pattern, $valueBase)) return true;
 			} else {
 				// Assume simple string comparison otherwise
-				if($value === $pattern) return true;
+				if($pattern === $value || $pattern === $valueBase) return true;
 			}
 		}
 		return false;

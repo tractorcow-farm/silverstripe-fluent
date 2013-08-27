@@ -31,7 +31,8 @@ Fluent:
     - 'HTMLVarchar'
     # Allow has_one items to be translated
     #- 'ForeignKey'
-  data_exclude: []
+  data_exclude:
+    - 'Varchar(2083)'
   search_adapters:
     MySQLDatabase: FluentMySQLSearch
   # ID to persist the locale in cookies / session in the front end
