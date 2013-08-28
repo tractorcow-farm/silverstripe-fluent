@@ -185,6 +185,63 @@ class FluentTest extends SapphireTest {
 	}
 	
 	/**
+	 * Tests FluentExtension::Locales and LocaleInformation information
+	 */
+	public function testLocaleInformation() {
+		
+		// Test filtered object
+		Fluent::set_persist_locale('en_NZ');
+		$item = $this->objFromFixture('FluentTest_FilteredObject', 'filtered1');
+		$data = $this->withURL('example.com', '/', '/', function($test) use($item) {
+			return $item->Locales()->toNestedArray();
+		});
+		$this->assertEquals(
+			array(
+				array(
+					'Locale' => 'fr_CA',
+					'LocaleRFC1766' => 'fr-CA',
+					'Alias' => 'fr_CA',
+					'Title' => 'French (Canada)',
+					'Link' => '/', // fr_CA home page
+					'AbsoluteLink' => 'http://example.com/',
+					'LinkingMode' => 'invalid'
+				),
+				array(
+					'Locale' => 'en_NZ',
+					'LocaleRFC1766' => 'en-NZ',
+					'Alias' => 'en_NZ',
+					'Title' => 'English (New Zealand)',
+					'Link' => '/en_NZ/link/',
+					'AbsoluteLink' => 'http://example.com/en_NZ/link/',
+					'LinkingMode' => 'current'
+				),
+				array(
+					'Locale' => 'en_US',
+					'LocaleRFC1766' => 'en-US',
+					'Alias' => 'usa',
+					'Title' => 'English (United States)',
+					'Link' => '/en_US/link/',
+					'AbsoluteLink' => 'http://example.com/en_US/link/',
+					'LinkingMode' => 'link'
+				),
+				array(
+					'Locale' => 'es_ES',
+					'LocaleRFC1766' => 'es-ES',
+					'Alias' => 'es_ES',
+					'Title' => 'Spanish (Spain)',
+					'Link' => '/es_ES/', // es_ES home page
+					'AbsoluteLink' => 'http://example.com/es_ES/',
+					'LinkingMode' => 'invalid'
+				)
+			),
+			$data
+		);
+		
+		// Put default locale back
+		Fluent::set_persist_locale('fr_CA');
+	}
+	
+	/**
 	 * Test that filtered objects are queried correctly
 	 */
 	public function testFilteredObjects() {
@@ -323,11 +380,16 @@ class FluentTest extends SapphireTest {
 	/**
 	 * Mock a request URL for the purpose of a test
 	 * 
+	 * @param string $hostname Host name to use
 	 * @param string $baseURL BaseURL to use
 	 * @param string $url Request URL relative to BaseURL
 	 * @param callable $callback Callback
 	 */
-	public function withURL($baseURL, $url, $callback) {
+	public function withURL($hostname, $baseURL, $url, $callback) {
+		
+		// Set hostname
+		$oldHostname = $_SERVER['HTTP_HOST'];
+		$_SERVER['HTTP_HOST'] = $hostname;
 		
 		// Set base URL
 		$oldBaseURL = Config::inst()->get('Director', 'alternate_base_url');
@@ -338,7 +400,7 @@ class FluentTest extends SapphireTest {
 		$_SERVER['REQUEST_URI'] = $url;
 		
 		try { // Ensure failed test don't break state
-			$callback($this);
+			$return = $callback($this);
 		} catch(Exception $ex) {}
 		
 		// Revert URL
@@ -350,7 +412,12 @@ class FluentTest extends SapphireTest {
 		} else {
 			Config::inst()->remove('Director', 'alternate_base_url');
 		}
+		
+		// Revert hostname
+		$_SERVER['HTTP_HOST'] = $oldHostname;
+		
 		if(!empty($ex)) throw $ex;
+		return $return;
 	}
 	
 	/**
@@ -488,30 +555,30 @@ class FluentTest extends SapphireTest {
 		$this->assertTrue(Fluent::is_frontend(true));
 		
 		// Check detection based on URL - frontend
-		$this->withURL('/mybase/', '/mybase/about/us', function($test) {
+		$this->withURL('example.com', '/mybase/', '/mybase/about/us', function($test) {
 			$test->assertTrue(Fluent::is_frontend(true));
 		});
-		$this->withURL('/mybase/', 'mybase/about/us', function($test) {
+		$this->withURL('example.com', '/mybase/', 'mybase/about/us', function($test) {
 			$test->assertTrue(Fluent::is_frontend(true));
 		});
-		$this->withURL('/', '/about/us', function($test) {
+		$this->withURL('example.com', '/', '/about/us', function($test) {
 			$test->assertTrue(Fluent::is_frontend(true));
 		});
-		$this->withURL('/', 'about/us', function($test) {
+		$this->withURL('example.com', '/', 'about/us', function($test) {
 			$test->assertTrue(Fluent::is_frontend(true));
 		});
 		
 		// Check detection based on URL - admin
-		$this->withURL('/mybase/', '/mybase/admin/pages', function($test) {
+		$this->withURL('example.com', '/mybase/', '/mybase/admin/pages', function($test) {
 			$test->assertFalse(Fluent::is_frontend(true));
 		});
-		$this->withURL('/mybase/', 'mybase/admin/pages', function($test) {
+		$this->withURL('example.com', '/mybase/', 'mybase/admin/pages', function($test) {
 			$test->assertFalse(Fluent::is_frontend(true));
 		});
-		$this->withURL('/', '/admin/pages', function($test) {
+		$this->withURL('example.com', '/', '/admin/pages', function($test) {
 			$test->assertFalse(Fluent::is_frontend(true));
 		});
-		$this->withURL('/', 'admin/pages', function($test) {
+		$this->withURL('example.com', '/', 'admin/pages', function($test) {
 			$test->assertFalse(Fluent::is_frontend(true));
 		});
 		
@@ -618,12 +685,22 @@ class FluentTest_TranslatedObject extends DataObject implements TestOnly {
 class FluentTest_FilteredObject extends DataObject implements TestOnly {
 	
 	private static $extensions = array(
-		'FluentFilteredExtension'
+		'FluentFilteredExtension',
+		'FluentExtension'
 	);
 	
 	private static $db = array(
 		'Title' => 'Varchar(255)'
 	);
+	
+	public function Link() {
+		return Controller::join_links(
+			Director::baseURL(),
+			Fluent::current_locale(),
+			'link',
+			'/'
+		);
+	}
 	
 }
 
