@@ -327,12 +327,7 @@ class FluentExtension extends DataExtension {
 	 * @return string
 	 */
 	public function BaseURLForLocale($locale = null) {
-		if(empty($locale)) $locale = Fluent::current_locale();
-		return Controller::join_links(
-			Director::baseURL(),
-			Fluent::alias($locale),
-			'/'
-		);
+		return Fluent::locale_baseurl($locale);
 	}
 	
 	/**

@@ -32,6 +32,11 @@ class FluentSiteTree extends FluentExtension {
 			return;
 		}
 		
+		// For home page in the default locale, do not alter home url
+		if($base === null && $locale === Fluent::default_locale()) {
+			return;
+		}
+		
 		// Simply join locale root with base relative URL
 		$localeURL = Fluent::alias($locale);
 		$base = Controller::join_links($localeURL, $base);
@@ -53,7 +58,11 @@ class FluentSiteTree extends FluentExtension {
 		
 		// Fix URLSegment field issue for root pages
 		if(!SiteTree::config()->nested_urls || empty($this->owner->ParentID)) {
-			$baseLink = Director::absoluteURL($this->owner->BaseURLForLocale());
+			$baseLink = Director::absoluteURL(Controller::join_links(
+				Director::baseURL(),
+				Fluent::alias(Fluent::current_locale()),
+				'/'
+			));
 			$urlsegment = $fields->dataFieldByName('URLSegment');
 			$urlsegment->setURLPrefix($baseLink);
 		}

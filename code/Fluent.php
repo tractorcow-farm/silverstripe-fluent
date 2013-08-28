@@ -70,6 +70,32 @@ class Fluent extends Object {
 		// Check overridden locale
 		if(self::$_override_locale) return self::$_override_locale;
 		
+		// Check direct request
+		$locale = self::get_request_locale();
+		
+		// Persistant variables
+		if(empty($locale)) $locale = self::get_persist_locale();
+		
+		// Check browser headers
+		if(empty($locale)) $locale = self::detect_browser_locale();
+		
+		// Fallback to default if empty or invalid
+		if(empty($locale) || !in_array($locale, self::locales())) {
+			$locale = self::default_locale();
+		}
+		
+		// Persist locale if requested
+		if($persist) self::set_persist_locale($locale);
+		
+		return $locale;
+	}
+	
+	/**
+	 * Gets the locale requested directly in the request, either via route, post, or query parameters
+	 * 
+	 * @return string The locale, if available
+	 */
+	public static function get_request_locale() {
 		$locale = null;
 		
 		// Check controller and current request
@@ -90,20 +116,6 @@ class Fluent extends Object {
 		if(empty($locale) && isset($_REQUEST[self::config()->query_param])) {
 			$locale = $_REQUEST[self::config()->query_param];
 		}
-		
-		// Persistant variables
-		if(empty($locale)) $locale = self::get_persist_locale();
-		
-		// Check browser headers
-		if(empty($locale)) $locale = self::detect_browser_locale();
-		
-		// Fallback to default if empty or invalid
-		if(empty($locale) || !in_array($locale, self::locales())) {
-			$locale = self::default_locale();
-		}
-		
-		// Persist locale if requested
-		if($persist) self::set_persist_locale($locale);
 		
 		return $locale;
 	}
@@ -390,5 +402,26 @@ class Fluent extends Object {
 				return self::$_search_dapter = new $adapter();
 			}
 		}
+	}
+	
+	/**
+	 * Determine the baseurl within a specified $locale.
+	 *
+	 * @param string $locale Locale, or null to use current locale
+	 * @return string
+	 */
+	public static function locale_baseurl($locale = null) {
+		if(empty($locale)) $locale = Fluent::current_locale();
+		
+		// Don't append locale to home page for default locale
+		$base = Director::baseURL();
+		if($locale === Fluent::default_locale()) return $base;
+		
+		// Append locale otherwise
+		return Controller::join_links(
+			$base,
+			Fluent::alias($locale),
+			'/'
+		);
 	}
 }

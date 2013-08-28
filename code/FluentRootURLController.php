@@ -13,18 +13,31 @@ class FluentRootURLController extends RootURLController {
 		self::$is_at_root = true;
 		$this->setDataModel($model);
 		
-		// Check locale, redirecting to locale root if necessary
-		$locale = $request->param(Fluent::config()->query_param);
-		if(empty($locale)) {
-			$locale = Fluent::current_locale();
-			if(!isset($_GET['flush'])) {
-				$localeURL = Fluent::alias($locale);
-				return $this->redirect($localeURL.'/', 301);
-			}
-		}
-		
 		$this->pushCurrent();
 		$this->init();
+		$this->setRequest($request);
+		
+		// Check for existing routing parameters, redirecting to another locale automatically if necessary
+		$locale = Fluent::get_request_locale();
+		if(empty($locale)) {
+			
+			// If visiting the site for the first time, redirect the user to the best locale
+			// This can also interfere with flushing, so don't redirect in this case either
+			if( !isset($_GET['flush'])
+				&& (Fluent::get_persist_locale() == null)
+				&& ($locale = Fluent::current_locale()) !== Fluent::default_locale()
+			) {
+				// Redirect to best locale
+				return $this->redirect(Fluent::locale_baseurl($locale));
+			} else {
+				// Reset parameters to act in the default locale
+				$locale = Fluent::default_locale();
+				Fluent::set_persist_locale($locale);
+				$params = $request->routeParams();
+				$params[Fluent::config()->query_param] = $locale;
+				$request->setRouteParams($params);
+			}
+		}
 		
 		if(!DB::isActive() || !ClassInfo::hasTable('SiteTree')) {
 			$this->response = new SS_HTTPResponse();

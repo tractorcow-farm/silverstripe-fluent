@@ -90,7 +90,7 @@ class FluentTest extends SapphireTest {
 		$about = $this->objFromFixture('Page', 'about');
 		$staff = $this->objFromFixture('Page', 'staff');
 		
-		$this->assertEquals('/fr_CA/', $home->Link());
+		$this->assertEquals('/', $home->Link());
 		$this->assertEquals('/fr_CA/about-us/', $about->Link());
 		$this->assertEquals('/fr_CA/about-us/my-staff/', $staff->Link());
 	}
@@ -103,6 +103,7 @@ class FluentTest extends SapphireTest {
 		$about = $this->objFromFixture('Page', 'about');
 		$staff = $this->objFromFixture('Page', 'staff');
 		
+		$this->assertEquals('/', $home->LocaleLink('fr_CA'));
 		$this->assertEquals('/en_NZ/', $home->LocaleLink('en_NZ'));
 		$this->assertEquals('/es_ES/', $home->LocaleLink('es_ES'));
 		$this->assertEquals('/en_NZ/about-us/', $about->LocaleLink('en_NZ'));
@@ -123,11 +124,12 @@ class FluentTest extends SapphireTest {
 		$staff = $this->objFromFixture('Page', 'staff');
 		
 		// Test Link
-		$this->assertEquals('/mysite/mvc1/fr_CA/', $home->Link());
+		$this->assertEquals('/mysite/mvc1/', $home->Link());
 		$this->assertEquals('/mysite/mvc1/fr_CA/about-us/', $about->Link());
 		$this->assertEquals('/mysite/mvc1/fr_CA/about-us/my-staff/', $staff->Link());
 		
 		// Test LocaleLink
+		$this->assertEquals('/mysite/mvc1/', $home->LocaleLink('fr_CA'));
 		$this->assertEquals('/mysite/mvc1/en_NZ/', $home->LocaleLink('en_NZ'));
 		$this->assertEquals('/mysite/mvc1/es_ES/', $home->LocaleLink('es_ES'));
 		$this->assertEquals('/mysite/mvc1/en_NZ/about-us/', $about->LocaleLink('en_NZ'));
