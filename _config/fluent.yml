@@ -41,6 +41,18 @@ Fluent:
   persist_id_cms: 'FluentLocale_CMS'
   # Request parameter to store the locale in. Used for some Controllers
   query_param: 'l'
+  # Forces the module to act in domain mode
+  force_domain: false
+  # List of locale specific domains configured for this site
+  domains: []
+  #  www.example.com.au:
+  #    locales:
+  #      - en_AU
+  #      - en_US
+  #    default_locale: en_AU
+  #  www.example.co.nz:
+  #    locales:
+  #      - en_NZ
 ---
 Name: fluenti18nconfig
 ---

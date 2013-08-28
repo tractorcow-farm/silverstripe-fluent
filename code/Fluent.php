@@ -171,9 +171,18 @@ class Fluent extends Object {
 	/**
 	 * Retrieves the list of locales
 	 * 
+	 * @param mixed $domain Domain to determine the locales for. If null, the global list be returned.
+	 * If true, then the current domain will be used.
 	 * @return array List of locales
 	 */
-	public static function locales() {
+	public static function locales($domain = null) {
+		if($domain === true) $domain = strtolower($_SERVER['HTTP_HOST']);
+		
+		// Check for a domain specific default locale
+		if($domain && ($domains = self::domains()) && !empty($domains[$domain])) {
+			$info = $domains[$domain];
+			if(!empty($info['locales'])) return $info['locales'];
+		}
 		return self::config()->locales;
 	}
 	
@@ -191,11 +200,57 @@ class Fluent extends Object {
 	}
 	
 	/**
+	 * Retrieves any configured domains.
+	 * If the current url isn't within any configured domains then all domains are ignored.
+	 * 
+	 * @return array
+	 */
+	public static function domains() {
+		
+		// Get domains
+		$domains = self::config()->domains;
+		if(empty($domains)) return array();
+				
+		// If not acting within one of these domains, ignore all domains
+		if(self::config()->force_domain || array_key_exists(strtolower($_SERVER['HTTP_HOST']), $domains)) {
+			return $domains;
+		}
+		
+		// If not in domain mode, disable all domains
+		return array();
+	}
+	
+	/**
+	 * Determine the home domain for this locale
+	 * 
+	 * @param string $locale
+	 * @param string|null $domain
+	 */
+	public static function domain_for_locale($locale) {
+		foreach(self::domains() as $domain => $config) {
+			if(!empty($config['locales']) && in_array($locale, $config['locales'])) {
+				return $domain;
+			}
+		}
+	}
+	
+	/**
 	 * Retrieves the default locale
 	 * 
+	 * @param mixed $domain Domain to determine the default locale for. If null, the global default will be returned.
+	 * If true, then the current domain will be used.
 	 * @return string
 	 */
-	public static function default_locale() {
+	public static function default_locale($domain = null) {
+		if($domain === true) $domain = strtolower($_SERVER['HTTP_HOST']);
+		
+		// Check for a domain specific default locale
+		if($domain && ($domains = self::domains()) && !empty($domains[$domain])) {
+			$info = $domains[$domain];
+			if(!empty($info['default_locale'])) return $info['default_locale'];
+			// With no explicitly set default_locale use the first locale assigned
+			if(!empty($info['locales'])) return reset($info['locales']);
+		}
 		return self::config()->default_locale;
 	}
 	
@@ -299,9 +354,11 @@ class Fluent extends Object {
 	/**
 	 * Determines the locale best matching the given list of browser locales
 	 * 
+	 * @param mixed $domain Domain to determine the locales for. If null, the global list be returned.
+	 * If true, then the current domain will be used.
 	 * @return string The matching locale, or null if none could be determined
 	 */
-	public static function detect_browser_locale() {
+	public static function detect_browser_locale($domain = null) {
 		
 		// Given multiple canditates, narrow down the final result using the client's preferred languages
 		$inputLocales = $_SERVER['HTTP_ACCEPT_LANGUAGE'];
@@ -336,7 +393,7 @@ class Fluent extends Object {
 		// Check each requested locale against loaded locales
 		foreach ($prioritisedLocales as $priority => $parsedLocales) {
 			foreach($parsedLocales as $browserLocale) {
-				foreach (self::locales() as $locale) {
+				foreach (self::locales($domain) as $locale) {
 					if (stripos(preg_replace('/_/', '-', $locale), $browserLocale) === 0) {
 						return $locale;
 					}
@@ -413,14 +470,19 @@ class Fluent extends Object {
 	public static function locale_baseurl($locale = null) {
 		if(empty($locale)) $locale = Fluent::current_locale();
 		
-		// Don't append locale to home page for default locale
+		// Build domain-specific base url
 		$base = Director::baseURL();
-		if($locale === Fluent::default_locale()) return $base;
+		if($domain = Fluent::domain_for_locale($locale)) {
+			$base = Controller::join_links(Director::protocol().$domain, $base);
+		}
+		
+		// Don't append locale to home page for default locale
+		if($locale === self::default_locale()) return $base;
 		
 		// Append locale otherwise
 		return Controller::join_links(
 			$base,
-			Fluent::alias($locale),
+			self::alias($locale),
 			'/'
 		);
 	}

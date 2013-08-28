@@ -33,8 +33,12 @@ class FluentSiteTree extends FluentExtension {
 		}
 		
 		// For home page in the default locale, do not alter home url
-		if($base === null && $locale === Fluent::default_locale()) {
-			return;
+		if($base === null) {
+			// Check if this locale is the root of its home domain
+			$domain = Fluent::domain_for_locale($locale);
+			if($locale === Fluent::default_locale($domain)) {
+				return;
+			}
 		}
 		
 		// Simply join locale root with base relative URL

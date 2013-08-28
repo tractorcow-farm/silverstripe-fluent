@@ -45,6 +45,7 @@ class FluentTest extends SapphireTest {
 		Config::inst()->update('Fluent', 'aliases', array(
 			'en_US' => 'usa'
 		));
+		Config::inst()->remove('Fluent', 'domains');
 		Fluent::set_persist_locale('fr_CA');
 		
 		// Force db regeneration using the above values

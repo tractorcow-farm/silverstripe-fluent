@@ -8,6 +8,26 @@
  */
 class FluentRootURLController extends RootURLController {
 	
+	/**
+	 * Determine if the referrer for this request is from a domain within this website's scope
+	 * 
+	 * @return boolean
+	 */
+	protected function knownReferrer() {
+		
+		// Extract referrer
+		if(empty($_SERVER['HTTP_REFERER'])) return false;
+		$hostname = strtolower(parse_url($_SERVER['HTTP_REFERER'], PHP_URL_HOST));
+		
+		// Check configured domains
+		$domains = Fluent::domains();
+		if(empty($domains)) {
+			return $hostname == strtolower($_SERVER['HTTP_HOST']);
+		} else {
+			return isset($domains[$hostname]);	
+		}
+	}
+	
 	public function handleRequest(SS_HTTPRequest $request, DataModel $model = null) {
 		
 		self::$is_at_root = true;
@@ -23,20 +43,22 @@ class FluentRootURLController extends RootURLController {
 			
 			// If visiting the site for the first time, redirect the user to the best locale
 			// This can also interfere with flushing, so don't redirect in this case either
+			// Limit this search to the current domain, preventing cross-domain redirection
 			if( !isset($_GET['flush'])
 				&& (Fluent::get_persist_locale() == null)
-				&& ($locale = Fluent::current_locale()) !== Fluent::default_locale()
+				&& ($locale = Fluent::detect_browser_locale(true)) !== Fluent::default_locale(true)
+				&& !$this->knownReferrer()
 			) {
 				// Redirect to best locale
 				return $this->redirect(Fluent::locale_baseurl($locale));
-			} else {
-				// Reset parameters to act in the default locale
-				$locale = Fluent::default_locale();
-				Fluent::set_persist_locale($locale);
-				$params = $request->routeParams();
-				$params[Fluent::config()->query_param] = $locale;
-				$request->setRouteParams($params);
-			}
+			} 
+			
+			// Reset parameters to act in the default locale
+			$locale = Fluent::default_locale(true);
+			Fluent::set_persist_locale($locale);
+			$params = $request->routeParams();
+			$params[Fluent::config()->query_param] = $locale;
+			$request->setRouteParams($params);
 		}
 		
 		if(!DB::isActive() || !ClassInfo::hasTable('SiteTree')) {

@@ -315,8 +315,13 @@ class FluentExtension extends DataExtension {
 		// Mock locale and recalculate link
 		$id = $this->owner->ID;
 		$class = $this->owner->ClassName;
-		return Fluent::with_locale($locale, function() use ($id, $class) {
-			return DataObject::get($class)->byID($id)->Link();
+		return Fluent::with_locale($locale, function() use ($id, $class, $locale) {
+			$link = DataObject::get($class)->byID($id)->Link();
+			// Prefix with domain if in cross-domain mode
+			if($domain = Fluent::domain_for_locale($locale)) {
+				$link = Controller::join_links(Director::protocol().$domain, $link);
+			}
+			return $link;
 		});
 	}
 	
