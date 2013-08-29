@@ -234,3 +234,16 @@ Fluent:
 ```
 
 Search localisation is quite fragile, and is likely to break with future framework updates!
+
+## Locale detection
+
+When a visitor lands on the home page for the first time, fluent will attempt to detect that user's locale based
+on the `Accept-Language` http headers sent.
+
+This functionality can interefere with certain applications, such as facebook opengraph tools, so in some cases it
+is necessary to turn this off. This can be done as below:
+
+```yaml
+Fluent:
+  detect_locale: false
+```

@@ -44,7 +44,8 @@ class FluentRootURLController extends RootURLController {
 			// If visiting the site for the first time, redirect the user to the best locale
 			// This can also interfere with flushing, so don't redirect in this case either
 			// Limit this search to the current domain, preventing cross-domain redirection
-			if( !isset($_GET['flush'])
+			if( Fluent::config()->detect_locale
+				&& !isset($_GET['flush'])
 				&& (Fluent::get_persist_locale() == null)
 				&& ($locale = Fluent::detect_browser_locale(true)) !== Fluent::default_locale(true)
 				&& !$this->knownReferrer()

@@ -41,6 +41,9 @@ Fluent:
   persist_id_cms: 'FluentLocale_CMS'
   # Request parameter to store the locale in. Used for some Controllers
   query_param: 'l'
+  # Determine if the site should detect the browser locale for new users.
+  # Turn this off to disable 302 redirects on the home page
+  detect_locale: true
   # Forces the module to act in domain mode
   force_domain: false
   # List of locale specific domains configured for this site
