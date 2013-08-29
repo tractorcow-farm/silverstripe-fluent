@@ -45,7 +45,20 @@ class FluentTest extends SapphireTest {
 		Config::inst()->update('Fluent', 'aliases', array(
 			'en_US' => 'usa'
 		));
+		Config::inst()->update('Fluent', 'force_domain', false);
 		Config::inst()->remove('Fluent', 'domains');
+		Config::inst()->update('Fluent', 'domains', array(
+			'www.example.com' => array(
+				'locales' => array('es_ES', 'en_US'),
+				'default_locale' => 'en_US'
+			),
+			'www.example.ca' => array(
+				'locales' => array('fr_CA')
+			),
+			'www.example.co.nz' => array(
+				'locales' => array('en_NZ')
+			)
+		));
 		Fluent::set_persist_locale('fr_CA');
 		
 		// Force db regeneration using the above values
@@ -65,7 +78,8 @@ class FluentTest extends SapphireTest {
 		parent::setUp();
 		FluentExtension::set_enable_write_augmentation(true);
 		
-		// Reset fluent locale
+		// Reset fluent locale and domain mode
+		Config::inst()->update('Fluent', 'force_domain', false);
 		Fluent::set_persist_locale('fr_CA');
 	}
 	
@@ -193,7 +207,7 @@ class FluentTest extends SapphireTest {
 		// Test filtered object
 		Fluent::set_persist_locale('en_NZ');
 		$item = $this->objFromFixture('FluentTest_FilteredObject', 'filtered1');
-		$data = $this->withURL('example.com', '/', '/', function($test) use($item) {
+		$data = $this->withURL('www.notexample.com', '/', '/', function($test) use($item) {
 			return $item->Locales()->toNestedArray();
 		});
 		$this->assertEquals(
@@ -204,7 +218,7 @@ class FluentTest extends SapphireTest {
 					'Alias' => 'fr_CA',
 					'Title' => 'French (Canada)',
 					'Link' => '/', // fr_CA home page
-					'AbsoluteLink' => 'http://example.com/',
+					'AbsoluteLink' => 'http://www.notexample.com/',
 					'LinkingMode' => 'invalid'
 				),
 				array(
@@ -213,7 +227,7 @@ class FluentTest extends SapphireTest {
 					'Alias' => 'en_NZ',
 					'Title' => 'English (New Zealand)',
 					'Link' => '/en_NZ/link/',
-					'AbsoluteLink' => 'http://example.com/en_NZ/link/',
+					'AbsoluteLink' => 'http://www.notexample.com/en_NZ/link/',
 					'LinkingMode' => 'current'
 				),
 				array(
@@ -222,7 +236,7 @@ class FluentTest extends SapphireTest {
 					'Alias' => 'usa',
 					'Title' => 'English (United States)',
 					'Link' => '/en_US/link/',
-					'AbsoluteLink' => 'http://example.com/en_US/link/',
+					'AbsoluteLink' => 'http://www.notexample.com/en_US/link/',
 					'LinkingMode' => 'link'
 				),
 				array(
@@ -231,7 +245,7 @@ class FluentTest extends SapphireTest {
 					'Alias' => 'es_ES',
 					'Title' => 'Spanish (Spain)',
 					'Link' => '/es_ES/', // es_ES home page
-					'AbsoluteLink' => 'http://example.com/es_ES/',
+					'AbsoluteLink' => 'http://www.notexample.com/es_ES/',
 					'LinkingMode' => 'invalid'
 				)
 			),
@@ -240,6 +254,102 @@ class FluentTest extends SapphireTest {
 		
 		// Put default locale back
 		Fluent::set_persist_locale('fr_CA');
+	}
+	
+	/**
+	 * Tests that multi-domain mode works
+	 */
+	public function testDomainsInformation() {
+		
+		// Test localemenu in an in-scope domain
+		Fluent::set_persist_locale('en_NZ');
+		Config::inst()->update('Fluent', 'force_domain', true);
+		
+		$item = $this->objFromFixture('FluentTest_FilteredObject', 'filtered1');
+		$data = $item->Locales()->toNestedArray();
+		
+		$this->assertEquals(
+			array(
+				array(
+					'Locale' => 'fr_CA',
+					'LocaleRFC1766' => 'fr-CA',
+					'Alias' => 'fr_CA',
+					'Title' => 'French (Canada)',
+					'Link' => 'http://www.example.ca/', // fr_CA home page
+					'AbsoluteLink' => 'http://www.example.ca/',
+					'LinkingMode' => 'invalid'
+				),
+				array(
+					'Locale' => 'en_NZ',
+					'LocaleRFC1766' => 'en-NZ',
+					'Alias' => 'en_NZ',
+					'Title' => 'English (New Zealand)',
+					'Link' => 'http://www.example.co.nz/en_NZ/link/', // NZ domain
+					'AbsoluteLink' => 'http://www.example.co.nz/en_NZ/link/',
+					'LinkingMode' => 'current'
+				),
+				array(
+					'Locale' => 'en_US',
+					'LocaleRFC1766' => 'en-US',
+					'Alias' => 'usa',
+					'Title' => 'English (United States)',
+					'Link' => 'http://www.example.com/en_US/link/', // US domain with en_US locale
+					'AbsoluteLink' => 'http://www.example.com/en_US/link/',
+					'LinkingMode' => 'link'
+				),
+				array(
+					'Locale' => 'es_ES',
+					'LocaleRFC1766' => 'es-ES',
+					'Alias' => 'es_ES',
+					'Title' => 'Spanish (Spain)',
+					'Link' => 'http://www.example.com/es_ES/', // US domain with es_ES home page
+					'AbsoluteLink' => 'http://www.example.com/es_ES/',
+					'LinkingMode' => 'invalid'
+				)
+			),
+			$data
+		);
+		
+		Config::inst()->update('Fluent', 'force_domain', false);
+	}
+	
+	/**
+	 * Test output for helpers in domain mode
+	 */
+	public function testDomainsHelpers() {
+		
+		Config::inst()->update('Fluent', 'force_domain', true);
+		
+		// Test Fluent::domains
+		$this->assertEquals(
+			array('www.example.com', 'www.example.ca', 'www.example.co.nz'),
+			array_keys(Fluent::domains())
+		);
+		
+		// Test Fluent::default_locale
+		$usDefault = $this->withURL('www.example.com', '/', '/', function($test) {
+			return Fluent::default_locale(true);
+		});
+		$this->assertEquals('en_US', $usDefault);
+		$this->assertEquals('en_US', Fluent::default_locale('www.example.com'));
+		$this->assertEquals('fr_CA', Fluent::default_locale());
+		
+		// Test Fluent::domain_for_locale
+		$this->assertEquals(null, Fluent::domain_for_locale('nl_NL'));
+		$this->assertEquals('www.example.com', Fluent::domain_for_locale('en_US'));
+		$this->assertEquals('www.example.com', Fluent::domain_for_locale('es_ES'));
+		$this->assertEquals('www.example.ca', Fluent::domain_for_locale('fr_CA'));
+		$this->assertEquals('www.example.co.nz', Fluent::domain_for_locale('en_NZ'));
+		
+		// Test Fluent::locales
+		$usLocales = $this->withURL('www.example.com', '/', '/', function($test) {
+			return Fluent::locales(true);
+		});
+		$this->assertEquals(array('es_ES', 'en_US'), $usLocales);
+		$this->assertEquals(array('es_ES', 'en_US'), Fluent::locales('www.example.com'));
+		$this->assertEquals(array('fr_CA', 'en_NZ', 'en_US', 'es_ES'), Fluent::locales());
+		
+		Config::inst()->update('Fluent', 'force_domain', false);
 	}
 	
 	/**
@@ -556,30 +666,30 @@ class FluentTest extends SapphireTest {
 		$this->assertTrue(Fluent::is_frontend(true));
 		
 		// Check detection based on URL - frontend
-		$this->withURL('example.com', '/mybase/', '/mybase/about/us', function($test) {
+		$this->withURL('www.example.com', '/mybase/', '/mybase/about/us', function($test) {
 			$test->assertTrue(Fluent::is_frontend(true));
 		});
-		$this->withURL('example.com', '/mybase/', 'mybase/about/us', function($test) {
+		$this->withURL('www.example.com', '/mybase/', 'mybase/about/us', function($test) {
 			$test->assertTrue(Fluent::is_frontend(true));
 		});
-		$this->withURL('example.com', '/', '/about/us', function($test) {
+		$this->withURL('www.example.com', '/', '/about/us', function($test) {
 			$test->assertTrue(Fluent::is_frontend(true));
 		});
-		$this->withURL('example.com', '/', 'about/us', function($test) {
+		$this->withURL('www.example.com', '/', 'about/us', function($test) {
 			$test->assertTrue(Fluent::is_frontend(true));
 		});
 		
 		// Check detection based on URL - admin
-		$this->withURL('example.com', '/mybase/', '/mybase/admin/pages', function($test) {
+		$this->withURL('www.example.com', '/mybase/', '/mybase/admin/pages', function($test) {
 			$test->assertFalse(Fluent::is_frontend(true));
 		});
-		$this->withURL('example.com', '/mybase/', 'mybase/admin/pages', function($test) {
+		$this->withURL('www.example.com', '/mybase/', 'mybase/admin/pages', function($test) {
 			$test->assertFalse(Fluent::is_frontend(true));
 		});
-		$this->withURL('example.com', '/', '/admin/pages', function($test) {
+		$this->withURL('www.example.com', '/', '/admin/pages', function($test) {
 			$test->assertFalse(Fluent::is_frontend(true));
 		});
-		$this->withURL('example.com', '/', 'admin/pages', function($test) {
+		$this->withURL('www.example.com', '/', 'admin/pages', function($test) {
 			$test->assertFalse(Fluent::is_frontend(true));
 		});
 		

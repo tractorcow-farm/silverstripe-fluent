@@ -200,24 +200,40 @@ class Fluent extends Object {
 	}
 	
 	/**
-	 * Retrieves any configured domains.
-	 * If the current url isn't within any configured domains then all domains are ignored.
+	 * Determine if the website is in domain segmentation mode
 	 * 
-	 * @return array
+	 * @return boolean
+	 */
+	public static function is_domain_mode() {
+		
+		// Don't act in domain mode if none are configured
+		$domains = self::config()->domains;
+		if(empty($domains)) return false;
+		
+		// Check environment 
+		if(defined('SS_FLUENT_FORCE_DOMAIN') && SS_FLUENT_FORCE_DOMAIN) return true;
+		
+		// Check config
+		if(self::config()->force_domain) return true;
+		
+		// Check if the current domain is included in the list of configured domains (default)
+		return array_key_exists(strtolower($_SERVER['HTTP_HOST']), $domains);
+	}
+	
+	/**
+	 * Retrieves any configured domains, assuming the site is running in domain mode.
+	 * 
+	 * @return array List of domains and their respective configuration information
 	 */
 	public static function domains() {
 		
-		// Get domains
-		$domains = self::config()->domains;
-		if(empty($domains)) return array();
-				
-		// If not acting within one of these domains, ignore all domains
-		if(self::config()->force_domain || array_key_exists(strtolower($_SERVER['HTTP_HOST']), $domains)) {
-			return $domains;
+		// Only return configured domains if domain_mode is active. This is typically disabled
+		// if there are no domains configured, or if testing locally
+		if(self::is_domain_mode()) {
+			return self::config()->domains;
+		} else {
+			return array();
 		}
-		
-		// If not in domain mode, disable all domains
-		return array();
 	}
 	
 	/**

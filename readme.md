@@ -13,6 +13,9 @@ version of a page. This could be localised into Maori at `http://damian.geek.nz/
 Fluent also integrates nicely with Google Sitemaps module, linking localisations for each page as per 
 [Google's internationalisation guidelines](https://support.google.com/webmasters/answer/182192?hl=en&ref_topic=2370587)
 
+Fluent also supports the use of multiple domains to assist in locale filtering
+(e.g. a .com for English, and a .cn for Chinese).
+
 Back end control is provided by a simple CMS filter.
 
 | **Locale Menu** | **Locale Menu (expanded)** |
@@ -38,6 +41,7 @@ you may encounter, as it helps us all out!
 
  * [Configuration](docs/en/configuration.md)
  * [Installation](docs/en/installation.md)
+ * [Deployment under multiple domains](docs/en/domain-configuration.md)
  * [Templating for Fluent](docs/en/templating.md)
  * [How Fluent works](docs/en/how-fluent-works.md)
  * [Migration guide for Translatable sites](docs/en/translatable.md)
