@@ -11,6 +11,9 @@
 @import "../../framework/admin/scss/themes/default.scss";
 @import "../../framework/admin/scss/mixins.scss";
 
+// $fluent-color-base: #bc0004;
+$fluent-color-base: rgb(31, 148, 51);
+
 // Style of selector dropdown
 .cms-fluent-selector {
 	display: block;
@@ -20,21 +23,21 @@
 	overflow: visible;
 	white-space: nowrap;
 	text-overflow: ellipsis;
-	text-shadow: lighten($color-base, 5%) 1px 1px 0;
-	color: $color-text-dark;
+	text-shadow: darken($fluent-color-base, 5%) 1px 1px 0;
+	color: $color-text-light;
 	padding: ($grid-y - 1) 5px ($grid-y - 1) 8px;
-	background-color: $color-base;
+	background-color: $fluent-color-base;
 	cursor: pointer;
 	position: relative;
 	z-index: 100;
 
 	@include background-image(linear-gradient(
-		$color-base,
-		darken($color-base, 10%)
+		$fluent-color-base,
+		darken($fluent-color-base, 10%)
 	));
 
-	border-top: 1px solid lighten($color-base, 6%);
-	border-bottom: 1px solid darken($color-base, 20%);
+	border-top: 1px solid lighten($fluent-color-base, 6%);
+	border-bottom: 1px solid darken($fluent-color-base, 20%);
 
 	.icon-fluent-translate {
 		display: inline-block;
@@ -62,13 +65,13 @@
 		height: 18px;
 		padding: 0;
 
-		background-color: lighten($color-base, 2%);
-		border-left: 1px solid darken($color-base, 15%);
-		border-top: 1px solid darken($color-base, 15%);
+		background-color: lighten($fluent-color-base, 2%);
+		border-left: 1px solid darken($fluent-color-base, 15%);
+		border-top: 1px solid darken($fluent-color-base, 15%);
 
 		@include background-image(linear-gradient(
-			lighten($color-base, 5%),
-			darken($color-base, 5%)
+			lighten($fluent-color-base, 5%),
+			darken($fluent-color-base, 5%)
 		));
 			
 		.icon-fluent-select{
@@ -94,19 +97,19 @@
 		top: 37px;
 
 		width: 150px;
-		background-color: darken($color-base, 5%);
-		border: 1px solid darken($color-base, 15%);
+		background-color: darken($fluent-color-base, 5%);
+		border: 1px solid darken($fluent-color-base, 15%);
 		border-right: 0px none;
 
 		@include background-image(linear-gradient(
-			$color-base,
-			darken($color-base, 10%)
+			$fluent-color-base,
+			darken($fluent-color-base, 10%)
 		));
 			
 		li {
 			padding: 2px 8px;
 			a {
-				color: $color-text-dark;
+				color: $color-text-light;
 			}
 		}
 	}
@@ -118,24 +121,34 @@
 	&:hover,
 	&.active {
 		text-decoration: none;
-		background-color: lighten($color-base, 2%);
-		border-bottom: 1px solid darken($color-base, 15%);
-		color: lighten($color-text-dark, 5%);
+		background-color: lighten($fluent-color-base, 2%);
+		border-bottom: 1px solid darken($fluent-color-base, 15%);
+		color: lighten($color-text-light, 5%);
 
 		@include background-image(linear-gradient(
-			lighten($color-base, 5%),
-			$color-base
+			lighten($fluent-color-base, 5%),
+			$fluent-color-base
 		));
 			
 		.cms-fluent-selector-flydown {
-			background-color: lighten($color-base, 4%);
-			border-left: 1px solid darken($color-base, 10%);
-			border-top: 1px solid darken($color-base, 10%);
+			background-color: lighten($fluent-color-base, 4%);
+			border-left: 1px solid darken($fluent-color-base, 10%);
+			border-top: 1px solid darken($fluent-color-base, 10%);
 
 			@include background-image(linear-gradient(
-				lighten($color-base, 10%),
-				$color-base
+				lighten($fluent-color-base, 10%),
+				$fluent-color-base
 			));
 		}
 	}
+}
+
+.field.LocalisedField label.left:after {
+	float: left;
+	content: url('../images/menu-icon-16-green.png');
+	display: block;
+	width: 16px;
+	height: 16px;
+	padding: 0 6px 0 0;
+	@include opacity(0.7);
 }

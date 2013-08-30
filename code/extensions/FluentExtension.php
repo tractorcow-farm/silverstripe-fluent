@@ -567,12 +567,18 @@ class FluentExtension extends DataExtension {
 	// <editor-fold defaultstate="collapsed" desc="CMS Field Augmentation">
 	
 	public function updateCMSFields(FieldList $fields) {
+		
 		// get all fields to translate and remove
 		$translated = $this->getTranslatedTables();
 		foreach($translated as $table => $translatedFields) {
 			foreach($translatedFields as $translatedField) {
+				
+				// Highlight any translated field
+				$field = $fields->dataFieldByName($translatedField);
+				if($field) $field->addExtraClass('LocalisedField');
+				
+				// Remove translation DBField from automatic scaffolded fields
 				foreach(Fluent::locales() as $locale) {
-					// Remove translation DBField from automatic scaffolded fields
 					$fieldName = Fluent::db_field_for_locale($translatedField, $locale);
 					$fields->removeByName($fieldName, true);
 				}
