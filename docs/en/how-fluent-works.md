@@ -26,3 +26,21 @@ ensuring that the field related to the current locale is correctly written to.
 
 Unfortunately, there's currently no localisation mechanism for sitetree urls
 (for the sake of simplicity). This could be implemented if requested however. :)
+
+## Creating translations
+
+When creating a translation for a page in the CMS, it helps to know how the current
+and default locale relate to each other, both when creating, editing, and
+publishing a record.
+
+It's ideal, but not always necessary, to create a record in the default locale. By
+default all translations of that object will inherit the value entered in and saved
+in the default locale.
+
+If a record is NOT created in the default locale then the default value of that
+record will be the value last saved in any locale. This behaviour may appear
+confusing, unless this fact is understood.
+
+Saving a record in any locale will create a saved state for that locale,
+meaning it will no longer inherit the default value, but it's always easier
+to set a good single default than to edit the record in each locale individually.

@@ -20,7 +20,6 @@ Fluent:
   field_include: []
   field_exclude:
     - 'Theme'
-    - 'URLSegment'
     - '/^LocaleFilter_/i'
     - 'Priority'
   # Filter in(or out) data types to translate

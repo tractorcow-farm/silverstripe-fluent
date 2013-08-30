@@ -34,8 +34,11 @@ you may encounter, as it helps us all out!
 
 ## Requirements
 
- * SilverStripe 3.1 RC1 (beta versions will not work).
+ * SilverStripe 3.1.1 or above (3.1 dev branch)
  * PHP 5.3
+
+You can use Silverstripe 3.1 RC1 (3.1.0) if you use the 3.1.0 branch of fluent, but this does not support
+translatable urls.
 
 ## Documentation
 
