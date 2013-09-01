@@ -384,6 +384,29 @@ class FluentExtension extends DataExtension {
 
 	// <editor-fold defaultstate="collapsed" desc="SQL Augmentations">
 	
+	public function onBeforeWrite() {
+		
+		// Prior to writing, we should flag any translated field as changed if its local value differs from 
+		// its translated value, in case change detection would prevent this from being written to the DB
+		$translated = $this->getTranslatedTables();
+		foreach($translated as $table => $fields) {
+			foreach($fields as $field) {
+				
+				// Extract both base value (which could have been extracted from the subfield on load)
+				// and compare it to the localised field value
+				$localeField = Fluent::db_field_for_locale($field, Fluent::current_locale());
+				$value = $this->owner->$field;
+				$localeValue =  $this->owner->$localeField;
+				
+				// If these values differ, but a change isn't detected, then force a change
+				if($this->owner->exists() && ($value != $localeValue) && !$this->owner->isChanged($field)) {
+					$this->owner->forceChange();
+					return;
+				}
+			}
+		}
+	}
+	
 	protected static $_enable_write_augmentation = true;
 	
 	/*
@@ -481,14 +504,6 @@ class FluentExtension extends DataExtension {
 			$translatedField = Fluent::db_field_for_locale($field, $locale);
 			$expression = $this->localiseSelect($class, $translatedField, $field);
 			$query->selectField($expression, $alias);
-			
-			// If selecting in a non-default locale, then ensure we maintain the default locale value
-			// (Title_en_NZ || Title => Title_en_NZ)
-			if($defaultLocale !== $locale) {
-				$defaultField = Fluent::db_field_for_locale($field, $defaultLocale);
-				$defaultExpression = $this->localiseSelect($class, $defaultField, $field);
-				$query->selectField($defaultExpression, $defaultField);
-			}
 		}
 		
 		// Rewrite where conditions
@@ -549,9 +564,15 @@ class FluentExtension extends DataExtension {
 
 				// If not on the default locale, write the stored default field back to the main field
 				// (if Title_en_NZ then Title_en_NZ => Title)
+				// If the default subfield has no value, then save using the current locale
 				if($locale !== $defaultLocale) {
 					$defaultField = Fluent::db_field_for_locale($field, $defaultLocale);
-					if(!empty($updates['fields'][$defaultField])) {
+					
+					// Note that null may be DB escaped as a string here. @see DBField::prepValueForDB
+					if(!empty($updates['fields'][$defaultField])
+						&& $updates['fields'][$defaultField] != DB::getConn()->prepStringForDB('')
+						&& strtolower($updates['fields'][$defaultField]) != 'null'
+					) {
 						$updates['fields'][$field] = $updates['fields'][$defaultField];
 					}
 				}
