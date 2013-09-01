@@ -44,6 +44,7 @@ translatable urls.
 
  * [Configuration](docs/en/configuration.md)
  * [Installation](docs/en/installation.md)
+ * [Working with DataObjects](docs/en/dataobjects.md)
  * [Deployment under multiple domains](docs/en/domain-configuration.md)
  * [Templating for Fluent](docs/en/templating.md)
  * [How Fluent works](docs/en/how-fluent-works.md)
