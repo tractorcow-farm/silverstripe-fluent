@@ -302,6 +302,17 @@ class Fluent extends Object {
 	}
 	
 	/**
+	 * Determine if a locale code is within the range of configured locales
+	 * 
+	 * @param string $locale
+	 * @return boolean True if this locale is valid
+	 */
+	public static function is_locale($locale) {
+		if(empty($locale)) return false;
+		return in_array($locale, self::locales());
+	}
+	
+	/**
 	 * Helper function to check if the value given is present in any of the patterns.
 	 * This function is case sensitive by default.
 	 * 
@@ -375,6 +386,9 @@ class Fluent extends Object {
 	 * @return string The matching locale, or null if none could be determined
 	 */
 	public static function detect_browser_locale($domain = null) {
+		
+		// Check for empty case
+		if(empty($_SERVER['HTTP_ACCEPT_LANGUAGE'])) return null;
 		
 		// Given multiple canditates, narrow down the final result using the client's preferred languages
 		$inputLocales = $_SERVER['HTTP_ACCEPT_LANGUAGE'];

@@ -19,12 +19,33 @@ class FluentRootURLController extends RootURLController {
 		if(empty($_SERVER['HTTP_REFERER'])) return false;
 		$hostname = strtolower(parse_url($_SERVER['HTTP_REFERER'], PHP_URL_HOST));
 		
+		// Check if internal traffic
+		if($hostname == strtolower($_SERVER['HTTP_HOST'])) return true;
+		
 		// Check configured domains
 		$domains = Fluent::domains();
-		if(empty($domains)) {
-			return $hostname == strtolower($_SERVER['HTTP_HOST']);
-		} else {
-			return isset($domains[$hostname]);	
+		return isset($domains[$hostname]);
+	}
+	
+	/**
+	 * For incoming traffic to the site root, determine if they should be redirected to any locale.
+	 * 
+	 * @return string|null The locale to redirect to, or null
+	 */
+	protected function getRedirectLocale() {
+		
+		// Redirection interfere with flushing, so don't redirect
+		if(isset($_GET['flush'])) return null;
+		
+		// Don't redirect if the user has clicked a link on the locale menu
+		if($this->knownReferrer()) return null;
+		
+		// Redirect if this user has previously viewed a page in any locale
+		if($locale = Fluent::get_persist_locale()) return $locale;
+		
+		// Detect locale from browser Accept-Language header
+		if(Fluent::config()->detect_locale && ($locale = Fluent::detect_browser_locale())) {
+			return $locale;
 		}
 	}
 	
@@ -41,21 +62,19 @@ class FluentRootURLController extends RootURLController {
 		$locale = Fluent::get_request_locale();
 		if(empty($locale)) {
 			
-			// If visiting the site for the first time, redirect the user to the best locale
-			// This can also interfere with flushing, so don't redirect in this case either
-			// Limit this search to the current domain, preventing cross-domain redirection
-			if( Fluent::config()->detect_locale
-				&& !isset($_GET['flush'])
-				&& (Fluent::get_persist_locale() == null)
-				&& ($locale = Fluent::detect_browser_locale(true)) !== Fluent::default_locale(true)
-				&& !$this->knownReferrer()
-			) {
-				// Redirect to best locale
+			// Determine if this user should be redirected
+			$locale = $this->getRedirectLocale();
+			$this->extend('updateRedirectLocale', $locale);
+			
+			// Check if the user should be redirected
+			$domainDefault = Fluent::default_locale(true);
+			if(Fluent::is_locale($locale) && ($locale !== $domainDefault)) {
+				// Check new traffic with detected locale
 				return $this->redirect(Fluent::locale_baseurl($locale));
-			} 
+			}
 			
 			// Reset parameters to act in the default locale
-			$locale = Fluent::default_locale(true);
+			$locale = $domainDefault;
 			Fluent::set_persist_locale($locale);
 			$params = $request->routeParams();
 			$params[Fluent::config()->query_param] = $locale;
