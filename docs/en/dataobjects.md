@@ -6,13 +6,14 @@ With each of the possible extensions that come with Fluent, it's necessary to co
 correctly delegate your `$fields` to extensions. A different approach may be needed for each DataObject, depending
 on how it generates it's fields.
 
-In all cases, it is necessary to ensure that the `updateCMSFields` extension method is called once on each fieldset.
+In all cases, it is necessary to ensure that the `updateCMSFields` extension method is called once (and
+only once) on each `FieldList` object.
 
 ### Default field scaffolder
 
-If using the default field scaffolder or implementations (as per the implementation in either SiteTree::getCMSFields or 
-DataObject::getCMSFields) it is necessary to know that these methods both, by default, will call the
-`->extend('updateCMSFields', $fields);` extension before returning.
+If using a default field scaffolder (such as `SiteTree::getCMSFields` or `DataObject::getCMSFields`)
+it is necessary to know that these methods both, by default, will call the
+`extend('updateCMSFields', $fields)` extension before returning.
 
 If you wish to add any translated form fields to the result of this call, then you should use `beforeUpdateCMSFields`
 
@@ -50,6 +51,7 @@ class MyObject extends DataObject {
 			new TextField('Title', 'Title', null, 255),
 			new TextareaField('Description')
 		);
+
 		// This line is necessary, and only AFTER you have added your fields
 		$this->extend('updateCMSFields', $fields);
 		return $fields;
