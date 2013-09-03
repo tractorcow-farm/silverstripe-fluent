@@ -133,6 +133,7 @@ class Fluent extends Object {
 			: self::config()->persist_id_cms;
 		
 		// check session then cookies
+		Session::start();
 		if($locale = Session::get($key)) return $locale;
 		if($locale = Cookie::get($key)) return $locale;
 	}
