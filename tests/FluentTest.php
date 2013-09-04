@@ -722,6 +722,7 @@ class FluentTest extends SapphireTest {
 		$id = Fluent::with_locale('es_ES', function() {
 			$page = new Page();
 			$page->Title = 'ES Title';
+			$page->MenuTitle = 'ES Title';
 			$page->write();
 			return $page->ID;
 		});
@@ -731,19 +732,22 @@ class FluentTest extends SapphireTest {
 		// Check that the record has a title in the default locale
 		$page = Versioned::get_one_by_stage("SiteTree", "Stage", "\"SiteTree\".\"ID\" = $id");
 		$this->assertEquals('ES Title', $page->Title);
+		$this->assertEquals('ES Title', $page->MenuTitle);
 		
 		// Check that the record has a title in the foreign locale
-		$title = Fluent::with_locale('es_ES', function() use($id) {
+		$record = Fluent::with_locale('es_ES', function() use($id) {
 			$page = Versioned::get_one_by_stage("SiteTree", "Stage", "\"SiteTree\".\"ID\" = $id");
-			return $page->Title;
+			return $page->toMap();
 		});
-		$this->assertEquals('ES Title', $title);
+		$this->assertEquals('ES Title', $record['Title']);
+		$this->assertEquals('ES Title', $record['MenuTitle']);
 		
 		// == Publish ==
 		
 		// Save title in default locale
 		$page = Versioned::get_one_by_stage("SiteTree", "Stage", "\"SiteTree\".\"ID\" = $id");
 		$page->Title = 'Default Title';
+		$page->MenuTitle = 'Custom Title';
 		$page->write();
 		
 		// Publish this record in the custom locale
@@ -757,13 +761,15 @@ class FluentTest extends SapphireTest {
 		// Check the live record has the correct title in the default locale
 		$page = Versioned::get_one_by_stage("SiteTree", "Live", "\"SiteTree\".\"ID\" = $id");
 		$this->assertEquals('Default Title', $page->Title);
+		$this->assertEquals('Custom Title', $page->MenuTitle);
 		
 		// Check the live record has the correct title in the custom locale
-		$title = Fluent::with_locale('es_ES', function() use($id) {
+		$record = Fluent::with_locale('es_ES', function() use($id) {
 			$page = Versioned::get_one_by_stage("SiteTree", "Live", "\"SiteTree\".\"ID\" = $id");
-			return $page->Title;
+			return $page->toMap();
 		});
-		$this->assertEquals('ES Title', $title);
+		$this->assertEquals('ES Title', $record['Title']);
+		$this->assertEquals('ES Title', $record['MenuTitle']);
 	}
 }
 
