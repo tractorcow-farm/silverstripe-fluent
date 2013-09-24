@@ -316,7 +316,8 @@ class FluentExtension extends DataExtension {
 		$id = $this->owner->ID;
 		$class = $this->owner->ClassName;
 		return Fluent::with_locale($locale, function() use ($id, $class, $locale) {
-			$link = DataObject::get($class)->byID($id)->Link();
+			$object = DataObject::get($class)->byID($id);
+			$link = empty($object->ID) ? '' : $object->Link();
 			// Prefix with domain if in cross-domain mode
 			if($domain = Fluent::domain_for_locale($locale)) {
 				$link = Controller::join_links(Director::protocol().$domain, $link);
@@ -476,7 +477,9 @@ class FluentExtension extends DataExtension {
 	}
 
 	public function augmentSQL(SQLQuery &$query, DataQuery &$dataQuery = null) {
-		
+
+		$addHideInLocale = false;
+
 		// Get locale and translation zone to use
 		$defaultLocale = Fluent::default_locale();
 		$dataQuery->setQueryParam('Fluent.Locale', $locale = Fluent::current_locale());
@@ -499,6 +502,9 @@ class FluentExtension extends DataExtension {
 
 			// If this field shouldn't be translated, skip
 			if(!in_array($field, $includedTables[$class])) continue;
+
+			// If this is SiteTree table add HideInLocale field to where conditions
+			if($class == 'SiteTree') $addHideInLocale = true;
 
 			// Select visible field from translated fields (Title_fr_FR || Title => Title)
 			$translatedField = Fluent::db_field_for_locale($field, $locale);
@@ -527,7 +533,12 @@ class FluentExtension extends DataExtension {
 				)";
 		}
 		$query->setWhere($where);
-		
+
+		// Filter out hidden pages. But not on admin side!
+		if ($addHideInLocale && !is_subclass_of(Controller::curr(), 'LeftAndMain')) {
+			$query->addWhere('"SiteTree"."' . Fluent::db_field_for_locale('HideInLocale', $locale) . '" != 1');
+		}
+
 		// Augment search if applicable
 		if($adapter = Fluent::search_adapter()) {
 			$adapter->augmentSearch($query, $dataQuery);

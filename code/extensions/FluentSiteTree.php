@@ -8,7 +8,11 @@
  * @author Damian Mooyman <damian.mooyman@gmail.com>
  */
 class FluentSiteTree extends FluentExtension {
-	
+
+	private static $db = array(
+		'HideInLocale' => 'Boolean',
+	);
+
 	public function onBeforeWrite() {
 		// Fix issue with MenuTitle not containing the correct translated value
 		$this->owner->setField('MenuTitle', $this->owner->MenuTitle);
@@ -65,6 +69,8 @@ class FluentSiteTree extends FluentExtension {
 	}
 	
 	public function updateCMSFields(FieldList $fields) {
+		$fields->addFieldToTab('Root.Main', new CheckboxField('HideInLocale', _t('SiteTree.db_HideInLocale')), 'Content');
+
 		parent::updateCMSFields($fields);
 		
 		// Fix URLSegment field issue for root pages
@@ -76,6 +82,15 @@ class FluentSiteTree extends FluentExtension {
 			));
 			$urlsegment = $fields->dataFieldByName('URLSegment');
 			$urlsegment->setURLPrefix($baseLink);
+		}
+	}
+
+	public function updateStatusFlags(&$flags) {
+		if ($this->owner->{Fluent::db_field_for_locale('HideInLocale', Fluent::current_locale())} == 1) {
+			$flags['fluenthidden'] = array(
+				'text' => _t('SiteTree.FLUENTHIDDENSHORT', 'Hidden'),
+				'title' => _t('SiteTree.FLUENTHIDDENHELP', 'Page is hidden in this locale'),
+			);
 		}
 	}
 }
