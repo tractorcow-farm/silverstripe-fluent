@@ -88,7 +88,7 @@ class FluentRootURLController extends RootURLController {
 		}
 		
 		$localeURL = Fluent::alias($locale);
-		$request->setUrl($localeURL.'/home/');
+		$request->setUrl($localeURL.'/'.RootURLController::get_homepage_link().'/');
 		$request->match($localeURL.'/$URLSegment//$Action', true);
 		
 		$controller = new ModelAsController();
