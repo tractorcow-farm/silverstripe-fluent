@@ -102,4 +102,18 @@ class FluentFilteredExtension extends DataExtension {
 		$locale = Fluent::current_locale();
 		$query->addWhere("\"$this->ownerBaseClass\".\"LocaleFilter_{$locale}\" = 1");
 	}
+
+	/**
+	 * Add 'Hidden' flag to the SiteTree object if the page is not present in this locale
+	 * 
+	 * @param array $flags
+	 */
+	public function updateStatusFlags(&$flags) {
+		if (!$this->owner->{Fluent::db_field_for_locale("LocaleFilter", Fluent::current_locale())}) {
+			$flags['fluenthidden'] = array(
+				'text' => _t('Fluent.BadgeHiddenShort', 'Hidden'),
+				'title' => _t('Fluent.BadgeHiddenHelp', 'Page is hidden in this locale'),
+			);
+		}
+	}
 }
