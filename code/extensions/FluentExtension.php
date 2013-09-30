@@ -363,6 +363,7 @@ class FluentExtension extends DataExtension {
 			'LocaleRFC1766' => i18n::convert_rfc1766($locale),
 			'Alias' => Fluent::alias($locale),
 			'Title' => i18n::get_locale_name($locale),
+			'LanguageNative' => i18n::get_language_name(i18n::get_lang_from_locale($locale), true),
 			'Link' => $link,
 			'AbsoluteLink' => $link ? Director::absoluteURL($link) : null,
 			'LinkingMode' => $linkingMode

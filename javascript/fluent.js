@@ -24,13 +24,13 @@
 					$("<div class='cms-fluent-selector'>\
 						<span class='icon icon-16 icon-fluent-translate'>&nbsp;</span>\
 						<span class='text'></span>\
-						<a class='cms-fluent-selector-flydown' type='button' title='Change Locale'><span class='icon icon-fluent-select'>Change Locale</span></a>\
+						<a class='cms-fluent-selector-flydown' type='button' title='"+fluentButtonTitle+"'><span class='icon icon-fluent-select'>"+fluentButtonTitle+"</span></a>\
 						<ul class='cms-fluent-selector-locales'></ul>\
 					</div>");
 				
 				// Create options
 				$.each(fluentLocales, function(locale, name){
-					item = $("<li><a></a></li>")
+					var item = $("<li><a></a></li>");
 					$("a", item)
 						.text(name)
 						.attr('data-locale', locale);
