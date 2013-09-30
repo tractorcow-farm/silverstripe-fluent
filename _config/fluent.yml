@@ -22,12 +22,18 @@ Fluent:
     - 'Theme'
     - '/^LocaleFilter_/i'
     - 'Priority'
+    - 'ShowInMenus'
+    - 'ShowInSearch'
+    - 'HasBrokenFile'
+    - 'HasBrokenLink'
+    - 'InheritSettings'
   # Filter in(or out) data types to translate
   data_include:
     - 'Text'
     - 'Varchar'
     - 'HTMLText'
     - 'HTMLVarchar'
+    - 'Boolean'
     # Allow has_one items to be translated
     #- 'ForeignKey'
   data_exclude:
