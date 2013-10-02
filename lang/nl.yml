@@ -1,0 +1,8 @@
+nl:
+  Fluent:
+    BadgeHiddenHelp: 'Pagina is verborgen in deze taal'
+    BadgeHiddenShort: Verborgen
+    ChangeLocale: 'Verander taal'
+    LocaleFilter: 'Talen filter'
+    LocaleFilterDescription: '<em>Selecteer een taal om dit item zichtbaar te maken in die taal</em>'
+    TABLOCALES: Talen
