@@ -1,0 +1,8 @@
+en:
+  Fluent:
+    BadgeHiddenHelp: 'Page is hidden in this locale'
+    BadgeHiddenShort: Hidden
+    ChangeLocale: 'Change Locale'
+    LocaleFilter: 'Locale Filter'
+    LocaleFilterDescription: '<em>Check a locale to show this item on that locale</em>'
+    TABLOCALES: Locales
