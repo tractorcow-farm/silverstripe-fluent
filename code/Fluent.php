@@ -288,7 +288,9 @@ class Fluent extends Object {
 		
 		// No controller - Possibly pre-route phase, so check URL
 		if($ignoreController || !Controller::has_curr()) {
-			// $_SERVER['REQUEST_URI'] indeterminatelys lead with '/', so trim here
+			if(empty($_SERVER['REQUEST_URI'])) return true;
+			
+			// $_SERVER['REQUEST_URI'] indeterminately leads with '/', so trim here
 			$base = preg_quote(ltrim(Director::baseURL(), '/'), '/');
 			return !preg_match('/^(\/)?'.$base.'admin(\/|$)/i', $_SERVER['REQUEST_URI']);
 		}

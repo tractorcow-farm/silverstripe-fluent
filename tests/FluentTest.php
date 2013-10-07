@@ -210,47 +210,49 @@ class FluentTest extends SapphireTest {
 		$data = $this->withURL('www.notexample.com', '/', '/', function($test) use($item) {
 			return $item->Locales()->toNestedArray();
 		});
-		$this->assertEquals(
+		$expected = array(
 			array(
-				array(
-					'Locale' => 'fr_CA',
-					'LocaleRFC1766' => 'fr-CA',
-					'Alias' => 'fr_CA',
-					'Title' => 'French (Canada)',
-					'Link' => '/', // fr_CA home page
-					'AbsoluteLink' => 'http://www.notexample.com/',
-					'LinkingMode' => 'invalid'
-				),
-				array(
-					'Locale' => 'en_NZ',
-					'LocaleRFC1766' => 'en-NZ',
-					'Alias' => 'en_NZ',
-					'Title' => 'English (New Zealand)',
-					'Link' => '/en_NZ/link/',
-					'AbsoluteLink' => 'http://www.notexample.com/en_NZ/link/',
-					'LinkingMode' => 'current'
-				),
-				array(
-					'Locale' => 'en_US',
-					'LocaleRFC1766' => 'en-US',
-					'Alias' => 'usa',
-					'Title' => 'English (United States)',
-					'Link' => '/en_US/link/',
-					'AbsoluteLink' => 'http://www.notexample.com/en_US/link/',
-					'LinkingMode' => 'link'
-				),
-				array(
-					'Locale' => 'es_ES',
-					'LocaleRFC1766' => 'es-ES',
-					'Alias' => 'es_ES',
-					'Title' => 'Spanish (Spain)',
-					'Link' => '/es_ES/', // es_ES home page
-					'AbsoluteLink' => 'http://www.notexample.com/es_ES/',
-					'LinkingMode' => 'invalid'
-				)
+				'Locale' => 'fr_CA',
+				'LocaleRFC1766' => 'fr-CA',
+				'Alias' => 'fr_CA',
+				'Title' => 'French (Canada)',
+				'LanguageNative' => 'fran&ccedil;ais',
+				'Link' => '/', // fr_CA home page
+				'AbsoluteLink' => 'http://www.notexample.com/',
+				'LinkingMode' => 'invalid'
 			),
-			$data
+			array(
+				'Locale' => 'en_NZ',
+				'LocaleRFC1766' => 'en-NZ',
+				'Alias' => 'en_NZ',
+				'Title' => 'English (New Zealand)',
+				'LanguageNative' => 'English',
+				'Link' => '/en_NZ/link/',
+				'AbsoluteLink' => 'http://www.notexample.com/en_NZ/link/',
+				'LinkingMode' => 'current'
+			),
+			array(
+				'Locale' => 'en_US',
+				'LocaleRFC1766' => 'en-US',
+				'Alias' => 'usa',
+				'Title' => 'English (United States)',
+				'LanguageNative' => 'English',
+				'Link' => '/en_US/link/',
+				'AbsoluteLink' => 'http://www.notexample.com/en_US/link/',
+				'LinkingMode' => 'link'
+			),
+			array(
+				'Locale' => 'es_ES',
+				'LocaleRFC1766' => 'es-ES',
+				'Alias' => 'es_ES',
+				'Title' => 'Spanish (Spain)',
+				'LanguageNative' => 'espa&ntilde;ol',
+				'Link' => '/es_ES/', // es_ES home page
+				'AbsoluteLink' => 'http://www.notexample.com/es_ES/',
+				'LinkingMode' => 'invalid'
+			)
 		);
+		$this->assertEquals($expected, $data);
 		
 		// Put default locale back
 		Fluent::set_persist_locale('fr_CA');
@@ -268,47 +270,49 @@ class FluentTest extends SapphireTest {
 		$item = $this->objFromFixture('FluentTest_FilteredObject', 'filtered1');
 		$data = $item->Locales()->toNestedArray();
 		
-		$this->assertEquals(
+		$expected = array(
 			array(
-				array(
-					'Locale' => 'fr_CA',
-					'LocaleRFC1766' => 'fr-CA',
-					'Alias' => 'fr_CA',
-					'Title' => 'French (Canada)',
-					'Link' => 'http://www.example.ca/', // fr_CA home page
-					'AbsoluteLink' => 'http://www.example.ca/',
-					'LinkingMode' => 'invalid'
-				),
-				array(
-					'Locale' => 'en_NZ',
-					'LocaleRFC1766' => 'en-NZ',
-					'Alias' => 'en_NZ',
-					'Title' => 'English (New Zealand)',
-					'Link' => 'http://www.example.co.nz/en_NZ/link/', // NZ domain
-					'AbsoluteLink' => 'http://www.example.co.nz/en_NZ/link/',
-					'LinkingMode' => 'current'
-				),
-				array(
-					'Locale' => 'en_US',
-					'LocaleRFC1766' => 'en-US',
-					'Alias' => 'usa',
-					'Title' => 'English (United States)',
-					'Link' => 'http://www.example.com/en_US/link/', // US domain with en_US locale
-					'AbsoluteLink' => 'http://www.example.com/en_US/link/',
-					'LinkingMode' => 'link'
-				),
-				array(
-					'Locale' => 'es_ES',
-					'LocaleRFC1766' => 'es-ES',
-					'Alias' => 'es_ES',
-					'Title' => 'Spanish (Spain)',
-					'Link' => 'http://www.example.com/es_ES/', // US domain with es_ES home page
-					'AbsoluteLink' => 'http://www.example.com/es_ES/',
-					'LinkingMode' => 'invalid'
-				)
+				'Locale' => 'fr_CA',
+				'LocaleRFC1766' => 'fr-CA',
+				'Alias' => 'fr_CA',
+				'Title' => 'French (Canada)',
+				'LanguageNative' => 'fran&ccedil;ais',
+				'Link' => 'http://www.example.ca/', // fr_CA home page
+				'AbsoluteLink' => 'http://www.example.ca/',
+				'LinkingMode' => 'invalid'
 			),
-			$data
+			array(
+				'Locale' => 'en_NZ',
+				'LocaleRFC1766' => 'en-NZ',
+				'Alias' => 'en_NZ',
+				'Title' => 'English (New Zealand)',
+				'LanguageNative' => 'English',
+				'Link' => 'http://www.example.co.nz/en_NZ/link/', // NZ domain
+				'AbsoluteLink' => 'http://www.example.co.nz/en_NZ/link/',
+				'LinkingMode' => 'current'
+			),
+			array(
+				'Locale' => 'en_US',
+				'LocaleRFC1766' => 'en-US',
+				'Alias' => 'usa',
+				'Title' => 'English (United States)',
+				'LanguageNative' => 'English',
+				'Link' => 'http://www.example.com/en_US/link/', // US domain with en_US locale
+				'AbsoluteLink' => 'http://www.example.com/en_US/link/',
+				'LinkingMode' => 'link'
+			),
+			array(
+				'Locale' => 'es_ES',
+				'LocaleRFC1766' => 'es-ES',
+				'Alias' => 'es_ES',
+				'Title' => 'Spanish (Spain)',
+				'LanguageNative' => 'espa&ntilde;ol',
+				'Link' => 'http://www.example.com/es_ES/', // US domain with es_ES home page
+				'AbsoluteLink' => 'http://www.example.com/es_ES/',
+				'LinkingMode' => 'invalid'
+			)
 		);
+		$this->assertEquals($expected, $data);
 		
 		Config::inst()->update('Fluent', 'force_domain', false);
 	}
@@ -499,7 +503,7 @@ class FluentTest extends SapphireTest {
 	public function withURL($hostname, $baseURL, $url, $callback) {
 		
 		// Set hostname
-		$oldHostname = $_SERVER['HTTP_HOST'];
+		$oldHostname = isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : null;
 		$_SERVER['HTTP_HOST'] = $hostname;
 		
 		// Set base URL
@@ -507,7 +511,7 @@ class FluentTest extends SapphireTest {
 		Config::inst()->update('Director', 'alternate_base_url', $baseURL);
 		
 		// Set URL
-		$oldURL = $_SERVER['REQUEST_URI'];
+		$oldURL = isset($_SERVER['REQUEST_URI']) ? $_SERVER['REQUEST_URI'] : null;
 		$_SERVER['REQUEST_URI'] = $url;
 		
 		try { // Ensure failed test don't break state
