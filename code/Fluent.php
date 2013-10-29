@@ -373,7 +373,11 @@ class Fluent extends Object {
 		if(empty($locale)) return;
 		
 		i18n::set_locale($locale);
-		setlocale(LC_ALL, $locale);
+		
+		// LC_NUMERIC causes SQL errors for some locales (comma as decimal indicator) so skip
+		foreach(array(LC_COLLATE, LC_CTYPE, LC_MONETARY, LC_TIME) as $category) {
+			setlocale($category, $locale);
+		}
 		
 		// Get date/time formats from Zend
 		require_once 'Zend/Date.php';
