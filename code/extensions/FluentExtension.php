@@ -50,6 +50,7 @@ class FluentExtension extends DataExtension {
 		return self::$translated_fields_for_cache[$class] = self::without_fluent_fields(function() use ($class) {
 			$db = DataObject::custom_database_fields($class);
 			$filter = Config::inst()->get($class, 'translate', Config::UNINHERITED);
+			if($filter === 'none') return array();
 
 			// Data and field filters
 			$fieldsInclude = Fluent::config()->field_include;

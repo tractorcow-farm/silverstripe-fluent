@@ -132,6 +132,14 @@ MyDataObject:
     - 'FluentExtension'
 ```
 
+Set the translate option to 'none' to disable all translation on that dataobject.
+
+```php
+class FormPage extends Page {
+	private static $translate = 'none';
+}
+```
+
 ## Using custom controllers
 
 If you are using custom controllers (such as for rendering rss, ajax data, etc) you
