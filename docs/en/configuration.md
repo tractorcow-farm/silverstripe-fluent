@@ -255,3 +255,14 @@ is necessary to turn this off. This can be done as below:
 Fluent:
   detect_locale: false
 ```
+
+## Saved locale
+
+When a visitor has viewed a page on the website before, and returns in subsequent sessions, fluent will attempt
+to redirect requests for the default home page to the home page of that recently viewed locale. This behaviour can be
+turned off by disabling the `remember_locale` option.
+
+```yaml
+Fluent:
+  remember_locale: false
+```

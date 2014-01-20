@@ -41,7 +41,9 @@ class FluentRootURLController extends RootURLController {
 		if($this->knownReferrer()) return null;
 		
 		// Redirect if this user has previously viewed a page in any locale
-		if($locale = Fluent::get_persist_locale()) return $locale;
+		if(Fluent::config()->remember_locale && ($locale = Fluent::get_persist_locale())) {
+			return $locale;
+		}
 		
 		// Detect locale from browser Accept-Language header
 		if(Fluent::config()->detect_locale && ($locale = Fluent::detect_browser_locale())) {
