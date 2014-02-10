@@ -68,20 +68,22 @@ class FluentFilteredExtension extends DataExtension {
 		);
 	}
 	
-	function updateCMSFields(FieldList $fields) {
+	public function updateCMSFields(FieldList $fields) {
 
 		// Present a set of checkboxes for filtering this item by locale
-		$filterField = new FieldGroup();
-		$filterField->setTitle(_t('Fluent.LocaleFilter', 'Locale Filter'));
+		$filterField = FieldGroup::create()
+			->setTitle(
+				_t('Fluent.LocaleFilter', 'Locale Filter')
+			)
+			->setDescription(
+				_t('Fluent.LocaleFilterDescription', 'Check a locale to show this item on that locale')
+			);
+		
 		foreach(Fluent::locales() as $locale) {
 			$id = Fluent::db_field_for_locale("LocaleFilter", $locale);
 			$title = i18n::get_locale_name($locale);
 			$filterField->push(new CheckboxField($id, $title));
 		}
-		$filterField->push($descriptionField = new LiteralField(
-			'LocaleFilterDescription',
-			_t('Fluent.LocaleFilterDescription', '<em>Check a locale to show this item on that locale</em>')
-		));
 
 		if($fields->hasTabSet()) {
 			$fields->findOrMakeTab('Root.Locales', _t('Fluent.TABLOCALES', 'Locales'));

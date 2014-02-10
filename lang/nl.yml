@@ -4,5 +4,6 @@ nl:
     BadgeHiddenShort: Verborgen
     ChangeLocale: 'Verander taal'
     LocaleFilter: 'Talen filter'
-    LocaleFilterDescription: '<em>Selecteer een taal om dit item zichtbaar te maken in die taal</em>'
+    LocaleFilterDescription: 'Selecteer een taal om dit item zichtbaar te maken in die taal'
+    LocaleMenuFilterDescription: 'Selecteer de talen waar deze item is zichtbaar in het menu'
     TABLOCALES: Talen

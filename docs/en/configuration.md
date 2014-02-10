@@ -222,6 +222,22 @@ labelled "Locale filter".
 Note: Although these objects will be filtered in the front end, this filter is disabled
 in the CMS in order to allow access by site administrators in all locales.
 
+## Customise Menu by Locale
+
+Similarly to how `FluentFilteredExtension` works, a `SiteTree` can have its appearance in the navigation controlled
+on a locale-by-locale basis by adding the `FluentMenuExtension` extension. Adding this will replace the 
+ShowInMenu field under the Settings tab with a locale selector. This must be added to the `SiteTree` 
+class, not `Page` or any other subclass.
+
+```yaml
+---
+Name: myproductconfiguration
+---
+SiteTree:
+  extensions:
+    - 'FluentMenuExtension'
+```
+
 ## Fulltext Search
 
 Since full text search queries are very distinct, DB specific filters must be assigned to handle these queries.

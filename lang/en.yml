@@ -4,5 +4,6 @@ en:
     BadgeHiddenShort: Hidden
     ChangeLocale: 'Change Locale'
     LocaleFilter: 'Locale Filter'
-    LocaleFilterDescription: '<em>Check a locale to show this item on that locale</em>'
+    LocaleFilterDescription: 'Check a locale to show this item on that locale'
+    LocaleMenuFilterDescription: 'Select the locales where this item is visible in the menu'
     TABLOCALES: Locales
