@@ -5,5 +5,5 @@ nl:
     ChangeLocale: 'Verander taal'
     LocaleFilter: 'Talen filter'
     LocaleFilterDescription: 'Selecteer een taal om dit item zichtbaar te maken in die taal'
-    LocaleMenuFilterDescription: 'Selecteer de talen waar deze item is zichtbaar in het menu'
+    LocaleMenuFilterDescription: 'Selecteer de talen waar dit item zichtbaar is in het menu'
     TABLOCALES: Talen
