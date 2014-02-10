@@ -9,6 +9,10 @@
  */
 class FluentSiteTree extends FluentExtension {
 	
+	public function MetaTags(&$tags) {
+		$tags .= $this->owner->renderWith('FluentSiteTree_MetaTags');
+	}
+	
 	public function onBeforeWrite() {
 		// Fix issue with MenuTitle not containing the correct translated value
 		$this->owner->setField('MenuTitle', $this->owner->MenuTitle);
