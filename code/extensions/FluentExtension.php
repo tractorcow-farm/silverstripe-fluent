@@ -386,7 +386,23 @@ class FluentExtension extends DataExtension {
 
 	// <editor-fold defaultstate="collapsed" desc="SQL Augmentations">
 	
+	/**
+	 * Amend freshly created DataQuery objects with the current locale and frontend status
+	 *
+	 * @param SQLQuery
+	 * @param DataQuery
+	 */
+	public function augmentDataQueryCreation(SQLQuery $query, DataQuery $dataQuery) {
+		$dataQuery->setQueryParam('Fluent.Locale', Fluent::current_locale());
+		$dataQuery->setQueryParam('Fluent.IsFrontend', Fluent::is_frontend());
+	}
+	
 	public function onBeforeWrite() {
+		
+		// Ensure that write is performed using the same locale this object was loaded as
+		// E.g. if loaded as zh_CN, then even if the current locale is now en_NZ we should save
+		// writes to this object as though it was still in chinese locale
+		$locale = $this->owner->getSourceQueryParam('Fluent.Locale') ?: Fluent::current_locale();
 		
 		// Prior to writing, we should flag any translated field as changed if its local value differs from 
 		// its translated value, in case change detection would prevent this from being written to the DB
@@ -396,7 +412,7 @@ class FluentExtension extends DataExtension {
 				
 				// Extract both base value (which could have been extracted from the subfield on load)
 				// and compare it to the localised field value
-				$localeField = Fluent::db_field_for_locale($field, Fluent::current_locale());
+				$localeField = Fluent::db_field_for_locale($field, $locale);
 				$value = $this->owner->$field;
 				$localeValue =  $this->owner->$localeField;
 				
@@ -480,9 +496,7 @@ class FluentExtension extends DataExtension {
 	public function augmentSQL(SQLQuery &$query, DataQuery &$dataQuery = null) {
 		
 		// Get locale and translation zone to use
-		$defaultLocale = Fluent::default_locale();
-		$dataQuery->setQueryParam('Fluent.Locale', $locale = Fluent::current_locale());
-		$dataQuery->setQueryParam('Fluent.IsFrontend', Fluent::is_frontend());
+		$locale = $dataQuery->getQueryParam('Fluent.Locale') ?: Fluent::current_locale();
 		
 		// Get all tables to translate fields for, and their respective field names
 		$includedTables = $this->getTranslatedTables();
@@ -521,7 +535,9 @@ class FluentExtension extends DataExtension {
 			if($localisedCondition === $condition) continue;
 			
 			// Generate new condition that conditionally executes one of the two conditions
-			// depending on field nullability
+			// depending on field nullability.
+			// If the filterColumn is null or empty, then it's considered untranslated, and 
+			// thus the query should continue running on the default column unimpeded.
 			$where[$index] = "
 				($filterColumn IS NOT NULL AND $filterColumn != '' AND ($localisedCondition))
 				OR (
@@ -542,7 +558,7 @@ class FluentExtension extends DataExtension {
 		if(!self::$_enable_write_augmentation) return;
 		
 		// Get locale and translation zone to use
-		$locale = Fluent::current_locale();
+		$locale = $this->owner->getSourceQueryParam('Fluent.Locale') ?: Fluent::current_locale();
 		$defaultLocale = Fluent::default_locale();
 							
 		// Get all tables to translate fields for, and their respective field names

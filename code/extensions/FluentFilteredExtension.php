@@ -93,16 +93,29 @@ class FluentFilteredExtension extends DataExtension {
 		}
 	}
 	
+	/**
+	 * Amend freshly created DataQuery objects with the current locale and frontend status
+	 *
+	 * @param SQLQuery
+	 * @param DataQuery
+	 */
+	public function augmentDataQueryCreation(SQLQuery $query, DataQuery $dataQuery) {
+		$dataQuery->setQueryParam('Fluent.Locale', Fluent::current_locale());
+		$dataQuery->setQueryParam('Fluent.IsFrontend', Fluent::is_frontend());
+	}
+	
 	public function augmentSQL(SQLQuery &$query, DataQuery &$dataQuery = null) {
 		
 		// Skip ID based filters
 		if($query->filtersOnID()) return;
 		
 		// Skip filter in the CMS
-		if(!Fluent::is_frontend()) return;
+		$isFrontend = $dataQuery->getQueryParam('Fluent.IsFrontend');
+		if($isFrontend === null) $isFrontend = Fluent::is_frontend();
+		if(!$isFrontend) return;
 		
 		// Add filter for locale
-		$locale = Fluent::current_locale();
+		$locale = $dataQuery->getQueryParam('Fluent.Locale') ?: Fluent::current_locale();
 		$query->addWhere("\"$this->ownerBaseClass\".\"LocaleFilter_{$locale}\" = 1");
 	}
 
