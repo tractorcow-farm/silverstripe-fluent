@@ -1,0 +1,18 @@
+---
+Name: fluentextensions
+---
+SiteTree:
+  extensions:
+    - FluentSiteTree
+  # Extend this to explicitly specify translatable fields for any class
+  # This will ignore all data_ and field_ filters for that class
+  translate: []
+SiteConfig:
+  extensions:
+    - FluentExtension
+ContentController:
+  extensions:
+    - FluentContentController
+LeftAndMain:
+  extensions:
+    - FluentLeftAndMain

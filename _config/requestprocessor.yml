@@ -1,0 +1,8 @@
+---
+Name: fluentrequestprocessors
+---
+Injector:
+  RequestProcessor:
+    properties:
+      filters:
+        - '%$FluentRequestFilter'

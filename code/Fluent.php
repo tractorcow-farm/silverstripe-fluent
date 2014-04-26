@@ -133,7 +133,6 @@ class Fluent extends Object {
 			: self::config()->persist_id_cms;
 		
 		// check session then cookies
-		if(!isset($_SESSION)) Session::start();
 		if($locale = Session::get($key)) return $locale;
 		if($locale = Cookie::get($key)) return $locale;
 	}
@@ -184,7 +183,14 @@ class Fluent extends Object {
 			$info = $domains[$domain];
 			if(!empty($info['locales'])) return $info['locales'];
 		}
-		return self::config()->locales;
+		
+		// Check for configured locales
+		if($locales = self::config()->locales) return $locales;
+		
+		// If no locales are configured, then fallback to the global default locale
+		// This should ensure the site is at least usable if a dev/build is performed prior to 
+		// configuration of `Fluent.locales`
+		return array(self::default_locale());
 	}
 	
 	/**
