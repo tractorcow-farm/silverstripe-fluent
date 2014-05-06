@@ -27,14 +27,7 @@ class FluentTest extends SapphireTest {
 	protected $_original_config_default = null;
 	protected $_original_config_aliases = null;
 	
-	public function setUpOnce() {
-		
-		// Ensure that Fluent doesn't interfere with scaffolding records from FluentTest.yml
-		FluentExtension::set_enable_write_augmentation(false);
-		
-		$this->_original_config_locales = Fluent::config()->locales;
-		$this->_original_config_default = Fluent::config()->default_locale;
-		$this->_original_config_aliases = Fluent::config()->aliases;
+	protected function setDefaultConfig() {
 		
 		// Tweak configuration
 		Config::inst()->remove('Fluent', 'locales');
@@ -60,6 +53,15 @@ class FluentTest extends SapphireTest {
 			)
 		));
 		Fluent::set_persist_locale('fr_CA');
+	}
+	
+	public function setUpOnce() {
+		
+		// Ensure that Fluent doesn't interfere with scaffolding records from FluentTest.yml
+		FluentExtension::set_enable_write_augmentation(false);
+		
+		Config::nest();
+		$this->setDefaultConfig();
 		
 		// Force db regeneration using the above values
 		self::kill_temp_db();
@@ -69,11 +71,27 @@ class FluentTest extends SapphireTest {
 		parent::setUpOnce();
 		
 		FluentExtension::set_enable_write_augmentation(true);
+		Config::unnest();
+	}
+	
+	public function tearDownOnce() {
+		
+		parent::tearDownOnce();
+		
+		Fluent::set_persist_locale(null);
+		
+		self::kill_temp_db();
+		self::create_temp_db();
+		$this->resetDBSchema(true);
+		
+		Config::inst()->update('Cookie', 'report_errors', false);
 	}
 	
 	public function setUp() {
 		
 		// Ensure that Fluent doesn't interfere with scaffolding records from FluentTest.yml
+		Config::nest();
+		$this->setDefaultConfig();
 		FluentExtension::set_enable_write_augmentation(false);
 		parent::setUp();
 		FluentExtension::set_enable_write_augmentation(true);
@@ -83,18 +101,9 @@ class FluentTest extends SapphireTest {
 		Fluent::set_persist_locale('fr_CA');
 	}
 	
-	public function tearDownOnce() {
-		
-		parent::tearDownOnce();
-		
-		Config::inst()->update('Fluent', 'locales', $this->_original_config_locales);
-		Config::inst()->update('Fluent', 'default_locale', $this->_original_config_default);
-		Config::inst()->update('Fluent', 'aliases', $this->_original_config_aliases);
-		Fluent::set_persist_locale(null);
-		
-		self::kill_temp_db();
-		self::create_temp_db();
-		$this->resetDBSchema(true);
+	public function tearDown() {
+		parent::tearDown();
+		Config::unnest();
 	}
 	
 	/**

@@ -85,8 +85,20 @@
 			 * Takes the user to the selected locale
 			 */
 			onclick: function(event) {
+				event.preventDefault();
 				locale = this.attr('data-locale');
-				window.location.href = this.urlForLocale(locale);
+				url = this.urlForLocale(locale);
+				
+				// Load panel
+				$('.cms-container').loadPanel(url);
+				
+				// Update selector
+				$(".cms-fluent-selector")
+					.removeClass("active")
+					.find(".text")
+						.text(fluentLocales[locale]);
+				
+				return false;
 			}
 		});
 	});
