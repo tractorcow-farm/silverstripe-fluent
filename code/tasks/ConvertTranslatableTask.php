@@ -110,13 +110,20 @@ class ConvertTranslatableTask extends BuildTask {
 	public function run($request) {
 		
 		// Extend time limit
-		set_time_limit(10000);
+		set_time_limit(100000);
+
+		// we may need some proivileges for this to work
+		// without this, running under sake is a problem
+		// maybe sake could take care of it ...	
+		Security::findAnAdministrator()->login();
+		
 		
 		$this->checkInstalled();
 		$this->withTransaction(function($task) {
 			Versioned::reading_stage('Stage');
 			$classes = $task->fluentClasses();
 			$tables = DB::tableList();
+			$deleteQueue = array();
 			foreach($classes as $class) {
 				
 				// Ensure that a translationgroup table exists for this class
@@ -139,11 +146,23 @@ class ConvertTranslatableTask extends BuildTask {
 					Convert::raw2sql(Fluent::default_locale())
 				));
 				foreach($instances as $instance) {
-					// Force lazy loading of fields
+
+					$isPublished = false;
+					if ($instance->hasMethod('isPublished')){
+					     $isPublished = $instance->isPublished();
+					}
+
+					if ($instance->ObsoleteClassName){
+						Debug::message("Skipping {$instance->ClassName} with ID {$instanceID} because it from an obsolete class", false);
+						continue;
+					}
+
 					$instanceID = $instance->ID;
+
 					$translatedFields = $task->getTranslatedFields($instance->ClassName);
-					Debug::message("Migrating item {$instance->ClassName} with ID {$instanceID}", false);
-					
+					Debug::message("Updating {$instance->ClassName} {$instance->MenuTitle} ({$instanceID})", false);
+					$changed = false;
+
 					// Select all translations for this
 					$translatedItems = DataObject::get($class, sprintf(
 						'"Locale" != \'%1$s\' AND "ID" IN (
@@ -155,19 +174,19 @@ class ConvertTranslatableTask extends BuildTask {
 						$groupTable,
 						$instanceID
 					));
+
 					foreach($translatedItems as $translatedItem) {
 						
-						// Extract information for this locale
-						$translatedValues = array_intersect_key(
-							$translatedItem->toMap(),
-							array_flip($translatedFields)
-						);
 						$locale = DB::query(sprintf(
 							'SELECT "Locale" FROM "%s" WHERE "ID" = %d',
 							$class,
 							$translatedItem->ID
 						))->value();
 						
+						// since we are going to delete the stuff
+						// anyway, no need bothering validating it
+						DataObject::config()->validation_enabled = false;
+
 						// Unpublish and delete translated record
 						if($translatedItem->hasMethod('doUnpublish')) {
 							Debug::message("  --  Unpublishing $locale", false);
@@ -175,30 +194,37 @@ class ConvertTranslatableTask extends BuildTask {
 								throw new ConvertTranslatableException("Failed to unpublish");
 							}
 						}
-						Debug::message("  --  Removing old record $locale", false);
-						$translatedItem->delete();
-						
-						// Load this information into
-						Fluent::with_locale($locale, function() use ($class, $instanceID, $translatedValues, $locale) {
-							Debug::message("  --  Migrating to locale $locale", false);
-							$item = DataObject::get_by_id($class, $instanceID, false);
-							foreach($translatedValues as $field => $value) {
-								$item->$field = $value;
+						Debug::message("  --  Adding {$translatedItem->ID} ($locale)", false);
+						foreach ($translatedFields as $field) {
+							$trField = Fluent::db_field_for_locale($field,$locale);
+							if ($translatedItem->$field){
+								Debug::message("     --  Adding $trField", false);
+								$instance->$trField = $translatedItem->$field;
+								$changed = true;
 							}
-							$item->write();
-						});
+						}
+						// for some reason, deleting items here has disruptive effects
+						// as too much stuff gets removed, so lets wait with this until the end of the migration
+						$deleteQueue[] = $translatedItem;
 					}
-					
-					// Publish main item
-					$item = DataObject::get_by_id($class, $instanceID, false);
-					if($item->hasMethod('doPublish')) {
-						Debug::message("  --  Publishing", false);
-						if($item->doPublish() === false) {
+					if($changed) {
+						if (!$isPublished){
+							$instance->write();
+						}
+						elseif ($instance->doPublish() === false) {
+							Debug::message("  --  Publishing FAILED", false);
 							throw new ConvertTranslatableException("Failed to publish");
 						}
+						else {
+							Debug::message("  --  Published",false);
+						}					 	                                                       
 					}
 				}
 			}
+			foreach ($deleteQueue as $delItem){
+			     Debug::message("  --  Removing {$delItem->ID}", false);
+				   $delItem->delete();
+			}			
 		});
 	}	
 }
