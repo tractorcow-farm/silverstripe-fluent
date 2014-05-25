@@ -185,7 +185,7 @@ class ConvertTranslatableTask extends BuildTask {
 						
 						// since we are going to delete the stuff
 						// anyway, no need bothering validating it
-						$translatedItem->set_validation_enabled(false);                                         
+						DataObject::config()->validation_enabled = false;
 
 						// Unpublish and delete translated record
 						if($translatedItem->hasMethod('doUnpublish')) {
@@ -208,17 +208,15 @@ class ConvertTranslatableTask extends BuildTask {
 						$deleteQueue[] = $translatedItem;
 					}
 					if($changed) {
-						if ($isPublished){
-							if ($instance->doPublish() === false) {
-								Debug::message("  --  Publishing FAILED", false);
-								throw new ConvertTranslatableException("Failed to publish");
-							}
-							else {
-								Debug::message("  --  Published",false);
-							}
+						if (!$isPublished){
+							$instance->write();
+						}
+						elseif ($instance->doPublish() === false) {
+							Debug::message("  --  Publishing FAILED", false);
+							throw new ConvertTranslatableException("Failed to publish");
 						}
 						else {
-							$instance->write();
+							Debug::message("  --  Published",false);
 						}					 	                                                       
 					}
 				}
