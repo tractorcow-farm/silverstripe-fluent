@@ -784,6 +784,17 @@ class FluentTest extends SapphireTest {
 		$this->assertEquals('ES Title', $record['Title']);
 		$this->assertEquals('ES Title', $record['MenuTitle']);
 	}
+
+	/*
+	 * test if isFrontend gets ignored for ContentControllers. Yes they should not have this
+	 * method in the first place, but at least VirtualPages do. (patch #87)
+	 */
+
+	public function testIsFrontendIgnorance() {
+		$this->withController(new FluentTest_ContentController(), function($test) {
+			$test->assertTrue(Fluent::is_frontend());
+		});
+	}
 }
 
 /**
@@ -832,6 +843,14 @@ class FluentTest_FilteredObject extends DataObject implements TestOnly {
 		);
 	}
 	
+}
+
+class FluentTest_ContentController extends ContentController {
+	// a ContentController should not really provide a isFrontend method
+	// this is just make sure patch #87 works
+	public function isFrontend() {
+		return false;
+	}
 }
 
 class FluentTest_CMSController extends Controller {
