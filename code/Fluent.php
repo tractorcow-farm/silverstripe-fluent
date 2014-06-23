@@ -303,7 +303,8 @@ class Fluent extends Object {
 		
 		// Check if controller is aware of its own role
 		$controller = Controller::curr();
-		if(! $controller instanceof VirtualPage_Controller && $controller->hasMethod('isFrontend')) return $controller->isFrontend();
+		if($controller instanceof ContentController) return true;
+		if($controller->hasMethod('isFrontend')) return $controller->isFrontend();
 		
 		// Default to return false for any CMS controller
 		return !($controller instanceof AdminRootController)
