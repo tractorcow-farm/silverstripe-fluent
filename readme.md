@@ -1,6 +1,6 @@
 # Fluent
 
-[![Build Status](https://travis-ci.org/tractorcow/silverstripe-fluent.svg?branch=3.1)](https://travis-ci.org/tractorcow/silverstripe-fluent)
+[![Build Status](https://travis-ci.org/tractorcow/silverstripe-fluent.svg?branch=master)](https://travis-ci.org/tractorcow/silverstripe-fluent)
 
 ## Simple Silverstripe Localisation
 
