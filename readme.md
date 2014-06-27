@@ -1,5 +1,7 @@
 # Fluent
 
+[![Build Status](https://travis-ci.org/tractorcow/silverstripe-fluent.svg?branch=3.1)](https://travis-ci.org/tractorcow/silverstripe-fluent)
+
 ## Simple Silverstripe Localisation
 
 This module allows websites to manage localisation of content, and navigation between localisations,
