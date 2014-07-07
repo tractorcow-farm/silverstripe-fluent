@@ -163,6 +163,16 @@ class ConvertTranslatableTask extends BuildTask {
 					Debug::message("Updating {$instance->ClassName} {$instance->MenuTitle} ({$instanceID})", false);
 					$changed = false;
 
+					// first lets get the default language fixed (copy field to field_default_LOCALE)
+					foreach ($translatedFields as $field) {
+						$trField = Fluent::db_field_for_locale($field,Fluent::default_locale());
+						if ($instance->$field && !$instance->$trField){
+							Debug::message("     --  seting default locale for $trField", false);
+							$instance->$trField = $instance->$field;
+							$changed = true;
+						}
+					}
+
 					// Select all translations for this
 					$translatedItems = DataObject::get($class, sprintf(
 						'"Locale" != \'%1$s\' AND "ID" IN (
