@@ -163,10 +163,14 @@ class ConvertTranslatableTask extends BuildTask {
 					Debug::message("Updating {$instance->ClassName} {$instance->MenuTitle} ({$instanceID})", false);
 					$changed = false;
 
+					// since we are going to delete the stuff
+					// anyway, no need bothering validating it
+					DataObject::config()->validation_enabled = false;
+
 					// first lets get the default language fixed (copy field to field_default_LOCALE)
 					foreach ($translatedFields as $field) {
 						$trField = Fluent::db_field_for_locale($field,Fluent::default_locale());
-						if ($instance->$field && !$instance->$trField){
+						if (!empty($instance->$field) && empty($instance->$trField)){
 							Debug::message("     --  seting default locale for $trField", false);
 							$instance->$trField = $instance->$field;
 							$changed = true;
@@ -193,9 +197,6 @@ class ConvertTranslatableTask extends BuildTask {
 							$translatedItem->ID
 						))->value();
 						
-						// since we are going to delete the stuff
-						// anyway, no need bothering validating it
-						DataObject::config()->validation_enabled = false;
 
 						// Unpublish and delete translated record
 						if($translatedItem->hasMethod('doUnpublish')) {
