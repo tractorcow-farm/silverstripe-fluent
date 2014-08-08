@@ -79,7 +79,9 @@
 					// Add locale code
 					url = $.path.addSearchParams(url, param);
 				}
-				return url;
+				
+				// Remove hash. See https://github.com/tractorcow/silverstripe-fluent/issues/90
+				return url.split('#')[0];
 			},
 			/**
 			 * Takes the user to the selected locale
