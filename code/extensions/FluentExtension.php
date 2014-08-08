@@ -2,24 +2,24 @@
 
 /**
  * Data extension class for translatable objects
- * 
+ *
  * @package fluent
  * @author Damian Mooyman <damian.mooyman@gmail.com>
  */
 class FluentExtension extends DataExtension {
-	
+
 	// <editor-fold defaultstate="collapsed" desc="Field helpers">
-	
+
 	/**
 	 * Hook allowing temporary disabling of extra fluent fields
 	 *
 	 * @var boolean
 	 */
 	protected static $disable_fluent_fields = false;
-		
+
 	/**
 	 * Executes a callback with extra fluent fields disabled
-	 * 
+	 *
 	 * @param callback $callback
 	 * @return mixed
 	 */
@@ -30,17 +30,17 @@ class FluentExtension extends DataExtension {
 		self::$disable_fluent_fields = $before;
 		return $result;
 	}
-	
+
 	/**
 	 * Cache for list of translated fields for all inspected classes
 	 *
 	 * @var array
 	 */
 	protected static $translated_fields_for_cache = array();
-	
+
 	/**
 	 * Determines the fields to translate on the given class
-	 * 
+	 *
 	 * @return array List of field names and data types
 	 */
 	public static function translated_fields_for($class) {
@@ -81,30 +81,30 @@ class FluentExtension extends DataExtension {
 			return $db;
 		});
 	}
-	
+
 	public static function base_indexes($class) {
 		return self::without_fluent_fields(function() use ($class) {
 			return Config::inst()->get($class, 'indexes', Config::UNINHERITED);
 		});
 	}
-	
+
 	/**
 	 * Get all database tables in the class ancestry and their respective
 	 * translatable fields
-	 * 
+	 *
 	 * @return array
 	 */
 	protected function getTranslatedTables() {
 		$includedTables = array();
 		foreach($this->owner->getClassAncestry() as $class) {
-			
+
 			// Skip classes without tables
 			if(!DataObject::has_own_table($class)) continue;
-			
+
 			// Check translated fields for this class
 			$translatedFields = self::translated_fields_for($class);
 			if(empty($translatedFields)) continue;
-			
+
 			// Mark this table as translatable
 			$includedTables[$class] = array_keys($translatedFields);
 		}
@@ -112,9 +112,9 @@ class FluentExtension extends DataExtension {
 	}
 
 	/**
-	 * Splits a spec string safely, considering quoted columns, whitespace, 
+	 * Splits a spec string safely, considering quoted columns, whitespace,
 	 * and cleaning brackets
-	 * 
+	 *
 	 * @param string $spec The input index specification
 	 * @return array List of columns in the spec
 	 */
@@ -130,7 +130,7 @@ class FluentExtension extends DataExtension {
 
 	/**
 	 * Builds a properly quoted column list from an array
-	 * 
+	 *
 	 * @param array $columns List of columns to implode
 	 * @return string A properly quoted list of column names
 	 */
@@ -143,7 +143,7 @@ class FluentExtension extends DataExtension {
 	 * Given an index specification in the form of a string ensure that each
 	 * column name is property quoted, stripping brackets and modifiers.
 	 * This index may also be in the form of a "CREATE INDEX..." sql fragment
-	 * 
+	 *
 	 * @param string $spec The input specification or query. E.g. 'unique (Column1, Column2)'
 	 * @return string The properly quoted column list. E.g. '"Column1", "Column2"'
 	 */
@@ -154,9 +154,9 @@ class FluentExtension extends DataExtension {
 
 	/**
 	 * Given an index spec determines the index type
-	 * 
+	 *
 	 * @param type $spec
-	 * @return string 
+	 * @return string
 	 */
 	protected static function determine_index_type($spec) {
 		// check array spec
@@ -168,10 +168,10 @@ class FluentExtension extends DataExtension {
 			return 'index';
 		}
 	}
-	
+
 	/**
 	 * Converts an array or string index spec into a universally useful array
-	 * 
+	 *
 	 * @param string|array $spec
 	 * @return array The resulting spec array with the required fields name, type, and value
 	 */
@@ -192,16 +192,16 @@ class FluentExtension extends DataExtension {
 	}
 
 	// </editor-fold>
-	
+
 	// <editor-fold defaultstate="collapsed" desc="Database Field Generation">
-	
+
 	/**
 	 * Generates the extra DB fields for a class (not including subclasses)
-	 * 
+	 *
 	 * @param string $class
 	 */
 	public static function generate_extra_config($class) {
-		
+
 		// Generate $db for class
 		$baseFields = self::translated_fields_for($class);
 		$db = array();
@@ -213,7 +213,7 @@ class FluentExtension extends DataExtension {
 				$db[$translatedName] = $type;;
 			}
 		}
-		
+
 		// Generate $indexes for class
 		$baseIndexes = self::base_indexes($class);
 		$indexes = array();
@@ -230,7 +230,7 @@ class FluentExtension extends DataExtension {
 			} else {
 				// Check format of spec
 				$baseSpec = self::parse_index_spec($baseIndex, $baseSpec);
-				
+
 				// Check if columns overlap with translated
 				$columns = self::explode_column_string($baseSpec['value']);
 				$translatedColumns = array_intersect(array_keys($baseFields), $columns);
@@ -243,7 +243,7 @@ class FluentExtension extends DataExtension {
 								? Fluent::db_field_for_locale($column, $locale)
 								: $column;
 						}
-						
+
 						// Inject new columns and save
 						$newSpec = array_merge($baseSpec, array(
 							'name' => Fluent::db_field_for_locale($baseIndex, $locale),
@@ -253,18 +253,18 @@ class FluentExtension extends DataExtension {
 					}
 				}
 			}
-			
+
 		}
-		
+
 		return array(
 			'db' => $db,
 			'indexes' => $indexes
 		);
 	}
-	
+
 	public static function get_extra_config($class, $extension, $args) {
 		if(self::$disable_fluent_fields) return array();
-		
+
 		// Merge all config values for subclasses
 		foreach (ClassInfo::subclassesFor($class) as $subClass) {
 			$config = self::generate_extra_config($subClass);
@@ -272,20 +272,20 @@ class FluentExtension extends DataExtension {
 				Config::inst()->update($subClass, $name, $value);
 			}
 		}
-		
+
 		// Force all subclass DB caches to invalidate themselves since their db attribute is now expired
 		DataObject::reset();
-		
+
 		return self::generate_extra_config($class);
 	}
-	
+
 	// </editor-fold>
-	
+
 	// <editor-fold defaultstate="collapsed" desc="Template Accessors">
-	
+
 	/**
 	 * Templatable list of all locales
-	 * 
+	 *
 	 * @return ArrayList
 	 */
 	public function Locales() {
@@ -295,24 +295,24 @@ class FluentExtension extends DataExtension {
 		}
 		return new ArrayList($data);
 	}
-	
+
 	/**
 	 * Determine the link to this object given the specified $locale.
 	 * Returns null for DataObjects that do not have a 'Link' function.
-	 * 
+	 *
 	 * @param string $locale
 	 * @return string
 	 */
 	public function LocaleLink($locale) {
-		
+
 		// Skip dataobjects that do not have the Link method
 		if(!$this->owner->hasMethod('Link')) return null;
-		
+
 		// Return locale root url if unable to view this item in this locale
 		if($this->owner->hasMethod('canViewInLocale') && !$this->owner->canViewInLocale($locale)) {
 			return $this->owner->BaseURLForLocale($locale);
 		}
-		
+
 		// Mock locale and recalculate link
 		$id = $this->owner->ID;
 		$class = $this->owner->ClassName;
@@ -325,7 +325,7 @@ class FluentExtension extends DataExtension {
 			return $link;
 		});
 	}
-	
+
 	/**
 	 * Determine the baseurl within a specified $locale.
 	 *
@@ -335,18 +335,18 @@ class FluentExtension extends DataExtension {
 	public function BaseURLForLocale($locale = null) {
 		return Fluent::locale_baseurl($locale);
 	}
-	
+
 	/**
 	 * Retrieves information about this object in the specified locale
-	 * 
+	 *
 	 * @param string $locale The locale information to request, or null to use the default locale
 	 * @return ArrayData Mapped list of locale properties
 	 */
 	public function LocaleInformation($locale = null) {
-		
+
 		// Check locale
 		if(empty($locale)) $locale = Fluent::default_locale();
-		
+
 		// Check linking mode
 		$linkingMode = 'link';
 		if($this->owner->hasMethod('canViewInLocale') && !$this->owner->canViewInLocale($locale)) {
@@ -354,10 +354,10 @@ class FluentExtension extends DataExtension {
 		} elseif($locale === Fluent::current_locale()) {
 			$linkingMode = 'current';
 		}
-		
+
 		// Check link
 		$link = $this->owner->LocaleLink($locale);
-		
+
 		// Store basic locale information
 		$data = array(
 			'Locale' => $locale,
@@ -369,23 +369,23 @@ class FluentExtension extends DataExtension {
 			'AbsoluteLink' => $link ? Director::absoluteURL($link) : null,
 			'LinkingMode' => $linkingMode
 		);
-		
+
 		return new ArrayData($data);
 	}
-	
+
 	/**
 	 * Current locale code
-	 * 
+	 *
 	 * @return string Locale code
 	 */
 	public function CurrentLocale() {
 		return Fluent::current_locale();
 	}
-	
+
 	// </editor-fold>
 
 	// <editor-fold defaultstate="collapsed" desc="SQL Augmentations">
-	
+
 	/**
 	 * Amend freshly created DataQuery objects with the current locale and frontend status
 	 *
@@ -396,26 +396,26 @@ class FluentExtension extends DataExtension {
 		$dataQuery->setQueryParam('Fluent.Locale', Fluent::current_locale());
 		$dataQuery->setQueryParam('Fluent.IsFrontend', Fluent::is_frontend());
 	}
-	
+
 	public function onBeforeWrite() {
-		
+
 		// Ensure that write is performed using the same locale this object was loaded as
 		// E.g. if loaded as zh_CN, then even if the current locale is now en_NZ we should save
 		// writes to this object as though it was still in chinese locale
 		$locale = $this->owner->getSourceQueryParam('Fluent.Locale') ?: Fluent::current_locale();
-		
-		// Prior to writing, we should flag any translated field as changed if its local value differs from 
+
+		// Prior to writing, we should flag any translated field as changed if its local value differs from
 		// its translated value, in case change detection would prevent this from being written to the DB
 		$translated = $this->getTranslatedTables();
 		foreach($translated as $table => $fields) {
 			foreach($fields as $field) {
-				
+
 				// Extract both base value (which could have been extracted from the subfield on load)
 				// and compare it to the localised field value
 				$localeField = Fluent::db_field_for_locale($field, $locale);
 				$value = $this->owner->$field;
 				$localeValue =  $this->owner->$localeField;
-				
+
 				// If these values differ, but a change isn't detected, then force a change
 				if($this->owner->exists() && ($value != $localeValue) && !$this->owner->isChanged($field)) {
 					$this->owner->forceChange();
@@ -424,22 +424,22 @@ class FluentExtension extends DataExtension {
 			}
 		}
 	}
-	
+
 	protected static $_enable_write_augmentation = true;
-	
+
 	/*
 	 * Enable or disable write augmentations. Useful for setting up test cases with specific hard coded values.
-	 * 
+	 *
 	 * @param boolean $enabled
 	 */
 	public static function set_enable_write_augmentation($enabled) {
 		self::$_enable_write_augmentation = $enabled;
 	}
-	
+
 	/**
 	 * Determines the table/column identifier that first appears in the $condition, and returns the localised version
 	 * of that column.
-	 * 
+	 *
 	 * @param string $condition Condition SQL string
 	 * @param array $includedTables
 	 * @param string $locale Locale to localise to
@@ -457,10 +457,10 @@ class FluentExtension extends DataExtension {
 		}
 		return false;
 	}
-	
+
 	/**
 	 * Replaces all columns in the given condition with any localised
-	 * 
+	 *
 	 * @param string $condition Condition SQL string
 	 * @param array $includedTables
 	 * @param string $locale Locale to localise to
@@ -477,10 +477,10 @@ class FluentExtension extends DataExtension {
 		}
 		return $condition;
 	}
-	
+
 	/**
 	 * Generates a select fragment based on a field with a fallback
-	 * 
+	 *
 	 * @param string $class Table/Class name
 	 * @param string $select Column to select from
 	 * @param string $fallback Column to fallback to if $select is empty
@@ -494,19 +494,19 @@ class FluentExtension extends DataExtension {
 	}
 
 	public function augmentSQL(SQLQuery &$query, DataQuery &$dataQuery = null) {
-		
+
 		// Get locale and translation zone to use
 		$locale = $dataQuery->getQueryParam('Fluent.Locale') ?: Fluent::current_locale();
-		
+
 		// Get all tables to translate fields for, and their respective field names
 		$includedTables = $this->getTranslatedTables();
-		
+
 		// Iterate through each select clause, replacing each with the translated version
 		foreach($query->getSelect() as $alias => $select) {
-			
+
 			// Skip fields without table context
 			if(!preg_match('/^"(?<class>\w+)"\."(?<field>\w+)"$/i', $select, $matches)) continue;
-			
+
 			$class = $matches['class'];
 			$field = $matches['field'];
 
@@ -521,22 +521,22 @@ class FluentExtension extends DataExtension {
 			$expression = $this->localiseSelect($class, $translatedField, $field);
 			$query->selectField($expression, $alias);
 		}
-		
+
 		// Rewrite where conditions
 		$where = $query->getWhere();
 		foreach($where as $index => $condition) {
-			
+
 			// determine the table/column this condition is against
 			$filterColumn = $this->detectFilterColumn($condition, $includedTables, $locale);
 			if(empty($filterColumn)) continue;
-			
+
 			// Duplicate the condition with all localisable fields replaced
 			$localisedCondition = $this->localiseFilterCondition($condition, $includedTables, $locale);
 			if($localisedCondition === $condition) continue;
-			
+
 			// Generate new condition that conditionally executes one of the two conditions
 			// depending on field nullability.
-			// If the filterColumn is null or empty, then it's considered untranslated, and 
+			// If the filterColumn is null or empty, then it's considered untranslated, and
 			// thus the query should continue running on the default column unimpeded.
 			$where[$index] = "
 				($filterColumn IS NOT NULL AND $filterColumn != '' AND ($localisedCondition))
@@ -545,7 +545,7 @@ class FluentExtension extends DataExtension {
 				)";
 		}
 		$query->setWhere($where);
-		
+
 		// Augment search if applicable
 		if($adapter = Fluent::search_adapter()) {
 			$adapter->augmentSearch($query, $dataQuery);
@@ -553,28 +553,28 @@ class FluentExtension extends DataExtension {
 	}
 
 	public function augmentWrite(&$manipulation) {
-		
+
 		// Bypass augment write if requested
 		if(!self::$_enable_write_augmentation) return;
-		
+
 		// Get locale and translation zone to use
 		$locale = $this->owner->getSourceQueryParam('Fluent.Locale') ?: Fluent::current_locale();
 		$defaultLocale = Fluent::default_locale();
-							
+
 		// Get all tables to translate fields for, and their respective field names
 		$includedTables = $this->getTranslatedTables();
-		
+
 		// Iterate through each select clause, replacing each with the translated version
 		foreach($manipulation as $class => $updates) {
 
 			// If this table doesn't have translated fields then skip
 			if(empty($includedTables[$class])) continue;
-			
+
 			foreach($includedTables[$class] as $field) {
-				
+
 				// Skip translated field if not updated in this request
 				if(!isset($updates['fields'][$field])) continue;
-					
+
 				// Copy the updated value to the locale specific field
 				// (Title => Title_fr_FR)
 				$updateField = Fluent::db_field_for_locale($field, $locale);
@@ -585,7 +585,7 @@ class FluentExtension extends DataExtension {
 				// If the default subfield has no value, then save using the current locale
 				if($locale !== $defaultLocale) {
 					$defaultField = Fluent::db_field_for_locale($field, $defaultLocale);
-					
+
 					// Note that null may be DB escaped as a string here. @see DBField::prepValueForDB
 					if(!empty($updates['fields'][$defaultField])
 						&& $updates['fields'][$defaultField] != DB::getConn()->prepStringForDB('')
@@ -595,7 +595,7 @@ class FluentExtension extends DataExtension {
 					}
 				}
 			}
-			
+
 			// Save back modifications to the manipulation
 			$manipulation[$class] = $updates;
 		}
@@ -604,18 +604,25 @@ class FluentExtension extends DataExtension {
 	// </editor-fold>
 
 	// <editor-fold defaultstate="collapsed" desc="CMS Field Augmentation">
-	
+
 	public function updateCMSFields(FieldList $fields) {
-		
+
 		// get all fields to translate and remove
 		$translated = $this->getTranslatedTables();
 		foreach($translated as $table => $translatedFields) {
 			foreach($translatedFields as $translatedField) {
-				
-				// Highlight any translated field
+
+				// Find field matching this translated field
+				// If the translated field has an ID suffix also check for the non-suffixed version
+				// E.g. UploadField()
 				$field = $fields->dataFieldByName($translatedField);
+				if(!$field && preg_match('/^(?<field>\w+)ID$/', $translatedField, $matches)) {
+					$field = $fields->dataFieldByName($matches['field']);
+				}
+
+				// Highlight any translated field
 				if($field) $field->addExtraClass('LocalisedField');
-				
+
 				// Remove translation DBField from automatic scaffolded fields
 				foreach(Fluent::locales() as $locale) {
 					$fieldName = Fluent::db_field_for_locale($translatedField, $locale);
@@ -624,7 +631,7 @@ class FluentExtension extends DataExtension {
 			}
 		}
 	}
-	
+
 	// </editor-fold>
-	
+
 }
