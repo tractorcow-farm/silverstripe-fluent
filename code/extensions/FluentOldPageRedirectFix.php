@@ -9,11 +9,12 @@
  * @package fluent
  */
 class FluentOldPageRedirectFix extends Extension {
-    
-    public function onBeforeHTTPError404($request) {
-        global $disableSkipIDFilter;
-        
-        $disableSkipIDFilter = TRUE;
-    }
-    
+
+	public static $disableSkipIDFilter = false;
+
+	public function onBeforeHTTPError404($request) {      
+		$this::$disableSkipIDFilter = TRUE;
+
+	}
+	
 }
