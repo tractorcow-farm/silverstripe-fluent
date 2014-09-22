@@ -10,6 +10,9 @@ SiteTree:
 SiteConfig:
   extensions:
     - FluentExtension
+Controller:
+  extensions:
+    - FluentOldPageRedirectFix
 ContentController:
   extensions:
     - FluentContentController
