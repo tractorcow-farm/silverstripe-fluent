@@ -106,8 +106,10 @@ class FluentFilteredExtension extends DataExtension {
 
 	public function augmentSQL(SQLQuery &$query, DataQuery &$dataQuery = null) {
 
-		// Skip ID based filters
-		if($query->filtersOnID()) return;
+		if (!FluentOldPageRedirectFix::$disableSkipIDFilter) {
+			// Skip ID based filters
+			if($query->filtersOnID()) return;
+		}
 
 		// Skip filter in the CMS
 		$isFrontend = $dataQuery->getQueryParam('Fluent.IsFrontend');
