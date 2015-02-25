@@ -19,6 +19,11 @@
 		"composer/installers": "*"
 	},
 	"extra": {
+		"branch-alias": {
+			"dev-master": "3.2.x-dev"
+		}
+	},
+	"extra": {
 		"installer-name": "fluent"
 	}
 }

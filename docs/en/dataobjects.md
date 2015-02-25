@@ -59,3 +59,26 @@ class MyObject extends DataObject {
 }
 
 ```
+
+### CMS Filtering
+
+By default, filtering of objects with FluentFilteredExtension is disabled within the CMS.
+This is because, should an object ever be filtered out of all locales, the object must then be
+findable in order to re-enabled it.
+
+In any case where it may be necessary to apply filtering rules within a CMS (For instance,
+where a many_many relation may be managed by a checkboxset, and hidden objects should be
+disabled) then this filter may be enforced within the CMS on a case by case basis.
+
+The following will construct such a list, ensuring that only objects valid in the current
+locale are given.
+
+```php
+public function getCMSFields() {
+	$fields = parent::getCMSFields();
+	// Causes filtering to be enabled within the admin
+	$banners = $this->Banners()->setDataQueryParam(FluentFilteredExtension::FILTER_ADMIN, true);
+	$fields->addFieldsToTab('Root.Banners', new CheckboxSetField('Banners', 'Banners', $banners));
+	return $fields;
+}
+```
