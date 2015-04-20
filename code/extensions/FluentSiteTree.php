@@ -77,8 +77,12 @@ class FluentSiteTree extends FluentExtension {
 
 		// Fix URLSegment field issue for root pages
 		if(!SiteTree::config()->nested_urls || empty($this->owner->ParentID)) {
+            		$baseUrl = Director::baseURL();
+            		if(class_exists('Subsite') && $this->owner->SubsiteID) {
+                		$baseUrl = Director::protocol() . $this->owner->Subsite()->domain() . '/';
+            		}
 			$baseLink = Director::absoluteURL(Controller::join_links(
-				Director::baseURL(),
+				$baseUrl,
 				Fluent::alias(Fluent::current_locale()),
 				'/'
 			));
