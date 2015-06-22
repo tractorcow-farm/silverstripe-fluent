@@ -13,7 +13,7 @@ class Fluent extends Object implements TemplateGlobalProvider {
 	 */
 	public static function regenerate_routes() {
 		$routes = array();
-
+		
 		// Explicit routes
 		foreach(self::locales() as $locale) {
 			$url = self::alias($locale);
@@ -34,9 +34,14 @@ class Fluent extends Object implements TemplateGlobalProvider {
 		if(class_exists('GoogleSitemapController')) {
 			$routes['sitemap.xml'] = 'FluentSitemapController';
 		}
+		
+		$singleton = singleton(__CLASS__);
+		$singleton->extend('updateRegenerateRoutes', $routes);
 
 		// Load into core routes
 		Config::inst()->update('Director', 'rules', $routes);
+		
+		$singleton->extend('onAfterRegenerateRoutes');
 	}
 
 	/**
