@@ -261,24 +261,24 @@ Search localisation is quite fragile, and is likely to break with future framewo
 
 ## Locale detection
 
-When a visitor lands on the home page for the first time, fluent will attempt to detect that user's locale based
+When a visitor lands on the home page for the first time, fluent can attempt to detect that user's locale based
 on the `Accept-Language` http headers sent.
 
-This functionality can interefere with certain applications, such as facebook opengraph tools, so in some cases it
-is necessary to turn this off. This can be done as below:
+This functionality can interefere with certain applications, such as facebook opengraph tools, so it
+is turned off by default. To turn it on set the below setting:
 
 ```yaml
 Fluent:
-  detect_locale: false
+  detect_locale: true
 ```
 
 ## Saved locale
 
-When a visitor has viewed a page on the website before, and returns in subsequent sessions, fluent will attempt
-to redirect requests for the default home page to the home page of that recently viewed locale. This behaviour can be
-turned off by disabling the `remember_locale` option.
+When a visitor has viewed a page on the website before, and returns in subsequent sessions, fluent can attempt
+to redirect requests for the default home page to the home page of that recently viewed locale. This behaviour
+is turned off by default, but it can be turned on by setting the `remember_locale` option.
 
 ```yaml
 Fluent:
-  remember_locale: false
+  remember_locale: true
 ```
