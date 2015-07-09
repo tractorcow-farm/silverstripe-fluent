@@ -86,4 +86,43 @@ class FluentSiteTree extends FluentExtension {
 			$urlsegment->setURLPrefix($baseLink);
 		}
 	}
+
+	/**
+	 * Resets all translated fields to their value in the default locale
+	 */
+	public function resetTranslations() {
+		$translated = $this->getTranslatedTables();
+		foreach($translated as $table => $fields) {
+			foreach($fields as $field) {
+				$defaultField = Fluent::db_field_for_locale($field, Fluent::default_locale());
+				$defaultValue = $this->owner->$defaultField;
+				
+				foreach(Fluent::locales() as $locale) {
+					if($locale === Fluent::default_locale()) continue;
+					
+					$localeField = Fluent::db_field_for_locale($field, $locale);
+					$originalValue = $this->owner->$localeField;
+					$this->owner->$localeField = $defaultValue;					
+
+					// If these values differ, but a change isn't detected, then force a change
+					if($this->owner->exists() && ($originalValue != $defaultValue) && !$this->owner->isChanged($field)) {
+						$this->owner->forceChange();						
+					}
+
+					$this->owner->write();
+				}
+			}
+		}
+	}
+
+
+	public function updateCMSActions(FieldList $actions) {
+		$actions->addFieldToTab(
+			'ActionMenus.MoreOptions', 
+			FormAction::create(
+				'doResetTranslations', 
+				_t('Fluent.TranslationsResetButton', 'Reset translations to default')
+			)
+		);
+	}
 }
