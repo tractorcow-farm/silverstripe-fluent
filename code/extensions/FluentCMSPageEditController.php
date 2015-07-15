@@ -6,12 +6,12 @@ class FluentCMSPageEditController extends DataExtension {
 		$record = $this->owner->getRecord($data['ID']);
 		$record->resetTranslations();
 
-        $this->owner->getResponse()->addHeader("X-Pjax","Content");
-        $this->owner->getResponse()->addHeader(
-        	'X-Status', 
-        	_t('Fluent.TranslationsResetSuccess','Translations reset to default')
-        );
+		$this->owner->getResponse()->addHeader("X-Pjax","Content");
+        	$this->owner->getResponse()->addHeader(
+        		'X-Status', 
+        		_t('Fluent.TranslationsResetSuccess','Translations reset to default')
+        	);
 
-        return $this->owner->redirectBack();
+        	return $this->owner->redirectBack();
 	}
 }
