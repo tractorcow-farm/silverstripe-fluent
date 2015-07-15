@@ -822,10 +822,10 @@ class FluentTest extends SapphireTest {
 		$defaultValue = $page->$defaultField;
 		$page->resetTranslations();
 
-    	$this->assertEquals($page->Title_fr_CA, $defaultValue);
-    	$this->assertEquals($page->Title_en_NZ, $defaultValue);
-    	$this->assertEquals($page->Title_en_US, $defaultValue);
-    	$this->assertEquals($page->Title_es_ES, $defaultValue);
+    		$this->assertEquals($page->Title_fr_CA, $defaultValue);
+    		$this->assertEquals($page->Title_en_NZ, $defaultValue);
+    		$this->assertEquals($page->Title_en_US, $defaultValue);
+    		$this->assertEquals($page->Title_es_ES, $defaultValue);
 	}
 }
 
