@@ -90,8 +90,8 @@ class FluentRootURLController extends RootURLController {
 		}
 		
 		$localeURL = Fluent::alias($locale);
-		$request->setUrl($localeURL.'/'.RootURLController::get_homepage_link().'/');
-		$request->match($localeURL.'/$URLSegment//$Action', true);
+		$request->setUrl(self::fluent_homepage_link($localeURL));
+		$request->match($localeURL . '/$URLSegment//$Action', true);
 		
 		$controller = new ModelAsController();
 		$result = $controller->handleRequest($request, $model);
@@ -99,4 +99,29 @@ class FluentRootURLController extends RootURLController {
 		$this->popCurrent();
 		return $result;
 	}
+    
+    /**
+     * 
+     * With Translatable installed, don't pre-append the locale to the homepage 
+     * URL.
+     * 
+     * @param string $localeURL
+     * @return string
+     * @see {@link Translatable::get_homepage_link()}.
+     */
+    public static function fluent_homepage_link($localeURL) {
+        $homepageLink = parent::get_homepage_link();
+        
+        /*
+         * Don't prefix when Translatable is installed becuase of baked-in logic 
+         * contained in RootURLController::get_homepage_link(). This causes duplicate 
+         * locales to be returned.
+         */
+        if(class_exists('Translatable')) {
+            return $homepageLink . '/';
+        }
+        
+        return $localeURL . '/' . $homepageLink . '/';
+    }
+
 }
