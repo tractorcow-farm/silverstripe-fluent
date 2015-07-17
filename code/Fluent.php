@@ -210,6 +210,31 @@ class Fluent extends Object implements TemplateGlobalProvider {
 		}
 		return $locales;
 	}
+    
+    /**
+     *
+     * Fetch a native language string from the `i18n` class via a passed locale 
+     * in the format "XX_xx". In the event a match cannot be found in any framework 
+     * resource, an empty string is returned.
+     * 
+     * @param string $locale e.g. "pt_BR"
+     * @return string The native language string for that locale e.g. "portugu&ecirc;s (Brazil)"
+     */
+    public static function locale_native_name($locale) {
+        // Attempts to fetch the native language string via the `i18n::$common_languages` array
+        if($native = i18n::get_language_name(i18n::get_lang_from_locale($locale), true)) {
+            return $native;
+        }
+
+        // Attempts to fetch the native language string via the `i18n::$common_locales` array
+        $commonLocales = i18n::get_common_locales(true);
+        if(!empty($commonLocales[$locale])) {
+            return $commonLocales[$locale];
+        }
+
+        // Nothing else to go on, so return an empty string for a consistent API
+        return '';
+    }
 
 	/**
 	 * Determine if the website is in domain segmentation mode
