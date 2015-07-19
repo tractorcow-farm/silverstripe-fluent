@@ -282,3 +282,14 @@ is turned off by default, but it can be turned on by setting the `remember_local
 Fluent:
   remember_locale: true
 ```
+
+If you wish to completely turn off the locale persisting in the front end (for example, in case your site is stateless
+and should not write session or cookies) you can disable the persist key as below.
+
+```yaml
+Fluent:
+  persist_id: ''
+```
+
+Note: It's recommended not to remove persist_id_cms, as certain CMS functionality may not work properly
+or may detect the wrong locale.

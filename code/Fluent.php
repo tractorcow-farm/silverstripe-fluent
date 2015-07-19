@@ -130,12 +130,17 @@ class Fluent extends Object implements TemplateGlobalProvider {
 	 *
 	 * @param string $key ID to retrieve persistant locale from. Will automatically detect if omitted.
 	 * Either Fluent::config()->persist_id or Fluent::config()->persist_id_cms.
-	 * @return string The locale, if available
+	 * @return string|null The locale, if available
 	 */
 	public static function get_persist_locale($key = null) {
 		if(empty($key)) $key = self::is_frontend()
 			? self::config()->persist_id
 			: self::config()->persist_id_cms;
+
+		// Skip persist if key is unset
+		if(empty($key)) {
+			return null;
+		}
 
 		// check session then cookies
 		if($locale = Session::get($key)) return $locale;
@@ -156,6 +161,11 @@ class Fluent extends Object implements TemplateGlobalProvider {
 		if(empty($key)) $key = self::is_frontend()
 			? self::config()->persist_id
 			: self::config()->persist_id_cms;
+
+		// Skip persist if key is unset
+		if(empty($key)) {
+			return;
+		}
 
 		// Save locale
 		if($locale) {
