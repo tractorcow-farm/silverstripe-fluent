@@ -103,9 +103,11 @@
 			 */
 			onadd: function() {
 				var url = this.attr('data-url'),
-					newUrl = urlForLocale(url, $.cookie('FluentLocale_CMS'));
+					newUrl = urlForLocale(url, $.cookie('FluentLocale_CMS')),
+					// Ensure "incoming" data-url is properly filtered before being re-applied into the DOM
+					i18nNewUrl = ss.i18n.sprintf(this.attr('data-url'), newUrl);
 
-				this.attr('data-url', newUrl);
+				this.attr('data-url', i18nNewUrl);
 				this._super();
 			}
 		});
