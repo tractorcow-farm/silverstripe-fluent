@@ -7,3 +7,5 @@ en:
     LocaleFilterDescription: 'Check a locale to show this item on that locale'
     LocaleMenuFilterDescription: 'Select the locales where this item is visible in the menu'
     TABLOCALES: Locales
+    TranslationsResetSuccess: 'Translations reset to default'
+    TranslationsResetButton: 'Reset translations to default'

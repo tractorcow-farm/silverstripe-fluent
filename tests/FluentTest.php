@@ -13,7 +13,8 @@ class FluentTest extends SapphireTest {
 
 	protected $extraDataObjects = array(
 		'FluentTest_TranslatedObject',
-		'FluentTest_FilteredObject'
+		'FluentTest_FilteredObject',
+		'FluentTest_TranslatedPage'
 	);
 
 	protected $illegalExtensions = array(
@@ -813,6 +814,19 @@ class FluentTest extends SapphireTest {
 			$test->assertTrue(Fluent::is_frontend());
 		});
 	}
+
+
+	public function testResetTranslations() {
+		$page = $this->objFromFixture('FluentTest_TranslatedPage','translated1');
+		$defaultField = 'Title_'.Fluent::default_locale();
+		$defaultValue = $page->$defaultField;
+		$page->resetTranslations();
+
+    		$this->assertEquals($page->Title_fr_CA, $defaultValue);
+    		$this->assertEquals($page->Title_en_NZ, $defaultValue);
+    		$this->assertEquals($page->Title_en_US, $defaultValue);
+    		$this->assertEquals($page->Title_es_ES, $defaultValue);
+	}
 }
 
 /**
@@ -838,6 +852,22 @@ class FluentTest_TranslatedObject extends DataObject implements TestOnly {
 		'Title',
 		'Description',
 		'ImageID'
+	);
+}
+
+
+class FluentTest_TranslatedPage extends Page implements TestOnly {
+
+	private static $extensions = array(
+		'FluentExtension'
+	);
+
+	private static $db = array(
+		'Description' => 'Varchar(255)',
+	);
+
+	private static $translate = array(
+		'Description',
 	);
 }
 
