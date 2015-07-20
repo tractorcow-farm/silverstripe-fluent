@@ -9,22 +9,17 @@
 		 * Determine the url to navigate to given the specified locale
 		 */
 		var urlForLocale = function(url, locale) {
-			// Get new locale code
-			param = {}
-			param[fluentParam] = locale;
-
-			// Check existing url
-			search = new RegExp('\\b'+fluentParam+'=[^&#]*');
-			if(url.match(search)) {
-				// Replace locale code
-				url = url.replace(search, $.param(param));
-			} else {
-				// Add locale code
-				url = $.path.addSearchParams(url, param);
-			}
-
+			var re, separator;
 			// Remove hash. See https://github.com/tractorcow/silverstripe-fluent/issues/90
-			return url.split('#')[0];
+			url = url.split('#')[0];
+				
+			re = new RegExp("([?&])" + fluentParam + "=.*?(&|$)", "i");
+			separator = url.indexOf('?') !== -1 ? "&" : "?";
+			if (url.match(re)) {
+				return url.replace(re, '$1' + fluentParam + "=" + locale + '$2');
+			} else {
+				return url + separator + fluentParam + "=" + locale;
+			}
 		};
 
 		/**
