@@ -34,9 +34,9 @@
 				var selector = 
 					$("<div class='cms-fluent-selector'>\
 						<span class='icon icon-16 icon-fluent-translate'>&nbsp;</span>\
-						<span class='text'></span>\
-						<a class='cms-fluent-selector-flydown' type='button' title='"+fluentButtonTitle+"'><span class='icon icon-fluent-select'>"+fluentButtonTitle+"</span></a>\
-						<ul class='cms-fluent-selector-locales'></ul>\
+						<span class='text'></span>"
+                        +( typeof fluentLocales.length  > 1 ? "<a class='cms-fluent-selector-flydown' type='button' title='"+fluentButtonTitle+"'><span class='icon icon-fluent-select'>"+fluentButtonTitle+"</span></a>\n" : "" )
+                        +"<ul class='cms-fluent-selector-locales'></ul>\
 					</div>");
 
 				// Create options
