@@ -79,12 +79,6 @@ class FluentTest extends SapphireTest {
 		parent::tearDownOnce();
 
 		Fluent::set_persist_locale(null);
-
-		self::kill_temp_db();
-		self::create_temp_db();
-		$this->resetDBSchema(true);
-
-		Config::inst()->update('Cookie', 'report_errors', false);
 	}
 
 	public function setUp() {
@@ -812,6 +806,69 @@ class FluentTest extends SapphireTest {
 		$this->withController(new FluentTest_ContentController(), function($test) {
 			$test->assertTrue(Fluent::is_frontend());
 		});
+	}
+
+	/**
+	 * Test that records created in non-default locale don't have missing values for default fields
+	 */
+	public function testCreateInNonDefaultLocale() {
+		Fluent::set_persist_locale('es_ES');
+
+		// Create a record in this locale
+		$record = new FluentTest_TranslatedObject();
+		$record->Title = 'es title';
+		$record->Description = 'es description';
+		$record->write();
+		$recordID = $record->ID;
+
+		$row = DB::query(sprintf("SELECT * FROM \"FluentTest_TranslatedObject\" WHERE ID = %d", $recordID))->first();
+		// Check that the necessary fields are assigned
+		$this->assertEquals('es title', $row['Title']);
+		$this->assertEquals('es title', $row['Title_es_ES']);
+		$this->assertEquals('es title', $row['Title_fr_CA']);
+		$this->assertEmpty($row['Title_en_NZ']);
+		$this->assertEquals('es description', $row['Description']);
+		$this->assertEquals('es description', $row['Description_es_ES']);
+		$this->assertEquals('es description', $row['Description_fr_CA']);
+		$this->assertEmpty($row['Description_en_NZ']);
+
+
+		// modify locale in default locale
+		Fluent::with_locale('fr_CA', function() use ($recordID) {
+			$record = FluentTest_TranslatedObject::get()->byID($recordID);
+			$record->Title = 'new ca title';
+			$record->write();
+		});
+
+		// Check that the necessary fields are assigned
+		$row = DB::query(sprintf("SELECT * FROM \"FluentTest_TranslatedObject\" WHERE ID = %d", $recordID))->first();
+		$this->assertEquals('new ca title', $row['Title']);
+		$this->assertEquals('es title', $row['Title_es_ES']);
+		$this->assertEquals('new ca title', $row['Title_fr_CA']);
+		$this->assertEmpty($row['Title_en_NZ']);
+		$this->assertEquals('es description', $row['Description']);
+		$this->assertEquals('es description', $row['Description_es_ES']);
+		$this->assertEquals('es description', $row['Description_fr_CA']);
+		$this->assertEmpty($row['Description_en_NZ']);
+
+		// modify in another locale
+		Fluent::with_locale('en_NZ', function() use ($recordID) {
+			$record = FluentTest_TranslatedObject::get()->byID($recordID);
+			$record->Title = 'nz title';
+			$record->Description = 'nz description';
+			$record->write();
+		});
+
+		// Check that the necessary fields are assigned
+		$row = DB::query(sprintf("SELECT * FROM \"FluentTest_TranslatedObject\" WHERE ID = %d", $recordID))->first();
+		$this->assertEquals('new ca title', $row['Title']);
+		$this->assertEquals('es title', $row['Title_es_ES']);
+		$this->assertEquals('new ca title', $row['Title_fr_CA']);
+		$this->assertEquals('nz title', $row['Title_en_NZ']);
+		$this->assertEquals('es description', $row['Description']);
+		$this->assertEquals('es description', $row['Description_es_ES']);
+		$this->assertEquals('es description', $row['Description_fr_CA']);
+		$this->assertEquals('nz description', $row['Description_en_NZ']);
 	}
 }
 
