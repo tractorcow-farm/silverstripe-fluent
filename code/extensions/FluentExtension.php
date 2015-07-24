@@ -403,21 +403,30 @@ class FluentExtension extends DataExtension {
 		// E.g. if loaded as zh_CN, then even if the current locale is now en_NZ we should save
 		// writes to this object as though it was still in chinese locale
 		$locale = $this->owner->getSourceQueryParam('Fluent.Locale') ?: Fluent::current_locale();
+		$defaultLocale = Fluent::default_locale();
 
 		// Prior to writing, we should flag any translated field as changed if its local value differs from
 		// its translated value, in case change detection would prevent this from being written to the DB
 		$translated = $this->getTranslatedTables();
 		foreach($translated as $table => $fields) {
 			foreach($fields as $field) {
-
-				// Extract both base value (which could have been extracted from the subfield on load)
-				// and compare it to the localised field value
-				$localeField = Fluent::db_field_for_locale($field, $locale);
+				// Get assigned value for this field
 				$value = $this->owner->$field;
-				$localeValue =  $this->owner->$localeField;
 
-				// If these values differ, but a change isn't detected, then force a change
-				if($this->owner->exists() && ($value != $localeValue) && !$this->owner->isChanged($field)) {
+				// If creating a new record in non-default locale, ensure a default value exists for each field
+				$defaultField = Fluent::db_field_for_locale($field, $defaultLocale);
+				if(!$this->owner->exists()) {
+					if($locale !== $defaultLocale && empty($this->owner->$defaultField)) {
+						$this->owner->$defaultField = $value;
+					}
+					continue;
+				}
+
+				// If the base (or localised) field has changed, but isn't detected, force a change
+				// Also ensure that if the main field is changed, mark all fields as changed
+				$localeField = Fluent::db_field_for_locale($field, $locale);
+				$localeValue =  $this->owner->$localeField;
+				if( ($value != $localeValue) || $this->owner->isChanged($field)){
 					$this->owner->forceChange();
 					return;
 				}
