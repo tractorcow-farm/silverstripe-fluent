@@ -14,6 +14,15 @@
 // $fluent-color-base: #bc0004;
 $fluent-color-base: rgb(31, 148, 51);
 
+// Fix cms-menu collapsed for dropdown
+.cms-menu.collapsed .cms-menu-list {
+	float: left;
+}
+
+.cms-menu.collapsed .cms-fluent-selector .text {
+	display: none;
+}
+
 // Style of selector dropdown
 .cms-fluent-selector {
 	display: block;
@@ -54,7 +63,7 @@ $fluent-color-base: rgb(31, 148, 51);
 		text-overflow: ellipsis;
 		overflow: hidden;
 	}
-	
+
 	.cms-fluent-selector-flydown {
 		position: absolute;
 		z-index: 140;
@@ -73,14 +82,14 @@ $fluent-color-base: rgb(31, 148, 51);
 			lighten($fluent-color-base, 5%),
 			darken($fluent-color-base, 5%)
 		));
-			
+
 		.icon-fluent-select{
 			width: 18px;
 			height: 18px;
 			display: block;
 			text-indent: -9999px;
 			@include opacity(0.7);
-			
+
 			background: {
 				image: url('../../framework/admin/thirdparty/chosen/chosen/chosen-sprite.png');
 				repeat: no-repeat;
@@ -88,7 +97,7 @@ $fluent-color-base: rgb(31, 148, 51);
 			}
 		}
 	}
-	
+
 	.cms-fluent-selector-locales {
 		display: none;
 		position: absolute;
@@ -105,7 +114,7 @@ $fluent-color-base: rgb(31, 148, 51);
 			$fluent-color-base,
 			darken($fluent-color-base, 10%)
 		));
-			
+
 		li {
 			padding: 2px 8px;
 			a {
@@ -113,11 +122,11 @@ $fluent-color-base: rgb(31, 148, 51);
 			}
 		}
 	}
-	
+
 	&.active .cms-fluent-selector-locales {
 		display: block;
 	}
-	
+
 	&:hover,
 	&.active {
 		text-decoration: none;
@@ -129,7 +138,7 @@ $fluent-color-base: rgb(31, 148, 51);
 			lighten($fluent-color-base, 5%),
 			$fluent-color-base
 		));
-			
+
 		.cms-fluent-selector-flydown {
 			background-color: lighten($fluent-color-base, 4%);
 			border-left: 1px solid darken($fluent-color-base, 10%);
