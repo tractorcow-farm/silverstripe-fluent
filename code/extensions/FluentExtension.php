@@ -16,6 +16,16 @@ class FluentExtension extends DataExtension {
 	 * @var boolean
 	 */
 	protected static $disable_fluent_fields = false;
+    
+    /**
+	 * Caches the original DB field-values of all non-Locale, YML-configured fields 
+	 * during onBeforeWrite() so their original values can be written-back to them. 
+	 * If we don't do this, the CMS interprets POSTed form-fields as _the_ data to write to 
+	 * these non Fluent-enabled fields, regardless of the currently selected locale.
+	 * 
+	 * @var array
+	 */
+	protected $_untranslatedFieldDefaults = array();
 
 	/**
 	 * Executes a callback with extra fluent fields disabled
@@ -398,6 +408,21 @@ class FluentExtension extends DataExtension {
 	}
 
 	public function onBeforeWrite() {
+		/*
+		 * Before any manipulations occur, cache the default values of all Fluent-configured
+		 * but non Locale-aware fields and ensure these fields' values are "maintained"
+		 * when augmenting writes.
+		 * 
+		 * @see augmentWrite();
+		 */
+		static $extension_count = 0;
+		$class = ClassInfo::baseDataClass($this->owner->class);
+		$configuredFields = array_keys(self::translated_fields_for($class));
+		foreach($configuredFields as $field) {
+			$this->_untranslatedFieldDefaults[$extension_count][$field] = $this->owner->getField($field);
+		}
+
+		$extension_count++;
 
 		// Ensure that write is performed using the same locale this object was loaded as
 		// E.g. if loaded as zh_CN, then even if the current locale is now en_NZ we should save
@@ -601,6 +626,17 @@ class FluentExtension extends DataExtension {
 						&& strtolower($updates['fields'][$defaultField]) != 'null'
 					) {
 						$updates['fields'][$field] = $updates['fields'][$defaultField];
+					} else {
+						// Ensure original field-data is "Left alone" or rather; has its defaults written-back to it
+						// We take the first value, recorded when onBeforeWrite() is called for first time
+						// We don't check via empty(). The CMS user may actually want to save an empty string.
+						if(isset($this->_untranslatedFieldDefaults[0])) {
+							if(isset($this->_untranslatedFieldDefaults[0][$field])) {
+								$fieldData = $this->_untranslatedFieldDefaults[0][$field];
+								$updates['fields'][$defaultField] = DB::getConn()->prepStringForDB($fieldData);
+								$updates['fields'][$field] = DB::getConn()->prepStringForDB($fieldData);
+							}
+						}
 					}
 				}
 			}
