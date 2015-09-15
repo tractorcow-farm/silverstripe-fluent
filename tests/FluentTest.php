@@ -608,18 +608,59 @@ class FluentTest extends SapphireTest {
 
 		// Default value differs from locale specific value
 		$names = DataObject::get('FluentTest_TranslatedObject')->sort('ID')->column('Title');
-		self::assertEquals(array("il s'agit d'un objet", "Cette couleur est le bleu"), $names);
+		self::assertEquals(
+			array("il s'agit d'un objet", "Cette couleur est le bleu", "Un-translated object"),
+			$names
+		);
 
 		// In en_NZ locale
 		$names = Fluent::with_locale('en_NZ', function() {
 			return DataObject::get('FluentTest_TranslatedObject')->sort('ID')->column('Title');
 		});
-		$this->assertEquals(array("this is an object", "This colour is blue"), $names);
+		$this->assertEquals(
+			array("this is an object", "This colour is blue", "Un-translated object"),
+			$names
+		);
 
 		// Use default locale again
 		$names = DataObject::get('FluentTest_TranslatedObject')->sort('ID')->column('Title');
-		$this->assertEquals(array("il s'agit d'un objet", "Cette couleur est le bleu"), $names);
+		$this->assertEquals(
+			array("il s'agit d'un objet", "Cette couleur est le bleu", "Un-translated object"),
+			$names
+		);
 
+	}
+
+	/**
+	 * Test that un-translated objects (never saved with Fluent before) can be correctly loaded
+	 */
+	public function testUntranslatedObject() {
+		$object = $this->objFromFixture('FluentTest_TranslatedObject', 'untranslated');
+
+		// Assert that the raw row data is actually blank
+		$row = DB::query('SELECT * FROM "FluentTest_TranslatedObject" WHERE "Description" = \'Third\'')->record();
+		$this->assertEquals('Un-translated object', $row['Title']);
+		$this->assertEmpty($row['Title_fr_CA']);
+		$this->assertEmpty($row['Title_en_NZ']);
+		$this->assertEmpty($row['Title_en_US']);
+		$this->assertEmpty($row['Title_es_ES']);
+
+		// Assert that all fields are properly set
+		$this->assertEquals('Un-translated object', $object->Title);
+		$this->assertEquals('Un-translated object', $object->Title_fr_CA); // Default field should autocorrect
+		$this->assertEmpty($object->Title_en_NZ);
+		$this->assertEmpty($object->Title_en_US);
+		$this->assertEmpty($object->Title_es_ES);
+
+		// Writing this field to the database should resolve the missing default field
+		$object->forceChange();
+		$object->write();
+		$row = DB::query('SELECT * FROM "FluentTest_TranslatedObject" WHERE "Description" = \'Third\'')->record();
+		$this->assertEquals('Un-translated object', $row['Title']);
+		$this->assertEquals('Un-translated object', $row['Title_fr_CA']);
+		$this->assertEmpty($row['Title_en_NZ']);
+		$this->assertEmpty($row['Title_en_US']);
+		$this->assertEmpty($row['Title_es_ES']);
 	}
 
 	/**
@@ -821,7 +862,8 @@ class FluentTest extends SapphireTest {
 		$record->write();
 		$recordID = $record->ID;
 
-		$row = DB::query(sprintf("SELECT * FROM \"FluentTest_TranslatedObject\" WHERE ID = %d", $recordID))->first();
+		$row = DB::query(sprintf("SELECT * FROM \"FluentTest_TranslatedObject\" WHERE \"ID\" = %d", $recordID))->first();
+
 		// Check that the necessary fields are assigned
 		$this->assertEquals('es title', $row['Title']);
 		$this->assertEquals('es title', $row['Title_es_ES']);
@@ -841,7 +883,7 @@ class FluentTest extends SapphireTest {
 		});
 
 		// Check that the necessary fields are assigned
-		$row = DB::query(sprintf("SELECT * FROM \"FluentTest_TranslatedObject\" WHERE ID = %d", $recordID))->first();
+		$row = DB::query(sprintf("SELECT * FROM \"FluentTest_TranslatedObject\" WHERE \"ID\" = %d", $recordID))->first();
 		$this->assertEquals('new ca title', $row['Title']);
 		$this->assertEquals('es title', $row['Title_es_ES']);
 		$this->assertEquals('new ca title', $row['Title_fr_CA']);
@@ -860,7 +902,7 @@ class FluentTest extends SapphireTest {
 		});
 
 		// Check that the necessary fields are assigned
-		$row = DB::query(sprintf("SELECT * FROM \"FluentTest_TranslatedObject\" WHERE ID = %d", $recordID))->first();
+		$row = DB::query(sprintf("SELECT * FROM \"FluentTest_TranslatedObject\" WHERE \"ID\" = %d", $recordID))->first();
 		$this->assertEquals('new ca title', $row['Title']);
 		$this->assertEquals('es title', $row['Title_es_ES']);
 		$this->assertEquals('new ca title', $row['Title_fr_CA']);

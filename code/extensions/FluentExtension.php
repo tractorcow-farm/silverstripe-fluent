@@ -496,15 +496,16 @@ class FluentExtension extends DataExtension {
 	 * @return string Select fragment
 	 */
 	protected function localiseSelect($class, $select, $fallback) {
-		return "CASE
-				WHEN (\"{$class}\".\"{$select}\" IS NOT NULL AND \"{$class}\".\"{$select}\" != '')
-				THEN \"{$class}\".\"{$select}\"
-				ELSE \"{$class}\".\"{$fallback}\" END";
+		return "CASE COALESCE(CAST(\"{$class}\".\"{$select}\" AS CHAR), '')
+				WHEN '' THEN \"{$class}\".\"{$fallback}\"
+				WHEN '0' THEN \"{$class}\".\"{$fallback}\"
+				ELSE \"{$class}\".\"{$select}\" END";
 	}
 
 	public function augmentSQL(SQLQuery &$query, DataQuery &$dataQuery = null) {
 
 		// Get locale and translation zone to use
+		$default = Fluent::default_locale();
 		$locale = $dataQuery->getQueryParam('Fluent.Locale') ?: Fluent::current_locale();
 
 		// Get all tables to translate fields for, and their respective field names
@@ -529,6 +530,13 @@ class FluentExtension extends DataExtension {
 			$translatedField = Fluent::db_field_for_locale($field, $locale);
 			$expression = $this->localiseSelect($class, $translatedField, $field);
 			$query->selectField($expression, $alias);
+
+			// At the same time, rewrite the selector for the default field to make sure that
+			// (in the case it is blank, which happens if installing fluent for the first time)
+			// that it also populated from the root field.
+			$defaultField = Fluent::db_field_for_locale($field, $default);
+			$defaultExpression = $this->localiseSelect($class, $defaultField, $field);
+			$query->selectField($defaultExpression, $defaultField);
 		}
 
 		// Rewrite where conditions
@@ -547,10 +555,11 @@ class FluentExtension extends DataExtension {
 			// depending on field nullability.
 			// If the filterColumn is null or empty, then it's considered untranslated, and
 			// thus the query should continue running on the default column unimpeded.
+			$castColumn = "COALESCE(CAST($filterColumn AS CHAR), '')";
 			$where[$index] = "
-				($filterColumn IS NOT NULL AND $filterColumn != '' AND ($localisedCondition))
+				($castColumn != '' AND $castColumn != '0' AND ($localisedCondition))
 				OR (
-					($filterColumn IS NULL OR $filterColumn = '') AND ($condition)
+					($castColumn = '' OR $castColumn = '0') AND ($condition)
 				)";
 		}
 		$query->setWhere($where);
