@@ -2,7 +2,7 @@
 
 /**
  * Provides migration from the Translatable module to the Fluent format
- * 
+ *
  * Don't forget to:
  * 1. Back up your DB
  * 2. Configure fluent
@@ -14,14 +14,14 @@
  * @author Damian Mooyman <damian.mooyman@gmail.com>
  */
 class ConvertTranslatableTask extends BuildTask {
-	
+
 	protected $title = "Convert Translatable > Fluent Task";
 
 	protected $description = "Migrates site DB from Translatable DB format to Fluent.";
-	
+
 	/**
 	 * Checks that fluent is configured correctly
-	 * 
+	 *
 	 * @throws ConvertTranslatableException
 	 */
 	protected function checkInstalled() {
@@ -35,10 +35,10 @@ class ConvertTranslatableTask extends BuildTask {
 			throw new ConvertTranslatableException("Please configure Fluent.default_locale prior to migrating from translatable");
 		}
 	}
-	
+
 	/**
 	 * Do something inside a DB transaction
-	 * 
+	 *
 	 * @param callable $callback
 	 * @throws Exception
 	 */
@@ -55,12 +55,12 @@ class ConvertTranslatableTask extends BuildTask {
 			throw $ex;
 		}
 	}
-	
+
 	protected $translatedFields = array();
-	
+
 	/**
 	 * Get all database fields to translate
-	 * 
+	 *
 	 * @param string $class Class name
 	 * @return array List of translated fields
 	 */
@@ -71,24 +71,24 @@ class ConvertTranslatableTask extends BuildTask {
 		$fields = array();
 		$hierarchy = ClassInfo::ancestry($class);
 		foreach($hierarchy as $class) {
-			
+
 			// Skip classes without tables
 			if(!DataObject::has_own_table($class)) continue;
-			
+
 			// Check translated fields for this class
 			$translatedFields = FluentExtension::translated_fields_for($class);
 			if(empty($translatedFields)) continue;
-			
+
 			// Save fields
 			$fields = array_merge($fields, array_keys($translatedFields));
 		}
 		$this->translatedFields[$class] = $fields;
 		return $fields;
 	}
-	
+
 	/**
 	 * Gets all classes with FluentExtension
-	 * 
+	 *
 	 * @return array of classes to migrate
 	 */
 	public function fluentClasses() {
@@ -106,18 +106,18 @@ class ConvertTranslatableTask extends BuildTask {
 		}
 		return array_unique($classes);
 	}
-	
+
 	public function run($request) {
-		
+
 		// Extend time limit
 		set_time_limit(100000);
 
 		// we may need some proivileges for this to work
 		// without this, running under sake is a problem
-		// maybe sake could take care of it ...	
+		// maybe sake could take care of it ...
 		Security::findAnAdministrator()->login();
-		
-		
+
+
 		$this->checkInstalled();
 		$this->withTransaction(function($task) {
 			Versioned::reading_stage('Stage');
@@ -125,7 +125,7 @@ class ConvertTranslatableTask extends BuildTask {
 			$tables = DB::tableList();
 			$deleteQueue = array();
 			foreach($classes as $class) {
-				
+
 				// Ensure that a translationgroup table exists for this class
 				$groupTable = strtolower($class."_translationgroups");
 				if(isset($tables[$groupTable])) {
@@ -134,12 +134,12 @@ class ConvertTranslatableTask extends BuildTask {
 					Debug::message("Ignoring class without _translationgroups table $class", false);
 					continue;
 				}
-				
+
 				// Disable filter
 				if($class::has_extension('FluentFilteredExtension')) {
 					$class::remove_extension('FluentFilteredExtension');
 				}
-				
+
 				// Select all instances of this class in the default locale
 				$instances = DataObject::get($class, sprintf(
 					'"Locale" = \'%s\'',
@@ -176,13 +176,13 @@ class ConvertTranslatableTask extends BuildTask {
 					));
 
 					foreach($translatedItems as $translatedItem) {
-						
+
 						$locale = DB::query(sprintf(
 							'SELECT "Locale" FROM "%s" WHERE "ID" = %d',
 							$class,
 							$translatedItem->ID
 						))->value();
-						
+
 						// since we are going to delete the stuff
 						// anyway, no need bothering validating it
 						DataObject::config()->validation_enabled = false;
@@ -217,14 +217,14 @@ class ConvertTranslatableTask extends BuildTask {
 						}
 						else {
 							Debug::message("  --  Published",false);
-						}					 	                                                       
+						}
 					}
 				}
 			}
 			foreach ($deleteQueue as $delItem){
 			     Debug::message("  --  Removing {$delItem->ID}", false);
 				   $delItem->delete();
-			}			
+			}
 		});
-	}	
+	}
 }
