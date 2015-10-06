@@ -426,7 +426,7 @@ class FluentExtension extends DataExtension {
 				// Also ensure that if the main field is changed, mark all fields as changed
 				$localeField = Fluent::db_field_for_locale($field, $locale);
 				$localeValue =  $this->owner->$localeField;
-				if( ($value != $localeValue) || $this->owner->isChanged($field)){
+				if( ($value != $localeValue) || $this->owner->isChanged($field)) {
 					$this->owner->forceChange();
 					return;
 				}

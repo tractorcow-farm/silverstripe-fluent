@@ -148,11 +148,11 @@ class ConvertTranslatableTask extends BuildTask {
 				foreach($instances as $instance) {
 
 					$isPublished = false;
-					if ($instance->hasMethod('isPublished')){
+					if ($instance->hasMethod('isPublished')) {
 					     $isPublished = $instance->isPublished();
 					}
 
-					if ($instance->ObsoleteClassName){
+					if ($instance->ObsoleteClassName) {
 						Debug::message("Skipping {$instance->ClassName} with ID {$instanceID} because it from an obsolete class", false);
 						continue;
 					}
@@ -197,7 +197,7 @@ class ConvertTranslatableTask extends BuildTask {
 						Debug::message("  --  Adding {$translatedItem->ID} ($locale)", false);
 						foreach ($translatedFields as $field) {
 							$trField = Fluent::db_field_for_locale($field,$locale);
-							if ($translatedItem->$field){
+							if ($translatedItem->$field) {
 								Debug::message("     --  Adding $trField", false);
 								$instance->$trField = $translatedItem->$field;
 								$changed = true;
@@ -208,7 +208,7 @@ class ConvertTranslatableTask extends BuildTask {
 						$deleteQueue[] = $translatedItem;
 					}
 					if($changed) {
-						if (!$isPublished){
+						if (!$isPublished) {
 							$instance->write();
 						}
 						elseif ($instance->doPublish() === false) {
@@ -221,7 +221,7 @@ class ConvertTranslatableTask extends BuildTask {
 					}
 				}
 			}
-			foreach ($deleteQueue as $delItem){
+			foreach ($deleteQueue as $delItem) {
 			     Debug::message("  --  Removing {$delItem->ID}", false);
 				   $delItem->delete();
 			}			
