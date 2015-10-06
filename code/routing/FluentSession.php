@@ -8,14 +8,14 @@
  * @author Damian Mooyman <damian.mooyman@gmail.com>
  */
 class FluentSession extends Session {
-	
+
 	/**
 	 * Current session
 	 *
-	 * @var Session 
+	 * @var Session
 	 */
 	protected static $old_session = null;
-	
+
 	/**
 	 * Allows session to be temporarily injected into default_session prior to
 	 * the existence of a controller
@@ -31,5 +31,5 @@ class FluentSession extends Session {
 		}
 		self::$default_session = self::$old_session;
 	}
-	
+
 }

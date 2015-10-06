@@ -13,7 +13,7 @@ class Fluent extends Object implements TemplateGlobalProvider {
 	 */
 	public static function regenerate_routes() {
 		$routes = array();
-		
+
 		// Explicit routes
 		foreach(self::locales() as $locale) {
 			$url = self::alias($locale);
@@ -34,13 +34,13 @@ class Fluent extends Object implements TemplateGlobalProvider {
 		if(class_exists('GoogleSitemapController')) {
 			$routes['sitemap.xml'] = 'FluentSitemapController';
 		}
-		
+
 		$singleton = singleton(__CLASS__);
 		$singleton->extend('updateRegenerateRoutes', $routes);
 
 		// Load into core routes
 		Config::inst()->update('Director', 'rules', $routes);
-		
+
 		$singleton->extend('onAfterRegenerateRoutes');
 	}
 
@@ -220,13 +220,13 @@ class Fluent extends Object implements TemplateGlobalProvider {
 		}
 		return $locales;
 	}
-    
+
     /**
      *
-     * Fetch a native language string from the `i18n` class via a passed locale 
-     * in the format "XX_xx". In the event a match cannot be found in any framework 
+     * Fetch a native language string from the `i18n` class via a passed locale
+     * in the format "XX_xx". In the event a match cannot be found in any framework
      * resource, an empty string is returned.
-     * 
+     *
      * @param string $locale e.g. "pt_BR"
      * @return string The native language string for that locale e.g. "portugu&ecirc;s (Brazil)"
      */
