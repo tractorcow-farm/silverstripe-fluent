@@ -14,5 +14,5 @@ interface FluentSearchAdapter {
 	 * @param SQLQuery $query
 	 * @param DataQuery $dataQuery
 	 */
-	function augmentSearch(SQLQuery &$query, DataQuery &$dataQuery = null);
+	public function augmentSearch(SQLQuery &$query, DataQuery &$dataQuery = null);
 }
