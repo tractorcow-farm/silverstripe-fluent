@@ -9,7 +9,7 @@
  */
 class FluentContentController extends Extension {
 
-	function onBeforeInit() {
+	public function onBeforeInit() {
 		Fluent::install_locale();
 	}
 }
