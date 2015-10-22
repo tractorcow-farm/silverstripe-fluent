@@ -1,0 +1,9 @@
+lt:
+  Fluent:
+    BadgeHiddenHelp: 'Šioje kalboje puslapis nerodomas'
+    BadgeHiddenShort: Nerodomas
+    ChangeLocale: 'Pakeisti kalbą'
+    LocaleFilter: 'Kalbų pasirinkimas'
+    LocaleFilterDescription: 'Pažymėkite kalbas, kuriose norite matyti šį įrašą'
+    LocaleMenuFilterDescription: 'Pasirinkite kalbas, kurių rodomame meniu norite matyti šį puslapį'
+    TABLOCALES: Kalbos
