@@ -1,8 +1,7 @@
 # Change Log
 
-## [Unreleased](https://github.com/tractorcow/silverstripe-fluent/tree/HEAD)
-
-[Full Changelog](https://github.com/tractorcow/silverstripe-fluent/compare/3.2.2...HEAD)
+## [3.2.3](https://github.com/tractorcow/silverstripe-fluent/tree/3.2.3) (2015-11-06)
+[Full Changelog](https://github.com/tractorcow/silverstripe-fluent/compare/3.2.2...3.2.3)
 
 **Implemented enhancements:**
 
@@ -22,6 +21,7 @@
 
 **Merged pull requests:**
 
+- Add tests for 3.2 [\#161](https://github.com/tractorcow/silverstripe-fluent/pull/161) ([tractorcow](https://github.com/tractorcow))
 - adding public for better readibility [\#153](https://github.com/tractorcow/silverstripe-fluent/pull/153) ([spekulatius](https://github.com/spekulatius))
 - turning spaces in tabs and adding some phpdoc blocks [\#152](https://github.com/tractorcow/silverstripe-fluent/pull/152) ([spekulatius](https://github.com/spekulatius))
 - adding space [\#151](https://github.com/tractorcow/silverstripe-fluent/pull/151) ([spekulatius](https://github.com/spekulatius))
