@@ -1,5 +1,12 @@
 # Change Log
 
+## [3.3.0](https://github.com/tractorcow/silverstripe-fluent/tree/3.3.0) (2015-11-06)
+[Full Changelog](https://github.com/tractorcow/silverstripe-fluent/compare/3.2.3...3.3.0)
+
+**Implemented enhancements:**
+
+- API Take advantage of parameterised queries [\#162](https://github.com/tractorcow/silverstripe-fluent/pull/162) ([tractorcow](https://github.com/tractorcow))
+
 ## [3.2.3](https://github.com/tractorcow/silverstripe-fluent/tree/3.2.3) (2015-11-06)
 [Full Changelog](https://github.com/tractorcow/silverstripe-fluent/compare/3.2.2...3.2.3)
 
