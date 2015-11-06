@@ -4,19 +4,31 @@ language: php
 
 sudo: false
 
+branches:
+  except:
+    - '/^pulls.*$/'
+
 php: 
- - 5.3
+  - 5.3
 
 env:
- - DB=MYSQL CORE_RELEASE=3.1
- - DB=PGSQL CORE_RELEASE=3.1
+  - DB=MYSQL CORE_RELEASE=3.1
+
+matrix:
+  include:
+    - php: 5.5
+      env: DB=PGSQL CORE_RELEASE=3.1
+    - php: 5.6
+      env: DB=MYSQL CORE_RELEASE=3.2
+    - php: 5.6
+      env: DB=MYSQL CORE_RELEASE=3
 
 before_script:
- - composer self-update
- - phpenv rehash
- - git clone git://github.com/silverstripe-labs/silverstripe-travis-support.git ~/travis-support
- - php ~/travis-support/travis_setup.php --source `pwd` --target ~/builds/ss
- - cd ~/builds/ss
+  - composer self-update
+  - phpenv rehash
+  - git clone git://github.com/silverstripe-labs/silverstripe-travis-support.git ~/travis-support
+  - php ~/travis-support/travis_setup.php --source `pwd` --target ~/builds/ss
+  - cd ~/builds/ss
 
 script: 
- - vendor/bin/phpunit fluent/tests
+  - vendor/bin/phpunit fluent/tests
