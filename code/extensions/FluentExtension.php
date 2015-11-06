@@ -503,7 +503,6 @@ class FluentExtension extends DataExtension {
 	}
 
 	public function augmentSQL(SQLQuery &$query, DataQuery &$dataQuery = null) {
-
 		// Get locale and translation zone to use
 		$default = Fluent::default_locale();
 		$locale = $dataQuery->getQueryParam('Fluent.Locale') ?: Fluent::current_locale();
@@ -539,28 +538,46 @@ class FluentExtension extends DataExtension {
 			$query->selectField($defaultExpression, $defaultField);
 		}
 
-		// Rewrite where conditions
-		$where = $query->getWhere();
+		// Rewrite where conditions with parameterised query (3.2 +)
+		$where = $query
+			->toAppropriateExpression()
+			->getWhere();
 		foreach($where as $index => $condition) {
+			// Extract parameters from condition
+			if($condition instanceof SQLConditionGroup) {
+				$parameters = array();
+				$predicate = $condition->conditionSQL($parameters);
+			} else {
+				$parameters = array_values(reset($condition));
+				$predicate = key($condition);
+			}
 
 			// determine the table/column this condition is against
-			$filterColumn = $this->detectFilterColumn($condition, $includedTables, $locale);
-			if(empty($filterColumn)) continue;
+			$filterColumn = $this->detectFilterColumn($predicate, $includedTables, $locale);
+			if(empty($filterColumn)) {
+				continue;
+			}
 
 			// Duplicate the condition with all localisable fields replaced
-			$localisedCondition = $this->localiseFilterCondition($condition, $includedTables, $locale);
-			if($localisedCondition === $condition) continue;
+			$localisedPredicate = $this->localiseFilterCondition($predicate, $includedTables, $locale);
+			if($localisedPredicate === $predicate) {
+				continue;
+			}
 
 			// Generate new condition that conditionally executes one of the two conditions
 			// depending on field nullability.
 			// If the filterColumn is null or empty, then it's considered untranslated, and
 			// thus the query should continue running on the default column unimpeded.
 			$castColumn = "COALESCE(CAST($filterColumn AS CHAR), '')";
-			$where[$index] = "
-				($castColumn != '' AND $castColumn != '0' AND ($localisedCondition))
+			$newPredicate = "
+				($castColumn != '' AND $castColumn != '0' AND ($localisedPredicate))
 				OR (
-					($castColumn = '' OR $castColumn = '0') AND ($condition)
+					($castColumn = '' OR $castColumn = '0') AND ($predicate)
 				)";
+			// Duplicate this condition with parameters duplicated
+			$where[$index] = array(
+				$newPredicate => array_merge($parameters, $parameters)
+			);
 		}
 		$query->setWhere($where);
 
