@@ -14,13 +14,13 @@
 		"issues": "http://github.com/tractorcow/silverstripe-fluent/issues"
 	},
 	"require": {
-		"silverstripe/framework": ">=3.1.1",
-		"silverstripe/cms": ">=3.1.1",
+		"silverstripe/framework": "~3.2",
+		"silverstripe/cms": "~3.2",
 		"composer/installers": "*"
 	},
 	"extra": {
 		"branch-alias": {
-			"dev-master": "3.2.x-dev"
+			"dev-master": "3.3.x-dev"
 		}
 	},
 	"extra": {
