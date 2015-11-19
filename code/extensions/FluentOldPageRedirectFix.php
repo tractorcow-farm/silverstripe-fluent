@@ -8,13 +8,12 @@
  * @see OldPageRedirector
  * @package fluent
  */
-class FluentOldPageRedirectFix extends Extension {
+class FluentOldPageRedirectFix extends Extension
+{
+    public static $disableSkipIDFilter = false;
 
-	public static $disableSkipIDFilter = false;
-
-	public function onBeforeHTTPError404($request) {
-		$this::$disableSkipIDFilter = TRUE;
-
-	}
-
+    public function onBeforeHTTPError404($request)
+    {
+        $this::$disableSkipIDFilter = true;
+    }
 }
