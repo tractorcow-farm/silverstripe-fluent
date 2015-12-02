@@ -92,10 +92,11 @@ class Fluent extends Object implements TemplateGlobalProvider
         if (empty($locale)) {
             $locale = self::detect_browser_locale();
         }
-
-        // Fallback to default if empty or invalid
-        if (empty($locale) || !in_array($locale, self::locales())) {
-            $locale = self::default_locale();
+        
+        // Fallback to default if empty or invalid (for this domain)
+        $caresAboutDomains = Fluent::is_frontend();
+        if (empty($locale) || !in_array($locale, self::locales($caresAboutDomains))) {
+            $locale = self::default_locale($caresAboutDomains);
         }
 
         // Persist locale if requested
