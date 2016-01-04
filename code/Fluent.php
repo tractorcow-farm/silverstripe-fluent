@@ -92,7 +92,7 @@ class Fluent extends Object implements TemplateGlobalProvider
         if (empty($locale)) {
             $locale = self::detect_browser_locale();
         }
-        
+
         // Fallback to default if empty or invalid (for this domain)
         $caresAboutDomains = Fluent::is_frontend();
         if (empty($locale) || !in_array($locale, self::locales($caresAboutDomains))) {
@@ -202,7 +202,7 @@ class Fluent extends Object implements TemplateGlobalProvider
             !isset(self::$last_set_locale[$key]) || self::$last_set_locale[$key] !== $locale
         )) {
             self::$last_set_locale[$key] = $locale;
-            Cookie::set($key, $locale);
+            Cookie::set($key, $locale, 90, null, null, false, false);
         }
     }
 
