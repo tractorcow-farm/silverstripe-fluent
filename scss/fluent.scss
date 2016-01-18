@@ -172,3 +172,17 @@ span.badge.status-fluenthidden {
 	background-color: $fluent-color-base;
 	text-shadow: none;
 }
+
+.field.LocalisedField  label.left span.fluent-locale-label{
+	color: #FFFFFF;
+	background: $fluent-color-base;
+	display: inline-block;
+	padding: 3px 3px 1px 3px;
+	margin-right: 6px;
+	border-radius: 2px;
+	font-size: 9px;
+	text-transform: uppercase;
+	font-weight: 100;
+	text-shadow: none;
+	line-height: 1;
+}
