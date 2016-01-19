@@ -716,12 +716,10 @@ class FluentExtension extends DataExtension
 
                 // Highlight any translated field
                 if($field && !$field->hasClass('LocalisedField')) {
-                    $field->addExtraClass('LocalisedField');
-
                     // Add a language indicator next to the fluent icon
                     $locale = Fluent::current_locale();
                     $title = $field->Title();
-                    $field->setTitle('<span class="fluent-locale-label">' . substr($locale,0,2) . '</span>'. $title);
+                    $field->setTitle('<span class="fluent-locale-label">' . strtok($locale, '_') . '</span>'. $title);
                     $field->addExtraClass('LocalisedField');
                 }
 
