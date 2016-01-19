@@ -15,12 +15,22 @@
 $fluent-color-base: rgb(31, 148, 51);
 
 // Fix cms-menu collapsed for dropdown
-.cms-menu.collapsed .cms-menu-list {
-	float: left;
-}
-
-.cms-menu.collapsed .cms-fluent-selector .text {
-	display: none;
+.cms-menu.collapsed {
+	.cms-menu-list {
+		float: left;
+	}
+	.cms-fluent-selector .text {
+		display: none;
+	}
+	.cms-fluent-selector-locales {
+		width: 100%;
+		.full-title {
+			display: none;
+		}
+		.short-title {
+			display: block;
+		}
+	}
 }
 
 // Style of selector dropdown
@@ -120,6 +130,11 @@ $fluent-color-base: rgb(31, 148, 51);
 			a {
 				display: block;
 				color: $color-text-light;
+				.short-title {
+					display: none;
+					text-transform: uppercase;
+					text-align: center;
+				}
 			}
 		}
 	}

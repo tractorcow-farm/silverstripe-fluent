@@ -42,9 +42,11 @@
 				// Create options
 				$.each(fluentLocales, function(locale, name){
 					var item = $("<li><a></a></li>");
+					var lables = "<span class='full-title'>"+name+"</span><span class='short-title'>"+locale.split("_")[0]+"</span>";
 					$("a", item)
-						.text(name)
-						.attr('data-locale', locale);
+						.html(lables)
+						.attr('data-locale', locale)
+						.attr('title', name);
 					$(".cms-fluent-selector-locales", selector).append(item);
 				});
 
