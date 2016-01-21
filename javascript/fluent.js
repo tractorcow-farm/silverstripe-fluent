@@ -41,10 +41,12 @@
 
 				// Create options
 				$.each(fluentLocales, function(locale, name){
-					var item = $("<li><a></a></li>");
+					var item = $("<li><a><span class='full-title'></span><span class='short-title'></span></a></li>");
+					$(".full-title", item).text(name);
+					$(".short-title", item).text(locale.split("_")[0]);
 					$("a", item)
-						.text(name)
-						.attr('data-locale', locale);
+						.attr('data-locale', locale)
+						.attr('title', name);
 					$(".cms-fluent-selector-locales", selector).append(item);
 				});
 
