@@ -560,7 +560,7 @@ class FluentExtension extends DataExtension
         foreach ($query->getSelect() as $alias => $select) {
 
             // Skip fields without table context
-            if (!preg_match('/^"(?<class>\w+)"\."(?<field>\w+)"$/i', $select, $matches)) {
+            if (!preg_match('/^"(?<class>[\w\\\\]+)"\."(?<field>\w+)"$/i', $select, $matches)) {
                 continue;
             }
 
