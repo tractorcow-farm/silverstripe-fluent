@@ -50,7 +50,7 @@ Fluent:
     www.example.com.es:
       locales:
         - es_ES
-    www.example.cn
+    www.example.cn:
       locales:
         - zh_cmn
         - zh_yue
