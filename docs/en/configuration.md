@@ -23,7 +23,7 @@ To run this task you can run this on the CLI.
 ./framework/sake dev/tasks/FluentValidateTask 'flush=all'
 ```
 
-Or go to `http://www.mysite.com/dev/tasks/FluentValidateTask` in your browser.
+Or go to `http://www.mysite.com/dev/tasks/FluentValidateTask?isDev=1` in your browser.
 
 ## Locale configuration
 
