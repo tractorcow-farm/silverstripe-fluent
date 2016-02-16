@@ -9,6 +9,22 @@ Please check [fluent.yml](../../_config/fluent.yml) for the default configuratio
 Please make sure to REMOVE any `i18n::set_locale` calls from your `_config.php` file, as it
 will interfere with locale bootstrapping in certain situations (such as `Security` controller actions).
 
+## Testing configuration
+
+Once you've finished configuring your site, you can run the handy validation task to check if
+there are any errors in your config. Examples of errors could include:
+ - Invalid default locales
+ - Duplicate locales in multiple domains
+ - Locales missing from domains
+
+To run this task you can run this on the CLI.
+
+```
+./framework/sake dev/tasks/FluentValidateTask 'flush=all'
+```
+
+Or go to `http://www.mysite.com/dev/tasks/FluentValidateTask` in your browser.
+
 ## Locale configuration
 
 Firstly, you'll need to configure the locales that should be included, as well as
@@ -155,7 +171,7 @@ MyAjaxController:
     - 'FluentContentController'
 ```
 
-If you are using your custom controller in the CMS then you should implement 
+If you are using your custom controller in the CMS then you should implement
 an `isFrontend` method in your class in order to tell Fluent to treat it as an
 admin's view. This means:
 
@@ -225,8 +241,8 @@ in the CMS in order to allow access by site administrators in all locales.
 ## Customise Menu by Locale
 
 Similarly to how `FluentFilteredExtension` works, a `SiteTree` can have its appearance in the navigation controlled
-on a locale-by-locale basis by adding the `FluentMenuExtension` extension. Adding this will replace the 
-ShowInMenu field under the Settings tab with a locale selector. This must be added to the `SiteTree` 
+on a locale-by-locale basis by adding the `FluentMenuExtension` extension. Adding this will replace the
+ShowInMenu field under the Settings tab with a locale selector. This must be added to the `SiteTree`
 class, not `Page` or any other subclass.
 
 ```yaml
