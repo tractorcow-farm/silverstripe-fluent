@@ -45,3 +45,11 @@ FluentTest_TranslatedObject:
     Title_es_ES: 'Este color es azul'
     Description: 'Second object'
     URLKey: 'my-translated-2'
+  untranslated:
+    Title: 'Un-translated object'
+    Title_fr_CA: ''
+    Title_en_NZ: ''
+    Title_en_US: ''
+    Title_es_ES: ''
+    Description: 'Third'
+    URLKey: 'my-translated-3'

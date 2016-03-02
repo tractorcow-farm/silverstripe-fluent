@@ -9,6 +9,22 @@ Please check [fluent.yml](../../_config/fluent.yml) for the default configuratio
 Please make sure to REMOVE any `i18n::set_locale` calls from your `_config.php` file, as it
 will interfere with locale bootstrapping in certain situations (such as `Security` controller actions).
 
+## Testing configuration
+
+Once you've finished configuring your site, you can run the handy validation task to check if
+there are any errors in your config. Examples of errors could include:
+ - Invalid default locales
+ - Duplicate locales in multiple domains
+ - Locales missing from domains
+
+To run this task you can run this on the CLI.
+
+```
+./framework/sake dev/tasks/FluentValidateTask 'flush=all'
+```
+
+Or go to `http://www.mysite.com/dev/tasks/FluentValidateTask?isDev=1` in your browser.
+
 ## Locale configuration
 
 Firstly, you'll need to configure the locales that should be included, as well as
@@ -155,7 +171,7 @@ MyAjaxController:
     - 'FluentContentController'
 ```
 
-If you are using your custom controller in the CMS then you should implement 
+If you are using your custom controller in the CMS then you should implement
 an `isFrontend` method in your class in order to tell Fluent to treat it as an
 admin's view. This means:
 
@@ -225,8 +241,8 @@ in the CMS in order to allow access by site administrators in all locales.
 ## Customise Menu by Locale
 
 Similarly to how `FluentFilteredExtension` works, a `SiteTree` can have its appearance in the navigation controlled
-on a locale-by-locale basis by adding the `FluentMenuExtension` extension. Adding this will replace the 
-ShowInMenu field under the Settings tab with a locale selector. This must be added to the `SiteTree` 
+on a locale-by-locale basis by adding the `FluentMenuExtension` extension. Adding this will replace the
+ShowInMenu field under the Settings tab with a locale selector. This must be added to the `SiteTree`
 class, not `Page` or any other subclass.
 
 ```yaml
@@ -261,24 +277,35 @@ Search localisation is quite fragile, and is likely to break with future framewo
 
 ## Locale detection
 
-When a visitor lands on the home page for the first time, fluent will attempt to detect that user's locale based
+When a visitor lands on the home page for the first time, fluent can attempt to detect that user's locale based
 on the `Accept-Language` http headers sent.
 
-This functionality can interefere with certain applications, such as facebook opengraph tools, so in some cases it
-is necessary to turn this off. This can be done as below:
+This functionality can interefere with certain applications, such as facebook opengraph tools, so it
+is turned off by default. To turn it on set the below setting:
 
 ```yaml
 Fluent:
-  detect_locale: false
+  detect_locale: true
 ```
 
 ## Saved locale
 
-When a visitor has viewed a page on the website before, and returns in subsequent sessions, fluent will attempt
-to redirect requests for the default home page to the home page of that recently viewed locale. This behaviour can be
-turned off by disabling the `remember_locale` option.
+When a visitor has viewed a page on the website before, and returns in subsequent sessions, fluent can attempt
+to redirect requests for the default home page to the home page of that recently viewed locale. This behaviour
+is turned off by default, but it can be turned on by setting the `remember_locale` option.
 
 ```yaml
 Fluent:
-  remember_locale: false
+  remember_locale: true
 ```
+
+If you wish to completely turn off the locale persisting in the front end (for example, in case your site is stateless
+and should not write session or cookies) you can disable the persist key as below.
+
+```yaml
+Fluent:
+  persist_id: ''
+```
+
+Note: It's recommended not to remove persist_id_cms, as certain CMS functionality may not work properly
+or may detect the wrong locale.

@@ -37,7 +37,7 @@ Fluent:
   # Determine if the locale should be remembered across multiple sessions via cookies. If this is left on then
   # visitors to the home page will be redirected to the locale they last viewed. This may interefere with some
   # applications and can be turned off to prevent unexpected redirects.
-  remember_locale: true
+  remember_locale: false
   # ID to persist the locale in cookies / session in the front end
   persist_id: 'FluentLocale'
   # ID to persist the locale in cookies / session in the CMS
@@ -46,7 +46,7 @@ Fluent:
   query_param: 'l'
   # Determine if the site should detect the browser locale for new users.
   # Turn this off to disable 302 redirects on the home page
-  detect_locale: true
+  detect_locale: false
   # Forces the module to act in domain mode
   force_domain: false
   # List of locale specific domains configured for this site

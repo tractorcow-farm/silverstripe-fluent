@@ -50,12 +50,14 @@ Fluent:
     www.example.com.es:
       locales:
         - es_ES
-    www.example.cn
+    www.example.cn:
       locales:
         - zh_cmn
         - zh_yue
       default_locale: zh_cmn
 ```
+
+Note that every locale must be ascociated with only one domain. Nevertheless every domains will list all locales in their [LocaleMenu](templating.md#templating-for-fluent). To ensure a valid configuration you can use test your configuration as described [here](configuration.md#testing-configuration).
 
 ## Deployment
 

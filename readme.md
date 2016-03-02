@@ -51,7 +51,7 @@ translatable urls.
  * [Templating for Fluent](docs/en/templating.md)
  * [How Fluent works](docs/en/how-fluent-works.md)
  * [Migration guide for Translatable sites](docs/en/translatable.md)
- * [Changelogs](docs/en/changelogs/index.md)
+ * [Changelogs](CHANGELOG.md)
 
 ## License
 

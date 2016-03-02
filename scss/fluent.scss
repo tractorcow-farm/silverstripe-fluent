@@ -14,6 +14,25 @@
 // $fluent-color-base: #bc0004;
 $fluent-color-base: rgb(31, 148, 51);
 
+// Fix cms-menu collapsed for dropdown
+.cms-menu.collapsed {
+	.cms-menu-list {
+		float: left;
+	}
+	.cms-fluent-selector .text {
+		display: none;
+	}
+	.cms-fluent-selector-locales {
+		width: 100%;
+		.full-title {
+			display: none;
+		}
+		.short-title {
+			display: block;
+		}
+	}
+}
+
 // Style of selector dropdown
 .cms-fluent-selector {
 	display: block;
@@ -54,7 +73,7 @@ $fluent-color-base: rgb(31, 148, 51);
 		text-overflow: ellipsis;
 		overflow: hidden;
 	}
-	
+
 	.cms-fluent-selector-flydown {
 		position: absolute;
 		z-index: 140;
@@ -73,14 +92,14 @@ $fluent-color-base: rgb(31, 148, 51);
 			lighten($fluent-color-base, 5%),
 			darken($fluent-color-base, 5%)
 		));
-			
+
 		.icon-fluent-select{
 			width: 18px;
 			height: 18px;
 			display: block;
 			text-indent: -9999px;
 			@include opacity(0.7);
-			
+
 			background: {
 				image: url('../../framework/admin/thirdparty/chosen/chosen/chosen-sprite.png');
 				repeat: no-repeat;
@@ -88,7 +107,7 @@ $fluent-color-base: rgb(31, 148, 51);
 			}
 		}
 	}
-	
+
 	.cms-fluent-selector-locales {
 		display: none;
 		position: absolute;
@@ -105,20 +124,25 @@ $fluent-color-base: rgb(31, 148, 51);
 			$fluent-color-base,
 			darken($fluent-color-base, 10%)
 		));
-			
+
 		li {
 			padding: 2px 8px;
 			a {
 				display: block;
 				color: $color-text-light;
+				.short-title {
+					display: none;
+					text-transform: uppercase;
+					text-align: center;
+				}
 			}
 		}
 	}
-	
+
 	&.active .cms-fluent-selector-locales {
 		display: block;
 	}
-	
+
 	&:hover,
 	&.active {
 		text-decoration: none;
@@ -130,7 +154,7 @@ $fluent-color-base: rgb(31, 148, 51);
 			lighten($fluent-color-base, 5%),
 			$fluent-color-base
 		));
-			
+
 		.cms-fluent-selector-flydown {
 			background-color: lighten($fluent-color-base, 4%);
 			border-left: 1px solid darken($fluent-color-base, 10%);
@@ -162,4 +186,18 @@ span.badge.status-fluenthidden {
 	border: 1px solid darken($fluent-color-base, 20%);
 	background-color: $fluent-color-base;
 	text-shadow: none;
+}
+
+.field.LocalisedField  label.left span.fluent-locale-label{
+	color: #FFFFFF;
+	background: $fluent-color-base;
+	display: inline-block;
+	padding: 3px 3px 1px 3px;
+	margin-right: 6px;
+	border-radius: 2px;
+	font-size: 9px;
+	text-transform: uppercase;
+	font-weight: 100;
+	text-shadow: none;
+	line-height: 1;
 }
