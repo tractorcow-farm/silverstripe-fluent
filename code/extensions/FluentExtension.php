@@ -402,6 +402,7 @@ class FluentExtension extends DataExtension
             'Alias' => Fluent::alias($locale),
             'Title' => i18n::get_locale_name($locale),
             'LanguageNative' => Fluent::locale_native_name($locale),
+            'LanguageAlias' => i18n::get_lang_from_locale($locale),
             'Link' => $link,
             'AbsoluteLink' => $link ? Director::absoluteURL($link) : null,
             'LinkingMode' => $linkingMode
