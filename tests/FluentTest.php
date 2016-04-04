@@ -248,6 +248,7 @@ class FluentTest extends SapphireTest
                 'Alias' => 'fr_CA',
                 'Title' => 'French (Canada)',
                 'LanguageNative' => 'fran&ccedil;ais',
+                'Language' => 'fr',
                 'Link' => '/', // fr_CA home page
                 'AbsoluteLink' => 'http://www.notexample.com/',
                 'LinkingMode' => 'invalid'
@@ -258,6 +259,7 @@ class FluentTest extends SapphireTest
                 'Alias' => 'en_NZ',
                 'Title' => 'English (New Zealand)',
                 'LanguageNative' => 'English',
+                'Language' => 'en',
                 'Link' => '/en_NZ/link/',
                 'AbsoluteLink' => 'http://www.notexample.com/en_NZ/link/',
                 'LinkingMode' => 'current'
@@ -268,6 +270,7 @@ class FluentTest extends SapphireTest
                 'Alias' => 'usa',
                 'Title' => 'English (United States)',
                 'LanguageNative' => 'English',
+                'Language' => 'en',
                 'Link' => '/en_US/link/',
                 'AbsoluteLink' => 'http://www.notexample.com/en_US/link/',
                 'LinkingMode' => 'link'
@@ -278,6 +281,7 @@ class FluentTest extends SapphireTest
                 'Alias' => 'es_ES',
                 'Title' => 'Spanish (Spain)',
                 'LanguageNative' => 'espa&ntilde;ol',
+                'Language' => 'es',
                 'Link' => '/es_ES/', // es_ES home page
                 'AbsoluteLink' => 'http://www.notexample.com/es_ES/',
                 'LinkingMode' => 'invalid'
@@ -309,6 +313,7 @@ class FluentTest extends SapphireTest
                 'Alias' => 'fr_CA',
                 'Title' => 'French (Canada)',
                 'LanguageNative' => 'fran&ccedil;ais',
+                'Language' => 'fr',
                 'Link' => 'http://www.example.ca/', // fr_CA home page
                 'AbsoluteLink' => 'http://www.example.ca/',
                 'LinkingMode' => 'invalid'
@@ -319,6 +324,7 @@ class FluentTest extends SapphireTest
                 'Alias' => 'en_NZ',
                 'Title' => 'English (New Zealand)',
                 'LanguageNative' => 'English',
+                'Language' => 'en',
                 'Link' => 'http://www.example.co.nz/en_NZ/link/', // NZ domain
                 'AbsoluteLink' => 'http://www.example.co.nz/en_NZ/link/',
                 'LinkingMode' => 'current'
@@ -329,6 +335,7 @@ class FluentTest extends SapphireTest
                 'Alias' => 'usa',
                 'Title' => 'English (United States)',
                 'LanguageNative' => 'English',
+                'Language' => 'en',
                 'Link' => 'http://www.example.com/en_US/link/', // US domain with en_US locale
                 'AbsoluteLink' => 'http://www.example.com/en_US/link/',
                 'LinkingMode' => 'link'
@@ -339,6 +346,7 @@ class FluentTest extends SapphireTest
                 'Alias' => 'es_ES',
                 'Title' => 'Spanish (Spain)',
                 'LanguageNative' => 'espa&ntilde;ol',
+                'Language' => 'es',
                 'Link' => 'http://www.example.com/es_ES/', // US domain with es_ES home page
                 'AbsoluteLink' => 'http://www.example.com/es_ES/',
                 'LinkingMode' => 'invalid'
