@@ -952,6 +952,32 @@ class FluentTest extends SapphireTest
         $this->assertEquals('es description', $row['Description_fr_CA']);
         $this->assertEquals('nz description', $row['Description_en_NZ']);
     }
+
+    /**
+     * Test Fluent::isFieldModified and ensure that:
+     *
+     * - if the field's value at a given locale is the same as the default locale's value, it is NOT modified
+     * - if it's different at a given locale than default, it IS modified
+     * - if it's empty at a given locale it should inherit from default so it is NOT modified
+     */
+    public function testIsFieldModified()
+    {
+        $object = $this->objFromFixture('FluentTest_TranslatedObject', 'translated1');
+
+        $fields = $object->getCMSFields();
+
+        // Default locale
+        $this->assertFalse(Fluent::isFieldModified($object, $fields->fieldByName('Root.Main.Title'), 'fr_CA'));
+
+        // Default locale, getting the default locale instead of passing it in
+        $this->assertFalse(Fluent::isFieldModified($object, $fields->fieldByName('Root.Main.Title')));
+
+        // Inherited from default locale
+        $this->assertFalse(Fluent::isFieldModified($object, $fields->fieldByName('Root.Main.Title'), 'en_US'));
+
+        // Different from default locale
+        $this->assertTrue(Fluent::isFieldModified($object, $fields->fieldByName('Root.Main.Title'), 'en_NZ'));
+    }
 }
 
 /**

@@ -11,8 +11,10 @@
 @import "../../framework/admin/scss/themes/default.scss";
 @import "../../framework/admin/scss/mixins.scss";
 
-// $fluent-color-base: #bc0004;
+// $fluent-color-base: #1F9433;
 $fluent-color-base: rgb(31, 148, 51);
+// $fluent-color-modified: #FF9100;
+$fluent-color-modified: rgb(244, 145, 0);
 
 // Fix cms-menu collapsed for dropdown
 .cms-menu.collapsed {
@@ -200,4 +202,8 @@ span.badge.status-fluenthidden {
 	font-weight: 100;
 	text-shadow: none;
 	line-height: 1;
+
+    &.fluent-modified-value {
+        background: $fluent-color-modified;
+    }
 }

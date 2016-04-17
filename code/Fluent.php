@@ -669,4 +669,40 @@ class Fluent extends Object implements TemplateGlobalProvider
             )
         );
     }
+
+    /**
+     * Given a field on an object and optionally a locale, compare its locale value against the default locale value to
+     * determine if the value is changed at the given locale.
+     *
+     * @param  DataObject  $object
+     * @param  FormField   $field
+     * @param  string|null $locale Optional: if not provided, will be gathered from the request
+     * @return boolean
+     */
+    public static function isFieldModified(DataObject $object, FormField $field, $locale = null)
+    {
+        if (is_null($locale)) {
+            $locale = self::current_locale();
+        }
+
+        if ($locale === $defaultLocale = self::default_locale()) {
+            // It's the default locale, so it's never "modified" from the default locale value
+            return false;
+        }
+
+        $defaultField = self::db_field_for_locale($field->getName(), $defaultLocale);
+        $localeField  = self::db_field_for_locale($field->getName(), $locale);
+
+        $defaultValue = $object->$defaultField;
+        $localeValue  = $object->$localeField;
+
+        if ((!empty($defaultValue) && empty($localeValue))
+            || ($defaultValue === $localeValue)
+        ) {
+            // Unchanged from default
+            return false;
+        }
+
+        return true;
+    }
 }

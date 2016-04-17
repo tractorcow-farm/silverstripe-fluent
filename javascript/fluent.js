@@ -106,5 +106,59 @@
 				this._super();
 			}
 		});
+
+		/**
+		 * Translated fields - visual indicator
+		 */
+		$('div.LocalisedField *').entwine({
+			/**
+			 * Switch the class and title/tooltip on translated fields
+			 */
+			toggleModified: function(sameAsDefault, selector) {
+				selector = selector || this;
+
+				var label = selector.closest('.field').find('.fluent-locale-label');
+				label.toggleClass('fluent-modified-value');
+
+				if (label.hasClass('fluent-modified-value')) {
+					label.attr('title', 'Modified from default locale value - click to reset');
+				} else {
+					label.attr('title', 'Using default locale value');
+				}
+			}
+		});
+
+		$('div.LocalisedField input.LocalisedField').entwine({
+			/**
+			 * Check for changes against the default value
+			 */
+			onchange: function() {
+				var newValue = this.val();
+				var defaultValue = $.parseJSON(this.data('default-locale-value'));
+
+				if (!defaultValue) {
+					// We'll turn this off on the default locale
+					return;
+				}
+
+				this.toggleModified(newValue === defaultValue);
+			}			
+		});
+
+		/**
+		 * If the user clicks on the locale label in its modified state, reset to the default field value
+		 */
+		$('.fluent-locale-label.fluent-modified-value').entwine({
+			onclick: function() {
+				var input = this.closest('.LocalisedField').find('input.LocalisedField');
+				var defaultValue = $.parseJSON(input.data('default-locale-value'));
+
+				if (!defaultValue) {
+					return;
+				}
+
+				input.val(defaultValue).change();
+			}
+		})
 	});
 })(jQuery);
