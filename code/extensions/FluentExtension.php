@@ -715,12 +715,43 @@ class FluentExtension extends DataExtension
                     $field = $fields->dataFieldByName($matches['field']);
                 }
 
-                // Highlight any translated field
-                if($field && !$field->hasClass('LocalisedField')) {
+                // Highlight any translatable field
+                if ($field && !$field->hasClass('LocalisedField')) {
                     // Add a language indicator next to the fluent icon
                     $locale = Fluent::current_locale();
                     $title = $field->Title();
-                    $field->setTitle('<span class="fluent-locale-label">' . strtok($locale, '_') . '</span>'. $title);
+
+                    $titleClasses = 'fluent-locale-label';
+
+                    // Add a visual indicator for whether the value has been changed from the default locale
+                    $isModified = Fluent::isFieldModified($this->owner, $field, $locale);
+                    $modifiedTitle = 'Using default locale value';
+
+                    if ($isModified) {
+                        $titleClasses .= ' fluent-modified-value';
+                        $modifiedTitle = 'Modified from default locale value - click to reset';
+                    }
+
+                    $field->setTitle(
+                        sprintf(
+                            '<span class="%s" title="%s">%s</span>%s',
+                            $titleClasses,
+                            $modifiedTitle,
+                            strtok($locale, '_'),
+                            $title
+                        )
+                    );
+
+                    // Set the default value to the element so we can compare it with JavaScript
+                    if (Fluent::default_locale() !== $locale) {
+                        $field->setAttribute(
+                            'data-default-locale-value',
+                            Convert::raw2json(
+                                $this->owner->{Fluent::db_field_for_locale($field->getName(), Fluent::default_locale())}
+                            )
+                        );
+                    }
+
                     $field->addExtraClass('LocalisedField');
                 }
 
