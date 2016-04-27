@@ -1,12 +1,12 @@
 # Domain Configuration
 
-While fluent may be tested locally using the default routing pattern, when deployed live it can be configured to
+While Fluent may be tested locally using the default routing pattern, when deployed live it can be configured to
 associate certain domain names with specific locales. Each domain may in this way act as a subsite, each of which
 has its own default locale, sublocales, while still acting as a single multi-domain application.
 
 ## Example
 
-For example, your website may have the following urls locally:
+For example, your website may have the following URLs locally:
 
  * http://localhost/mysite/ (en_US default locale)
  * http://localhost/mysite/es_US/
@@ -26,7 +26,7 @@ Although we have three domains, we can still use five locales, and allow each do
 
 ## Configuration
 
-The fluent.yml configuration for the above example would look like the above:
+The `fluent.yml` configuration for the above example would look like the above:
 
 ```yaml
 ---
@@ -57,17 +57,21 @@ Fluent:
       default_locale: zh_cmn
 ```
 
-Note that every locale must be ascociated with only one domain. Nevertheless every domains will list all locales in their [LocaleMenu](templating.md#templating-for-fluent). To ensure a valid configuration you can use test your configuration as described [here](configuration.md#testing-configuration).
+Note that every locale must be associated with only one domain. Nevertheless every domains will list all locales in
+their [LocaleMenu](templating.md#templating-for-fluent). To ensure a valid configuration you can use test your
+configuration as described [here](configuration.md#testing-configuration).
 
 ## Deployment
 
-In order to ensure that the routing scheme will respect these domains, you should ensure the following during deployment:
+In order to ensure that the routing scheme will respect these domains, you should ensure the following during
+deployment:
 
 Either one of:
 
  * Ensure that all domains configured are the only domains that the site can be accessed under, or
  * Add `define('SS_FLUENT_FORCE_DOMAIN', true)` to your `_ss_environment.php` file, or
- * Add `Config::inst()->update('Fluent', 'force_domain', true)` to your config (this will effect your development environment)
+ * Add `Config::inst()->update('Fluent', 'force_domain', true)` to your config (this will effect your development
+     environment)
 
-Outside of these conditions, the domains configuration property will be entirely ignored, meaning you will not normally need to alter
-your silverstripe configuration between environments.
+Outside of these conditions, the domains configuration property will be entirely ignored, meaning you will not normally
+need to alter your SilverStripe configuration between environments.

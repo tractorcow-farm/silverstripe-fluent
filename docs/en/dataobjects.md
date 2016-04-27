@@ -19,10 +19,11 @@ If you wish to add any translated form fields to the result of this call, then y
 
 ```php
 
-class MyPage extends SiteTree {
-	public function getCMSFields() {
-
-		// Adding the Description field early will allow FluentField to decorate this with the appropriate 
+class MyPage extends SiteTree
+{
+	public function getCMSFields()
+    {
+		// Adding the Description field early will allow FluentField to decorate this with the appropriate
 		// CSS classes.
 		$this->beforeUpdateCMSFields(function($fields) {
 			$fields->addFieldToTab('Root.Main', new TextField('Description'));
@@ -39,13 +40,14 @@ class MyPage extends SiteTree {
 
 ### Explicit field generation
 
-If explicitly generating your field list, simply make sure to call the appropriate extension hook prior to returning.
+If explicitly generating your `FieldList`, simply make sure to call the appropriate extension hook prior to returning.
 
 ```php
 
-class MyObject extends DataObject {
-	public function getCMSFields() {
-
+class MyObject extends DataObject
+{
+	public function getCMSFields()
+    {
 		// Note the absence of any parent::getCMSFields
 		$fields = new FieldList(
 			new TextField('Title', 'Title', null, 255),
@@ -62,7 +64,7 @@ class MyObject extends DataObject {
 
 ### CMS Filtering
 
-By default, filtering of objects with FluentFilteredExtension is disabled within the CMS.
+By default, filtering of objects with `FluentFilteredExtension` is disabled within the CMS.
 This is because, should an object ever be filtered out of all locales, the object must then be
 findable in order to re-enabled it.
 
@@ -74,11 +76,34 @@ The following will construct such a list, ensuring that only objects valid in th
 locale are given.
 
 ```php
-public function getCMSFields() {
+public function getCMSFields()
+{
 	$fields = parent::getCMSFields();
 	// Causes filtering to be enabled within the admin
 	$banners = $this->Banners()->setDataQueryParam(FluentFilteredExtension::FILTER_ADMIN, true);
 	$fields->addFieldsToTab('Root.Banners', new CheckboxSetField('Banners', 'Banners', $banners));
 	return $fields;
+}
+```
+
+### Extensions
+
+As mentioned in the CMS Fields heading, it is necessary to ensure that the `updateCMSFields` extension method is called
+once (and only once) on each `FieldList` object. Fields added by other extensions will not have the necessary
+decorations applied to it by the `FluentExtension`, unless it happens to be applied before `FluentExtension`. Since
+extension order cannot be guaranteed, this poses a problem.
+
+You can circumvent this issue by extending `FluentExtension` from your custom extension and then calling
+`parent::updateCMSFields($fields)` at the end of your method. This way it is actually one call to `updateCMSFields`
+using inheritance rather than two different extensions:
+
+```php
+class PlayerExtension extends FluentExtension
+{
+    public function updateCMSFields(FieltList $fields)
+    {
+        $fields->removeByName('SomeIrrelevantField');
+        parent::updateCMSFields($fields);
+    }
 }
 ```
