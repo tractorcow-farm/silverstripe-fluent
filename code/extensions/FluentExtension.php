@@ -746,9 +746,7 @@ class FluentExtension extends DataExtension
                     if (Fluent::default_locale() !== $locale) {
                         $field->setAttribute(
                             'data-default-locale-value',
-                            Convert::raw2json(
-                                $this->owner->{Fluent::db_field_for_locale($field->getName(), Fluent::default_locale())}
-                            )
+                            $this->owner->{Fluent::db_field_for_locale($field->getName(), Fluent::default_locale())}
                         );
                     }
 
