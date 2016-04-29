@@ -166,6 +166,10 @@
 					input.val(defaultValue);
 				} else if (input.is('textarea')) {
 					input.text(defaultValue);
+					// If it's a WYSIWYG editor, trigger it to update
+					if ('true' === input.attr('tinymce')) {
+						tinyMCE.get(input.attr('id')).setContent(defaultValue);
+					}
 				}
 				input.change();
 			}
