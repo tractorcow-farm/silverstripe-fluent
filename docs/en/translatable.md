@@ -8,7 +8,7 @@ The steps to follow are:
 1. Back up your DB.
 2. Ensure you're logged into the CMS, as the subsequent migration scripts will require admin privileges, and it can
    be easier to log in at the start.
-3. Remove the `Translatable` module completely prior to progressing.
+3. Remove the Translatable module completely prior to progressing.
 4. [Configure](configuration.md) Fluent, taking care to apply the `FluentExtension` to any class previously extended
    by `Translatable` (`SiteTree` and `SiteConfig` are included by default).
 5. [Install](installation.md) the Fluent module.
@@ -23,9 +23,9 @@ The steps to follow are:
 This will run the installation in a DB transaction (tested in MySQL).
 
 This will not migrate anything filtered by locale, and will initially assume that all items are visible in all locales.
-`FluentFilteredExtension` will need to be applied and migrated manually for each filtered dataobject.
+`FluentFilteredExtension` will need to be applied and migrated manually for each filtered DataObject.
 
-This migration tool also assumes that the root Locale sitetree is the base sitetree for your website, but will not
+This migration tool also assumes that the root locale SiteTree is the base SiteTree for your website, but will not
 delete pages that only exist in other locales. Some re-ordering and page deletion may be necessary after migration.
 
 As a part of the migration process all translated versions of pages will be unpublished, merged back into the main
