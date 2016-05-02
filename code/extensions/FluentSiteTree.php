@@ -34,6 +34,10 @@ class FluentSiteTree extends FluentExtension
 
     public function updateRelativeLink(&$base, &$action)
     {
+        // Option to prevent the prefix being added if required
+        if (Fluent::config()->disable_link_locale_prefix) {
+            return;
+        }
 
         // Don't inject locale to subpages
         if ($this->owner->ParentID && SiteTree::config()->nested_urls) {

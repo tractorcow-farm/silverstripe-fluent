@@ -44,6 +44,8 @@ Fluent:
   persist_id_cms: 'FluentLocale_CMS'
   # Request parameter to store the locale in. Used for some Controllers
   query_param: 'l'
+  # Option to disable adding the locale prefix to URLs. This can be set inline for one off use.
+  disable_link_locale_prefix: false
   # Determine if the site should detect the browser locale for new users.
   # Turn this off to disable 302 redirects on the home page
   detect_locale: false
