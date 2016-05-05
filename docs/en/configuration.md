@@ -80,6 +80,31 @@ Fluent:
 
 The home pages for the above locales will be `/english/`, `/spanish/`, `/en_CA/`, and `/fr_CA/`
 
+## Default locale options
+
+If you prefer to keep the prefix off from all links in the default locale, you can set the
+`Fluent.disable_default_prefix` option. When this is enabled, the prefix will only be
+prepended to the beginning of links to non-default locales.
+
+
+E.g.
+
+```yaml
+---
+Name: myfluentconfig
+After: '#fluentconfig'
+---
+Fluent:
+  disable_default_prefix: true
+```
+
+If this is left at the default, false, then the prefix will only be omitted for the
+home page for the default locale.
+
+It is recommended to leave this on in order to ensure the correct locale is set for every page,
+but in some cases (especially when upgrading websites) it may be better to keep existing urls
+for the default locale intact.
+
 ## Field localisation configuration
 
 Great, now we've setup our languages. Our next job is to decide which DataObjects, and which
