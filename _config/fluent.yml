@@ -49,6 +49,8 @@ Fluent:
   detect_locale: false
   # Forces the module to act in domain mode
   force_domain: false
+  # Enable prefix for "default" locale to be disabled.
+  disable_default_prefix: false
   # List of locale specific domains configured for this site
   domains: []
   #  www.example.com.au:
