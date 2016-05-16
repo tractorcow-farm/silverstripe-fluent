@@ -56,7 +56,7 @@ class FluentSiteTree extends FluentExtension
             }
 
             // If default locale shouldn't have prefix, then don't add prefix
-            if(Fluent::disable_default_prefix()) {
+            if (Fluent::disable_default_prefix()) {
                 return;
             }
 

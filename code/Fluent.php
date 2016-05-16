@@ -34,8 +34,8 @@ class Fluent extends Object implements TemplateGlobalProvider
         }
 
         // Merge all other routes (maintain priority)
-        foreach(Config::inst()->get('Director', 'rules') as $key => $route) {
-            if(!isset($routes[$key])) {
+        foreach (Config::inst()->get('Director', 'rules') as $key => $route) {
+            if (!isset($routes[$key])) {
                 $routes[$key] = $route;
             }
         }
@@ -48,7 +48,7 @@ class Fluent extends Object implements TemplateGlobalProvider
 
         // If default locale doesn't have prefix, replace default route with
         // the default locale for this domain
-        if(static::disable_default_prefix()) {
+        if (static::disable_default_prefix()) {
             $routes['$URLSegment//$Action/$ID/$OtherID'] = array(
                 'Controller' => 'ModelAsController',
                 self::config()->query_param => static::default_locale(true)
@@ -444,7 +444,8 @@ class Fluent extends Object implements TemplateGlobalProvider
      *
      * @return bool
      */
-    public static function disable_default_prefix() {
+    public static function disable_default_prefix()
+    {
         return self::config()->disable_default_prefix;
     }
 

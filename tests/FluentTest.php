@@ -169,17 +169,17 @@ class FluentTest extends SapphireTest
 
         // Non-default locale still has prefix
         $homeDomainLink = $this->withURL('www.example.com', '/', '/', function () use ($home) {
-            return Fluent::with_locale('es_ES', function() use ($home) {
+            return Fluent::with_locale('es_ES', function () use ($home) {
                 return Page::get()->byID($home->ID)->Link();
             });
         });
         $aboutDomainLink = $this->withURL('www.example.ca', '/', '/', function () use ($about) {
-            return Fluent::with_locale('es_ES', function() use ($about) {
+            return Fluent::with_locale('es_ES', function () use ($about) {
                 return Page::get()->byID($about->ID)->Link();
             });
         });
         $staffDomainLink = $this->withURL('www.example.ca', '/', '/', function () use ($staff) {
-            return Fluent::with_locale('es_ES', function() use ($staff) {
+            return Fluent::with_locale('es_ES', function () use ($staff) {
                 return Page::get()->byID($staff->ID)->Link();
             });
         });
