@@ -2,7 +2,10 @@
 	"name": "tractorcow/silverstripe-fluent",
 	"description": "Simple localisation for Silverstripe",
 	"type": "silverstripe-module",
-	"keywords": ["silverstripe", "localisation", "localization", "translation", "language", "locale", "multilingual"],
+	"keywords": [
+        "silverstripe", "localisation", "localization", "translation", "language", "locale", "multilingual",
+        "translatable", "i18n", "internationalisation", "internationalization"
+    ],
 	"license": "BSD-3-Clause",
 	"authors": [
 		{
@@ -15,15 +18,12 @@
 	},
 	"require": {
 		"silverstripe/framework": "~3.2",
-		"silverstripe/cms": "~3.2",
-		"composer/installers": "*"
+		"silverstripe/cms": "~3.2"
 	},
 	"extra": {
 		"branch-alias": {
-			"dev-master": "3.3.x-dev"
-		}
-	},
-	"extra": {
+			"dev-master": "3.4.x-dev"
+		},
 		"installer-name": "fluent"
 	}
 }
