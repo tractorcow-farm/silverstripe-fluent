@@ -9,13 +9,6 @@
 class FluentFilteredExtension extends DataExtension
 {
     /**
-     * Data query key necessary to turn on admin filtering
-     *
-     * @var string
-     */
-    const FILTER_ADMIN = 'Fluent.FilterAdmin';
-
-    /**
      * Set the filter of locales to the specified locale, or array of locales
      *
      * @param string|array $locale Locale, or list of locales
@@ -113,6 +106,7 @@ class FluentFilteredExtension extends DataExtension
      */
     public function augmentDataQueryCreation(SQLQuery $query, DataQuery $dataQuery)
     {
+        $dataQuery->setQueryParam('Fluent.FilterAdmin', Fluent::config()->FilterAdmin)
         $dataQuery->setQueryParam('Fluent.Locale', Fluent::current_locale());
         $dataQuery->setQueryParam('Fluent.IsFrontend', Fluent::is_frontend());
     }
@@ -127,7 +121,7 @@ class FluentFilteredExtension extends DataExtension
         }
 
         // Skip filter in the CMS, unless filtering is explicitly turned on
-        $filterAdmin = $dataQuery->getQueryParam(self::FILTER_ADMIN);
+        $filterAdmin = $dataQuery->getQueryParam('Fluent.FilterAdmin');
         if (!$filterAdmin) {
             $isFrontend = $dataQuery->getQueryParam('Fluent.IsFrontend');
             if ($isFrontend === null) {
