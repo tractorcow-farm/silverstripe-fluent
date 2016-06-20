@@ -106,7 +106,7 @@ class FluentFilteredExtension extends DataExtension
      */
     public function augmentDataQueryCreation(SQLQuery $query, DataQuery $dataQuery)
     {
-        $dataQuery->setQueryParam('Fluent.FilterAdmin', Fluent::config()->FilterAdmin)
+        $dataQuery->setQueryParam('Fluent.FilterAdmin', Fluent::config()->FilterAdmin);
         $dataQuery->setQueryParam('Fluent.Locale', Fluent::current_locale());
         $dataQuery->setQueryParam('Fluent.IsFrontend', Fluent::is_frontend());
     }
