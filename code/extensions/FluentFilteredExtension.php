@@ -9,6 +9,13 @@
 class FluentFilteredExtension extends DataExtension
 {
     /**
+     * Data query key necessary to turn on admin filtering
+     *
+     * @var string
+     */
+    const FILTER_ADMIN = 'Fluent.FilterAdmin';
+
+    /**
      * Set the filter of locales to the specified locale, or array of locales
      *
      * @param string|array $locale Locale, or list of locales
