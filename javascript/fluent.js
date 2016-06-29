@@ -173,6 +173,17 @@
 				}
 				input.change();
 			}
-		})
+		});
+
+		/**
+		 * Maintain UI state of the CMS locale switcher when using standard browser navigation buttons.
+		 */
+		$('.cms-edit-form').entwine({
+			redraw: function() {
+				var localeMenuLocale = $.cookie('FluentLocale_CMS')
+				$('.cms-fluent-selector .text').text(fluentLocales[localeMenuLocale]);
+				this._super();
+			}
+		});
 	});
 })(jQuery);

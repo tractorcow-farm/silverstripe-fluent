@@ -61,6 +61,8 @@ Fluent:
   #  www.example.co.nz:
   #    locales:
   #      - en_NZ
+  # Turn this on to enable admin filtering
+  filter_admin: false
 ---
 Name: fluenti18nconfig
 ---
