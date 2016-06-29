@@ -99,14 +99,14 @@ class FluentFilteredExtension extends DataExtension
     }
 
     /**
-     * Amend freshly created DataQuery objects with the current locale and frontend status
+     * Amend freshly created DataQuery objects with the "should filter admin?" option, current locale and frontend status
      *
      * @param SQLQuery
      * @param DataQuery
      */
     public function augmentDataQueryCreation(SQLQuery $query, DataQuery $dataQuery)
     {
-        $dataQuery->setQueryParam('Fluent.FilterAdmin', Fluent::config()->FilterAdmin);
+        $dataQuery->setQueryParam('Fluent.FilterAdmin', Fluent::config()->filter_admin);
         $dataQuery->setQueryParam('Fluent.Locale', Fluent::current_locale());
         $dataQuery->setQueryParam('Fluent.IsFrontend', Fluent::is_frontend());
     }
