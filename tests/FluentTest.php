@@ -1031,6 +1031,74 @@ class FluentTest extends SapphireTest
         // Different from default locale
         $this->assertTrue(Fluent::isFieldModified($object, $fields->fieldByName('Root.Main.Title'), 'en_NZ'));
     }
+
+    /**
+     * Test that default site tree object is overwritten, even if created in another locale
+     */
+    public function testSiteTreeDefaults() {
+        $newPageID = null;
+        $validPageID = null;
+
+        // Create pages in default locale
+        Fluent::with_locale('fr_CA', function () use (&$newPageID, &$validPageID) {
+            // New page
+            $newPage = new Page();
+            $newPage->Title = 'New Page';
+            $newPage->Content = '<p>New page content</p>';
+            $newPage->URLSegment = 'new-page';
+            $newPage->write();
+            $newPageID = $newPage->ID;
+
+            // Valid page
+            $validPage = new Page();
+            $validPage->Title = 'Valid page';
+            $validPage->Content = '<p>Valid page content</p>';
+            $validPage->URLSegment = 'valid-page';
+            $validPage->write();
+            $validPageID = $validPage->ID;
+        });
+
+        // Update it with some new content in another locale
+        Fluent::with_locale('es_ES', function() use($newPageID, $validPageID) {
+            // This should overwrite the default content
+            $newPage = Page::get()->byID($newPageID);
+            $newPage->Title = "An awesome title";
+            $newPage->Content = null;
+            $newPage->URLSegment = 'an-awesome-title';
+            $newPage->write();
+
+            // This should not
+            $validPage = Page::get()->byID($validPageID);
+            $validPage->Title = "ES only title";
+            $validPage->Content = '<p>ES only content</p>';
+            $validPage->write();
+        });
+
+        // Check that the appropriate values are assigned
+        $newPage = Page::get()->byID($newPageID);
+        $validPage = Page::get()->byID($validPageID);
+
+        // "New Page" should have been overwritten from default
+        $this->assertEquals('An awesome title', $newPage->Title);
+        $this->assertEquals('An awesome title', $newPage->Title_es_ES);
+        $this->assertEquals('An awesome title', $newPage->Title_fr_CA);
+
+        // new page content is overwritten, even though it had non-empty content prior
+        $this->assertEquals('', $newPage->Content);
+        $this->assertEquals('', $newPage->Content_es_ES);
+        $this->assertEquals('', $newPage->Content_fr_CA);
+
+        // "Valid page" should only be written in non-default locale
+        $this->assertEquals('Valid page', $validPage->Title);
+        $this->assertEquals('ES only title', $validPage->Title_es_ES);
+        $this->assertEquals('Valid page', $validPage->Title_fr_CA);
+
+        // Content is written with the same logic
+        $this->assertEquals('<p>Valid page content</p>', $validPage->Content);
+        $this->assertEquals('<p>ES only content</p>', $validPage->Content_es_ES);
+        $this->assertEquals('<p>Valid page content</p>', $validPage->Content_fr_CA);
+    }
+
 }
 
 /**

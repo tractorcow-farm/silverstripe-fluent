@@ -6,9 +6,11 @@
  * @see SiteTree
  * @package fluent
  * @author Damian Mooyman <damian.mooyman@gmail.com>
+ * @property SiteTree $owner
  */
 class FluentSiteTree extends FluentExtension
 {
+
     public function MetaTags(&$tags)
     {
         $tags .= $this->owner->renderWith('FluentSiteTree_MetaTags');
@@ -18,6 +20,16 @@ class FluentSiteTree extends FluentExtension
     {
         // Fix issue with MenuTitle not containing the correct translated value
         $this->owner->setField('MenuTitle', $this->owner->MenuTitle);
+
+        // If default locale isn't translated (Title is "new page") then copy all fields over from
+        // current locale to default locale.
+        if(Fluent::current_locale() !== Fluent::default_locale()) {
+            $defaultLocaleTitle = Fluent::db_field_for_locale('Title', Fluent::default_locale());
+            if(stripos($this->owner->getField($defaultLocaleTitle), 'new') === 0) {
+                // Overwrite locale copy from this locale to default
+                $this->copyFieldsToLocale(Fluent::default_locale());
+            }
+        }
 
         parent::onBeforeWrite();
     }

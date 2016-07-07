@@ -124,6 +124,30 @@ class FluentExtension extends DataExtension
     }
 
     /**
+     * Copies current value of this record to the values in the given locale.
+     *
+     * Useful when writing a record to multiple locales in a single write.
+     *
+     * Note: Won't have any effect when writing to the current locale, since that
+     * locale will be written to anyway.
+     *
+     * @param string $locale
+     */
+    public function copyFieldsToLocale($locale) {
+        // Iterate over all localised fields in all tables
+        $includedTables = $this->getTranslatedTables();
+        foreach ($includedTables as $class => $fields) {
+            foreach ($fields as $field) {
+                // Copy to this locale
+                // (Title => Title_fr_FR)
+                $value = $this->owner->getField($field);
+                $updateField = Fluent::db_field_for_locale($field, $locale);
+                $this->owner->setField($updateField, $value);
+            }
+        }
+    }
+
+    /**
      * Splits a spec string safely, considering quoted columns, whitespace,
      * and cleaning brackets
      *
