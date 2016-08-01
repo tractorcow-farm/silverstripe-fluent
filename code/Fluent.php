@@ -43,8 +43,13 @@ class Fluent extends Object implements TemplateGlobalProvider
         // Home page route
         $routes[''] = array(
             'Controller' => 'FluentRootURLController',
-            self::config()->query_param => static::default_locale(true),
         );
+
+        // If we do not wish to detect the locale automatically, fix the home page route
+        // to the default locale for this domain.
+        if (!Fluent::config()->detect_locale) {
+            $routes[''][self::config()->query_param] = static::default_locale(true);
+        }
 
         // If default locale doesn't have prefix, replace default route with
         // the default locale for this domain
