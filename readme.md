@@ -2,6 +2,8 @@
 
 [![Build Status](https://travis-ci.org/tractorcow/silverstripe-fluent.svg?branch=master)](https://travis-ci.org/tractorcow/silverstripe-fluent)
 
+[![Codewake](https://www.codewake.com/badges/ask_question.svg)](https://www.codewake.com/p/silverstripe-fluent)
+
 ## Simple Silverstripe Localisation
 
 This module allows websites to manage localisation of content, and navigation between localisations,
