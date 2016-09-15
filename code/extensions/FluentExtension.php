@@ -665,7 +665,7 @@ class FluentExtension extends DataExtension
             foreach ($includedTables[$class] as $field) {
 
                 // Skip translated field if not updated in this request
-                if (!isset($updates['fields'][$field])) {
+                if (!array_key_exists($field, $updates['fields'])) {
                     continue;
                 }
 
