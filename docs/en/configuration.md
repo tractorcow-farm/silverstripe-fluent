@@ -213,6 +213,37 @@ class MyAdminController extends Controller {
 }
 ```
 
+## Nullable fields
+
+Due to the way that localisation works, any empty field will fall back to the value of that field in
+the default locale. By default fields cannot be easily forced to an empty value.
+
+However you may specify a `nullable_fields` config on any object to disable default value fallback
+for any (or all) field(s), meaning that empty fields will stay empty.
+
+
+```php
+class Page extends SiteTree {
+    private static $db = array(
+        'IntroText' => 'Varchar'
+    );
+
+    private static $nullable_fields = array(
+        'IntroText'
+    );
+}
+```
+
+You can also set this to the string `*` to apply this behaviour to all fields on that record.
+
+
+```php
+class MyObject extends DataObject {
+    private static $nullable_fields = '*';
+}
+```
+
+
 ## Locale based filter configuration
 
 In addition to localising fields within a DataObject, a filter can also be applied

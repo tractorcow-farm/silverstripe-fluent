@@ -13,7 +13,8 @@ class FluentTest extends SapphireTest
 
     protected $extraDataObjects = array(
         'FluentTest_TranslatedObject',
-        'FluentTest_FilteredObject'
+        'FluentTest_FilteredObject',
+        'FluentTest_NullableObject',
     );
 
     protected $illegalExtensions = array(
@@ -573,6 +574,65 @@ class FluentTest extends SapphireTest
         Fluent::set_persist_locale('fr_CA');
     }
 
+    public function testNullableSelect() {
+        $frRecord = null;
+        Fluent::with_locale('fr_CA', function() use (&$frRecord) {
+            $frRecord = new FluentTest_NullableObject();
+            $frRecord->Localised = 'French value';
+            $frRecord->LocalisedNullable = 'French default value';
+            $frRecord->Unlocalised = 'Global value';
+            $frRecord->write();
+        });
+
+        $test = $this;
+        Fluent::with_locale('en_NZ', function() use ($frRecord, $test) {
+            $nzRecord = FluentTest_NullableObject::get()->byID($frRecord->ID);
+            $test->assertEquals('French value', $nzRecord->Localised);
+            $test->assertEmpty($nzRecord->LocalisedNullable);
+            $test->assertEquals('Global value', $nzRecord->Unlocalised);
+
+            // Write back in this locale, and make sure it doesn't affect the default
+            $nzRecord->Localised = 'NZ Value';
+            $nzRecord->LocalisedNullable = 'NZ nullable value';
+            $nzRecord->Unlocalised = 'New global value';
+            $nzRecord->write();
+        });
+
+        // Reload from db and check
+        Fluent::with_locale('fr_CA', function() use (&$frRecord, $test) {
+            $frRecord = FluentTest_NullableObject::get()->byID($frRecord->ID);
+            $test->assertEquals('French value', $frRecord->Localised);
+            $test->assertEquals('French default value', $frRecord->LocalisedNullable);
+            $test->assertEquals('New global value', $frRecord->Unlocalised);
+
+            // Should be a no-op
+            $frRecord->forceChange();
+            $frRecord->write();
+        });
+
+
+        // Reload from db and check
+        Fluent::with_locale('en_NZ', function() use ($frRecord, $test) {
+            $nzRecord = FluentTest_NullableObject::get()->byID($frRecord->ID);
+            $test->assertEquals('NZ Value', $nzRecord->Localised);
+            $test->assertEquals('NZ nullable value', $nzRecord->LocalisedNullable);
+            $test->assertEquals('New global value', $nzRecord->Unlocalised);
+
+            // Test nullable value can be re-written back to null
+            $nzRecord->LocalisedNullable = null;
+            $nzRecord->write();
+        });
+
+        // Reload from db and check
+        Fluent::with_locale('en_NZ', function() use ($frRecord, $test) {
+            $nzRecord = FluentTest_NullableObject::get()->byID($frRecord->ID);
+            $test->assertEmpty($nzRecord->LocalisedNullable);
+        });
+
+        // Put default locale back
+        Fluent::set_persist_locale('fr_CA');
+    }
+
     /**
      * Mock a browser HTTP locale (Accept-Language header) for the purpose of a test
      *
@@ -1105,4 +1165,30 @@ class FluentTest_FrontendController extends Controller
     {
         return true;
     }
+}
+
+/**
+ * @property string $Localised
+ * @property string $LocalisedNullable
+ * @property string $Unlocalised
+ */
+class FluentTest_NullableObject extends DataObject implements TestOnly {
+    private static $extensions = array(
+        'FluentExtension'
+    );
+
+    private static $db = array(
+        'Localised' => 'Varchar(255)',
+        'LocalisedNullable' => 'Text',
+        'Unlocalised' => 'Text'
+    );
+
+    private static $translate = array(
+        'Localised',
+        'LocalisedNullable'
+    );
+
+    private static $nullable_fields = array(
+        'LocalisedNullable'
+    );
 }

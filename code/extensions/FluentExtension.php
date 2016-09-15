@@ -8,6 +8,18 @@
  */
 class FluentExtension extends DataExtension
 {
+    // <editor-fold defaultstate="collapsed" desc="Config options">
+
+    /**
+     * Set to either a list of fields, or '*', to allow fields to be nullable.
+     * This will leave fields null instead of inheriting from default locale.
+     *
+     * @var array|string
+     */
+    private static $nullable_fields = null;
+
+    // </editor-fold>
+
     // <editor-fold defaultstate="collapsed" desc="Field helpers">
 
     /**
@@ -493,21 +505,20 @@ class FluentExtension extends DataExtension
      *
      * @param string $condition Condition SQL string
      * @param array $includedTables
-     * @param string $locale Locale to localise to
-     * @return string Column identifier in "table"."column" format if it exists in this condition
+     * @return array Array with items [$table, $column], or null if not found
      */
-    protected function detectFilterColumn($condition, $includedTables, $locale)
+    protected function detectFilterColumn($condition, $includedTables)
     {
         foreach ($includedTables as $table => $columns) {
             foreach ($columns as $column) {
                 $identifier = "\"$table\".\"$column\"";
                 if (stripos($condition, $identifier) !== false) {
                     // Localise column
-                    return "\"$table\".\"".Fluent::db_field_for_locale($column, $locale)."\"";
+                    return array($table, $column);
                 }
             }
         }
-        return false;
+        return null;
     }
 
     /**
@@ -576,17 +587,30 @@ class FluentExtension extends DataExtension
             if (!in_array($field, $includedTables[$class])) {
                 continue;
             }
+            $isFieldNullable = $this->isFieldNullable($field);
 
             // Select visible field from translated fields (Title_fr_FR || Title => Title)
             $translatedField = Fluent::db_field_for_locale($field, $locale);
-            $expression = $this->localiseSelect($class, $translatedField, $field);
+            if ($isFieldNullable) {
+                // Table.Field_locale => Table.Field
+                $expression = "\"{$class}\".\"{$translatedField}\"";
+            } else {
+                // Table.Field_locale || Table.Field => Table.Field
+                $expression = $this->localiseSelect($class, $translatedField, $field);
+            }
             $query->selectField($expression, $alias);
 
             // At the same time, rewrite the selector for the default field to make sure that
             // (in the case it is blank, which happens if installing fluent for the first time)
             // that it also populated from the root field.
             $defaultField = Fluent::db_field_for_locale($field, $default);
-            $defaultExpression = $this->localiseSelect($class, $defaultField, $field);
+            if ($isFieldNullable) {
+                // Force Table.Field_default => Table.Field_default
+                $defaultExpression = "\"{$class}\".\"{$defaultField}\"";
+            } else {
+                // Table.Field_default || Table.Field => Table.Field_default
+                $defaultExpression = $this->localiseSelect($class, $defaultField, $field);
+            }
             $query->selectField($defaultExpression, $defaultField);
         }
 
@@ -604,11 +628,14 @@ class FluentExtension extends DataExtension
                 $predicate = key($condition);
             }
 
-            // determine the table/column this condition is against
-            $filterColumn = $this->detectFilterColumn($predicate, $includedTables, $locale);
-            if (empty($filterColumn)) {
+            // Find the first localised column that this condition matches.
+            // Use this as the basis of determining how to rewrite this query
+            $filterColumnArray = $this->detectFilterColumn($predicate, $includedTables);
+            if (empty($filterColumnArray)) {
                 continue;
             }
+            list($table, $column) = $filterColumnArray;
+            $filterColumn = "\"$table\".\"".Fluent::db_field_for_locale($column, $locale)."\"";
 
             // Duplicate the condition with all localisable fields replaced
             $localisedPredicate = $this->localiseFilterCondition($predicate, $includedTables, $locale);
@@ -616,20 +643,31 @@ class FluentExtension extends DataExtension
                 continue;
             }
 
-            // Generate new condition that conditionally executes one of the two conditions
-            // depending on field nullability.
-            // If the filterColumn is null or empty, then it's considered untranslated, and
-            // thus the query should continue running on the default column unimpeded.
-            $castColumn = "COALESCE(CAST($filterColumn AS CHAR), '')";
-            $newPredicate = "
-				($castColumn != '' AND $castColumn != '0' AND ($localisedPredicate))
-				OR (
-					($castColumn = '' OR $castColumn = '0') AND ($predicate)
-				)";
-            // Duplicate this condition with parameters duplicated
-            $where[$index] = array(
-                $newPredicate => array_merge($parameters, $parameters)
-            );
+            // Determine rewrite behaviour based on nullability of the "root" column in this condition
+            // This behaviour in imprecise, as the condition may contain filters with mixed nullability
+            // but it is a good approximation.
+            // For better accuracy of rewrite, ensure that each condition in a query is a separate where.
+            if ($this->isFieldNullable($column)) {
+                // If this field is nullable, then the condition is a simple rewrite of Table.Field => Table.Field_locale
+                $where[$index] = array(
+                    $localisedPredicate => $parameters
+                );
+            } else {
+                // Generate new condition that conditionally executes one of the two conditions
+                // depending on field nullability.
+                // If the filterColumn is null or empty, then it's considered untranslated, and
+                // thus the query should continue running on the default column unimpeded.
+                $castColumn = "COALESCE(CAST($filterColumn AS CHAR), '')";
+                $newPredicate = "
+                    ($castColumn != '' AND $castColumn != '0' AND ($localisedPredicate))
+                    OR (
+                        ($castColumn = '' OR $castColumn = '0') AND ($predicate)
+                    )";
+                // Duplicate this condition with parameters duplicated
+                $where[$index] = array(
+                    $newPredicate => array_merge($parameters, $parameters)
+                );
+            }
         }
         $query->setWhere($where);
 
@@ -637,6 +675,23 @@ class FluentExtension extends DataExtension
         if ($adapter = Fluent::search_adapter()) {
             $adapter->augmentSearch($query, $dataQuery);
         }
+    }
+
+    /**
+     * Can this field be left empty?
+     *
+     * @param string $field
+     * @return bool False if the field inherits, true if it is nullable
+     */
+    public function isFieldNullable($field) {
+        $nullables = $this->owner->config()->get('nullable_fields');
+        if (empty($nullables)) {
+            return false;
+        }
+        if ((array)$nullables === array("*")) {
+            return true;
+        }
+        return is_array($nullables) && in_array($field, $nullables);
     }
 
     public function augmentWrite(&$manipulation)
@@ -680,11 +735,9 @@ class FluentExtension extends DataExtension
                 if ($locale !== $defaultLocale) {
                     $defaultField = Fluent::db_field_for_locale($field, $defaultLocale);
 
-                    // Note that null may be DB escaped as a string here. @see DBField::prepValueForDB
-                    if (!empty($updates['fields'][$defaultField])
-                        && $updates['fields'][$defaultField] != DB::getConn()->prepStringForDB('')
-                        && strtolower($updates['fields'][$defaultField]) != 'null'
-                    ) {
+                    // Write default value back if a value exists,
+                    // but if this field can be nullable, write it back even if empty.
+                    if (!empty($updates['fields'][$defaultField]) || $this->isFieldNullable($field)) {
                         $updates['fields'][$field] = $updates['fields'][$defaultField];
                     }
                 }
