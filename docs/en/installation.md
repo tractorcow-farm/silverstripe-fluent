@@ -8,7 +8,7 @@ Fluent can be easily installed on any already-developed website
  * Either extract the module into the `fluent` folder, or install using [composer](https://getcomposer.org)
 
 ```bash
-composer require "tractorcow/silverstripe-fluent" "3.1.*-dev"
+composer require tractorcow/silverstripe-fluent ^3.5
 ```
 
  * Run a `dev/build` to ensure all additional table fields have been generated
