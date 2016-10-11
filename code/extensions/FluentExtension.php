@@ -553,9 +553,9 @@ class FluentExtension extends DataExtension
     protected function localiseSelect($class, $select, $fallback)
     {
         return "CASE COALESCE(CAST(\"{$class}\".\"{$select}\" AS CHAR), '')
-				WHEN '' THEN \"{$class}\".\"{$fallback}\"
-				WHEN '0' THEN \"{$class}\".\"{$fallback}\"
-				ELSE \"{$class}\".\"{$select}\" END";
+                WHEN '' THEN \"{$class}\".\"{$fallback}\"
+                WHEN '0' THEN \"{$class}\".\"{$fallback}\"
+                ELSE \"{$class}\".\"{$select}\" END";
     }
 
     public function augmentSQL(SQLQuery &$query, DataQuery &$dataQuery = null)
@@ -813,6 +813,36 @@ class FluentExtension extends DataExtension
                 }
             }
         }
+
+        $this->addLocaleIndicatorMessage($fields);
+    }
+
+    /**
+     * Adds a UI message to indicate whether you're editing in the default locale or not
+     *
+     * @param  FieldList $fields
+     * @return self
+     */
+    protected function addLocaleIndicatorMessage(FieldList $fields)
+    {
+        $localeNames     = Fluent::locale_names();
+        $isDefaultLocale = (Fluent::default_locale() === Fluent::current_locale());
+        $messageClass    = ($isDefaultLocale) ? 'good' : 'notice';
+        $message         = ($isDefaultLocale)
+            ? _t('Fluent.DefaultLocale', 'This is the default locale')
+            : _t('Fluent.DefaultLocaleIs', 'The default locale is') . ' ' . $localeNames[Fluent::default_locale()];
+
+        $fields->unshift(
+            LiteralField::create(
+                'CurrentLocaleMessage',
+                sprintf(
+                    '<p class="message %s">' . _t('Fluent.EditingIn', 'Please note: You are editing in') . ' %s. %s.</p>',
+                    $messageClass,
+                    $localeNames[Fluent::current_locale()],
+                    $message
+                )
+            )
+        );
     }
 
     // </editor-fold>
