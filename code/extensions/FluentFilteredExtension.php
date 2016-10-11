@@ -48,13 +48,16 @@ class FluentFilteredExtension extends DataExtension
     }
 
     /**
-     * Determine if this object is visible (or excluded) in the specified locale
+     * Determine if this object is visible (or excluded) in the specified (or current) locale
      *
-     * @param string $locale Locale to check against
-     * @return boolean True if the object is visible in the specified locale
+     * @param  string|null $locale Locale to check against. If null, will use the current locale.
+     * @return boolean             True if the object is visible in the specified locale
      */
-    public function canViewInLocale($locale)
+    public function canViewInLocale($locale = null)
     {
+        if (is_null($locale)) {
+            $locale = Fluent::current_locale();
+        }
         $field = Fluent::db_field_for_locale("LocaleFilter", $locale);
         return $this->owner->$field;
     }
