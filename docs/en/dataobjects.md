@@ -100,7 +100,7 @@ using inheritance rather than two different extensions:
 ```php
 class PlayerExtension extends FluentExtension
 {
-    public function updateCMSFields(FieltList $fields)
+    public function updateCMSFields(FieldList $fields)
     {
         $fields->removeByName('SomeIrrelevantField');
         parent::updateCMSFields($fields);
