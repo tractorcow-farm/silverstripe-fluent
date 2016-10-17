@@ -825,6 +825,10 @@ class FluentExtension extends DataExtension
      */
     protected function addLocaleIndicatorMessage(FieldList $fields)
     {
+        if (Fluent::config()->disable_current_locale_message) {
+            return $this;
+        }
+
         $localeNames     = Fluent::locale_names();
         $isDefaultLocale = (Fluent::default_locale() === Fluent::current_locale());
         $messageClass    = ($isDefaultLocale) ? 'good' : 'notice';
