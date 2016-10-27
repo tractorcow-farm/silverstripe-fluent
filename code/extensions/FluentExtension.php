@@ -821,11 +821,16 @@ class FluentExtension extends DataExtension
      * Adds a UI message to indicate whether you're editing in the default locale or not
      *
      * @param  FieldList $fields
-     * @return self
+     * @return $this
      */
     protected function addLocaleIndicatorMessage(FieldList $fields)
     {
         if (Fluent::config()->disable_current_locale_message) {
+            return $this;
+        }
+
+        // If the field is already present, don't add it a second time
+        if ($fields->fieldByName('CurrentLocaleMessage')) {
             return $this;
         }
 
@@ -847,6 +852,8 @@ class FluentExtension extends DataExtension
                 )
             )
         );
+
+        return $this;
     }
 
     // </editor-fold>
