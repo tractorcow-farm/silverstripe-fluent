@@ -9,6 +9,13 @@
 class Fluent extends Object implements TemplateGlobalProvider
 {
     /**
+     * If set, "is_frontend" can be forced to return a value
+     *
+     * @var boolean
+     */
+    protected static $force_is_frontend;
+
+    /**
      * Forces regeneration of all locale routes
      */
     public static function regenerate_routes()
@@ -404,6 +411,10 @@ class Fluent extends Object implements TemplateGlobalProvider
      */
     public static function is_frontend($ignoreController = false)
     {
+        // Option to force a frontend response if required
+        if (null !== self::$force_is_frontend) {
+            return (bool) self::$force_is_frontend;
+        }
 
         // No controller - Possibly pre-route phase, so check URL
         if ($ignoreController || !Controller::has_curr()) {
@@ -738,5 +749,16 @@ class Fluent extends Object implements TemplateGlobalProvider
         }
 
         return true;
+    }
+
+    /**
+     * Sets whether to force "is_frontend" to return true or false. This can be used for situations where the
+     * frontend controllers are not involved, e.g. API modules, unit testing or retrieving data programmatically.
+     *
+     * @param boolean $force
+     */
+    public static function set_force_is_frontend($force = true)
+    {
+        self::$force_is_frontend = $force;
     }
 }

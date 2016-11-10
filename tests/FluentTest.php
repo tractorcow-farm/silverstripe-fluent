@@ -470,7 +470,7 @@ class FluentTest extends SapphireTest
         Fluent::set_persist_locale('fr_CA');
     }
 
-    /*
+    /**
      * Test that locale filter can be augmented properly
      */
     public function testUpdateFilteredObject()
@@ -494,6 +494,57 @@ class FluentTest extends SapphireTest
         $item->write();
         $ids = DataObject::get('FluentTest_FilteredObject')->sort('Title')->column('Title');
         $this->assertEquals(array(), $ids);
+    }
+
+    /**
+     * Tests that the "is_frontend" method can be forced to return true or false. This affects locale filtering.
+     *
+     * @covers Fluent::set_force_is_frontend
+     * @dataProvider forceFrontendProvider
+     */
+    public function testForceIsFrontend($locale, $force, $expected)
+    {
+        Fluent::set_persist_locale($locale);
+        // May the force be with you
+        Fluent::set_force_is_frontend($force);
+
+        $result = DataObject::get('FluentTest_FilteredObject')
+            ->sort('Title')
+            ->column('Title');
+
+        $this->assertSame($expected, $result);
+
+        // Reset to prevent messing up other tests
+        Fluent::set_force_is_frontend(null);
+    }
+
+    /**
+     * @return array
+     */
+    public function forceFrontendProvider()
+    {
+        return array(
+            array(
+                'en_NZ',
+                false,
+                array('filtered 1', 'filtered 2', 'filtered 3')
+            ),
+            array(
+                'en_NZ',
+                true,
+                array('filtered 1', 'filtered 2')
+            ),
+            array(
+                'es_ES',
+                false,
+                array('filtered 1', 'filtered 2', 'filtered 3')
+            ),
+            array(
+                'es_ES',
+                true,
+                array('filtered 2')
+            )
+        );
     }
 
     /**
