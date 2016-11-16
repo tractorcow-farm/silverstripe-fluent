@@ -1142,6 +1142,30 @@ class FluentTest extends SapphireTest
         // Different from default locale
         $this->assertTrue(Fluent::isFieldModified($object, $fields->fieldByName('Root.Main.Title'), 'en_NZ'));
     }
+
+    /**
+     * When editing in a non-default locale and resetting the value for a field to the default value, or entering
+     * the same value as the default value, we should store null instead of the string literal to allow for transparent
+     * changes to propagate through underneath.
+     *
+     * @covers FluentExtension::augmentWrite
+     */
+    public function testNullValueStoredInsteadOfDuplicatingValueWhenValueSameAsDefault()
+    {
+        $object = $this->objFromFixture('FluentTest_TranslatedObject', 'translated2');
+        $objectId = $object->ID;
+
+        // Give it the same value as the default value
+        Fluent::with_locale('en_US', function () use ($objectId) {
+            $record = FluentTest_TranslatedObject::get()->byId($objectId);
+            $record->Title = 'Cette couleur est le bleu'; // fr_CA is the default locale in this test suite
+            $record->write();
+        });
+
+        // Ensure the field is now null
+        $object = FluentTest_TranslatedObject::get()->byId($objectId);
+        $this->assertNull($object->Title_en_US);
+    }
 }
 
 /**

@@ -740,6 +740,15 @@ class FluentExtension extends DataExtension
                     if (!empty($updates['fields'][$defaultField]) || $this->isFieldNullable($field)) {
                         $updates['fields'][$field] = $updates['fields'][$defaultField];
                     }
+
+
+                    // If the localised field has been reset to the default value (i.e. they're the same value)
+                    // we should store it as null to allow change transparency from the default locale in future.
+                    if ((!empty($updates['fields'][$defaultField]))
+                        && ($updates['fields'][$updateField] === $updates['fields'][$defaultField])
+                    ) {
+                        $updates['fields'][$updateField] = null;
+                    }
                 }
             }
 
