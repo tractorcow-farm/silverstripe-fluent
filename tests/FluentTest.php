@@ -1021,7 +1021,7 @@ class FluentTest extends SapphireTest
         // Publish this record in the custom locale, setting one of the fields to show it will not return default
         Fluent::with_locale('es_ES', function () use ($id) {
             $page = Versioned::get_one_by_stage("SiteTree", "Stage", "\"SiteTree\".\"ID\" = $id");
-            $page->MenuTitle - 'Spanish Custom Title';
+            $page->MenuTitle = 'Spanish Custom Title';
             $page->doPublish();
         });
 
