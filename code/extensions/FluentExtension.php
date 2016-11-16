@@ -745,7 +745,7 @@ class FluentExtension extends DataExtension
                     // If the localised field has been reset to the default value (i.e. they're the same value)
                     // we should store it as null to allow change transparency from the default locale in future.
                     if ((!empty($updates['fields'][$defaultField]))
-                        && (!$this->isFieldNullable($updateField))
+                        && (!$this->isFieldNullable($defaultField))
                         && ($updates['fields'][$updateField] === $updates['fields'][$defaultField])
                     ) {
                         $updates['fields'][$updateField] = null;
@@ -831,7 +831,7 @@ class FluentExtension extends DataExtension
      * Adds a UI message to indicate whether you're editing in the default locale or not
      *
      * @param  FieldList $fields
-     * @return self
+     * @return $this
      */
     protected function addLocaleIndicatorMessage(FieldList $fields)
     {
