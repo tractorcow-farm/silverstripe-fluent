@@ -45,6 +45,7 @@ class FluentValidateTask extends BuildTask
 
         $this->validateLocales($config, $result);
         $this->validateDomains($config, $result);
+        $this->validateExtensions($config, $result);
 
         return $result;
     }
@@ -187,5 +188,60 @@ class FluentValidateTask extends BuildTask
                 ));
             }
         }
+    }
+
+    /**
+     * @param Config $config
+     * @param ValidationResult $result
+     */
+    protected function validateExtensions(Config $config, $result)
+    {
+        // Check all classes
+        $dataClasses = ClassInfo::subclassesFor('DataObject');
+		array_shift($dataClasses);
+
+        foreach($dataClasses as $class) {
+            // If non-base class, fail if any fluent extension provided
+            $isBase = ClassInfo::baseDataClass($class) === $class;
+            $extensions = $this->getDirectExtensions($config, $class);
+            if ($isBase) {
+                // Base classes must have no more than 1 fluent extension applied
+                if (count($extensions) > 1) {
+                    $result->error(sprintf(
+                        "Class %s has multiple FluentExtension classes: %s",
+                        $class,
+                        implode(', ', $extensions)
+                    ));
+                }
+            } else {
+                // Non-base classes may not have this extension applied directly at all
+                if ($extensions) {
+                    $result->error(sprintf(
+                        "Class %s is not a base data class but has the following FluentExtensions: %s",
+                        $class,
+                        implode(', ', $extensions)
+                    ));
+                }
+            }
+        }
+    }
+
+    /**
+     * Gets all extensions directly on this class that extend FluentExtension
+     *
+     * @param Config $config
+     * @param string $class
+     * @return array
+     */
+    protected function getDirectExtensions($config, $class) {
+        $extensions = $config->get($class, 'extensions', Config::UNINHERITED);
+		$found = array();
+        if($extensions) foreach($extensions as $extension) {
+            $extensionClass = ClassInfo::class_name(Extension::get_classname_without_arguments($extension));
+            if ($extensionClass === 'FluentExtension' || is_subclass_of($extensionClass, 'FluentExtension')) {
+                $found[] = $extensionClass;
+            }
+        }
+        return $found;
     }
 }

@@ -16,6 +16,7 @@ there are any errors in your config. Examples of errors could include:
  * Invalid default locales
  * Duplicate locales in multiple domains
  * Locales missing from domains
+ * Incorrectly applied extensions
 
 To run this task you can run this on the CLI.
 
