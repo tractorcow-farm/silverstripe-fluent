@@ -871,6 +871,14 @@ class FluentTest_ContentController extends ContentController {
 	}
 }
 
+class FluentTest_ContentController extends ContentController {
+	// a ContentController should not really provide a isFrontend method
+	// this is just make sure patch #87 works
+	public function isFrontend() {
+		return false;
+	}
+}
+
 class FluentTest_CMSController extends Controller {
 	public function isFrontend() {
 		return false;
