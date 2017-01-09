@@ -1,0 +1,12 @@
+de:
+  Fluent:
+    BadgeHiddenHelp: 'Seite ist in dieser Sprache versteckt'
+    BadgeHiddenShort: Versteckt
+    ChangeLocale: 'Sprache ändern'
+    LocaleFilter: 'Sprach-Filter'
+    LocaleFilterDescription: 'Sprache auswählen, um dieses Element in der Sprache anzuzeigen'
+    LocaleMenuFilterDescription: 'Bitte die Sprachen auswählen, in denen dieser Eintrag im Menü sichtbar sein soll'
+    TABLOCALES: Sprachen
+    DefaultLocale: 'Dies ist die Standard-Sprache'
+    DefaultLocaleIs: 'Die  Standard-Sprache ist'
+    EditingIn: 'Bitte beachten: Sie bearbeiten in der Sprache'
