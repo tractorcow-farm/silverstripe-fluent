@@ -17,7 +17,10 @@ class FluentSiteTree extends FluentExtension
     public function onBeforeWrite()
     {
         // Fix issue with MenuTitle not containing the correct translated value
-        $this->owner->setField('MenuTitle', $this->owner->MenuTitle);
+        // Unless it's a virtualpage
+        if (! ($this->owner instanceof VirtualPage) ) {
+            $this->owner->setField('MenuTitle', $this->owner->MenuTitle);
+        }
 
         parent::onBeforeWrite();
     }
