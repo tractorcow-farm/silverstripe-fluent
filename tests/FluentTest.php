@@ -913,12 +913,12 @@ class FluentTest extends SapphireTest
         $item2->Title = 'English 2';
         $item2->write();
 
-        // check alternate locale title unchanged
+        // check alternate locale title reflects the default locale value
         $es2Title = Fluent::with_locale('es_ES', function () use ($item2ID) {
             $item2 = FluentTest_TranslatedObject::get()->byId($item2ID);
             return $item2->Title;
         });
-        $this->assertEquals($es2Title, 'Spanish 2');
+        $this->assertEquals($es2Title, 'English 2');
 
         // Test that object selected in default locale has the recently changed title
         $item2 = FluentTest_TranslatedObject::get()->byId($item2ID);
@@ -1015,12 +1015,13 @@ class FluentTest extends SapphireTest
         // Save title in default locale
         $page = Versioned::get_one_by_stage("SiteTree", "Stage", "\"SiteTree\".\"ID\" = $id");
         $page->Title = 'Default Title';
-        $page->MenuTitle = 'Custom Title';
+        $page->MenuTitle = 'Default Custom Title';
         $page->write();
 
-        // Publish this record in the custom locale
+        // Publish this record in the custom locale, setting one of the fields to show it will not return default
         Fluent::with_locale('es_ES', function () use ($id) {
             $page = Versioned::get_one_by_stage("SiteTree", "Stage", "\"SiteTree\".\"ID\" = $id");
+            $page->MenuTitle = 'Spanish Custom Title';
             $page->doPublish();
         });
 
@@ -1029,15 +1030,15 @@ class FluentTest extends SapphireTest
         // Check the live record has the correct title in the default locale
         $page = Versioned::get_one_by_stage("SiteTree", "Live", "\"SiteTree\".\"ID\" = $id");
         $this->assertEquals('Default Title', $page->Title);
-        $this->assertEquals('Custom Title', $page->MenuTitle);
+        $this->assertEquals('Default Custom Title', $page->MenuTitle);
 
         // Check the live record has the correct title in the custom locale
         $record = Fluent::with_locale('es_ES', function () use ($id) {
             $page = Versioned::get_one_by_stage("SiteTree", "Live", "\"SiteTree\".\"ID\" = $id");
             return $page->toMap();
         });
-        $this->assertEquals('ES Title', $record['Title']);
-        $this->assertEquals('ES Title', $record['MenuTitle']);
+        $this->assertEquals('Default Title', $record['Title']);
+        $this->assertEquals('Spanish Custom Title', $record['MenuTitle']);
     }
 
     /*
@@ -1070,11 +1071,11 @@ class FluentTest extends SapphireTest
 
         // Check that the necessary fields are assigned
         $this->assertEquals('es title', $row['Title']);
-        $this->assertEquals('es title', $row['Title_es_ES']);
-        $this->assertEquals('es title', $row['Title_fr_CA']);
+        $this->assertNull($row['Title_es_ES']);
+        $this->assertEquals('es title', $row['Title_fr_CA']); // the default locale is still duplicated
         $this->assertEmpty($row['Title_en_NZ']);
         $this->assertEquals('es description', $row['Description']);
-        $this->assertEquals('es description', $row['Description_es_ES']);
+        $this->assertNull($row['Description_es_ES']);
         $this->assertEquals('es description', $row['Description_fr_CA']);
         $this->assertEmpty($row['Description_en_NZ']);
 
@@ -1089,11 +1090,11 @@ class FluentTest extends SapphireTest
         // Check that the necessary fields are assigned
         $row = DB::query(sprintf("SELECT * FROM \"FluentTest_TranslatedObject\" WHERE \"ID\" = %d", $recordID))->first();
         $this->assertEquals('new ca title', $row['Title']);
-        $this->assertEquals('es title', $row['Title_es_ES']);
+        $this->assertNull($row['Title_es_ES']);
         $this->assertEquals('new ca title', $row['Title_fr_CA']);
         $this->assertEmpty($row['Title_en_NZ']);
         $this->assertEquals('es description', $row['Description']);
-        $this->assertEquals('es description', $row['Description_es_ES']);
+        $this->assertNull($row['Description_es_ES']);
         $this->assertEquals('es description', $row['Description_fr_CA']);
         $this->assertEmpty($row['Description_en_NZ']);
 
@@ -1108,11 +1109,11 @@ class FluentTest extends SapphireTest
         // Check that the necessary fields are assigned
         $row = DB::query(sprintf("SELECT * FROM \"FluentTest_TranslatedObject\" WHERE \"ID\" = %d", $recordID))->first();
         $this->assertEquals('new ca title', $row['Title']);
-        $this->assertEquals('es title', $row['Title_es_ES']);
+        $this->assertNull($row['Title_es_ES']);
         $this->assertEquals('new ca title', $row['Title_fr_CA']);
         $this->assertEquals('nz title', $row['Title_en_NZ']);
         $this->assertEquals('es description', $row['Description']);
-        $this->assertEquals('es description', $row['Description_es_ES']);
+        $this->assertNull($row['Description_es_ES']);
         $this->assertEquals('es description', $row['Description_fr_CA']);
         $this->assertEquals('nz description', $row['Description_en_NZ']);
     }
@@ -1141,6 +1142,30 @@ class FluentTest extends SapphireTest
 
         // Different from default locale
         $this->assertTrue(Fluent::isFieldModified($object, $fields->fieldByName('Root.Main.Title'), 'en_NZ'));
+    }
+
+    /**
+     * When editing in a non-default locale and resetting the value for a field to the default value, or entering
+     * the same value as the default value, we should store null instead of the string literal to allow for transparent
+     * changes to propagate through underneath.
+     *
+     * @covers FluentExtension::augmentWrite
+     */
+    public function testNullValueStoredInsteadOfDuplicatingValueWhenValueSameAsDefault()
+    {
+        $object = $this->objFromFixture('FluentTest_TranslatedObject', 'translated2');
+        $objectId = $object->ID;
+
+        // Give it the same value as the default value
+        Fluent::with_locale('en_US', function () use ($objectId) {
+            $record = FluentTest_TranslatedObject::get()->byId($objectId);
+            $record->Title = 'Cette couleur est le bleu'; // fr_CA is the default locale in this test suite
+            $record->write();
+        });
+
+        // Ensure the field is now null
+        $object = FluentTest_TranslatedObject::get()->byId($objectId);
+        $this->assertNull($object->Title_en_US);
     }
 }
 
