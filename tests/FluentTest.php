@@ -1142,6 +1142,21 @@ class FluentTest extends SapphireTest
         // Different from default locale
         $this->assertTrue(Fluent::isFieldModified($object, $fields->fieldByName('Root.Main.Title'), 'en_NZ'));
     }
+
+    /**
+     * Ensure that when locale prefixes for links is disabled that it shouldn't be added to the link. When re-enabled
+     * it should run as normal.
+     */
+    public function testDisableLinkLocalePrefix()
+    {
+        $staff = $this->objFromFixture('Page', 'staff');
+
+        Config::inst()->update('Fluent', 'disable_link_locale_prefix', true);
+        $this->assertSame('/about-us/my-staff/', $staff->Link());
+
+        Config::inst()->update('Fluent', 'disable_link_locale_prefix', false);
+        $this->assertSame('/fr_CA/about-us/my-staff/', $staff->Link());
+    }
 }
 
 /**
