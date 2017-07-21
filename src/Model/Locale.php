@@ -99,7 +99,7 @@ class Locale extends DataObject
             DropdownField::create(
                 'DefaultID',
                 _t(__CLASS__.'.DEFAULT', 'Fallback locale'),
-                Locale::get()->map('ID', 'LocaleName')
+                Locale::get()->map('ID', 'Title')
             )->setEmptyString(_t(__CLASS__.'.DEFAULT_NONE', '(none)'))
         );
     }
