@@ -12,7 +12,23 @@ use SilverStripe\ORM\DB;
  */
 class FluentExtension extends Extension
 {
-    const SUFFIX = '_Localised';
+    const SUFFIX = 'Localised';
+
+    private static $db_for_localised_table = [
+        'ID' => 'PrimaryKey',
+        'RecordID' => 'Int',
+        'Locale' => 'Varchar(10)',
+    ];
+
+    private static $indexes_for_localised_table = [
+        'Fluent_Record' => [
+            'type' => 'unique',
+            'columns' => [
+                'RecordID',
+                'Locale',
+            ],
+        ],
+    ];
 
     /**
      * Filter whitelist of fields to localise
@@ -148,29 +164,18 @@ class FluentExtension extends Extension
 
         // Don't require table if no fields
         $localisedFields = $this->getLocalisedFields($class);
-        $localisedTable = $schema->tableName($class) . self::SUFFIX;
+        $localisedTable = $schema->tableName($class) . '_' . self::SUFFIX;
         if (empty($localisedFields)) {
             DB::dont_require_table($localisedTable);
             return;
         }
 
-        // Add extra fields
+        // Merge fields and indexes
         $fields = array_merge(
-            [
-                'ID' => 'PrimaryKey',
-                'Locale' => 'Varchar(10)'
-            ],
+            $this->owner->config()->get('db_for_localised_table'),
             $localisedFields
         );
-        $indexes = [
-            'PK' => [
-                'type' => 'unique',
-                'columns' => [
-                    'ID',
-                    'Locale',
-                ],
-            ],
-        ];
+        $indexes = $this->owner->config()->get('indexes_for_localised_table');
         DB::require_table($localisedTable, $fields, $indexes, false);
     }
 }
