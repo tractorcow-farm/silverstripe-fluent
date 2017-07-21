@@ -1,0 +1,6 @@
+---
+Name: fluentcms
+---
+SilverStripe\CMS\Model\SiteTree:
+  extensions:
+    FluentSiteTreeExtension: TractorCow\Fluent\Extension\FluentSiteTreeExtension
