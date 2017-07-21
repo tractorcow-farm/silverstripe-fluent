@@ -17,13 +17,21 @@
 		"issues": "http://github.com/tractorcow/silverstripe-fluent/issues"
 	},
 	"require": {
-		"silverstripe/framework": "~3.2",
-		"silverstripe/cms": "~3.2"
+		"silverstripe/framework": "^4@dev",
+		"silverstripe/cms": "^4@dev"
 	},
 	"extra": {
 		"branch-alias": {
-			"dev-master": "3.8.x-dev"
+			"dev-develop": "4.0.x-dev"
 		},
 		"installer-name": "fluent"
-	}
+	},
+    "autoload": {
+        "psr-4": {
+            "TractorCow\\Fluent\\": "src/",
+            "TractorCow\\Fluent\\Tests\\": "tests/"
+        }
+    },
+    "prefer-stable": true,
+    "minimum-stability": "dev"
 }
