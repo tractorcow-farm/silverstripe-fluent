@@ -95,7 +95,7 @@ class Locale extends DataObject
             TextField::create(
                 'URLSegment',
                 _t(__CLASS__.'.LOCALE_URL', 'URL Segment')
-            ),
+            )->setAttribute('placeholder', $this->Locale),
             DropdownField::create(
                 'DefaultID',
                 _t(__CLASS__.'.DEFAULT', 'Fallback locale'),
