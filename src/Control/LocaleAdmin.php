@@ -3,6 +3,7 @@
 namespace TractorCow\Fluent\Control;
 
 use SilverStripe\Admin\ModelAdmin;
+use SilverStripe\View\Requirements;
 use TractorCow\Fluent\Model\Locale;
 
 class LocaleAdmin extends ModelAdmin
@@ -14,4 +15,9 @@ class LocaleAdmin extends ModelAdmin
     private static $managed_models = [
         Locale::class,
     ];
+
+    protected function init() {
+        parent::init();
+        Requirements::themedJavascript('client/dist/js/fluent.js');
+    }
 }
