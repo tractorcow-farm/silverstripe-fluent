@@ -69,7 +69,7 @@ class FluentDirectorExtension extends Extension
             'Controller' => RootURLController::class
         ];
 
-        $defaultLocale = Locale::get()->filter('IsDefault', 1)->first();
+        $defaultLocale = Locale::getDefault();
         if (!$defaultLocale) {
             return;
         }
@@ -99,7 +99,7 @@ class FluentDirectorExtension extends Extension
     {
         $queryParam = static::config()->get('query_param');
         $rules = [];
-        foreach (Locale::get() as $localeObj) {
+        foreach (Locale::getCached() as $localeObj) {
             $locale = $localeObj->Locale;
             $url = $localeObj->URLSegment ?: $locale;
 

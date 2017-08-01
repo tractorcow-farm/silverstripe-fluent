@@ -13,10 +13,13 @@ use SilverStripe\ORM\DataObject;
  * @property string $Locale
  * @property string $Alias
  * @property bool $IsDefault
- * @method Locale Default()
+ * @property int $ParentDefaultID
+ * @method Locale ParentDefault()
  */
 class Locale extends DataObject
 {
+    use CachableModel;
+
     private static $table_name = 'Locale';
 
     private static $singular_name = 'Locale';
@@ -29,6 +32,8 @@ class Locale extends DataObject
         'URLSegment',
         'IsDefault',
     ];
+
+    private static $default_sort = '"Locale"."Locale" ASC';
 
     /**
      * @config
@@ -46,7 +51,7 @@ class Locale extends DataObject
      * @var array
      */
     private static $has_one = [
-        'Default' => Locale::class,
+        'ParentDefault' => Locale::class,
     ];
 
     /**
@@ -130,7 +135,7 @@ class Locale extends DataObject
                 _t(__CLASS__.'.LOCALE_URL', 'URL Segment')
             )->setAttribute('placeholder', $this->Locale),
             DropdownField::create(
-                'DefaultID',
+                'ParentDefaultID',
                 _t(__CLASS__.'.DEFAULT', 'Fallback locale'),
                 Locale::get()->map('ID', 'Title')
             )->setEmptyString(_t(__CLASS__.'.DEFAULT_NONE', '(none)')),
@@ -147,5 +152,42 @@ Switching to a new default will copy content from the old locale to the new one.
 DESC
             ))
         );
+    }
+
+    /**
+     * Get default locale
+     *
+     * @return Locale
+     */
+    public static function getDefault()
+    {
+        // If no default specified, treat first locale as default
+        return Locale::getCached()->filter('IsDefault', 1)->first()
+            ?: Locale::getCached()->first();
+    }
+
+    /**
+     * Get default for this locale
+     *
+     * @return Locale
+     */
+    public function getParent()
+    {
+        $id = $this->ParentDefaultID;
+        return Locale::getCached()->byID($id);
+    }
+
+    /**
+     * Get object by locale code
+     *
+     * @param string $locale
+     * @return Locale
+     */
+    public static function getByLocale($locale)
+    {
+        if (!$locale) {
+            return null;
+        }
+        return Locale::getCached()->filter('Locale', $locale)->first();
     }
 }

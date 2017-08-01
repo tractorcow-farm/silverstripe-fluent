@@ -8,6 +8,7 @@ use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\DataQuery;
 use SilverStripe\ORM\DB;
 use SilverStripe\ORM\Queries\SQLSelect;
+use TractorCow\Fluent\Model\Locale;
 use TractorCow\Fluent\State\FluentState;
 
 /**
@@ -132,6 +133,34 @@ class FluentExtension extends DataExtension
     }
 
     /**
+     * Get all database tables in the class ancestry and their respective
+     * translatable fields
+     *
+     * @return array
+     */
+    protected function getLocalisedTables()
+    {
+        $includedTables = array();
+        foreach ($this->owner->getClassAncestry() as $class) {
+            // Skip classes without tables
+            if (!DataObject::getSchema()->classHasTable($class)) {
+                continue;
+            }
+
+            // Check translated fields for this class
+            $translatedFields = $this->getLocalisedFields($class);
+            if (empty($translatedFields)) {
+                continue;
+            }
+
+            // Mark this table as translatable
+            $table = DataObject::getSchema()->tableName($class);
+            $includedTables[$table] = array_keys($translatedFields);
+        }
+        return $includedTables;
+    }
+
+    /**
      * Helper function to check if the value given is present in any of the patterns.
      * This function is case sensitive by default.
      *
@@ -184,8 +213,39 @@ class FluentExtension extends DataExtension
 
     public function augmentSQL(SQLSelect $query, DataQuery $dataQuery = null)
     {
-        $locale = FluentState::singleton()->getLocale();
+        $localeCode = $dataQuery->getQueryParam('Fluent.Locale') ?: FluentState::singleton()->getLocale();
+        if (!$localeCode) {
+            return;
+        }
 
-        // todo
+        // Get locale and translation zone to use
+        $default = Locale::getDefault();
+        $locale = Locale::getByLocale($localeCode);
+
+        // Only rewrite if we have a locale and a default, and they don't match
+        if (!$default || !$locale || $default->Locale === $locale->Locale) {
+            return;
+        }
+
+        // Join all tables on the given locale code
+        $tables = $this->getLocalisedTables();
+        foreach ($tables as $table => $fields) {
+            $tableLocalised = $table . '_' . self::SUFFIX;
+
+            // Join all items in ancestory
+            $joinLocale = $locale;
+            while ($joinLocale) {
+                $joinAlias = $tableLocalised . '_' . $joinLocale->Locale;
+                $query->addLeftJoin(
+                    $tableLocalised,
+                    " \"{$table}\".\"ID\" = \"{$joinAlias}\".\"RecordID\" AND \"{$joinAlias}\".\"Locale\" = ?",
+                    $joinAlias,
+                    20,
+                    [ $joinLocale->Locale ]
+                );
+                // Join next parent
+                $joinLocale = $joinLocale->getParent();
+            }
+        }
     }
 }
