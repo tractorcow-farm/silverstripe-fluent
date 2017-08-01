@@ -3,14 +3,17 @@
 namespace TractorCow\Fluent\Extension;
 
 use SilverStripe\Core\Config\Config;
-use SilverStripe\Core\Extension;
+use SilverStripe\ORM\DataExtension;
 use SilverStripe\ORM\DataObject;
+use SilverStripe\ORM\DataQuery;
 use SilverStripe\ORM\DB;
+use SilverStripe\ORM\Queries\SQLSelect;
+use TractorCow\Fluent\State\FluentState;
 
 /**
  * Basic fluent extension
  */
-class FluentExtension extends Extension
+class FluentExtension extends DataExtension
 {
     const SUFFIX = 'Localised';
 
@@ -177,5 +180,12 @@ class FluentExtension extends Extension
         );
         $indexes = $this->owner->config()->get('indexes_for_localised_table');
         DB::require_table($localisedTable, $fields, $indexes, false);
+    }
+
+    public function augmentSQL(SQLSelect $query, DataQuery $dataQuery = null)
+    {
+        $locale = FluentState::singleton()->getLocale();
+
+        // todo
     }
 }
