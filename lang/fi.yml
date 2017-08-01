@@ -1,0 +1,12 @@
+fi:
+  Fluent:
+    BadgeHiddenHelp: 'Sivu on piilotettu tämän kielen osalta'
+    BadgeHiddenShort: Piilotettu
+    ChangeLocale: 'Vaihda kieltä'
+    LocaleFilter: 'Kielisuodatin'
+    LocaleFilterDescription: 'Valitse kieli näyttääksesi tämän sivun/tietueen kyseisellä kielellä'
+    LocaleMenuFilterDescription: 'Valitse kielet joilla tämä sivu/tietue näytetään valikoissa'
+    TABLOCALES: Kielet
+    DefaultLocale: 'Tämä on oletuskieli'
+    DefaultLocaleIs: 'Oletuskieli on'
+    EditingIn: 'Huomautus! Olet muokkaamassa kielellä'
