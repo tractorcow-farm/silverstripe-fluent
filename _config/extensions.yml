@@ -1,6 +1,0 @@
----
-Name: fluentextensions
----
-SilverStripe\Control\Director:
-  extensions:
-    FluentDirectorExtension: TractorCow\Fluent\Extension\FluentDirectorExtension

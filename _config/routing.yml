@@ -1,0 +1,12 @@
+---
+Name: fluentrouting
+---
+SilverStripe\Control\Director:
+  extensions:
+    FluentDirectorExtension: TractorCow\Fluent\Extension\FluentDirectorExtension
+
+SilverStripe\Core\Injector\Injector:
+  SilverStripe\Control\Director:
+    properties:
+      Middlewares:
+        FluentMiddleware: %$TractorCow\Fluent\Middleware\FluentMiddleware
