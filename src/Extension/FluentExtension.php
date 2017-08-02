@@ -3,11 +3,15 @@
 namespace TractorCow\Fluent\Extension;
 
 use SilverStripe\Core\Config\Config;
+use SilverStripe\Core\Convert;
+use SilverStripe\Core\Injector\Injector;
 use SilverStripe\ORM\DataExtension;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\DataQuery;
 use SilverStripe\ORM\DB;
 use SilverStripe\ORM\Queries\SQLSelect;
+use TractorCow\Fluent\Model\DefaultProvider;
+use TractorCow\Fluent\Model\i18nDefaultProvider;
 use TractorCow\Fluent\Model\Locale;
 use TractorCow\Fluent\State\FluentState;
 
@@ -17,6 +21,13 @@ use TractorCow\Fluent\State\FluentState;
 class FluentExtension extends DataExtension
 {
     const SUFFIX = 'Localised';
+
+    /**
+     * Class to provide default values
+     *
+     * @var` string
+     */
+    private static $defaultProvider = i18nDefaultProvider::class;
 
     private static $db_for_localised_table = [
         'ID' => 'PrimaryKey',
@@ -223,7 +234,13 @@ class FluentExtension extends DataExtension
         $locale = Locale::getByLocale($localeCode);
 
         // Only rewrite if we have a locale and a default, and they don't match
-        if (!$default || !$locale || $default->Locale === $locale->Locale) {
+        if (!$default || !$locale) {
+            return;
+        }
+
+        // Select locale as literal
+        $query->selectField(Convert::raw2sql($locale->Locale, true), 'Locale');
+        if ($default->Locale === $locale->Locale) {
             return;
         }
 
@@ -232,9 +249,9 @@ class FluentExtension extends DataExtension
         foreach ($tables as $table => $fields) {
             $tableLocalised = $table . '_' . self::SUFFIX;
 
-            // Join all items in ancestory
+            // Join all items in ancestory, until we get to default
             $joinLocale = $locale;
-            while ($joinLocale) {
+            while ($joinLocale && !$joinLocale->IsDefault) {
                 $joinAlias = $tableLocalised . '_' . $joinLocale->Locale;
                 $query->addLeftJoin(
                     $tableLocalised,
@@ -247,5 +264,69 @@ class FluentExtension extends DataExtension
                 $joinLocale = $joinLocale->getParent();
             }
         }
+
+        // Get default provider
+        $providerName = Config::inst()->get(get_class($this->owner), 'defaultProvider');
+        /** @var DefaultProvider $defaultProvider */
+        $defaultProvider = $providerName ? Injector::inst()->get($providerName) : null;
+
+        // Iterate through each select clause, replacing each with the translated version
+        foreach ($query->getSelect() as $alias => $select) {
+            // Skip fields without table context
+            if (!preg_match('/^"(?<table>[\w\\\\]+)"\."(?<field>\w+)"$/i', $select, $matches)) {
+                continue;
+            }
+
+            $table = $matches['table'];
+            $field = $matches['field'];
+
+            // If this table doesn't have translated fields then skip
+            if (empty($tables[$table])) {
+                continue;
+            }
+
+            // If this field shouldn't be translated, skip
+            if (!in_array($field, $tables[$table])) {
+                continue;
+            }
+
+            $expression = $this->localiseSelect($table, $field, $locale, $defaultProvider);
+            $query->selectField($expression, $alias);
+        }
+    }
+
+    /**
+     * Generates a select fragment based on a field with a fallback
+     *
+     * @param string $table
+     * @param string $field
+     * @param Locale $locale
+     * @param DefaultProvider $defaultProvider
+     * @return string Select fragment
+     */
+    protected function localiseSelect($table, $field, Locale $locale, DefaultProvider $defaultProvider = null)
+    {
+        $tableLocalised = $table . '_' . self::SUFFIX;
+        $joinLocale = $locale;
+
+        // Build case for each locale down the chain
+        $query = "CASE\n";
+        while ($joinLocale && !$joinLocale->IsDefault) {
+            $joinAlias = $tableLocalised . '_' . $joinLocale->Locale;
+            $query .= "\tWHEN \"{$joinAlias}\".\"ID\" IS NOT NULL THEN \"{$joinAlias}\".\"{$field}\"\n";
+            $joinLocale = $joinLocale->getParent();
+        }
+
+        // Handle "else" case: Is root the default locale? Otherwise, use default service
+        if ($joinLocale && $joinLocale->IsDefault) {
+            $query .= "\tELSE \"{$table}\".\"{$field}\" END\n";
+        } elseif ($defaultProvider) {
+            $class = DataObject::getSchema()->tableClass($table);
+            $default = Convert::raw2sql($defaultProvider->provideDefault($class, $field, $locale), true);
+            $query .= "\tELSE {$default} END\n";
+        } else {
+            $query .= "\tELSE NULL END\n";
+        }
+        return $query;
     }
 }

@@ -143,7 +143,7 @@ class Locale extends DataObject
                 'IsDefault',
                 _t(__CLASS__.'.IS_DEFAULT', 'This is the default locale')
             )
-                ->setAttribute('data-hides', 'DefaultID')
+                ->setAttribute('data-hides', 'ParentDefaultID')
                 ->setDescription(_t(
                 __CLASS__.'.IS_DEFAULT_DESCRIPTION',
 <<<DESC
