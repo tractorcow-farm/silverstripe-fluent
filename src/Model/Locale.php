@@ -52,6 +52,7 @@ class Locale extends DataObject
      */
     private static $has_one = [
         'ParentDefault' => Locale::class,
+        'Domain' => Domain::class,
     ];
 
     /**
@@ -150,7 +151,12 @@ class Locale extends DataObject
 Note: Default locale cannot have a fallback.
 Switching to a new default will copy content from the old locale to the new one.
 DESC
-            ))
+            )),
+            DropdownField::create(
+                'DomainID',
+                _t(__CLASS__.'.DOMAIN', 'Domain'),
+                Domain::get()->map('ID', 'Domain')
+            )->setEmptyString(_t(__CLASS__.'.DEFAULT_NONE', '(none)'))
         );
     }
 
