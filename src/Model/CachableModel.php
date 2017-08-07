@@ -26,7 +26,7 @@ trait CachableModel {
         }
 
         // Query DB
-        $dataList = DataObject::get(static::class)->sort('Locale');
+        $dataList = DataObject::get(static::class);
         $sort = Config::inst()->get(static::class, 'default_sort');
         if ($sort) {
             $dataList = $dataList->sort($sort);

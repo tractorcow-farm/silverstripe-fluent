@@ -9,4 +9,5 @@ SilverStripe\Core\Injector\Injector:
   SilverStripe\Control\Director:
     properties:
       Middlewares:
-        FluentMiddleware: %$TractorCow\Fluent\Middleware\FluentMiddleware
+        InitStateMiddleware: %$TractorCow\Fluent\Middleware\InitStateMiddleware
+        HandleRedirectMiddleware: %$TractorCow\Fluent\Middleware\HandleRedirectMiddleware

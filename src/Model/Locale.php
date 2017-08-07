@@ -8,6 +8,7 @@ use SilverStripe\Forms\FieldList;
 use SilverStripe\Forms\TextField;
 use SilverStripe\i18n\i18n;
 use SilverStripe\ORM\DataObject;
+use TractorCow\Fluent\State\LocaleDetector;
 
 /**
  * @property string $Locale
@@ -163,13 +164,25 @@ DESC
     /**
      * Get default locale
      *
+     * @param  string|null $domain If provided, the default locale for the given domain will be returned
      * @return Locale
      */
-    public static function getDefault()
+    public static function getDefault($domain = null)
     {
+        /** @var \SilverStripe\ORM\ArrayList $locales */
+        $locales = Locale::getCached();
+
+        // Optionally filter by domain
+        if ($domain) {
+            $domain = Domain::getCached()->filter('Domain', $domain)->first();
+            if ($domain && $domain->exists()) {
+                $locales = $domain->Locales();
+            }
+        }
+
         // If no default specified, treat first locale as default
-        return Locale::getCached()->filter('IsDefault', 1)->first()
-            ?: Locale::getCached()->first();
+        return $locales->filter('IsDefault', 1)->first()
+            ?: $locales->first();
     }
 
     /**
