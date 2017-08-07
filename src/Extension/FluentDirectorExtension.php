@@ -27,6 +27,16 @@ class FluentDirectorExtension extends Extension
     private static $detect_locale = false;
 
     /**
+     * Determine if the locale should be remembered across multiple sessions via cookies. If this is left on then
+     * visitors to the home page will be redirected to the locale they last viewed. This may interefere with some
+     * applications and can be turned off to prevent unexpected redirects.
+     *
+     * @config
+     * @var bool
+     */
+    private static $remember_locale = false;
+
+    /**
      * Request parameter to store the locale in
      *
      * @config
@@ -41,6 +51,14 @@ class FluentDirectorExtension extends Extension
      * @var bool
      */
     private static $disable_default_prefix = false;
+
+    /**
+     * Whether to force "domain mode"
+     *
+     * @config
+     * @var boolean
+     */
+    private static $force_domain = false;
 
     /**
      * Forces regeneration of all locale routes

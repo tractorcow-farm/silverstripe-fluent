@@ -4,6 +4,7 @@ namespace TractorCow\Fluent\State;
 
 use SilverStripe\Control\HTTPRequest;
 use SilverStripe\Core\Injector\Injectable;
+use TractorCow\Fluent\Model\Domain;
 
 /**
  * Stores the current fluent state
@@ -20,11 +21,32 @@ class FluentState
     protected $locale;
 
     /**
-     * Current request object
+     * Current domain
      *
-     * @var HTTPRequest
+     * @var string
      */
-    protected $request;
+    protected $domain;
+
+    /**
+     * Whether the website is running in domain segmentation mode
+     *
+     * @var boolean
+     */
+    protected $isDomainMode;
+
+    /**
+     * Current locale, normally set from either a session or cookie value
+     *
+     * @var boolean
+     */
+    protected $persistLocale;
+
+    /**
+     * Whether the request is for the frontend website
+     *
+     * @var boolean
+     */
+    protected $isFrontend;
 
     /**
      * Get the currently active locale code
@@ -49,24 +71,90 @@ class FluentState
     }
 
     /**
-     * Get the currently active request
+     * Get the current domain code
      *
-     * @return HTTPRequest
+     * @return string
      */
-    public function getRequest()
+    public function getDomain()
     {
-        return $this->request;
+        return $this->domain;
     }
 
     /**
-     * Set the active request
+     * Set the current domain code
      *
-     * @param HTTPRequest $request
+     * @param  string $domain
      * @return $this
      */
-    public function setRequest(HTTPRequest $request)
+    public function setDomain($domain)
     {
-        $this->request = $request;
+        $this->domain = $domain;
+        return $this;
+    }
+
+    /**
+     * Gets the locale currently set within either the session or cookie
+     *
+     * @return string|null The locale, if available
+     */
+    public function getPersistLocale()
+    {
+        return $this->persistLocale;
+    }
+
+    /**
+     * Set the current locale, normally from either a session or cookie value
+     *
+     * @param  string $locale
+     * @return $this
+     */
+    public function setPersistLocale($locale)
+    {
+        $this->persistLocale = $locale;
+        return $this;
+    }
+
+    /**
+     * Get whether the website is in domain segmentation mode
+     *
+     * @return boolean
+     */
+    public function getIsDomainMode()
+    {
+        return $this->isDomainMode;
+    }
+
+    /**
+     * Set whether the website is in domain segmentation mode
+     *
+     * @param  boolean $isDomainMode
+     * @return $this
+     */
+    public function setIsDomainMode($isDomainMode)
+    {
+        $this->isDomainMode = $isDomainMode;
+        return $this;
+    }
+
+    /**
+     * Get whether a request is for the frontend website or not
+     *
+     * @return boolean
+     */
+    public function getIsFrontend()
+    {
+        return $this->isFrontend;
+    }
+
+    /**
+     * Set whether a request is for the frontend website or not
+     *
+     * @param  boolean $isFrontend
+     * @return $this
+     */
+    public function setIsFrontend($isFrontend)
+    {
+        $this->isFrontend = $isFrontend;
         return $this;
     }
 }
