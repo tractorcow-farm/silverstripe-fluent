@@ -10,6 +10,7 @@ use SilverStripe\Core\Extensible;
 use SilverStripe\Core\Injector\Injectable;
 use SilverStripe\ORM\ArrayList;
 use TractorCow\Fluent\Extension\FluentDirectorExtension;
+use TractorCow\Fluent\Model\Domain;
 use TractorCow\Fluent\Model\Locale;
 
 class LocaleDetector
@@ -230,8 +231,8 @@ class LocaleDetector
      */
     public function getDomainForLocale($locale)
     {
-        $domain = Locale::getByLocale($locale)->Domain();
-        if ($domain) {
+        $locale = Locale::getByLocale($locale);
+        if ($locale && ($domain = $locale->Domain())) {
             return $domain->Domain;
         }
     }

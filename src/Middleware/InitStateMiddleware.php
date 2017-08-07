@@ -33,30 +33,14 @@ class InitStateMiddleware implements HTTPMiddleware
     public function process(HTTPRequest $request, callable $delegate)
     {
         $state = FluentState::create();
-        if ($locale = $this->getRequestLocale($request)) {
-            $state->setLocale($locale);
-        }
+        Injector::inst()->registerService($state, FluentState::class);
 
         $state
             ->setDomain(Director::host($request))
             ->setIsFrontend($this->getIsFrontend($request))
             ->setIsDomainMode($this->getIsDomainMode($request));
 
-        Injector::inst()->registerService($state, FluentState::class);
-
         return $delegate($request);
-    }
-
-    /**
-     * Check for existing locale routing parameters and return if available
-     *
-     * @param  HTTPRequest $request
-     * @return string
-     */
-    public function getRequestLocale(HTTPRequest $request)
-    {
-        $queryParam = FluentDirectorExtension::config()->get('query_param');
-        return (string) $request->getVar($queryParam);
     }
 
     /**

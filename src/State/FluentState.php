@@ -35,13 +35,6 @@ class FluentState
     protected $isDomainMode;
 
     /**
-     * Current locale, normally set from either a session or cookie value
-     *
-     * @var boolean
-     */
-    protected $persistLocale;
-
-    /**
      * Whether the request is for the frontend website
      *
      * @var boolean
@@ -89,28 +82,6 @@ class FluentState
     public function setDomain($domain)
     {
         $this->domain = $domain;
-        return $this;
-    }
-
-    /**
-     * Gets the locale currently set within either the session or cookie
-     *
-     * @return string|null The locale, if available
-     */
-    public function getPersistLocale()
-    {
-        return $this->persistLocale;
-    }
-
-    /**
-     * Set the current locale, normally from either a session or cookie value
-     *
-     * @param  string $locale
-     * @return $this
-     */
-    public function setPersistLocale($locale)
-    {
-        $this->persistLocale = $locale;
         return $this;
     }
 
