@@ -8,7 +8,7 @@ class Domain extends DataObject
 {
     use CachableModel;
 
-    private static $table_name = 'FluentDomain';
+    private static $table_name = 'Fluent_Domain';
 
     private static $singular_name = 'Domain';
 

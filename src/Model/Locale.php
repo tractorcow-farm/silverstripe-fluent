@@ -21,7 +21,7 @@ class Locale extends DataObject
 {
     use CachableModel;
 
-    private static $table_name = 'Locale';
+    private static $table_name = 'Fluent_Locale';
 
     private static $singular_name = 'Locale';
 
@@ -34,7 +34,7 @@ class Locale extends DataObject
         'IsDefault',
     ];
 
-    private static $default_sort = '"Locale"."Locale" ASC';
+    private static $default_sort = '"Fluent_Locale"."Locale" ASC';
 
     /**
      * @config

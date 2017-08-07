@@ -4,3 +4,6 @@ Name: fluentcms
 SilverStripe\CMS\Model\SiteTree:
   extensions:
     FluentSiteTreeExtension: TractorCow\Fluent\Extension\FluentSiteTreeExtension
+SilverStripe\Admin\LeftAndMain:
+  extensions:
+    FluentLeftAndMainExtension: TractorCow\Fluent\Extension\FluentLeftAndMainExtension

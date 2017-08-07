@@ -1,3 +1,210 @@
-.fluent {
-  display: block;
+// See includePaths in webpack-config module
+@import "variables";
+@import "legacy/themes/default";
+
+// $fluent-color-base: #1F9433;
+$fluent-color-base: rgb(31, 148, 51);
+
+// $fluent-color-modified: #FF9100;
+$fluent-color-modified: rgb(244, 145, 0);
+
+// Fix cms-menu collapsed for dropdown
+.cms-menu.collapsed {
+	.cms-menu-list {
+		float: left;
+	}
+	.cms-fluent-selector .text {
+		display: none;
+	}
+	.cms-fluent-selector-locales {
+		width: 100%;
+		.full-title {
+			display: none;
+		}
+		.short-title {
+			display: block;
+		}
+	}
+}
+
+// Style of selector dropdown
+.cms-fluent-selector {
+	display: block;
+	height: 40px;
+	line-height: $grid-y * 3;
+	font-size: 1.0em; // todo - review
+	overflow: visible;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+	text-shadow: darken($fluent-color-base, 5%) 1px 1px 0;
+	color: $color-text-light;
+	padding: ($grid-y - 1) 5px ($grid-y - 1) 8px;
+	background-color: $fluent-color-base;
+	cursor: pointer;
+	position: relative;
+	z-index: 100;
+
+	background-image: linear-gradient(
+		$fluent-color-base,
+		darken($fluent-color-base, 10%)
+	);
+
+	border-top: 1px solid lighten($fluent-color-base, 6%);
+	border-bottom: 1px solid darken($fluent-color-base, 20%);
+
+	.icon-fluent-translate {
+		display: inline-block;
+		float: left;
+		margin: 4px 10px 0 4px;
+		opacity: 0.7;
+		background-image: url('../images/menu-icon-16.png');
+	}
+
+	.text {
+		display: inline-block;
+		float: left;
+		max-width: 100px;
+		text-overflow: ellipsis;
+		overflow: hidden;
+	}
+
+	.cms-fluent-selector-flydown {
+		position: absolute;
+		z-index: 140;
+		right: 0;
+		bottom: 0;
+		text-indent: -9999px;
+		width: 18px;
+		height: 18px;
+		padding: 0;
+
+		background-color: lighten($fluent-color-base, 2%);
+		border-left: 1px solid darken($fluent-color-base, 15%);
+		border-top: 1px solid darken($fluent-color-base, 15%);
+
+		background-image: linear-gradient(
+			lighten($fluent-color-base, 5%),
+			darken($fluent-color-base, 5%)
+		);
+
+		.icon-fluent-select{
+			width: 18px;
+			height: 18px;
+			display: block;
+			text-indent: -9999px;
+			opacity: 0.7;
+
+			background: {
+				image: url('../images/chosen-sprite.png');
+				repeat: no-repeat;
+				position: 1px -2px;
+			}
+		}
+	}
+
+	.cms-fluent-selector-locales {
+		display: none;
+		position: absolute;
+		z-index: 120;
+		right: 0;
+		top: 37px;
+
+		width: 150px;
+		background-color: darken($fluent-color-base, 5%);
+		border: 1px solid darken($fluent-color-base, 15%);
+		border-right: 0px none;
+
+		background-image: linear-gradient(
+			$fluent-color-base,
+			darken($fluent-color-base, 10%)
+		);
+
+		li {
+			padding: 2px 8px;
+			a {
+				display: block;
+				color: $color-text-light;
+				.short-title {
+					display: none;
+					text-transform: uppercase;
+					text-align: center;
+				}
+			}
+		}
+	}
+
+	&.active .cms-fluent-selector-locales {
+		display: block;
+	}
+
+	&:hover,
+	&.active {
+		text-decoration: none;
+		background-color: lighten($fluent-color-base, 2%);
+		border-bottom: 1px solid darken($fluent-color-base, 15%);
+		color: lighten($color-text-light, 5%);
+
+		background-image: linear-gradient(
+			lighten($fluent-color-base, 5%),
+			$fluent-color-base
+		);
+
+		.cms-fluent-selector-flydown {
+			background-color: lighten($fluent-color-base, 4%);
+			border-left: 1px solid darken($fluent-color-base, 10%);
+			border-top: 1px solid darken($fluent-color-base, 10%);
+
+			background-image: linear-gradient(
+				lighten($fluent-color-base, 10%),
+				$fluent-color-base
+			);
+		}
+	}
+}
+
+.field.LocalisedField label.left {
+    &:after {
+    	float: left;
+    	content: url('../images/menu-icon-16-green.png');
+    	display: block;
+    	width: 16px;
+    	height: 16px;
+    	padding: 0 6px 0 0;
+    	opacity: 0.7;
+    }
+
+    span.fluent-locale-label {
+    	color: #FFFFFF;
+    	background: $fluent-color-base;
+    	display: inline-block;
+    	padding: 3px 3px 1px 3px;
+    	margin-right: 6px;
+    	border-radius: 2px;
+    	font-size: 9px;
+    	text-transform: uppercase;
+    	font-weight: 100;
+    	text-shadow: none;
+    	line-height: 1;
+        cursor: default;
+
+        &.fluent-modified-value {
+            background: $fluent-color-modified;
+
+            &:hover {
+                cursor: pointer;
+                background: $fluent-color-base;
+            }
+        }
+    }
+}
+
+.jstree li.status-fluenthidden .item {
+	opacity: 0.5;
+}
+
+span.badge.status-fluenthidden {
+	color: $color-text-light;
+	border: 1px solid darken($fluent-color-base, 20%);
+	background-color: $fluent-color-base;
+	text-shadow: none;
 }
