@@ -6,15 +6,14 @@ use Exception;
 use SilverStripe\Control\Controller;
 use SilverStripe\Control\Director;
 use SilverStripe\Control\HTTPRequest;
-use SilverStripe\Core\Config\Configurable;
 use SilverStripe\Core\Extensible;
 use SilverStripe\Core\Injector\Injectable;
+use SilverStripe\ORM\ArrayList;
 use TractorCow\Fluent\Extension\FluentDirectorExtension;
 use TractorCow\Fluent\Model\Locale;
 
 class LocaleDetector
 {
-    use Configurable;
     use Extensible;
     use Injectable;
 
@@ -158,8 +157,8 @@ class LocaleDetector
         }
 
         // Check configured domains
-        $domains = static::config()->get('domains');
-        return isset($domains[$hostname]);
+        $domain = Domain::getCached()->filter('Domain', $hostname)->first();
+        return $domain && $domain->exists();
     }
 
     /**
@@ -167,40 +166,20 @@ class LocaleDetector
      *
      * @param  bool $currentDomain Domain to determine the locales for. If false, the global list be returned.
      *                             If true, then the current domain will be used.
-     * @return Locale[]
+     * @return \SilverStripe\ORM\SS_List
      */
     public function getLocales($currentDomain = false)
     {
         if ($currentDomain) {
-            $domain = Domain::get()->filter('Domain', $this->getState()->getDomain())->first();
+            $domain = Domain::getCached()->filter('Domain', $this->getState()->getDomain())->first();
             if (!$domain) {
-                return [];
+                return ArrayList::create();
             }
 
             return $domain->Locales();
         }
 
-        /** @var \SilverStripe\ORM\ArrayList $domains */
-        $domains = Domain::getCached();
-        /** @var \SilverStripe\ORM\ArrayList $allLocales */
-        $allLocales = Locale::getCached();
-
-        $output = [];
-        foreach ($allLocales as $locale) {
-            if (!$currentDomain) {
-                $output[] = $locale;
-                continue;
-            }
-
-            // Filter by current domain
-            if (!empty($domains[$currentDomain]['locales'])
-                && in_array($locale->Locale, $domains[$currentDomain]['locales'])
-            ) {
-                $output[] = $locale;
-            }
-        }
-
-        return $output;
+        return Domain::getCached();
     }
 
     /**
@@ -251,11 +230,9 @@ class LocaleDetector
      */
     public function getDomainForLocale($locale)
     {
-        $domains = static::config()->get('domains');
-        foreach ($domains as $domain => $spec) {
-            if (!empty($spec['locales']) && in_array($locale, $spec['locales'])) {
-                return $domain;
-            }
+        $domain = Locale::getByLocale($locale)->Domain();
+        if ($domain) {
+            return $domain->Domain;
         }
     }
 
