@@ -14,7 +14,7 @@ class InitStateMiddlewareTest extends SapphireTest
     public function testGetIsFrontend($url, $expected)
     {
         $request = new HTTPRequest('GET', $url);
-        $result = (new InitStateMiddleware)->setRequest($request)->getIsFrontend();
+        $result = (new InitStateMiddleware)->getIsFrontend($request);
         $this->assertSame($expected, $result, 'isFrontend detects whether a request is for the frontend website');
     }
 

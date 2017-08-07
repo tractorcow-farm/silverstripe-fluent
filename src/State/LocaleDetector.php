@@ -219,7 +219,7 @@ class LocaleDetector
         }
 
         // Append locale otherwise
-        return Controller::join_links($base, $localeObj->Alias ?: $locale, '/');
+        return Controller::join_links($base, $localeObj->URLSegment ?: $locale, '/');
     }
 
     /**

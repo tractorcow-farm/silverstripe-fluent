@@ -43,7 +43,6 @@ class Locale extends DataObject
     private static $db = [
         'Locale' => 'Varchar(10)',
         'Title' => 'Varchar(100)',
-        'Alias' => 'Varchar(20)',
         'URLSegment' => 'Varchar(100)',
         'IsDefault' => 'Boolean',
     ];
