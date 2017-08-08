@@ -10,6 +10,7 @@ use SilverStripe\Core\Extensible;
 use SilverStripe\Core\Injector\Injectable;
 use SilverStripe\ORM\ArrayList;
 use TractorCow\Fluent\Extension\FluentDirectorExtension;
+use TractorCow\Fluent\Model\Domain;
 use TractorCow\Fluent\Model\Locale;
 
 class LocaleDetector
@@ -17,52 +18,26 @@ class LocaleDetector
     use Extensible;
     use Injectable;
 
-    /**
-     * @var HTTPRequest
-     */
-    protected $request;
-
     public function __construct()
     {
         $this->constructExtensions();
     }
 
     /**
-     * @return HTTPRequest
-     * @throws Exception If no request object is available yet
-     */
-    public function getRequest()
-    {
-        if ($this->request) {
-            return $this->request;
-        }
-        throw new Exception('No HTTPRequest object is available yet. Please uset LocaleDetector::setRequest first!');
-    }
-
-    /**
-     * @param  HTTPRequest $request
-     * @return $this
-     */
-    public function setRequest(HTTPRequest $request)
-    {
-        $this->request = $request;
-        return $this;
-    }
-
-    /**
      * For incoming traffic to the site root, determine if they should be redirected to any locale.
      *
+     * @param  HTTPRequest $request
      * @return string|null The locale to redirect to, or null
      */
-    public function getRedirectLocale()
+    public function getRedirectLocale(HTTPRequest $request)
     {
         // Redirection interfere with flushing, so don't redirect
-        if (array_key_exists('flush', $this->getRequest()->getVars())) {
+        if (array_key_exists('flush', $request->getVars())) {
             $locale = null;
         }
 
         // Don't redirect if the user has clicked a link on the locale menu
-        if (!isset($locale) && $this->getIsKnownReferrer()) {
+        if (!isset($locale) && $this->getIsKnownReferrer($request)) {
             $locale = null;
         }
 
@@ -77,7 +52,7 @@ class LocaleDetector
         // Detect locale from browser Accept-Language header
         if (!isset($locale)
             && FluentDirectorExtension::config()->get('detect_locale')
-            && ($browserLocale = $this->detectBrowserLocale())
+            && ($browserLocale = $this->detectBrowserLocale($request))
         ) {
             $locale = $browserLocale;
         }
@@ -88,14 +63,15 @@ class LocaleDetector
     /**
      * Determines the locale best matching the given list of browser locales
      *
+     * @param  HTTPRequest $request
      * @param  bool $currentDomain Domain to determine the locales for. If false, the global list be returned.
      *                             If true, then the current domain will be used.
      * @return string              The matching locale, or null if none could be determined
      */
-    public function detectBrowserLocale($currentDomain = false)
+    public function detectBrowserLocale(HTTPRequest $request, $currentDomain = false)
     {
         // Given multiple canditates, narrow down the final result using the client's preferred languages
-        $inputLocales = $this->getRequest()->getHeader('Accept-Language');
+        $inputLocales = $request->getHeader('Accept-Language');
         if (empty($inputLocales)) {
             return;
         }
@@ -141,18 +117,19 @@ class LocaleDetector
     /**
      * Determine if the referrer for this request is from a domain within this website's scope
      *
+     * @param  HTTPRequest $request
      * @return boolean
      */
-    public function getIsKnownReferrer()
+    public function getIsKnownReferrer(HTTPRequest $request)
     {
         // Extract referrer
-        if (!$this->getRequest()->getHeader('Referer')) {
+        if (!$request->getHeader('Referer')) {
             return false;
         }
 
-        $hostname = strtolower(parse_url($this->getRequest()->getHeader('Referer'), PHP_URL_HOST));
+        $hostname = strtolower(parse_url($request->getHeader('Referer'), PHP_URL_HOST));
         // Check if internal traffic
-        if ($hostname == strtolower($this->getRequest()->getHeader('Host'))) {
+        if ($hostname == strtolower($request->getHeader('Host'))) {
             return true;
         }
 
@@ -230,8 +207,8 @@ class LocaleDetector
      */
     public function getDomainForLocale($locale)
     {
-        $domain = Locale::getByLocale($locale)->Domain();
-        if ($domain) {
+        $locale = Locale::getByLocale($locale);
+        if ($locale && ($domain = $locale->Domain())) {
             return $domain->Domain;
         }
     }

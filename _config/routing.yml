@@ -10,4 +10,4 @@ SilverStripe\Core\Injector\Injector:
     properties:
       Middlewares:
         InitStateMiddleware: %$TractorCow\Fluent\Middleware\InitStateMiddleware
-        HandleRedirectMiddleware: %$TractorCow\Fluent\Middleware\HandleRedirectMiddleware
+        DetectLocaleMiddleware: %$TractorCow\Fluent\Middleware\DetectLocaleMiddleware
