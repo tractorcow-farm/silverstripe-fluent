@@ -11,7 +11,8 @@ use SilverStripe\ORM\DataObject;
 /**
  * Allows you to cache a full list of objects without multiple DB queries
  */
-trait CachableModel {
+trait CachableModel
+{
 
     /**
      * @return ArrayList

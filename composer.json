@@ -1,31 +1,35 @@
 {
-	"name": "tractorcow/silverstripe-fluent",
-	"description": "Simple localisation for Silverstripe",
-	"type": "silverstripe-module",
-	"keywords": [
+    "name": "tractorcow/silverstripe-fluent",
+    "description": "Simple localisation for Silverstripe",
+    "type": "silverstripe-module",
+    "keywords": [
         "silverstripe", "localisation", "localization", "translation", "language", "locale", "multilingual",
         "translatable", "i18n", "internationalisation", "internationalization"
     ],
-	"license": "BSD-3-Clause",
-	"authors": [
-		{
-			"name": "Damian Mooyman",
-			"email": "damian.mooyman@gmail.com"
-		}
-	],
-	"support": {
-		"issues": "http://github.com/tractorcow/silverstripe-fluent/issues"
-	},
-	"require": {
-		"silverstripe/framework": "^4@dev",
-		"silverstripe/cms": "^4@dev"
-	},
-	"extra": {
-		"branch-alias": {
-			"dev-develop": "4.0.x-dev"
-		},
-		"installer-name": "fluent"
-	},
+    "license": "BSD-3-Clause",
+    "authors": [
+        {
+            "name": "Damian Mooyman",
+            "email": "damian.mooyman@gmail.com"
+        }
+    ],
+    "support": {
+        "issues": "http://github.com/tractorcow/silverstripe-fluent/issues"
+    },
+    "require": {
+        "silverstripe/framework": "^4@dev",
+        "silverstripe/cms": "^4@dev"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^5.7",
+        "squizlabs/php_codesniffer": "*"
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-develop": "4.0.x-dev"
+        },
+        "installer-name": "fluent"
+    },
     "autoload": {
         "psr-4": {
             "TractorCow\\Fluent\\": "src/",
