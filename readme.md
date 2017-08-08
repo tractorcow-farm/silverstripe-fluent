@@ -1,8 +1,8 @@
 # Fluent
 
-[![Build Status](https://travis-ci.org/tractorcow/silverstripe-fluent.svg?branch=master)](https://travis-ci.org/tractorcow/silverstripe-fluent)
-
-[![Codewake](https://www.codewake.com/badges/ask_question.svg)](https://www.codewake.com/p/silverstripe-fluent)
+[![Build Status](https://travis-ci.org/tractorcow/silverstripe-fluent.svg?branch=develop)](https://travis-ci.org/tractorcow/silverstripe-fluent)
+[![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/tractorcow/silverstripe-fluent/badges/quality-score.png?b=develop)](https://scrutinizer-ci.com/g/tractorcow/silverstripe-fluent/?branch=develop)
+[![codecov](https://codecov.io/gh/tractorcow/silverstripe-fluent/branch/develop/graph/badge.svg)](https://codecov.io/gh/tractorcow/silverstripe-fluent)
 
 ## Simple Silverstripe Localisation
 
@@ -14,7 +14,7 @@ Locales are distinguished by a url prefix, that of the selected locale, at the s
 of all page links. E.g. `http://damian.geek.nz/en_NZ/about-me` would be the NZ English
 version of a page. This could be localised into Maori at `http://damian.geek.nz/mi_NZ/about-me`
 
-Fluent also integrates nicely with Google Sitemaps module, linking localisations for each page as per 
+Fluent also integrates nicely with Google Sitemaps module, linking localisations for each page as per
 [Google's internationalisation guidelines](https://support.google.com/webmasters/answer/182192?hl=en&ref_topic=2370587)
 
 Fluent also supports the use of multiple domains to assist in locale filtering
