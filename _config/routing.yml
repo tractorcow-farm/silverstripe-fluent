@@ -1,5 +1,7 @@
 ---
 Name: fluentrouting
+After:
+  - requestprocessors
 ---
 SilverStripe\Control\Director:
   extensions:
