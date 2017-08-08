@@ -18,11 +18,11 @@ class i18nDefaultProvider implements DefaultProvider
     public function provideDefault($class, $field, Locale $locale)
     {
         $default = i18n::get_locale();
-		try {
-			i18n::set_locale($locale->Locale);
-			return _t($class.'.'.$field.'_DEFAULT', '');
-		} finally {
-			i18n::set_locale($default);
-		}
+        try {
+            i18n::set_locale($locale->Locale);
+            return _t($class.'.'.$field.'_DEFAULT', '');
+        } finally {
+            i18n::set_locale($default);
+        }
     }
 }

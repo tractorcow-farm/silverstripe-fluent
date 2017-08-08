@@ -147,12 +147,12 @@ class Locale extends DataObject
             )
                 ->setAttribute('data-hides', 'ParentDefaultID')
                 ->setDescription(_t(
-                __CLASS__.'.IS_DEFAULT_DESCRIPTION',
-<<<DESC
+                    __CLASS__.'.IS_DEFAULT_DESCRIPTION',
+                    <<<DESC
 Note: Default locale cannot have a fallback.
 Switching to a new default will copy content from the old locale to the new one.
 DESC
-            )),
+                )),
             DropdownField::create(
                 'DomainID',
                 _t(__CLASS__.'.DOMAIN', 'Domain'),
