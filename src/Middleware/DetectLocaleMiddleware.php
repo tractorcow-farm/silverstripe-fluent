@@ -46,15 +46,21 @@ class DetectLocaleMiddleware implements HTTPMiddleware
      */
     protected $cookiesPersisted = false;
 
+    /**
+     * Sets the current locale to the FluentState, provided no previous middleware has set it first
+     *
+     * {@inheritDoc}
+     */
     public function process(HTTPRequest $request, callable $delegate)
     {
-        $localeDetector = LocaleDetector::singleton()->setRequest($request);
-
         $state = FluentState::singleton();
-        $state->setLocale($this->getLocale($request));
 
-        $locale = $state->getLocale();
-        $this->setPersistLocale($request, $locale, $this->getPersistKey());
+        if (!$state->getLocale()) {
+            $locale = $this->getLocale($request);
+
+            $state->setLocale($locale);
+            $this->setPersistLocale($request, $locale);
+        }
 
         return $delegate($request);
     }
@@ -69,18 +75,18 @@ class DetectLocaleMiddleware implements HTTPMiddleware
     {
         $state = FluentState::singleton();
 
-        // Check direct request
+        // Check direct request from either routing params, or request (e.g. GET) vars, in that order
         $queryParam = FluentDirectorExtension::config()->get('query_param');
         $locale = (string) $request->param($queryParam) ?: $request->requestVar($queryParam);
 
-        // Persistant variables
+        // Look for persisted locale
         if (empty($locale)) {
             $locale = $this->getPersistLocale($request);
         }
 
-        // Check browser headers
+        // Check for locale in browser headers
         if (empty($locale)) {
-            $locale = LocaleDetector::singleton()->detectBrowserLocale();
+            $locale = LocaleDetector::singleton()->detectBrowserLocale($request);
         }
 
         // Fallback to default if empty or invalid (for this domain)
@@ -88,9 +94,9 @@ class DetectLocaleMiddleware implements HTTPMiddleware
             // If on the frontend, filter locales by the current domain
             $domain = $state->getIsFrontend($request) ? $state->getDomain() : null;
 
-            /** @var Locale $locale */
-            if ($locale = Locale::getDefault($domain)) {
-                $locale = $locale->Locale;
+            /** @var Locale $localeObj */
+            if ($localeObj = Locale::getDefault($domain)) {
+                $locale = $localeObj->Locale;
             }
         }
 
