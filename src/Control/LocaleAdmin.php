@@ -32,7 +32,7 @@ class LocaleAdmin extends ModelAdmin
             parent::getClientConfig(),
             [
                 'fluent' => [
-                    'locales' => array_map(function(Locale $locale) {
+                    'locales' => array_map(function (Locale $locale) {
                         return [
                             'code' => $locale->getLocale(),
                             'title' => $locale->getTitle(),

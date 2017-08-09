@@ -209,4 +209,15 @@ DESC
         }
         return Locale::getCached()->filter('Locale', $locale)->first();
     }
+
+    /**
+     * Returns whether the given locale matches the current Locale object
+     *
+     * @param  string $locale E.g. en_NZ, en-NZ, en-nz-1990
+     * @return bool
+     */
+    public function isLocale($locale)
+    {
+        return stripos(str_replace('_', '-', $locale), str_replace('_', '-', $this->Locale)) === 0;
+    }
 }

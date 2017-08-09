@@ -59,8 +59,10 @@ class DetectLocaleMiddleware implements HTTPMiddleware
             $locale = $this->getLocale($request);
 
             $state->setLocale($locale);
-            $this->setPersistLocale($request, $locale);
         }
+
+        // Always persist the current locale
+        $this->setPersistLocale($request, $state->getLocale());
 
         return $delegate($request);
     }
@@ -84,8 +86,8 @@ class DetectLocaleMiddleware implements HTTPMiddleware
             $locale = $this->getPersistLocale($request);
         }
 
-        // Check for locale in browser headers
-        if (empty($locale)) {
+        // Home page only: check for locale in browser headers
+        if (empty($locale) && $request->getURL() === '') {
             $locale = LocaleDetector::singleton()->detectBrowserLocale($request);
         }
 

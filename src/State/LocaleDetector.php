@@ -105,9 +105,10 @@ class LocaleDetector
         // Check each requested locale against loaded locales
         foreach ($prioritisedLocales as $priority => $parsedLocales) {
             foreach ($parsedLocales as $browserLocale) {
-                foreach ($this->getLocales($currentDomain) as $locale) {
-                    if (stripos(preg_replace('/_/', '-', $locale), $browserLocale) === 0) {
-                        return $locale;
+                foreach ($this->getLocales($currentDomain) as $localeObj) {
+                    /** @var Locale $localeObj */
+                    if ($localeObj->isLocale($browserLocale)) {
+                        return $localeObj->Locale;
                     }
                 }
             }
@@ -156,7 +157,7 @@ class LocaleDetector
             return $domain->Locales();
         }
 
-        return Domain::getCached();
+        return Locale::getCached();
     }
 
     /**

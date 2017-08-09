@@ -1,0 +1,16 @@
+TractorCow\Fluent\Model\Locale:
+  en_NZ:
+    Locale: en_NZ
+    URLSegment: nz
+  en_AU:
+    Locale: en_AU
+    URLSegment: au
+  fr_FR:
+    Locale: fr_FR
+    URLSegment: fr
+  es_US:
+    Locale: es_US
+  es_ES:
+    Locale: es_ES
+    URLSegment: es
+    IsDefault: 1
