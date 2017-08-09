@@ -107,7 +107,7 @@ class LocaleDetector
             foreach ($parsedLocales as $browserLocale) {
                 foreach ($this->getLocales($currentDomain) as $localeObj) {
                     /** @var Locale $localeObj */
-                    if (stripos(preg_replace('/_/', '-', $localeObj->Locale), $browserLocale) === 0) {
+                    if ($localeObj->isLocale($browserLocale)) {
                         return $localeObj->Locale;
                     }
                 }

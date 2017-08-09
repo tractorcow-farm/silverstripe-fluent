@@ -28,4 +28,29 @@ class LocaleTest extends SapphireTest
         $this->assertInstanceOf(Locale::class, $result);
         $this->assertSame('es_US', $result->Locale, 'First Locale in Domain with IsDefault true is returned');
     }
+
+    /**
+     * @dataProvider isLocaleProvider
+     */
+    public function testIsLocale($locale, $input, $expected)
+    {
+        $localeObj = Locale::create()->setField('Locale', $locale);
+        $this->assertSame($expected, $localeObj->isLocale($input));
+    }
+
+    /**
+     * @return array[]
+     */
+    public function isLocaleProvider()
+    {
+        return [
+            ['en_NZ', 'en_NZ', true],
+            ['en_nz', 'en-NZ', true],
+            ['en-NZ', 'en_nz', true],
+            ['en-nz', 'en-nz', true],
+            ['en_NZ', 'en-NZ-1990', true],
+            ['en_NZ', 'en_AU', false],
+            ['en_NZ', 'fr-fr-1990', false],
+        ];
+    }
 }

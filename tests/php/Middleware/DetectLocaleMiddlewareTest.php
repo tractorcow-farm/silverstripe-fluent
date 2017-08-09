@@ -77,4 +77,21 @@ class DetectLocaleMiddlewareTest extends SapphireTest
             ['/', [], [], null, 'es-US', 'es_US'],
         ];
     }
+
+    public function testLocaleIsAlwaysPersistedEvenIfNotSetByTheMiddleware()
+    {
+        $request = new HTTPRequest('GET', '/');
+        FluentState::singleton()->setLocale('dummy');
+
+        $middleware = $this->getMockBuilder(DetectLocaleMiddleware::class)
+            ->setMethods(['getLocale', 'setPersistLocale'])
+            ->getMock();
+
+        $middleware->expects($this->never())->method('getLocale');
+        $middleware->expects($this->once())->method('setPersistLocale')->with($request, 'dummy');
+
+        $middleware->process($request, function () {
+            // no-op
+        });
+    }
 }

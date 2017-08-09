@@ -59,8 +59,10 @@ class DetectLocaleMiddleware implements HTTPMiddleware
             $locale = $this->getLocale($request);
 
             $state->setLocale($locale);
-            $this->setPersistLocale($request, $locale);
         }
+
+        // Always persist the current locale
+        $this->setPersistLocale($request, $state->getLocale());
 
         return $delegate($request);
     }
