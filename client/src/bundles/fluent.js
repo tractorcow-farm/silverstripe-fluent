@@ -82,41 +82,29 @@ window.jQuery.entwine('ss', ($) => {
       this._super();
       const config = fluentConfig();
       // Skip if no locales defined
-      if (typeof config.locales === 'undefined' || typeof config.title === 'undefined') {
+      if (typeof config.locales === 'undefined') {
         return;
       }
-      const buttonTitle = config.title;
+      // Note: Remove c-select once admin upgraded to bootstrap v4.0.0-alpha.6
       const selector = $(
-        `<div class='cms-fluent-selector'>
-          <span class='icon icon-16 icon-fluent-translate'>&nbsp;</span>
-          <span class='text'></span>
-          <a class='cms-fluent-selector-flydown' type='button'>
-            <span class='icon icon-fluent-select'></span>
-          </a>
-          <ul class='cms-fluent-selector-locales'></ul>
+        `<div class='cms-fluent-selector font-icon font-icon-caret-up-down'>
+          <select class='cms-fluent-selector-locales custom-select c-select'></select>
         </div>`
       );
-      $('.cms-fluent-selector-flydown', selector).prop('title', buttonTitle);
-      $('.cms-fluent-selector-flydown span', selector).text(buttonTitle);
 
       // Create options
       config.locales.forEach((locale) => {
-        const item = $(
-          "<li><a><span class='full-title'></span><span class='short-title'></span></a></li>"
-        );
-        $('.full-title', item).text(locale.title);
-        $('.short-title', item).text(locale.code.split('_')[0]);
-        $('a', item)
-          .attr('data-locale', locale.code)
-          .attr('title', locale.title);
-        $('.cms-fluent-selector-locales', selector).append(item);
+        const item = $('<option />')
+          .text(locale.title)
+          .prop('value', locale.code);
 
         // Display selected locale
         if (locale.code === config.locale) {
-          $('.text', selector).text(locale.title);
+          item.prop('selected', true);
         }
-      });
 
+        $('select', selector).append(item);
+      });
       this.prepend(selector);
     },
   });
@@ -136,31 +124,17 @@ window.jQuery.entwine('ss', ($) => {
   /**
    * Locale links
    */
-  $('.cms-fluent-selector .cms-fluent-selector-locales a').entwine({
+  $('.cms-fluent-selector .cms-fluent-selector-locales').entwine({
     /**
      * Takes the user to the selected locale
      */
-    onclick(event) {
+    onchange(event) {
       event.preventDefault();
-      const locale = this.attr('data-locale');
+      const locale = this.val();
       const url = urlForLocale(document.location.href, locale);
 
       // Load panel
       $('.cms-container').loadPanel(url);
-
-      const config = fluentConfig();
-      config.locales.forEach((localeObj) => {
-        if (localeObj.locale === locale) {
-          // Update selector
-          $('.cms-fluent-selector')
-            .removeClass('active')
-            .find('.text')
-            .text(localeObj.title);
-        }
-      });
-
-      // Close menu
-      $('.cms-fluent-selector').removeClass('active');
       return false;
     },
   });

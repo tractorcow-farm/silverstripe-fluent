@@ -40,7 +40,6 @@ class LocaleAdmin extends ModelAdmin
                     }, Locale::getCached()->toArray()),
                     'locale' => FluentState::singleton()->getLocale(),
                     'param' => FluentDirectorExtension::config()->get('query_param'),
-                    'title' => _t(__CLASS__.'.CHANGE_LOCALE', 'Change Locale'),
                 ]
             ]
         );

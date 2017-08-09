@@ -30,142 +30,35 @@ $fluent-color-modified: rgb(244, 145, 0);
 // Style of selector dropdown
 .cms-fluent-selector {
   display: block;
-  height: 40px;
+  height: auto;
   line-height: $grid-y * 3;
-  font-size: 13px;
   overflow: visible;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-  text-shadow: darken($fluent-color-base, 5%) 1px 1px 0;
-  color: $color-text-light;
-  padding: ($grid-y - 1) 5px ($grid-y - 1) 8px;
-  background-color: $fluent-color-base;
-  cursor: pointer;
+  padding: 5px;
   position: relative;
-  z-index: 100;
 
-  background-image: linear-gradient(
-    $fluent-color-base,
-    darken($fluent-color-base, 10%)
-  );
-
-  border-top: 1px solid lighten($fluent-color-base, 6%);
-  border-bottom: 1px solid darken($fluent-color-base, 20%);
-
-  .icon-fluent-translate {
-    display: inline-block;
-    float: left;
-    margin: 4px 10px 0 4px;
-    opacity: 0.7;
-    background-image: url('../images/menu-icon-16.png');
-  }
-
-  .text {
-    display: inline-block;
-    float: left;
-    max-width: 100px;
-    text-overflow: ellipsis;
-    overflow: hidden;
-  }
-
-  .cms-fluent-selector-flydown {
+  &:before {
+    color: white;
     position: absolute;
-    z-index: 140;
-    right: 0;
-    bottom: 0;
-    text-indent: -9999px;
-    width: 18px;
-    height: 18px;
-    padding: 0;
+    top: 50%;
+    line-height: 0;
+    right: 30px;
+    width: 0;
 
-    background-color: lighten($fluent-color-base, 2%);
-    border-left: 1px solid darken($fluent-color-base, 15%);
-    border-top: 1px solid darken($fluent-color-base, 15%);
-
-    background-image: linear-gradient(
-      lighten($fluent-color-base, 5%),
-      darken($fluent-color-base, 5%)
-    );
-
-    .icon-fluent-select{
-      width: 18px;
-      height: 18px;
-      display: block;
-      text-indent: -9999px;
-      opacity: 0.7;
-
-      background: {
-        image: url('../images/chosen-sprite.png');
-        repeat: no-repeat;
-        position: 1px -2px;
-      }
+    .cms-panel-layout.collapsed & {
+      right: 36px;
     }
   }
 
   .cms-fluent-selector-locales {
-    display: none;
-    position: absolute;
-    z-index: 120;
-    right: 0;
-    top: 37px;
-    width: 150px;
-    background-color: darken($fluent-color-base, 5%);
-    border: 1px solid darken($fluent-color-base, 15%);
-    border-right: 0px none;
-    padding: 0;
-    margin: 0;
+    background: #368b39;
+    border-radius: 5px;
+    border: 0 none;
+    color: white;
 
-    background-image: linear-gradient(
-      $fluent-color-base,
-      darken($fluent-color-base, 10%)
-    );
-
-    li {
-      padding: 2px 8px;
-      list-style: none;
-      font-size: 0.9em;
-      a {
-        display: block;
-        color: $color-text-light;
-
-        &:hover {
-          text-decoration: underline;
-        }
-
-        .short-title {
-          display: none;
-          text-transform: uppercase;
-          text-align: center;
-        }
-      }
-    }
-  }
-
-  &.active .cms-fluent-selector-locales {
-    display: block;
-  }
-
-  &:hover,
-  &.active {
-    text-decoration: none;
-    background-color: lighten($fluent-color-base, 2%);
-    border-bottom: 1px solid darken($fluent-color-base, 15%);
-    color: lighten($color-text-light, 5%);
-
-    background-image: linear-gradient(
-      lighten($fluent-color-base, 5%),
-      $fluent-color-base
-    );
-
-    .cms-fluent-selector-flydown {
-      background-color: lighten($fluent-color-base, 4%);
-      border-left: 1px solid darken($fluent-color-base, 10%);
-      border-top: 1px solid darken($fluent-color-base, 10%);
-
-      background-image: linear-gradient(
-        lighten($fluent-color-base, 10%),
-        $fluent-color-base
-      );
+    .cms-panel-layout.collapsed & {
+      // hide text on main dropdown when collapsed, show icon only
+      color: transparent;
+      padding: 2px;
     }
   }
 }
