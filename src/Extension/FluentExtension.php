@@ -25,16 +25,29 @@ class FluentExtension extends DataExtension
     /**
      * Class to provide default values
      *
-     * @var` string
+     * @config
+     * @var string
      */
     private static $defaultProvider = i18nDefaultProvider::class;
 
+    /**
+     * DB fields to be used added in when creating a localised version of the owner's table
+     *
+     * @config
+     * @var array
+     */
     private static $db_for_localised_table = [
         'ID' => 'PrimaryKey',
         'RecordID' => 'Int',
         'Locale' => 'Varchar(10)',
     ];
 
+    /**
+     * Indexes to create on a localised version of the owner's table
+     *
+     * @config
+     * @var array
+     */
     private static $indexes_for_localised_table = [
         'Fluent_Record' => [
             'type' => 'unique',
@@ -293,6 +306,20 @@ class FluentExtension extends DataExtension
             $expression = $this->localiseSelect($table, $field, $locale, $defaultProvider);
             $query->selectField($expression, $alias);
         }
+    }
+
+    /**
+     * Amend freshly created DataQuery objects with the current locale and frontend status
+     *
+     * @param SQLSelect $query
+     * @param DataQuery $dataQuery
+     */
+    public function augmentDataQueryCreation(SQLSelect $query, DataQuery $dataQuery)
+    {
+        $state = FluentState::singleton();
+        $dataQuery
+            ->setQueryParam('Fluent.Locale', $state->getLocale())
+            ->setQueryParam('Fluent.IsFrontend', $state->getIsFrontend());
     }
 
     /**
