@@ -20,6 +20,8 @@ class LocaleAdmin extends ModelAdmin
         Domain::class,
     ];
 
+    private static $menu_icon = 'fluent/client/dist/images/menu-icon-16.png';
+
     protected function init()
     {
         parent::init();

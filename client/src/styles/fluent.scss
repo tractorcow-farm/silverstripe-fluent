@@ -41,7 +41,7 @@ $fluent-color-modified: rgb(244, 145, 0);
     position: absolute;
     top: 50%;
     line-height: 0;
-    right: 30px;
+    right: 24px;
     width: 0;
 
     .cms-panel-layout.collapsed & {
@@ -50,10 +50,16 @@ $fluent-color-modified: rgb(244, 145, 0);
   }
 
   .cms-fluent-selector-locales {
-    background: #368b39;
+    background-color: #368b39;
+    background-image: url("../images/menu-icon-24-white.png");
+    background-position: 6px center;;
+    background-repeat: none;
+    background-size: 12px;
     border-radius: 5px;
     border: 0 none;
     color: white;
+    padding: 5px 21px 5px 24px;
+    width: 100%;
 
     .cms-panel-layout.collapsed & {
       // hide text on main dropdown when collapsed, show icon only
@@ -64,39 +70,39 @@ $fluent-color-modified: rgb(244, 145, 0);
 }
 
 .field.LocalisedField label.left {
-    &:after {
-      float: left;
-      content: url('../images/menu-icon-16-green.png');
-      display: block;
-      width: 16px;
-      height: 16px;
-      padding: 0 6px 0 0;
-      opacity: 0.7;
+  &:after {
+    float: left;
+    content: url('../images/menu-icon-16-green.png');
+    display: block;
+    width: 16px;
+    height: 16px;
+    padding: 0 6px 0 0;
+    opacity: 0.7;
+  }
+
+  span.fluent-locale-label {
+    color: #FFFFFF;
+    background: $fluent-color-base;
+    display: inline-block;
+    padding: 3px 3px 1px 3px;
+    margin-right: 6px;
+    border-radius: 2px;
+    font-size: 9px;
+    text-transform: uppercase;
+    font-weight: 100;
+    text-shadow: none;
+    line-height: 1;
+    cursor: default;
+
+    &.fluent-modified-value {
+      background: $fluent-color-modified;
+
+      &:hover {
+        cursor: pointer;
+        background: $fluent-color-base;
+      }
     }
-
-    span.fluent-locale-label {
-      color: #FFFFFF;
-      background: $fluent-color-base;
-      display: inline-block;
-      padding: 3px 3px 1px 3px;
-      margin-right: 6px;
-      border-radius: 2px;
-      font-size: 9px;
-      text-transform: uppercase;
-      font-weight: 100;
-      text-shadow: none;
-      line-height: 1;
-        cursor: default;
-
-        &.fluent-modified-value {
-            background: $fluent-color-modified;
-
-            &:hover {
-                cursor: pointer;
-                background: $fluent-color-base;
-            }
-        }
-    }
+  }
 }
 
 .jstree li.status-fluenthidden .item {
