@@ -12,7 +12,6 @@ TractorCow\Fluent\Model\Locale:
   es_US:
     Locale: es_US
     URLSegment: es-usa
-    IsDefault: 1
 
 TractorCow\Fluent\Model\Domain:
   kiwi:
@@ -21,3 +20,4 @@ TractorCow\Fluent\Model\Domain:
   spanish:
     Domain: fluent.es
     Locales: =>TractorCow\Fluent\Model\Locale.es_ES, =>TractorCow\Fluent\Model\Locale.es_US
+    DefaultLocale: =>TractorCow\Fluent\Model\Locale.es_US

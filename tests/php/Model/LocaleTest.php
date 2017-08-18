@@ -2,7 +2,6 @@
 
 namespace TractorCow\Fluent\Tests\Model;
 
-use SilverStripe\Core\Injector\Injector;
 use SilverStripe\Dev\SapphireTest;
 use TractorCow\Fluent\Model\Domain;
 use TractorCow\Fluent\Model\Locale;
@@ -10,6 +9,15 @@ use TractorCow\Fluent\Model\Locale;
 class LocaleTest extends SapphireTest
 {
     protected static $fixture_file = 'LocaleTest.yml';
+
+    public function setUp()
+    {
+        parent::setUp();
+
+        // Clear cache
+        Locale::clearCached();
+        Domain::clearCached();
+    }
 
     public function testGetDefaultWithoutArguments()
     {
@@ -22,11 +30,20 @@ class LocaleTest extends SapphireTest
 
     public function testGetDefaultWithDomainArgument()
     {
+        // spanish has_one default locale
+        /** @var Domain $domain */
         $domain = $this->objFromFixture(Domain::class, 'spanish');
         $result = Locale::getDefault($domain->Domain);
 
         $this->assertInstanceOf(Locale::class, $result);
-        $this->assertSame('es_US', $result->Locale, 'First Locale in Domain with IsDefault true is returned');
+        $this->assertSame('es_US', $result->Locale, 'Domain respects has_one to DefaultLocale');
+
+        // kiwi doesn't has_one to any default, but the IsDefault is a child
+        $domain2 = $this->objFromFixture(Domain::class, 'kiwi');
+        $result2 = Locale::getDefault($domain2->Domain);
+
+        $this->assertInstanceOf(Locale::class, $result2);
+        $this->assertSame('en_AU', $result2->Locale, 'First Locale in Domain with IsDefault true is returned');
     }
 
     /**

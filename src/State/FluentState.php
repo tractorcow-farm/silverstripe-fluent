@@ -2,9 +2,7 @@
 
 namespace TractorCow\Fluent\State;
 
-use SilverStripe\Control\HTTPRequest;
 use SilverStripe\Core\Injector\Injectable;
-use TractorCow\Fluent\Model\Domain;
 
 /**
  * Stores the current fluent state
@@ -30,14 +28,14 @@ class FluentState
     /**
      * Whether the website is running in domain segmentation mode
      *
-     * @var boolean
+     * @var bool
      */
     protected $isDomainMode;
 
     /**
      * Whether the request is for the frontend website
      *
-     * @var boolean
+     * @var bool
      */
     protected $isFrontend;
 
@@ -76,7 +74,7 @@ class FluentState
     /**
      * Set the current domain code
      *
-     * @param  string $domain
+     * @param string $domain
      * @return $this
      */
     public function setDomain($domain)
@@ -88,7 +86,7 @@ class FluentState
     /**
      * Get whether the website is in domain segmentation mode
      *
-     * @return boolean
+     * @return bool
      */
     public function getIsDomainMode()
     {
@@ -98,7 +96,7 @@ class FluentState
     /**
      * Set whether the website is in domain segmentation mode
      *
-     * @param  boolean $isDomainMode
+     * @param bool $isDomainMode
      * @return $this
      */
     public function setIsDomainMode($isDomainMode)
@@ -110,7 +108,7 @@ class FluentState
     /**
      * Get whether a request is for the frontend website or not
      *
-     * @return boolean
+     * @return bool
      */
     public function getIsFrontend()
     {
@@ -120,7 +118,7 @@ class FluentState
     /**
      * Set whether a request is for the frontend website or not
      *
-     * @param  boolean $isFrontend
+     * @param bool $isFrontend
      * @return $this
      */
     public function setIsFrontend($isFrontend)

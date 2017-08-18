@@ -1,0 +1,6 @@
+---
+Name: fluentdetection
+---
+SilverStripe\Core\Injector\Injector:
+  TractorCow\Fluent\State\LocaleDetector:
+    class: TractorCow\Fluent\State\BrowserLocaleDetector

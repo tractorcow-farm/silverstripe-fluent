@@ -7,12 +7,14 @@ use SilverStripe\Forms\DropdownField;
 use SilverStripe\Forms\FieldList;
 use SilverStripe\Forms\TextField;
 use SilverStripe\i18n\i18n;
+use SilverStripe\ORM\ArrayList;
 use SilverStripe\ORM\DataObject;
-use TractorCow\Fluent\State\LocaleDetector;
+use SilverStripe\ORM\DB;
 
 /**
+ * @property string $Title
  * @property string $Locale
- * @property string $Alias
+ * @property string $URLSegment
  * @property bool $IsDefault
  * @property int $ParentDefaultID
  * @method Locale ParentDefault()
@@ -34,18 +36,18 @@ class Locale extends DataObject
         'IsDefault',
     ];
 
-    private static $default_sort = '"Fluent_Locale"."Locale" ASC';
-
     /**
      * @config
      * @var array
      */
     private static $db = [
-        'Locale' => 'Varchar(10)',
         'Title' => 'Varchar(100)',
+        'Locale' => 'Varchar(10)',
         'URLSegment' => 'Varchar(100)',
         'IsDefault' => 'Boolean',
     ];
+
+    private static $default_sort = '"Fluent_Locale"."Locale" ASC';
 
     /**
      * @config
@@ -149,8 +151,8 @@ class Locale extends DataObject
                 ->setDescription(_t(
                     __CLASS__.'.IS_DEFAULT_DESCRIPTION',
                     <<<DESC
-Note: Default locale cannot have a fallback.
-Switching to a new default will copy content from the old locale to the new one.
+Note: Per-domain specific locale can be assigned on the Locales tab
+and will override this value for specific domains.
 DESC
                 )),
             DropdownField::create(
@@ -164,23 +166,23 @@ DESC
     /**
      * Get default locale
      *
-     * @param  string|null $domain If provided, the default locale for the given domain will be returned
+     * @param string|null|true $domain If provided, the default locale for the given domain will be returned.
+     * If true, then the current state domain will be used (if in domain mode).
      * @return Locale
      */
     public static function getDefault($domain = null)
     {
-        /** @var \SilverStripe\ORM\ArrayList $locales */
-        $locales = Locale::getCached();
-
-        // Optionally filter by domain
-        if ($domain) {
-            $domain = Domain::getCached()->filter('Domain', $domain)->first();
-            if ($domain && $domain->exists()) {
-                $locales = $domain->Locales();
+        // Get by domain if it exists and has a default
+        $domainObject = Domain::getByDomain($domain);
+        if ($domainObject) {
+            $default = $domainObject->DefaultLocale();
+            if ($default) {
+                return $default;
             }
         }
 
-        // If no default specified, treat first locale as default
+        // Get explicit or implicit default
+        $locales = static::getLocales();
         return $locales->filter('IsDefault', 1)->first()
             ?: $locales->first();
     }
@@ -192,8 +194,10 @@ DESC
      */
     public function getParent()
     {
-        $id = $this->ParentDefaultID;
-        return Locale::getCached()->byID($id);
+        if ($this->ParentDefaultID) {
+            return Locale::getCached()->byID($this->ParentDefaultID);
+        }
+        return null;
     }
 
     /**
@@ -219,5 +223,39 @@ DESC
     public function isLocale($locale)
     {
         return stripos(str_replace('_', '-', $locale), str_replace('_', '-', $this->Locale)) === 0;
+    }
+
+    /**
+     * Get available locales
+     *
+     * @param string|null|true $domain If provided, locales for the given domain will be returned.
+     * If true, then the current state domain will be used (if in domain mode).
+     * @return ArrayList
+     */
+    public static function getLocales($domain = null)
+    {
+        $locales = Locale::getCached();
+
+        // Optionally filter by domain
+        $domainObj = Domain::getByDomain($domain);
+        if ($domainObj) {
+            return $locales->filter('DomainID', $domainObj->ID);
+        }
+
+        return $locales;
+    }
+
+    public function onAfterWrite()
+    {
+        parent::onAfterWrite();
+
+        // If this is the default locale, remove default from other locases
+        if ($this->IsDefault) {
+            $table = $this->baseTable();
+            DB::prepared_query(
+                "UPDATE \"{$table}\" SET \"IsDefault\" = 0 WHERE \"ID\" != ?",
+                [ $this->ID ]
+            );
+        }
     }
 }
