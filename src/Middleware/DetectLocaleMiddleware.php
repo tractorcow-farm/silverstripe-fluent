@@ -75,7 +75,7 @@ class DetectLocaleMiddleware implements HTTPMiddleware
      * @param  HTTPRequest $request
      * @return string
      */
-    public function getLocale(HTTPRequest $request)
+    protected function getLocale(HTTPRequest $request)
     {
         // Check direct request from either routing params, or request (e.g. GET) vars, in that order
         $locale = $this->getParamLocale($request);
@@ -109,7 +109,7 @@ class DetectLocaleMiddleware implements HTTPMiddleware
      * @param HTTPRequest $request
      * @return null|string The locale, if available
      */
-    public function getPersistLocale(HTTPRequest $request)
+    protected function getPersistLocale(HTTPRequest $request)
     {
         $key = $this->getPersistKey();
 
@@ -140,7 +140,7 @@ class DetectLocaleMiddleware implements HTTPMiddleware
      * @param  string      $locale  Locale to assign
      * @return $this
      */
-    public function setPersistLocale(HTTPRequest $request, $locale)
+    protected function setPersistLocale(HTTPRequest $request, $locale)
     {
         $key = $this->getPersistKey();
 
@@ -169,7 +169,7 @@ class DetectLocaleMiddleware implements HTTPMiddleware
      *
      * @return string
      */
-    public function getPersistKey()
+    protected function getPersistKey()
     {
         $persistIds = static::config()->get('persist_ids');
         return FluentState::singleton()->getIsFrontend()

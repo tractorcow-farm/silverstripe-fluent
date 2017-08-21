@@ -17,6 +17,11 @@ use TractorCow\Fluent\State\FluentState;
  */
 class FluentExtension extends DataExtension
 {
+    /**
+     * The table suffix that will be applied to create localisation tables
+     *
+     * @var string
+     */
     const SUFFIX = 'Localised';
 
     /**
@@ -211,7 +216,7 @@ class FluentExtension extends DataExtension
 
         // Don't require table if no fields and not base class
         $localisedFields = $this->getLocalisedFields($class);
-        $localisedTable = $schema->tableName($class) . '_' . self::SUFFIX;
+        $localisedTable = $this->getLocalisedTable($schema->tableName($class));
         if (empty($localisedFields) && $class !== $baseClass) {
             DB::dont_require_table($localisedTable);
             return;
@@ -245,14 +250,12 @@ class FluentExtension extends DataExtension
         // Join all tables on the given locale code
         $tables = $this->getLocalisedTables();
         foreach ($tables as $table => $fields) {
-            $tableLocalised = $table . '_' . self::SUFFIX;
-
             // Join all items in ancestory
             $joinLocale = $locale;
             while ($joinLocale) {
-                $joinAlias = $tableLocalised . '_' . $joinLocale->Locale;
+                $joinAlias = $this->getLocalisedTable($table, $joinLocale->Locale);
                 $query->addLeftJoin(
-                    $tableLocalised,
+                    $this->getLocalisedTable($table),
                     "\"{$table}\".\"ID\" = \"{$joinAlias}\".\"RecordID\" AND \"{$joinAlias}\".\"Locale\" = ?",
                     $joinAlias,
                     20,
@@ -266,10 +269,9 @@ class FluentExtension extends DataExtension
         // On frontend, ensure at least one localised version exists in localised base table (404 otherwise)
         if (FluentState::singleton()->getIsFrontend()) {
             $wheres = [];
-            $baseTableLocalised = $this->owner->baseTable() . '_' . self::SUFFIX;
             $joinLocale = $locale;
             while ($joinLocale) {
-                $joinAlias = $baseTableLocalised . '_' . $joinLocale->Locale;
+                $joinAlias = $this->getLocalisedTable($this->owner->baseTable(), $joinLocale->Locale);
                 $wheres[] = "\"{$joinAlias}\".\"ID\" IS NOT NULL";
                 $joinLocale = $joinLocale->getParent();
             }
@@ -316,6 +318,22 @@ class FluentExtension extends DataExtension
     }
 
     /**
+     * Get the localised table name with the localised suffix and optionally with a locale suffix for aliases
+     *
+     * @param string $tableName
+     * @param string $locale
+     * @return string
+     */
+    public function getLocalisedTable($tableName, $locale = '')
+    {
+        $localisedTable = $tableName . '_' . self::SUFFIX;
+        if ($locale) {
+            $localisedTable .= '_' . $locale;
+        }
+        return $localisedTable;
+    }
+
+    /**
      * Generates a select fragment based on a field with a fallback
      *
      * @param string $table
@@ -325,13 +343,12 @@ class FluentExtension extends DataExtension
      */
     protected function localiseSelect($table, $field, Locale $locale)
     {
-        $tableLocalised = $table . '_' . self::SUFFIX;
         $joinLocale = $locale;
 
         // Build case for each locale down the chain
         $query = "CASE\n";
         while ($joinLocale) {
-            $joinAlias = $tableLocalised . '_' . $joinLocale->Locale;
+            $joinAlias = $this->getLocalisedTable($table, $joinLocale->Locale);
             $query .= "\tWHEN \"{$joinAlias}\".\"ID\" IS NOT NULL THEN \"{$joinAlias}\".\"{$field}\"\n";
             $joinLocale = $joinLocale->getParent();
         }

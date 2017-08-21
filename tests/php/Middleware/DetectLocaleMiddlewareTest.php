@@ -1,6 +1,6 @@
 <?php
 
-namespace TractorCow\Fluent\Middleware;
+namespace TractorCow\Fluent\Tests\Middleware;
 
 use SilverStripe\Control\Controller;
 use SilverStripe\Control\HTTPRequest;
@@ -23,7 +23,7 @@ class DetectLocaleMiddlewareTest extends SapphireTest
     protected function setUp()
     {
         parent::setUp();
-        $this->middleware = new DetectLocaleMiddleware;
+        $this->middleware = new Stub\DetectLocaleMiddlewareSpy;
 
         Config::modify()->set(FluentDirectorExtension::class, 'query_param', 'l');
 
@@ -89,7 +89,7 @@ class DetectLocaleMiddlewareTest extends SapphireTest
         $request = new HTTPRequest('GET', '/');
         FluentState::singleton()->setLocale('dummy');
 
-        $middleware = $this->getMockBuilder(DetectLocaleMiddleware::class)
+        $middleware = $this->getMockBuilder(Stub\DetectLocaleMiddlewareSpy::class)
             ->setMethods(['getLocale', 'setPersistLocale'])
             ->getMock();
 

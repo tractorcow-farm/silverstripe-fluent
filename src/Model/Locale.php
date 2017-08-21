@@ -249,7 +249,7 @@ DESC
     {
         parent::onAfterWrite();
 
-        // If this is the default locale, remove default from other locases
+        // If this is the default locale, remove default from other locales
         if ($this->IsDefault) {
             $table = $this->baseTable();
             DB::prepared_query(

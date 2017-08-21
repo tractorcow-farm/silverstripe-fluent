@@ -29,7 +29,7 @@ trait CachableModel
         }
 
         // Check if db is ready for this model to be queried
-        if (!static::databaseIsready()) {
+        if (!static::databaseIsReady()) {
             return ArrayList::create();
         }
 
