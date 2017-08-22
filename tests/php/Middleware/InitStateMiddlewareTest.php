@@ -1,6 +1,6 @@
 <?php
 
-namespace TractorCow\Fluent\Middleware;
+namespace TractorCow\Fluent\Tests\Middleware;
 
 use SilverStripe\Dev\SapphireTest;
 use SilverStripe\Control\HTTPRequest;

@@ -2,12 +2,10 @@
 
 namespace TractorCow\Fluent\Extension;
 
-use GoogleSitemapController;
 use SilverStripe\CMS\Controllers\ModelAsController;
 use SilverStripe\CMS\Controllers\RootURLController;
 use SilverStripe\Core\Config\Configurable;
 use SilverStripe\Core\Extension;
-use TractorCow\Fluent\Control\SitemapController;
 use TractorCow\Fluent\Model\Locale;
 
 /**
@@ -56,7 +54,7 @@ class FluentDirectorExtension extends Extension
      * Whether to force "domain mode"
      *
      * @config
-     * @var boolean
+     * @var bool
      */
     private static $force_domain = false;
 
@@ -70,10 +68,11 @@ class FluentDirectorExtension extends Extension
         $originalRules = $rules;
         $rules = $this->getExplicitRoutes();
 
+        // @todo - Build SitemapController after GoogleSitemap module is migrated to ss4
         // If Google sitemap module is installed then replace default controller with custom controller
-        if (class_exists(GoogleSitemapController::class)) {
-            $rules['sitemap.xml'] = SitemapController::class;
-        }
+        //if (class_exists(GoogleSitemapController::class)) {
+        //    $rules['sitemap.xml'] = SitemapController::class;
+        //}
 
         // Merge all other routes (maintain priority)
         foreach ($originalRules as $key => $route) {
@@ -82,12 +81,7 @@ class FluentDirectorExtension extends Extension
             }
         }
 
-        // Home page route
-        $rules[''] = [
-            'Controller' => RootURLController::class
-        ];
-
-        $defaultLocale = Locale::getDefault();
+        $defaultLocale = Locale::getDefault(true);
         if (!$defaultLocale) {
             return;
         }
@@ -95,7 +89,10 @@ class FluentDirectorExtension extends Extension
         // If we do not wish to detect the locale automatically, fix the home page route
         // to the default locale for this domain.
         if (!static::config()->get('detect_locale')) {
-            $rules[''][static::config()->get('query_param')] = $defaultLocale->Locale;
+            $rules[''] = [
+                'Controller' => RootURLController::class,
+                static::config()->get('query_param') => $defaultLocale->Locale,
+            ];
         }
 
         // If default locale doesn't have prefix, replace default route with
@@ -117,17 +114,18 @@ class FluentDirectorExtension extends Extension
     {
         $queryParam = static::config()->get('query_param');
         $rules = [];
+        /** @var Locale $localeObj */
         foreach (Locale::getCached() as $localeObj) {
-            $locale = $localeObj->Locale;
-            $url = $localeObj->URLSegment ?: $locale;
+            $locale = $localeObj->getLocale();
+            $url = $localeObj->getURLSegment();
 
             $rules[$url . '/$URLSegment!//$Action/$ID/$OtherID'] = [
                 'Controller' => ModelAsController::class,
-                $queryParam => $locale
+                $queryParam => $locale,
             ];
             $rules[$url] = [
                 'Controller' => RootURLController::class,
-                $queryParam => $locale
+                $queryParam => $locale,
             ];
         }
         return $rules;

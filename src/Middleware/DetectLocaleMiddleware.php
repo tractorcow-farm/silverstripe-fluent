@@ -6,7 +6,9 @@ use SilverStripe\Control\Cookie;
 use SilverStripe\Control\HTTPRequest;
 use SilverStripe\Control\Middleware\HTTPMiddleware;
 use SilverStripe\Core\Config\Configurable;
+use SilverStripe\Core\Injector\Injector;
 use TractorCow\Fluent\Extension\FluentDirectorExtension;
+use TractorCow\Fluent\Model\Domain;
 use TractorCow\Fluent\Model\Locale;
 use TractorCow\Fluent\State\FluentState;
 use TractorCow\Fluent\State\LocaleDetector;
@@ -73,33 +75,29 @@ class DetectLocaleMiddleware implements HTTPMiddleware
      * @param  HTTPRequest $request
      * @return string
      */
-    public function getLocale(HTTPRequest $request)
+    protected function getLocale(HTTPRequest $request)
     {
-        $state = FluentState::singleton();
-
         // Check direct request from either routing params, or request (e.g. GET) vars, in that order
-        $queryParam = FluentDirectorExtension::config()->get('query_param');
-        $locale = (string) $request->param($queryParam) ?: $request->requestVar($queryParam);
+        $locale = $this->getParamLocale($request);
+
+        // Check against domain (non-ambiguous locale only)
+        if (empty($locale)) {
+            $locale = $this->getDomainLocale();
+        }
 
         // Look for persisted locale
         if (empty($locale)) {
             $locale = $this->getPersistLocale($request);
         }
 
-        // Home page only: check for locale in browser headers
-        if (empty($locale) && $request->getURL() === '') {
-            $locale = LocaleDetector::singleton()->detectBrowserLocale($request);
+        // Use locale detector (if configured)
+        if (empty($locale)) {
+            $locale = $this->getDetectedLocale($request);
         }
 
-        // Fallback to default if empty or invalid (for this domain)
+        // Fallback to default if empty or invalid
         if (empty($locale) || !Locale::getByLocale($locale)) {
-            // If on the frontend, filter locales by the current domain
-            $domain = $state->getIsFrontend($request) ? $state->getDomain() : null;
-
-            /** @var Locale $localeObj */
-            if ($localeObj = Locale::getDefault($domain)) {
-                $locale = $localeObj->Locale;
-            }
+            $locale = $this->getDefaultLocale();
         }
 
         return (string) $locale;
@@ -108,18 +106,16 @@ class DetectLocaleMiddleware implements HTTPMiddleware
     /**
      * Gets the locale currently set within either the session or cookie.
      *
-     * @param  HTTPRequest $request
-     * @param  string      $key     ID to retrieve persistant locale from. Will automatically detect if omitted. See
-     *                              "persist_ids" config static.
-     * @return string|null          The locale, if available
+     * @param HTTPRequest $request
+     * @return null|string The locale, if available
      */
-    public function getPersistLocale(HTTPRequest $request, $key = null)
+    protected function getPersistLocale(HTTPRequest $request)
     {
-        $key = $this->getPersistKey($key);
+        $key = $this->getPersistKey();
 
         // Skip persist if key is unset
         if (empty($key)) {
-            return;
+            return null;
         }
 
         // check session then cookies
@@ -130,6 +126,8 @@ class DetectLocaleMiddleware implements HTTPMiddleware
         if ($locale = Cookie::get($key)) {
             return $locale;
         }
+
+        return null;
     }
 
     /**
@@ -140,17 +138,15 @@ class DetectLocaleMiddleware implements HTTPMiddleware
      *
      * @param  HTTPRequest $request
      * @param  string      $locale  Locale to assign
-     * @param  string      $key     ID to set the locale against. Will automatically detect if omitted. See
-     *                              "persist_ids" config static.
      * @return $this
      */
-    public function setPersistLocale(HTTPRequest $request, $locale, $key = null)
+    protected function setPersistLocale(HTTPRequest $request, $locale)
     {
-        $key = $this->getPersistKey($key);
+        $key = $this->getPersistKey();
 
         // Skip persist if key is unset
         if (empty($key)) {
-            return;
+            return $this;
         }
 
         // Save locale
@@ -160,9 +156,8 @@ class DetectLocaleMiddleware implements HTTPMiddleware
             $request->getSession()->clear($key);
         }
 
-        // Prevent unnecessarily excessive cookie assigment
-        if (!headers_sent() && (!isset($this->lastSetLocale[$key]) || $this->lastSetLocale[$key] !== $locale)) {
-            $this->lastSetLocale[$key] = $locale;
+        // Don't set cookie if headers already sent
+        if (!headers_sent()) {
             Cookie::set($key, $locale, static::config()->get('persist_cookie_expiry'), null, null, false, false);
         }
 
@@ -172,15 +167,101 @@ class DetectLocaleMiddleware implements HTTPMiddleware
     /**
      * Get the Fluent locale persistence key. See the "persist_ids" config static.
      *
-     * @param  string|null $key
      * @return string
      */
-    public function getPersistKey($key = null)
+    protected function getPersistKey()
     {
-        if (empty($key)) {
-            $persistIds = static::config()->get('persist_ids');
-            $key = FluentState::singleton()->getIsFrontend() ? $persistIds['frontend'] : $persistIds['cms'];
+        $persistIds = static::config()->get('persist_ids');
+        return FluentState::singleton()->getIsFrontend()
+            ? $persistIds['frontend']
+            : $persistIds['cms'];
+    }
+
+    /**
+     * Get locale from the query_param
+     *
+     * @param HTTPRequest $request
+     * @return mixed
+     */
+    protected function getParamLocale(HTTPRequest $request)
+    {
+        $queryParam = FluentDirectorExtension::config()->get('query_param');
+        $locale = (string)$request->param($queryParam) ?: $request->requestVar($queryParam);
+        return $locale;
+    }
+
+    /**
+     * Get locale from the domain, if the current domain has exactly one locale
+     *
+     * @return string
+     */
+    protected function getDomainLocale()
+    {
+        $state = FluentState::singleton();
+
+        // Ensure a domain is configured
+        if (!$state->getIsDomainMode()) {
+            return null;
         }
-        return $key;
+        $domain = $state->getDomain();
+        if (!$domain) {
+            return null;
+        }
+
+        // Get domain
+        $domainObj = Domain::getByDomain($domain);
+        if (!$domainObj) {
+            return null;
+        }
+
+        // If the current domain has exactly one locale, the locale is non-ambiguous
+        $locales = Locale::getCached()->filter('DomainID', $domainObj->ID);
+        if ($locales->count() === 1) {
+            return $locales->first();
+        }
+
+        return null;
+    }
+
+    /**
+     * Use the configured LocaleDetector to guess the locale
+     *
+     * @param HTTPRequest $request
+     * @return string
+     */
+    protected function getDetectedLocale(HTTPRequest $request)
+    {
+        // Only detect on home page (landing page)
+        if ($request->getURL() !== '') {
+            return null;
+        }
+        // Respect config disable
+        if (!FluentDirectorExtension::config()->get('detect_locale')) {
+            return null;
+        }
+
+        /** @var LocaleDetector $detector */
+        $detector = Injector::inst()->get(LocaleDetector::class);
+        $localeObj = $detector->detectLocale($request);
+        if ($localeObj) {
+            return $localeObj->getLocale();
+        }
+        return null;
+    }
+
+    /**
+     * Get default locale
+     *
+     * @return string
+     */
+    protected function getDefaultLocale()
+    {
+        // Get default from current domain
+        $localeObj = Locale::getDefault(true);
+        if ($localeObj) {
+            return $localeObj->Locale;
+        }
+
+        return null;
     }
 }

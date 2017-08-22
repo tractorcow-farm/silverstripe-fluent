@@ -35,10 +35,20 @@ class InitStateMiddleware implements HTTPMiddleware
         $state = FluentState::create();
         Injector::inst()->registerService($state, FluentState::class);
 
+        // Detect frontend
+        $isFrontend = $this->getIsFrontend($request);
+
+        // Only set domain mode on the frontend
+        $isDomainMode = $isFrontend ? $this->getIsDomainMode($request) : false;
+
+        // Don't set domain unless in domain mode
+        $domain = $isDomainMode ? Director::host($request) : null;
+
+        // Update state
         $state
-            ->setDomain(Director::host($request))
-            ->setIsFrontend($this->getIsFrontend($request))
-            ->setIsDomainMode($this->getIsDomainMode($request));
+            ->setIsFrontend($isFrontend)
+            ->setIsDomainMode($isDomainMode)
+            ->setDomain($domain);
 
         return $delegate($request);
     }
@@ -67,7 +77,7 @@ class InitStateMiddleware implements HTTPMiddleware
      * Determine whether the website is running in domain segmentation mode
      *
      * @param  HTTPRequest $request
-     * @return boolean
+     * @return bool
      */
     public function getIsDomainMode(HTTPRequest $request)
     {
