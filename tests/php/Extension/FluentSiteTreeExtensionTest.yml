@@ -1,0 +1,9 @@
+TractorCow\Fluent\Model\Locale:
+  nz:
+    Locale: en_NZ
+    Title: English (New Zealand)
+    URLSegment: newzealand
+  de:
+    Locale: de_DE
+    Title: German
+    URLSegment: german

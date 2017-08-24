@@ -511,4 +511,38 @@ class FluentExtension extends DataExtension
         }
         return null;
     }
+
+    /**
+     * Determine the link to this object given the specified $locale.
+     * Returns null for DataObjects that do not have a 'Link' function.
+     *
+     * @param string $locale
+     * @return string
+     */
+    public function LocaleLink($locale)
+    {
+        // Skip dataobjects that do not have the Link method
+        if (!$this->owner->hasMethod('Link')) {
+            return '';
+        }
+
+        // Return locale root url if unable to view this item in this locale
+        if ($this->owner->hasMethod('canViewInLocale') && !$this->owner->canViewInLocale($locale)) {
+            $localeObj = Locale::getByLocale($locale);
+            return $localeObj ? $localeObj->getBaseURL() : '';
+        }
+
+        // Mock locale and recalculate link
+        $id = $this->owner->ID;
+        $class = $this->owner->ClassName;
+        // @todo
+        // return Fluent::with_locale($locale, function () use ($id, $class, $locale) {
+        //     $link = DataObject::get($class)->byID($id)->Link();
+        //     // Prefix with domain if in cross-domain mode
+        //     if ($domain = Fluent::domain_for_locale($locale)) {
+        //         $link = Controller::join_links(Director::protocol().$domain, $link);
+        //     }
+        //     return $link;
+        // });
+    }
 }

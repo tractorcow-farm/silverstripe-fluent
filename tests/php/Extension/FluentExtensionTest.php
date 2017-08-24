@@ -2,15 +2,17 @@
 
 namespace TractorCow\Fluent\Tests\Extension;
 
-use SilverStripe\Dev\SapphireTest;
 use SilverStripe\CMS\Model\SiteTree;
+use SilverStripe\Dev\SapphireTest;
 use TractorCow\Fluent\Extension\FluentExtension;
 use TractorCow\Fluent\State\FluentState;
+use TractorCow\Fluent\Tests\Extension\Stub\FluentStubObject;
 
 class FluentExtensionTest extends SapphireTest
 {
     protected static $required_extensions = [
         SiteTree::class => [FluentExtension::class],
+        FluentStubObject::class => [FluentExtension::class],
     ];
 
     public function testFluentLocaleAndFrontendAreAddedToDataQuery()
@@ -29,5 +31,10 @@ class FluentExtensionTest extends SapphireTest
     {
         $this->assertSame('SiteTree_Localised', (new SiteTree)->getLocalisedTable('SiteTree'));
         $this->assertSame('SiteTree_Localised_FR', (new SiteTree)->getLocalisedTable('SiteTree', 'FR'));
+    }
+
+    public function testLocaleLinkReturnsEmptyWhenNoLinkMethodExists()
+    {
+        $this->assertSame('', (new FluentStubObject)->LocaleLink('foo'));
     }
 }
