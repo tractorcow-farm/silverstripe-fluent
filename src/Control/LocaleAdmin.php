@@ -15,6 +15,10 @@ class LocaleAdmin extends ModelAdmin
 
     private static $menu_title = 'Locales';
 
+    public $showImportForm = false;
+
+    public $showSearchForm = false;
+
     private static $managed_models = [
         Locale::class,
         Domain::class,

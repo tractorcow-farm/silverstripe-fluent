@@ -5,19 +5,24 @@ namespace TractorCow\Fluent\Model;
 use SilverStripe\Forms\CheckboxField;
 use SilverStripe\Forms\DropdownField;
 use SilverStripe\Forms\FieldList;
+use SilverStripe\Forms\GridField\GridField;
+use SilverStripe\Forms\GridField\GridFieldAddExistingAutocompleter;
+use SilverStripe\Forms\GridField\GridFieldConfig_RelationEditor;
+use SilverStripe\Forms\TabSet;
 use SilverStripe\Forms\TextField;
 use SilverStripe\i18n\i18n;
 use SilverStripe\ORM\ArrayList;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\DB;
+use Symbiote\GridFieldExtensions\GridFieldOrderableRows;
 
 /**
  * @property string $Title
  * @property string $Locale
  * @property string $URLSegment
  * @property bool $IsDefault
- * @property int $ParentDefaultID
- * @method Locale ParentDefault()
+ * @method FallbackLocale FallbackLocales()
+ * @method Locale Fallbacks()
  */
 class Locale extends DataObject
 {
@@ -54,8 +59,19 @@ class Locale extends DataObject
      * @var array
      */
     private static $has_one = [
-        'ParentDefault' => Locale::class,
         'Domain' => Domain::class,
+    ];
+
+    private static $has_many = [
+        'FallbackLocales' => FallbackLocale::class . '.Parent',
+    ];
+
+    private static $many_many = [
+        'Fallbacks' => [
+            'through' => FallbackLocale::class,
+            'from' => 'Parent',
+            'to' => 'Locale',
+        ],
     ];
 
     /**
@@ -124,43 +140,57 @@ class Locale extends DataObject
 
     public function getCMSFields()
     {
-        return FieldList::create(
-            DropdownField::create(
-                'Locale',
-                _t(__CLASS__.'.LOCALE', 'Locale'),
-                i18n::getData()->getLocales()
-            ),
-            TextField::create(
-                'Title',
-                _t(__CLASS__.'.LOCALE_TITLE', 'Title')
-            )->setAttribute('placeholder', $this->getDefaultTitle()),
-            TextField::create(
-                'URLSegment',
-                _t(__CLASS__.'.LOCALE_URL', 'URL Segment')
-            )->setAttribute('placeholder', $this->Locale),
-            DropdownField::create(
-                'ParentDefaultID',
-                _t(__CLASS__.'.DEFAULT', 'Fallback locale'),
-                Locale::get()->map('ID', 'Title')
-            )->setEmptyString(_t(__CLASS__.'.DEFAULT_NONE', '(none)')),
-            CheckboxField::create(
-                'IsDefault',
-                _t(__CLASS__.'.IS_DEFAULT', 'This is the default locale')
-            )
-                ->setAttribute('data-hides', 'ParentDefaultID')
-                ->setDescription(_t(
-                    __CLASS__.'.IS_DEFAULT_DESCRIPTION',
-                    <<<DESC
-Note: Per-domain specific locale can be assigned on the Locales tab
-and will override this value for specific domains.
+        $fields = FieldList::create(TabSet::create('Root'));
+
+        // Main tab
+        $fields->addFieldsToTab(
+            'Root.Main',
+            [
+                DropdownField::create(
+                    'Locale',
+                    _t(__CLASS__.'.LOCALE', 'Locale'),
+                    i18n::getData()->getLocales()
+                ),
+                TextField::create(
+                    'Title',
+                    _t(__CLASS__.'.LOCALE_TITLE', 'Title')
+                )->setAttribute('placeholder', $this->getDefaultTitle()),
+                TextField::create(
+                    'URLSegment',
+                    _t(__CLASS__.'.LOCALE_URL', 'URL Segment')
+                )->setAttribute('placeholder', $this->Locale),
+                CheckboxField::create(
+                    'IsDefault',
+                    _t(__CLASS__.'.IS_DEFAULT', 'This is the default locale')
+                )
+                    ->setAttribute('data-hides', 'ParentDefaultID')
+                    ->setDescription(_t(
+                        __CLASS__.'.IS_DEFAULT_DESCRIPTION',
+                        <<<DESC
+    Note: Per-domain specific locale can be assigned on the Locales tab
+    and will override this value for specific domains.
 DESC
-                )),
-            DropdownField::create(
-                'DomainID',
-                _t(__CLASS__.'.DOMAIN', 'Domain'),
-                Domain::get()->map('ID', 'Domain')
-            )->setEmptyString(_t(__CLASS__.'.DEFAULT_NONE', '(none)'))
+                    )),
+                DropdownField::create(
+                    'DomainID',
+                    _t(__CLASS__.'.DOMAIN', 'Domain'),
+                    Domain::get()->map('ID', 'Domain')
+                )->setEmptyString(_t(__CLASS__.'.DEFAULT_NONE', '(none)'))
+            ]
         );
+
+        // Add default selection
+        $defaultField = GridField::create(
+            'FallbackLocales',
+            _t(__CLASS__.'.FALLBACKS', 'Fallback Locales'),
+            $this->FallbackLocales(),
+            GridFieldConfig_RelationEditor::create()
+                ->removeComponentsByType(GridFieldAddExistingAutocompleter::class)
+                ->addComponent(new GridFieldOrderableRows('Sort'))
+        );
+        $fields->addFieldToTab('Root.Fallbacks', $defaultField);
+
+        return $fields;
     }
 
     /**
@@ -185,19 +215,6 @@ DESC
         $locales = static::getLocales();
         return $locales->filter('IsDefault', 1)->first()
             ?: $locales->first();
-    }
-
-    /**
-     * Get default for this locale
-     *
-     * @return Locale
-     */
-    public function getParent()
-    {
-        if ($this->ParentDefaultID) {
-            return Locale::getCached()->byID($this->ParentDefaultID);
-        }
-        return null;
     }
 
     /**
@@ -257,5 +274,26 @@ DESC
                 [ $this->ID ]
             );
         }
+    }
+
+    protected $chain = null;
+
+    /**
+     * Get chain of all locales that should be preferred when this locale is current
+     *
+     * @return ArrayList
+     */
+    public function getChain()
+    {
+        if ($this->chain) {
+            return $this->chain;
+        }
+
+        // Build list
+        $this->chain = ArrayList::create();
+        $this->chain->push($this);
+        $this->chain->merge($this->Fallbacks());
+
+        return $this->chain;
     }
 }

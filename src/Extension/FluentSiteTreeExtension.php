@@ -7,13 +7,4 @@ namespace TractorCow\Fluent\Extension;
  */
 class FluentSiteTreeExtension extends FluentVersionedExtension
 {
-    /**
-     * Mark this extension as versionable
-     *
-     * @config
-     * @var array
-     */
-    private static $versionableExtensions = [
-        self::class => [ self::SUFFIX ],
-    ];
 }

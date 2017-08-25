@@ -11,6 +11,10 @@
         {
             "name": "Damian Mooyman",
             "email": "damian.mooyman@gmail.com"
+        },
+        {
+            "name": "Robbie Averill",
+            "email": "robbie@silverstripe.com"
         }
     ],
     "support": {
@@ -18,7 +22,8 @@
     },
     "require": {
         "silverstripe/framework": "^4@dev",
-        "silverstripe/cms": "^4@dev"
+        "silverstripe/cms": "^4@dev",
+        "symbiote/silverstripe-gridfieldextensions": "^3@dev"
     },
     "require-dev": {
         "phpunit/phpunit": "^5.7",

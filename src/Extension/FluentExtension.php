@@ -9,6 +9,7 @@ use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\DataQuery;
 use SilverStripe\ORM\DB;
 use SilverStripe\ORM\Queries\SQLSelect;
+use Symfony\Component\Console\Exception\LogicException;
 use TractorCow\Fluent\Model\Locale;
 use TractorCow\Fluent\State\FluentState;
 
@@ -218,7 +219,7 @@ class FluentExtension extends DataExtension
         $localisedFields = $this->getLocalisedFields($class);
         $localisedTable = $this->getLocalisedTable($schema->tableName($class));
         if (empty($localisedFields) && $class !== $baseClass) {
-            DB::dont_require_table($localisedTable);
+            $this->augmentDatabaseDontRequire($localisedTable);
             return;
         }
 
@@ -228,18 +229,29 @@ class FluentExtension extends DataExtension
             $localisedFields
         );
         $indexes = $this->owner->config()->get('indexes_for_localised_table');
+        $this->augmentDatabaseRequireTable($localisedTable, $fields, $indexes);
+    }
+
+    protected function augmentDatabaseDontRequire($localisedTable)
+    {
+        DB::dont_require_table($localisedTable);
+    }
+
+    /**
+     * Require the given localisation table
+     *
+     * @param string $localisedTable
+     * @param array $fields
+     * @param array $indexes
+     */
+    protected function augmentDatabaseRequireTable($localisedTable, $fields, $indexes)
+    {
         DB::require_table($localisedTable, $fields, $indexes, false);
     }
 
     public function augmentSQL(SQLSelect $query, DataQuery $dataQuery = null)
     {
-        $localeCode = $dataQuery->getQueryParam('Fluent.Locale') ?: FluentState::singleton()->getLocale();
-        if (!$localeCode) {
-            return;
-        }
-
-        // Only rewrite if the locale is valid
-        $locale = Locale::getByLocale($localeCode);
+        $locale = $this->getDataQueryLocale($dataQuery);
         if (!$locale) {
             return;
         }
@@ -250,30 +262,26 @@ class FluentExtension extends DataExtension
         // Join all tables on the given locale code
         $tables = $this->getLocalisedTables();
         foreach ($tables as $table => $fields) {
+            $localisedTable = $this->getLocalisedTable($table);
             // Join all items in ancestory
-            $joinLocale = $locale;
-            while ($joinLocale) {
+            foreach($locale->getChain() as $joinLocale) {
                 $joinAlias = $this->getLocalisedTable($table, $joinLocale->Locale);
                 $query->addLeftJoin(
-                    $this->getLocalisedTable($table),
+                    $localisedTable,
                     "\"{$table}\".\"ID\" = \"{$joinAlias}\".\"RecordID\" AND \"{$joinAlias}\".\"Locale\" = ?",
                     $joinAlias,
                     20,
                     [ $joinLocale->Locale ]
                 );
-                // Join next parent
-                $joinLocale = $joinLocale->getParent();
             }
         }
 
         // On frontend, ensure at least one localised version exists in localised base table (404 otherwise)
         if (FluentState::singleton()->getIsFrontend()) {
             $wheres = [];
-            $joinLocale = $locale;
-            while ($joinLocale) {
+            foreach($locale->getChain() as $joinLocale) {
                 $joinAlias = $this->getLocalisedTable($this->owner->baseTable(), $joinLocale->Locale);
                 $wheres[] = "\"{$joinAlias}\".\"ID\" IS NOT NULL";
-                $joinLocale = $joinLocale->getParent();
             }
             $query->addWhereAny($wheres);
         }
@@ -300,6 +308,77 @@ class FluentExtension extends DataExtension
 
             $expression = $this->localiseSelect($table, $field, $locale);
             $query->selectField($expression, $alias);
+        }
+    }
+
+    public function onBeforeWrite()
+    {
+        // If any field is changed, mark entire record as changed
+        if ($this->owner->isChanged()) {
+            $this->owner->forceChange();
+        }
+    }
+
+    public function augmentWrite(&$manipulation)
+    {
+        $localeCode = $this->owner->getSourceQueryParam('Fluent.Locale') ?: FluentState::singleton()->getLocale();
+        if (!$localeCode) {
+            return;
+        }
+
+        // Only rewrite if the locale is valid
+        $locale = Locale::getByLocale($localeCode);
+        if (!$locale) {
+            return;
+        }
+
+        // Get all tables to translate fields for, and their respective field names
+        $includedTables = $this->getLocalisedTables();
+
+        // Iterate through each select clause, replacing each with the translated version
+        foreach ($manipulation as $table => $updates) {
+            // If this table doesn't have translated fields then skip
+            if (empty($includedTables[$table]) || empty($updates['fields'])) {
+                continue;
+            }
+
+            // Get ID field
+            $id = $updates['id']
+                ? $updates['id']
+                : $updates['fields']['ID'];
+            if (!$id) {
+                throw new LogicException("Missing record ID for table manipulation {$table}");
+            }
+
+            // Copy entire manipulation to the localised table
+            $localeTable = $this->getLocalisedTable($table);
+            $localisedUpdate = $updates;
+
+            // Filter fields by localised fields
+            $localisedUpdate['fields'] = array_intersect_key(
+                $updates['fields'],
+                array_combine($includedTables[$table], $includedTables[$table])
+            );
+            unset($localisedUpdate['fields']['id']);
+
+            // Skip if no fields are being saved
+            if (empty($localisedUpdate['fields'])) {
+                continue;
+            }
+
+            // Populate Locale / RecordID fields
+            $localisedUpdate['fields']['RecordID'] = $id;
+            $localisedUpdate['fields']['Locale'] = $locale->getLocale();
+
+            // Convert ID filter to RecordID / Locale
+            unset($localisedUpdate['id']);
+            $localisedUpdate['where'] = [
+                "\"{$localeTable}\".\"RecordID\"" => $id,
+                "\"{$localeTable}\".\"Locale\"" => $locale->getLocale(),
+            ];
+
+            // Save back modifications to the manipulation
+            $manipulation[$localeTable] = $localisedUpdate;
         }
     }
 
@@ -343,14 +422,11 @@ class FluentExtension extends DataExtension
      */
     protected function localiseSelect($table, $field, Locale $locale)
     {
-        $joinLocale = $locale;
-
         // Build case for each locale down the chain
         $query = "CASE\n";
-        while ($joinLocale) {
+        foreach($locale->getChain() as $joinLocale) {
             $joinAlias = $this->getLocalisedTable($table, $joinLocale->Locale);
             $query .= "\tWHEN \"{$joinAlias}\".\"ID\" IS NOT NULL THEN \"{$joinAlias}\".\"{$field}\"\n";
-            $joinLocale = $joinLocale->getParent();
         }
 
         // Note: In CMS only we fall back to value in root table (in case not yet migrated)
@@ -363,5 +439,23 @@ class FluentExtension extends DataExtension
         // Note: Extensions are responsible for SQL escaping
         $this->owner->invokeWithExtensions('updateLocaliseSelect', $query, $table, $field, $locale);
         return $query;
+    }
+
+    /**
+     * Get current locale from given dataquery
+     *
+     * @param DataQuery $dataQuery
+     * @return Locale
+     */
+    protected function getDataQueryLocale(DataQuery $dataQuery = null)
+    {
+        if (!$dataQuery) {
+            return null;
+        }
+        $localeCode = $dataQuery->getQueryParam('Fluent.Locale') ?: FluentState::singleton()->getLocale();
+        if ($localeCode) {
+            return Locale::getByLocale($localeCode);
+        }
+        return null;
     }
 }
