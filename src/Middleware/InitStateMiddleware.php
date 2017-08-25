@@ -33,7 +33,7 @@ class InitStateMiddleware implements HTTPMiddleware
     public function process(HTTPRequest $request, callable $delegate)
     {
         $state = FluentState::create();
-        Injector::inst()->registerService($state, FluentState::class);
+        Injector::inst()->registerService($state);
 
         // Detect frontend
         $isFrontend = $this->getIsFrontend($request);

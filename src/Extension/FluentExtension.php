@@ -533,16 +533,18 @@ class FluentExtension extends DataExtension
         }
 
         // Mock locale and recalculate link
-        $id = $this->owner->ID;
-        $class = $this->owner->ClassName;
-        // @todo
-        // return Fluent::with_locale($locale, function () use ($id, $class, $locale) {
-        //     $link = DataObject::get($class)->byID($id)->Link();
-        //     // Prefix with domain if in cross-domain mode
-        //     if ($domain = Fluent::domain_for_locale($locale)) {
-        //         $link = Controller::join_links(Director::protocol().$domain, $link);
-        //     }
-        //     return $link;
-        // });
+        return FluentState::singleton()->withState(function ($newState) use ($locale) {
+            $newState->setLocale($locale);
+
+            $link = DataObject::get($this->owner->ClassName)->byID($this->owner->ID)->Link();
+
+            // Prefix with domain if available
+            $localeObj = Locale::getByLocale($locale);
+            if ($localeObj && $localeObj->Domain()) {
+                $link = Controller::join_links(Director::protocol() . $localeObj->Domain()->Domain, $link);
+            }
+
+            return $link;
+        });
     }
 }
