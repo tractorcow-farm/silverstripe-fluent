@@ -111,13 +111,4 @@ class FluentVersionedExtension extends FluentExtension
                 throw new InvalidArgumentException("Bad value for query parameter Versioned.mode: {$versionedMode}");
         }
     }
-
-    public function augmentWrite(&$manipulation)
-    {
-        parent::augmentWrite($manipulation);
-
-        var_dump($manipulation);
-
-        return $manipulation;
-    }
 }
