@@ -159,7 +159,7 @@ class FluentExtension extends DataExtension
      */
     protected function getLocalisedTables()
     {
-        $includedTables = array();
+        $includedTables = [];
         $baseClass = $this->owner->baseClass();
         foreach ($this->owner->getClassAncestry() as $class) {
             // Skip classes without tables
@@ -311,14 +311,21 @@ class FluentExtension extends DataExtension
         }
     }
 
+    /**
+     * If any field is changed, mark entire record as changed
+     */
     public function onBeforeWrite()
     {
-        // If any field is changed, mark entire record as changed
         if ($this->owner->isChanged()) {
             $this->owner->forceChange();
         }
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @throws LogicException if the manipulation table's ID is missing
+     */
     public function augmentWrite(&$manipulation)
     {
         $localeCode = $this->owner->getSourceQueryParam('Fluent.Locale') ?: FluentState::singleton()->getLocale();
@@ -343,9 +350,7 @@ class FluentExtension extends DataExtension
             }
 
             // Get ID field
-            $id = $updates['id']
-                ? $updates['id']
-                : $updates['fields']['ID'];
+            $id = $updates['id'] ?: $updates['fields']['ID'];
             if (!$id) {
                 throw new LogicException("Missing record ID for table manipulation {$table}");
             }
@@ -445,7 +450,7 @@ class FluentExtension extends DataExtension
      * Get current locale from given dataquery
      *
      * @param DataQuery $dataQuery
-     * @return Locale
+     * @return Locale|null
      */
     protected function getDataQueryLocale(DataQuery $dataQuery = null)
     {
