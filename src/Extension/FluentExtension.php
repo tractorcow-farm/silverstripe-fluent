@@ -264,7 +264,7 @@ class FluentExtension extends DataExtension
         foreach ($tables as $table => $fields) {
             $localisedTable = $this->getLocalisedTable($table);
             // Join all items in ancestory
-            foreach($locale->getChain() as $joinLocale) {
+            foreach ($locale->getChain() as $joinLocale) {
                 $joinAlias = $this->getLocalisedTable($table, $joinLocale->Locale);
                 $query->addLeftJoin(
                     $localisedTable,
@@ -279,7 +279,7 @@ class FluentExtension extends DataExtension
         // On frontend, ensure at least one localised version exists in localised base table (404 otherwise)
         if (FluentState::singleton()->getIsFrontend()) {
             $wheres = [];
-            foreach($locale->getChain() as $joinLocale) {
+            foreach ($locale->getChain() as $joinLocale) {
                 $joinAlias = $this->getLocalisedTable($this->owner->baseTable(), $joinLocale->Locale);
                 $wheres[] = "\"{$joinAlias}\".\"ID\" IS NOT NULL";
             }
@@ -424,7 +424,7 @@ class FluentExtension extends DataExtension
     {
         // Build case for each locale down the chain
         $query = "CASE\n";
-        foreach($locale->getChain() as $joinLocale) {
+        foreach ($locale->getChain() as $joinLocale) {
             $joinAlias = $this->getLocalisedTable($table, $joinLocale->Locale);
             $query .= "\tWHEN \"{$joinAlias}\".\"ID\" IS NOT NULL THEN \"{$joinAlias}\".\"{$field}\"\n";
         }
