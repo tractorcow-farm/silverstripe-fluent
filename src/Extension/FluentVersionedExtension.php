@@ -193,7 +193,6 @@ class FluentVersionedExtension extends FluentExtension
         // Get all tables to translate fields for, and their respective field names
         $includedTables = $this->getLocalisedTables();
         foreach ($includedTables as $table => $localisedFields) {
-
             // Localise both _Versions and _Live writes
             foreach ([self::SUFFIX_LIVE, self::SUFFIX_VERSIONS] as $suffix) {
                 $versionedTable = $table . '_' . $suffix;
