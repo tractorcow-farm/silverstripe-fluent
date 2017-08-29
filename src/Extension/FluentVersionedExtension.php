@@ -7,18 +7,24 @@ use SilverStripe\ORM\DataQuery;
 use SilverStripe\ORM\DB;
 use SilverStripe\ORM\Queries\SQLSelect;
 use SilverStripe\Versioned\Versioned;
+use TractorCow\Fluent\Model\Locale;
 
 /**
  * Extension for versioned localised objects
+ *
+ * Important: If adding this to a custom object, this extension must be added AFTER the versioned extension.
+ * Use yaml `after` to enforce this
  */
 class FluentVersionedExtension extends FluentExtension
 {
     /**
-     * Table name suffixes
-     *
-     * @var string
+     * Live table suffix
      */
     const SUFFIX_LIVE = 'Live';
+
+    /**
+     * Versions table suffix
+     */
     const SUFFIX_VERSIONS = 'Versions';
 
     /**
@@ -119,7 +125,7 @@ class FluentVersionedExtension extends FluentExtension
      * @param array $tables
      * @param Locale $locale
      */
-    protected function rewriteVersionedTables(SQLSelect $query, array $tables, $locale)
+    protected function rewriteVersionedTables(SQLSelect $query, array $tables, Locale $locale)
     {
         foreach ($tables as $tableName => $fields) {
             // Rename to _Versions suffixed versions
@@ -166,6 +172,51 @@ class FluentVersionedExtension extends FluentExtension
         foreach ($tables as $table => $fields) {
             $localisedTable = $this->getLocalisedTable($table);
             $query->renameTable($localisedTable, $localisedTable . '_' . self::SUFFIX_LIVE);
+        }
+    }
+
+    /**
+     * Apply versioning to write
+     *
+     * @param array $manipulation
+     */
+    public function augmentWrite(&$manipulation)
+    {
+        parent::augmentWrite($manipulation);
+
+        // Only rewrite if the locale is valid
+        $locale = $this->getWriteLocale();
+        if (!$locale) {
+            return;
+        }
+
+        // Get all tables to translate fields for, and their respective field names
+        $includedTables = $this->getLocalisedTables();
+        foreach ($includedTables as $table => $localisedFields) {
+
+            // Localise both _Versions and _Live writes
+            foreach ([self::SUFFIX_LIVE, self::SUFFIX_VERSIONS] as $suffix) {
+                $versionedTable = $table . '_' . $suffix;
+                $localisedTable = $this->getLocalisedTable($table) . '_' . $suffix;
+
+                // Add extra case for "Version" column when localising Versions
+                $localisedVersionFields = $localisedFields;
+                if ($suffix === self::SUFFIX_VERSIONS) {
+                    $localisedVersionFields = array_merge(
+                        $localisedVersionFields,
+                        array_keys($this->defaultVersionsFields)
+                    );
+                }
+
+                // Rewrite manipulation
+                $this->localiseManipulationTable(
+                    $manipulation,
+                    $versionedTable,
+                    $localisedTable,
+                    $localisedVersionFields,
+                    $locale
+                );
+            }
         }
     }
 }

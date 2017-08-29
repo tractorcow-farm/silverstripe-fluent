@@ -9,7 +9,7 @@ use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\DataQuery;
 use SilverStripe\ORM\DB;
 use SilverStripe\ORM\Queries\SQLSelect;
-use Symfony\Component\Console\Exception\LogicException;
+use LogicException;
 use TractorCow\Fluent\Model\Locale;
 use TractorCow\Fluent\State\FluentState;
 
@@ -328,63 +328,91 @@ class FluentExtension extends DataExtension
      */
     public function augmentWrite(&$manipulation)
     {
-        $localeCode = $this->owner->getSourceQueryParam('Fluent.Locale') ?: FluentState::singleton()->getLocale();
-        if (!$localeCode) {
-            return;
-        }
-
-        // Only rewrite if the locale is valid
-        $locale = Locale::getByLocale($localeCode);
+        $locale = $this->getWriteLocale();
         if (!$locale) {
             return;
         }
 
         // Get all tables to translate fields for, and their respective field names
         $includedTables = $this->getLocalisedTables();
-
-        // Iterate through each select clause, replacing each with the translated version
-        foreach ($manipulation as $table => $updates) {
-            // If this table doesn't have translated fields then skip
-            if (empty($includedTables[$table]) || empty($updates['fields'])) {
-                continue;
-            }
-
-            // Get ID field
-            $id = $updates['id'] ?: $updates['fields']['ID'];
-            if (!$id) {
-                throw new LogicException("Missing record ID for table manipulation {$table}");
-            }
-
-            // Copy entire manipulation to the localised table
+        foreach ($includedTables as $table => $localisedFields) {
             $localeTable = $this->getLocalisedTable($table);
-            $localisedUpdate = $updates;
-
-            // Filter fields by localised fields
-            $localisedUpdate['fields'] = array_intersect_key(
-                $updates['fields'],
-                array_combine($includedTables[$table], $includedTables[$table])
+            $this->localiseManipulationTable(
+                $manipulation,
+                $table,
+                $localeTable,
+                $localisedFields,
+                $locale
             );
-            unset($localisedUpdate['fields']['id']);
-
-            // Skip if no fields are being saved
-            if (empty($localisedUpdate['fields'])) {
-                continue;
-            }
-
-            // Populate Locale / RecordID fields
-            $localisedUpdate['fields']['RecordID'] = $id;
-            $localisedUpdate['fields']['Locale'] = $locale->getLocale();
-
-            // Convert ID filter to RecordID / Locale
-            unset($localisedUpdate['id']);
-            $localisedUpdate['where'] = [
-                "\"{$localeTable}\".\"RecordID\"" => $id,
-                "\"{$localeTable}\".\"Locale\"" => $locale->getLocale(),
-            ];
-
-            // Save back modifications to the manipulation
-            $manipulation[$localeTable] = $localisedUpdate;
         }
+    }
+
+    /**
+     * Localise a database manipluation from one table to another
+     *
+     * @param array $manipulation
+     * @param string $table Table in manipulation to copy from
+     * @param string $localeTable Table to copy manipulation to
+     * @param array $localisedFields List of fields to filter write to
+     * @param Locale $locale
+     */
+    protected function localiseManipulationTable(&$manipulation, $table, $localeTable, $localisedFields, Locale $locale)
+    {
+        // Skip if manipulation table, or fields, are empty
+        if (empty($manipulation[$table]['fields'])) {
+            return;
+        }
+
+        // Get ID field
+        $updates = $manipulation[$table];
+        $id = $this->getManipulationRecordID($updates);
+        if (!$id) {
+            throw new LogicException("Missing record ID for table manipulation {$table}");
+        }
+
+        // Copy entire manipulation to the localised table
+        $localisedUpdate = $updates;
+
+        // Filter fields by localised fields
+        $localisedUpdate['fields'] = array_intersect_key(
+            $updates['fields'],
+            array_combine($localisedFields, $localisedFields)
+        );
+        unset($localisedUpdate['fields']['id']);
+
+        // Skip if no fields are being saved after filtering
+        if (empty($localisedUpdate['fields'])) {
+            return;
+        }
+
+        // Populate Locale / RecordID fields
+        $localisedUpdate['fields']['RecordID'] = $id;
+        $localisedUpdate['fields']['Locale'] = $locale->getLocale();
+
+        // Convert ID filter to RecordID / Locale
+        unset($localisedUpdate['id']);
+        $localisedUpdate['where'] = [
+            "\"{$localeTable}\".\"RecordID\"" => $id,
+            "\"{$localeTable}\".\"Locale\"" => $locale->getLocale(),
+        ];
+
+        // Save back modifications to the manipulation
+        $manipulation[$localeTable] = $localisedUpdate;
+    }
+
+    /**
+     * Get locale to write this record to
+     *
+     * @return null|Locale
+     */
+    protected function getWriteLocale()
+    {
+        $localeCode = $this->owner->getSourceQueryParam('Fluent.Locale') ?: FluentState::singleton()->getLocale();
+        if (!$localeCode) {
+            return null;
+        }
+
+        return Locale::getByLocale($localeCode);
     }
 
     /**
@@ -460,6 +488,26 @@ class FluentExtension extends DataExtension
         $localeCode = $dataQuery->getQueryParam('Fluent.Locale') ?: FluentState::singleton()->getLocale();
         if ($localeCode) {
             return Locale::getByLocale($localeCode);
+        }
+        return null;
+    }
+
+    /**
+     * Extract the RecordID value for the given write
+     *
+     * @param array $updates Updates for the current table
+     * @return null|int Record ID, or null if not found
+     */
+    protected function getManipulationRecordID($updates)
+    {
+        if (isset($updates['id'])) {
+            return $updates['id'];
+        }
+        if (isset($updates['fields']['ID'])) {
+            return $updates['fields']['ID'];
+        }
+        if (isset($updates['fields']['RecordID'])) {
+            return $updates['fields']['RecordID'];
         }
         return null;
     }
