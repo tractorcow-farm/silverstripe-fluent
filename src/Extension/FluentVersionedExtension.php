@@ -13,11 +13,44 @@ use SilverStripe\Versioned\Versioned;
  */
 class FluentVersionedExtension extends FluentExtension
 {
+    /**
+     * Table name suffixes
+     *
+     * @var string
+     */
+    const SUFFIX_LIVE = 'Live';
+    const SUFFIX_VERSIONS = 'Versions';
+
+    /**
+     * Default version table fields. _Versions has extra Version column.
+     *
+     * @var array
+     */
+    protected $defaultVersionsFields = [
+        'Version' => 'Int',
+    ];
+
+    /**
+     * Default version table indexes, including unique index to include Version column.
+     *
+     * @var array
+     */
+    protected $defaultVersionsIndexes = [
+        'Fluent_Record' => [
+            'type' => 'unique',
+            'columns' => [
+                'RecordID',
+                'Locale',
+                'Version',
+            ],
+        ],
+    ];
+
     protected function augmentDatabaseDontRequire($localisedTable)
     {
         DB::dont_require_table($localisedTable);
-        DB::dont_require_table($localisedTable.'_Live');
-        DB::dont_require_table($localisedTable.'_Versions');
+        DB::dont_require_table($localisedTable . '_' . self::SUFFIX_LIVE);
+        DB::dont_require_table($localisedTable . '_' . self::SUFFIX_VERSIONS);
     }
 
     protected function augmentDatabaseRequireTable($localisedTable, $fields, $indexes)
@@ -25,33 +58,23 @@ class FluentVersionedExtension extends FluentExtension
         DB::require_table($localisedTable, $fields, $indexes, false);
 
         // _Live record
-        DB::require_table($localisedTable . '_Live', $fields, $indexes, false);
+        DB::require_table($localisedTable . '_' . self::SUFFIX_LIVE, $fields, $indexes, false);
 
-        // _Versions has extra Version column
-        $versionsFields = array_merge(
-            ['Version' => 'Int'],
-            $fields
-        );
+        // Merge fields and indexes with Fluent defaults
+        $versionsFields = array_merge($this->defaultVersionsFields, $fields);
+        $versionsIndexes = array_merge($indexes, $this->defaultVersionsIndexes);
 
-        // Adjust unique index to include Version column as well
-        $versionsIndexes = array_merge(
-            $indexes,
-            [
-                'Fluent_Record' => [
-                    'type' => 'unique',
-                    'columns' => [
-                        'RecordID',
-                        'Locale',
-                        'Version',
-                    ],
-                ],
-            ]
-        );
-        DB::require_table($localisedTable . '_Versions', $versionsFields, $versionsIndexes, false);
+        DB::require_table($localisedTable . '_' . self::SUFFIX_VERSIONS, $versionsFields, $versionsIndexes, false);
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @throws InvalidArgumentException if an invalid versioned mode is provided
+     */
     public function augmentSQL(SQLSelect $query, DataQuery $dataQuery = null)
     {
+        /** @var Locale|null $locale */
         $locale = $this->getDataQueryLocale($dataQuery);
         if (!$locale) {
             return;
@@ -65,23 +88,16 @@ class FluentVersionedExtension extends FluentExtension
             return;
         }
 
-        $baseTable = $this->owner->baseTable();
         $tables = $this->getLocalisedTables();
         $versionedMode = $dataQuery->getQueryParam('Versioned.mode');
         switch ($versionedMode) {
             // Reading a specific stage (Stage or Live)
             case 'stage':
             case 'stage_unique':
-                // Check if we need to rewrite this table
+                // Rename all localised tables (note: alias remains unchanged). This is only done outside of draft.
                 $stage = $dataQuery->getQueryParam('Versioned.stage');
-                if ($stage === Versioned::DRAFT) {
-                    return;
-                }
-                // Rename all localised tables (note: alias remains unchanged)
-                foreach ($tables as $table => $fields) {
-                    $localisedTable = $this->getLocalisedTable($table);
-                    $stageTable = $localisedTable . '_Live';
-                    $query->renameTable($localisedTable, $stageTable);
+                if ($stage !== Versioned::DRAFT) {
+                    $this->renameLocalisedTables($query, $tables);
                 }
                 break;
             // Return all version instances
@@ -89,26 +105,67 @@ class FluentVersionedExtension extends FluentExtension
             case 'all_versions':
             case 'latest_versions':
             case 'version':
-                // Rewrite all joined tables
-                foreach ($tables as $table => $fields) {
-                    // Rename to _Versions suffixed versions
-                    $localisedTable = $this->getLocalisedTable($table);
-                    $query->renameTable($localisedTable, $localisedTable . '_Versions');
-
-                    // Update all joins to include Version as well as Locale / Record
-                    foreach ($locale->getChain() as $joinLocale) {
-                        $joinAlias = $this->getLocalisedTable($table, $joinLocale->Locale);
-                        $query->setJoinFilter(
-                            $joinAlias,
-                            "\"{$baseTable}_Versions\".\"RecordID\" = \"{$joinAlias}\".\"RecordID\" "
-                            . "AND \"{$joinAlias}\".\"Locale\" = ? "
-                            . "AND \"{$joinAlias}\".\"Version\" = \"{$baseTable}_Versions\".\"Version\""
-                        );
-                    }
-                }
+                $this->rewriteVersionedTables($query, $tables, $locale);
                 break;
             default:
                 throw new InvalidArgumentException("Bad value for query parameter Versioned.mode: {$versionedMode}");
+        }
+    }
+
+    /**
+     * Rewrite all joined tables
+     *
+     * @param SQLSelect $query
+     * @param array $tables
+     * @param Locale $locale
+     */
+    protected function rewriteVersionedTables(SQLSelect $query, array $tables, $locale)
+    {
+        foreach ($tables as $tableName => $fields) {
+            // Rename to _Versions suffixed versions
+            $localisedTable = $this->getLocalisedTable($tableName);
+            $query->renameTable($localisedTable, $localisedTable . '_' . self::SUFFIX_VERSIONS);
+
+            // Add the chain of locale fallbacks
+            $this->addLocaleFallbackChain($query, $tableName, $locale);
+        }
+    }
+
+    /**
+     * Update all joins to include Version as well as Locale / Record
+     *
+     * @param SQLSelect $query
+     * @param string $tableName
+     * @param Locale $locale
+     */
+    protected function addLocaleFallbackChain(SQLSelect $query, $tableName, Locale $locale)
+    {
+        $baseTable = $this->owner->baseTable();
+
+        foreach ($locale->getChain() as $joinLocale) {
+            /** @var Locale $joinLocale */
+            $joinAlias = $this->getLocalisedTable($tableName, $joinLocale->Locale);
+
+            $query->setJoinFilter(
+                $joinAlias,
+                "\"{$baseTable}_Versions\".\"RecordID\" = \"{$joinAlias}\".\"RecordID\" "
+                . "AND \"{$joinAlias}\".\"Locale\" = ? "
+                . "AND \"{$joinAlias}\".\"Version\" = \"{$baseTable}_" . self::SUFFIX_VERSIONS . "\".\"Version\""
+            );
+        }
+    }
+
+    /**
+     * Rename all localised tables to the "live" equivalent name (note: alias remains unchanged)
+     *
+     * @param SQLSelect $query
+     * @param array $tables
+     */
+    protected function renameLocalisedTables(SQLSelect $query, array $tables)
+    {
+        foreach ($tables as $table => $fields) {
+            $localisedTable = $this->getLocalisedTable($table);
+            $query->renameTable($localisedTable, $localisedTable . '_' . self::SUFFIX_LIVE);
         }
     }
 }
