@@ -34,7 +34,10 @@ class FluentSiteTreeExtension extends FluentVersionedExtension
         $linkingMode = $this->getLinkingMode($locale);
 
         // Check link
-        $link = $this->owner->LocaleLink($locale);
+        $link = FluentState::singleton()->withState(function ($newState) use ($locale) {
+            $newState->setLocale($locale);
+            return $this->owner->Link();
+        });
 
         // Store basic locale information
         return ArrayData::create([

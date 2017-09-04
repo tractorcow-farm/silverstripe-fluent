@@ -7,3 +7,8 @@ TractorCow\Fluent\Model\Locale:
     Locale: de_DE
     Title: German
     URLSegment: german
+
+Page:
+  nz-page:
+    Title: A Page
+    URLSegment: a-page

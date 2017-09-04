@@ -32,9 +32,4 @@ class FluentExtensionTest extends SapphireTest
         $this->assertSame('SiteTree_Localised', (new SiteTree)->getLocalisedTable('SiteTree'));
         $this->assertSame('SiteTree_Localised_FR', (new SiteTree)->getLocalisedTable('SiteTree', 'FR'));
     }
-
-    public function testLocaleLinkReturnsEmptyWhenNoLinkMethodExists()
-    {
-        $this->assertSame('', (new FluentStubObject)->LocaleLink('foo'));
-    }
 }

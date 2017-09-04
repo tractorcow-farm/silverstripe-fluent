@@ -22,7 +22,7 @@ class FluentDirectorExtension extends Extension
      * @config
      * @var bool
      */
-    private static $detect_locale = false;
+    private static $detect_locale = true;
 
     /**
      * Determine if the locale should be remembered across multiple sessions via cookies. If this is left on then
@@ -32,7 +32,7 @@ class FluentDirectorExtension extends Extension
      * @config
      * @var bool
      */
-    private static $remember_locale = false;
+    private static $remember_locale = true;
 
     /**
      * Request parameter to store the locale in
