@@ -135,7 +135,7 @@ class FluentState
      * @param callable $callback Callback to run. Will be passed the nested state as a parameter
      * @return mixed Result of callback
      */
-    public function withState($callback)
+    public function withState(callable $callback)
     {
         $newState = clone $this;
         try {

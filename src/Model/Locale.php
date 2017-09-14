@@ -2,6 +2,8 @@
 
 namespace TractorCow\Fluent\Model;
 
+use SilverStripe\Control\Controller;
+use SilverStripe\Control\Director;
 use SilverStripe\Forms\CheckboxField;
 use SilverStripe\Forms\DropdownField;
 use SilverStripe\Forms\FieldList;
@@ -73,6 +75,11 @@ class Locale extends DataObject
             'to' => 'Locale',
         ],
     ];
+
+    /**
+     * @var ArrayList
+     */
+    protected $chain = null;
 
     /**
      * Get internal title for this locale
@@ -239,7 +246,7 @@ DESC
      */
     public function isLocale($locale)
     {
-        return stripos(str_replace('_', '-', $locale), str_replace('_', '-', $this->Locale)) === 0;
+        return stripos(i18n::convert_rfc1766($locale), i18n::convert_rfc1766($this->Locale)) === 0;
     }
 
     /**
@@ -276,8 +283,6 @@ DESC
         }
     }
 
-    protected $chain = null;
-
     /**
      * Get chain of all locales that should be preferred when this locale is current
      *
@@ -295,5 +300,48 @@ DESC
         $this->chain->merge($this->Fallbacks());
 
         return $this->chain;
+    }
+
+    /**
+     * Fetch a native language string from the {@link i18n} class via the current locale code in the format "XX_xx". In
+     * the event a match cannot be found in any framework resource, an empty string is returned.
+     *
+     * @return string The native language string for the current locale e.g. "portugu&ecirc;s (Brazil)"
+     */
+    public function getNativeName()
+    {
+        $locales = i18n::getData();
+
+        // Attempts to fetch the native language string via the `i18n::$common_languages` array
+        if ($native = $locales->languageName($locales->langFromLocale($this->Locale))) {
+            return $native;
+        }
+
+        return '';
+    }
+
+    /**
+     * Determine the base URL within the current locale
+     *
+     * @return string
+     */
+    public function getBaseURL()
+    {
+        $base = Director::baseURL();
+
+        // Build domain-specific base URL
+        if ($this->Domain() && $this->Domain()->exists()) {
+            $base = Controller::join_links(Director::protocol() . $this->Domain()->Domain, $base);
+        }
+
+        $locale = $this->getLocale();
+        // Don't append locale to home page for default locale
+        $defaultLocaleObj = $this->getDefault($this->Domain()->Domain);
+        if ($defaultLocaleObj && $locale === $defaultLocaleObj->Locale) {
+            return $base;
+        }
+
+        // Append locale otherwise
+        return Controller::join_links($base, $this->getURLSegment(), '/');
     }
 }

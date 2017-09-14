@@ -2,14 +2,17 @@
 
 namespace TractorCow\Fluent\Extension;
 
+use LogicException;
+use SilverStripe\Control\Controller;
 use SilverStripe\Core\Config\Config;
 use SilverStripe\Core\Convert;
+use SilverStripe\CMS\Controllers\RootURLController;
 use SilverStripe\ORM\DataExtension;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\DataQuery;
 use SilverStripe\ORM\DB;
 use SilverStripe\ORM\Queries\SQLSelect;
-use LogicException;
+use TractorCow\Fluent\Extension\FluentDirectorExtension;
 use TractorCow\Fluent\Model\Locale;
 use TractorCow\Fluent\State\FluentState;
 
@@ -510,5 +513,64 @@ class FluentExtension extends DataExtension
             return $updates['fields']['RecordID'];
         }
         return null;
+    }
+
+    /**
+     * Add the current locale's URL segment to the start of the URL
+     *
+     * @param  string &$base
+     * @param  string &$action
+     * @return null
+     */
+    public function updateRelativeLink(&$base, &$action)
+    {
+        // Don't inject locale to subpages
+        if ($this->owner->ParentID && SiteTree::config()->nested_urls) {
+            return;
+        }
+        $state = FluentState::singleton();
+
+        // For blank/temp pages such as Security controller fallback to querystring
+        $locale = $state->getLocale();
+        if (!$this->owner->exists()) {
+            $base = Controller::join_links(
+                $base,
+                '?' . FluentDirectorExtension::config()->get('query_param') . '=' . urlencode($locale)
+            );
+            return;
+        }
+
+        if ($state->getIsDomainMode()) {
+            $currentDomain = Domain::getByDomain($state->getDomain());
+
+            // Check if this locale is the default for its own domain
+            if ($currentDomain
+                && $currentDomain->DefaultLocale()
+                && $currentDomain->DefaultLocale()->getLocale() === $locale
+            ) {
+                // For home page in the default locale, do not alter home URL
+                if ($base === null || $base === RootURLController::get_homepage_link()) {
+                    return;
+                }
+
+                // If default locale shouldn't have prefix, then don't add prefix
+                if (FluentDirectorExtension::config()->get('disable_default_prefix')) {
+                    return;
+                }
+
+                // For all pages on a domain where there is only a single locale,
+                // then the domain itself is sufficient to distinguish that domain
+                // See https://github.com/tractorcow/silverstripe-fluent/issues/75
+                if ($currentDomain->Locales()->count() === 1) {
+                    return;
+                }
+            }
+        }
+
+        // Simply join locale root with base relative URL
+        $localeObj = Locale::getByLocale($locale);
+        if ($localeObj) {
+            $base = Controller::join_links($localeObj->getURLSegment(), $base);
+        }
     }
 }

@@ -70,4 +70,27 @@ class LocaleTest extends SapphireTest
             ['en_NZ', 'fr-fr-1990', false],
         ];
     }
+
+    public function testGetNativeName()
+    {
+        $this->assertSame('Spanish', Locale::getByLocale('es_US')->getNativeName());
+    }
+
+    public function testGetBaseURLContainsDomainAndURLSegmentForNonDefaultLocale()
+    {
+        // es_ES has a domain but is not the default locale for that domain
+        $result = Locale::getByLocale('es_ES')->getBaseURL();
+
+        $this->assertContains('fluent.es', $result, "Locale's domain is in the URL");
+        $this->assertContains('/es/', $result, 'URL segment for non-default locale is in the URL');
+    }
+
+    public function testGetBaseURLOnlyContainsDomainForDefaultLocale()
+    {
+        // es_US has a domain and is the default
+        $result = Locale::getByLocale('es_US')->getBaseURL();
+
+        $this->assertContains('fluent.es', $result, "Locale's domain is in the URL");
+        $this->assertNotContains('/es-usa/', $result, 'URL segment is not in the URL for default locales');
+    }
 }
