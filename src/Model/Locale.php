@@ -17,14 +17,17 @@ use SilverStripe\ORM\ArrayList;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\DB;
 use Symbiote\GridFieldExtensions\GridFieldOrderableRows;
+use TractorCow\Fluent\State\FluentState;
 
 /**
  * @property string $Title
  * @property string $Locale
  * @property string $URLSegment
- * @property bool $IsDefault
+ * @property bool $IsGlobalDefault
+ * @property int $DomainID
  * @method FallbackLocale FallbackLocales()
  * @method Locale Fallbacks()
+ * @method Domain Domain() Raw SQL Domain (unfiltered by domain mode)
  */
 class Locale extends DataObject
 {
@@ -37,10 +40,11 @@ class Locale extends DataObject
     private static $plural_name = 'Locales';
 
     private static $summary_fields = [
-        'Title',
-        'Locale',
-        'URLSegment',
-        'IsDefault',
+        'Title' => 'Title',
+        'Locale' => 'Locale',
+        'URLSegment' => 'URL',
+        'IsGlobalDefault' => 'Global Default',
+        'Domain.Domain' => 'Domain',
     ];
 
     /**
@@ -51,7 +55,7 @@ class Locale extends DataObject
         'Title' => 'Varchar(100)',
         'Locale' => 'Varchar(10)',
         'URLSegment' => 'Varchar(100)',
-        'IsDefault' => 'Boolean',
+        'IsGlobalDefault' => 'Boolean',
     ];
 
     private static $default_sort = '"Fluent_Locale"."Locale" ASC';
@@ -167,8 +171,8 @@ class Locale extends DataObject
                     _t(__CLASS__.'.LOCALE_URL', 'URL Segment')
                 )->setAttribute('placeholder', $this->Locale),
                 CheckboxField::create(
-                    'IsDefault',
-                    _t(__CLASS__.'.IS_DEFAULT', 'This is the default locale')
+                    'IsGlobalDefault',
+                    _t(__CLASS__.'.IS_DEFAULT', 'This is the global default locale')
                 )
                     ->setAttribute('data-hides', 'ParentDefaultID')
                     ->setDescription(_t(
@@ -220,14 +224,25 @@ DESC
 
         // Get explicit or implicit default
         $locales = static::getLocales();
-        return $locales->filter('IsDefault', 1)->first()
+        return $locales->filter('IsGlobalDefault', 1)->first()
             ?: $locales->first();
     }
 
     /**
-     * Get object by locale code
+     * Get current locale object
      *
-     * @param string $locale
+     * @return Locale
+     */
+    public static function getCurrentLocale()
+    {
+        $locale = FluentState::singleton()->getLocale();
+        return static::getByLocale($locale);
+    }
+
+    /**
+     * Get object by locale code.
+     *
+     * @param string|Locale $locale
      * @return Locale
      */
     public static function getByLocale($locale)
@@ -235,7 +250,15 @@ DESC
         if (!$locale) {
             return null;
         }
-        return Locale::getCached()->filter('Locale', $locale)->first();
+
+        if ($locale instanceof Locale) {
+            return $locale;
+        }
+
+        // Get filtered locale
+        return Locale::getCached()
+            ->filter('Locale', $locale)
+            ->first();
     }
 
     /**
@@ -250,6 +273,47 @@ DESC
     }
 
     /**
+     * Check if this is the default (non-global).
+     * Use IsGlobalDefault check if global default otherwise.
+     *
+     * @return bool
+     */
+    public function getIsDefault()
+    {
+        // Get default for own domain
+        $default = static::getDefault($this->getDomain());
+
+        // Compare best default with current locale
+        return $default && ((int)$default->ID === (int)$this->ID);
+    }
+
+    /**
+     * Get domain if in domain mode
+     *
+     * @return Domain|null Domain found, or null if not in domain mode (or no domain)
+     */
+    public function getDomain()
+    {
+        if (FluentState::singleton()->getIsDomainMode() && $this->DomainID) {
+            return Domain::getCached()->byID($this->DomainID);
+        }
+        return null;
+    }
+
+    /**
+     * Determine if this locale is the sole locale on its domain,
+     * or globally if domain mode is disabled
+     *
+     * @return bool
+     */
+    public function getIsOnlyLocale()
+    {
+        // Get locales filtered by same domain (in domain mode)
+        $locales = $this->getSiblingLocales();
+        return $locales->count() < 2;
+    }
+
+    /**
      * Get available locales
      *
      * @param string|null|true $domain If provided, locales for the given domain will be returned.
@@ -258,15 +322,13 @@ DESC
      */
     public static function getLocales($domain = null)
     {
-        $locales = Locale::getCached();
-
         // Optionally filter by domain
         $domainObj = Domain::getByDomain($domain);
         if ($domainObj) {
-            return $locales->filter('DomainID', $domainObj->ID);
+            return $domainObj->getLocales();
         }
 
-        return $locales;
+        return Locale::getCached();
     }
 
     public function onAfterWrite()
@@ -274,10 +336,10 @@ DESC
         parent::onAfterWrite();
 
         // If this is the default locale, remove default from other locales
-        if ($this->IsDefault) {
+        if ($this->IsGlobalDefault) {
             $table = $this->baseTable();
             DB::prepared_query(
-                "UPDATE \"{$table}\" SET \"IsDefault\" = 0 WHERE \"ID\" != ?",
+                "UPDATE \"{$table}\" SET \"IsGlobalDefault\" = 0 WHERE \"ID\" != ?",
                 [ $this->ID ]
             );
         }
@@ -329,19 +391,31 @@ DESC
     {
         $base = Director::baseURL();
 
-        // Build domain-specific base URL
-        if ($this->Domain() && $this->Domain()->exists()) {
-            $base = Controller::join_links(Director::protocol() . $this->Domain()->Domain, $base);
+        // Prepend hostname for domain mode
+        $domain = $this->getDomain();
+        if ($domain) {
+            $base = Controller::join_links($domain->Link(), $base);
         }
 
-        $locale = $this->getLocale();
-        // Don't append locale to home page for default locale
-        $defaultLocaleObj = $this->getDefault($this->Domain()->Domain);
-        if ($defaultLocaleObj && $locale === $defaultLocaleObj->Locale) {
-            return $base;
+        // Append locale urlsegment if a non-default locale
+        if (!$this->getIsDefault()) {
+            $base = Controller::join_links($base, $this->getURLSegment(), '/');
         }
 
-        // Append locale otherwise
-        return Controller::join_links($base, $this->getURLSegment(), '/');
+        return $base;
+    }
+
+    /**
+     * Get other locales that appear alongside this (including self)
+     *
+     * @return ArrayList
+     */
+    public function getSiblingLocales()
+    {
+        $domain = $this->getDomain();
+        $locales = $domain
+            ? $domain->getLocales()
+            : Locale::getCached();
+        return $locales;
     }
 }

@@ -186,12 +186,8 @@ class DetectLocaleMiddleware implements HTTPMiddleware
     protected function getParamLocale(HTTPRequest $request)
     {
         $queryParam = FluentDirectorExtension::config()->get('query_param');
-        if (FluentDirectorExtension::config()->get('detect_locale')
-            && ($locale = $request->requestVar($queryParam))
-        ) {
-            return (string) $locale;
-        }
-        return (string) $request->param($queryParam);
+        $locale = (string)($request->param($queryParam) ?: $request->requestVar($queryParam));
+        return $locale;
     }
 
     /**

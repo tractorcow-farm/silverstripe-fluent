@@ -2,6 +2,7 @@
 
 namespace TractorCow\Fluent\Model;
 
+use SilverStripe\Control\Director;
 use SilverStripe\Forms\DropdownField;
 use SilverStripe\Forms\FieldList;
 use SilverStripe\Forms\GridField\GridField;
@@ -10,6 +11,7 @@ use SilverStripe\Forms\GridField\GridFieldDataColumns;
 use SilverStripe\Forms\Tab;
 use SilverStripe\Forms\TabSet;
 use SilverStripe\Forms\TextField;
+use SilverStripe\ORM\ArrayList;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\HasManyList;
 use TractorCow\Fluent\State\FluentState;
@@ -32,6 +34,7 @@ class Domain extends DataObject
     private static $summary_fields = [
         'Domain' => 'Domain',
         'DefaultLocaleTitle' => 'Default Locale',
+        'LocaleNames' => 'Locales',
     ];
 
     private static $db = [
@@ -113,9 +116,9 @@ class Domain extends DataObject
             }
         }
 
-        // Use IsDefault if this is a member of this locale, or the first in the list of children
+        // Use IsGlobalDefault if this is a member of this locale, or the first in the list of children
         $locales = Locale::getCached()->filter('DomainID', $this->ID);
-        return $locales->filter('IsDefault', 1)->first()
+        return $locales->filter('IsGlobalDefault', 1)->first()
             ?: $locales->first();
     }
 
@@ -135,7 +138,7 @@ class Domain extends DataObject
      * Get domain by the specifed hostname.
      * If `true` is passed, and the site is in domain mode, this will return current domain instead.
      *
-     * @param string|null|true $domain
+     * @param string|true|Domain $domain
      * @return Domain
      */
     public static function getByDomain($domain)
@@ -151,10 +154,34 @@ class Domain extends DataObject
             return null;
         }
 
+        if ($domain instanceof Domain) {
+            return $domain;
+        }
+
         // Get filtered domain
         return static::getCached()
             ->filter('Domain', $domain)
             ->first();
+    }
+
+    /**
+     * Get locales for this domain
+     *
+     * @return ArrayList
+     */
+    public function getLocales()
+    {
+        return Locale::getCached()->filter('DomainID', $this->ID);
+    }
+
+    /**
+     * Get comma separated list of locales
+     *
+     * @return string
+     */
+    public function getLocaleNames()
+    {
+        return implode(', ', $this->getLocales()->column('Locale'));
     }
 
     public function onBeforeWrite()
@@ -172,5 +199,15 @@ class Domain extends DataObject
         if (!$inList) {
             $this->DefaultLocaleID = 0;
         }
+    }
+
+    /**
+     * Get link to this domain
+     *
+     * @return string
+     */
+    public function Link()
+    {
+        return Director::protocol() . $this->Domain;
     }
 }
