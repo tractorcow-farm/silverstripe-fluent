@@ -8,14 +8,18 @@ use SilverStripe\Forms\CheckboxField;
 use SilverStripe\Forms\DropdownField;
 use SilverStripe\Forms\FieldList;
 use SilverStripe\Forms\GridField\GridField;
-use SilverStripe\Forms\GridField\GridFieldAddExistingAutocompleter;
-use SilverStripe\Forms\GridField\GridFieldConfig_RelationEditor;
+use SilverStripe\Forms\GridField\GridFieldButtonRow;
+use SilverStripe\Forms\GridField\GridFieldConfig;
+use SilverStripe\Forms\GridField\GridFieldDeleteAction;
+use SilverStripe\Forms\LiteralField;
 use SilverStripe\Forms\TabSet;
 use SilverStripe\Forms\TextField;
 use SilverStripe\i18n\i18n;
 use SilverStripe\ORM\ArrayList;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\DB;
+use Symbiote\GridFieldExtensions\GridFieldAddNewInlineButton;
+use Symbiote\GridFieldExtensions\GridFieldEditableColumns;
 use Symbiote\GridFieldExtensions\GridFieldOrderableRows;
 use TractorCow\Fluent\State\FluentState;
 
@@ -188,16 +192,41 @@ class Locale extends DataObject
             ]
         );
 
+        if ($this->exists()) {
+            $config = GridFieldConfig::create()
+                ->addComponents(
+                    new GridFieldButtonRow(),
+                    new GridFieldAddNewInlineButton(),
+                    new GridFieldOrderableRows('Sort'),
+                    $editable = new GridFieldEditableColumns(),
+                    new GridFieldDeleteAction()
+                );
+            $editable->setDisplayFields([
+                'LocaleID' => function () {
+                    return DropdownField::create(
+                        'LocaleID',
+                        _t(FallbackLocale::class . '.LOCALE', 'Locale'),
+                        Locale::getCached()->map('ID', 'Title')
+                    );
+                }
+            ]);
         // Add default selection
-        $defaultField = GridField::create(
-            'FallbackLocales',
-            _t(__CLASS__.'.FALLBACKS', 'Fallback Locales'),
-            $this->FallbackLocales(),
-            GridFieldConfig_RelationEditor::create()
-                ->removeComponentsByType(GridFieldAddExistingAutocompleter::class)
-                ->addComponent(new GridFieldOrderableRows('Sort'))
-        );
-        $fields->addFieldToTab('Root.Fallbacks', $defaultField);
+            $defaultField = GridField::create(
+                'FallbackLocales',
+                _t(__CLASS__.'.FALLBACKS', 'Fallback Locales'),
+                $this->FallbackLocales(),
+                $config
+            );
+            $fields->addFieldToTab('Root.Fallbacks', $defaultField);
+        } else {
+            $fields->addFieldToTab(
+                'Root.Fallbacks',
+                LiteralField::create(
+                    'UnsavedNotice',
+                    '<p>' . _t(__CLASS__ . '.UnsavedNotice', "You can add fallbacks once you've saved the locale.")
+                )
+            );
+        }
 
         return $fields;
     }

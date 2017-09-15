@@ -616,20 +616,26 @@ class FluentExtension extends DataExtension
         }
 
         // Return locale root url if unable to view this item in this locale
+        $defaultLink = $this->owner->BaseURLForLocale($locale);
         if ($this->owner->hasMethod('canViewInLocale') && !$this->owner->canViewInLocale($locale)) {
-            return $this->owner->BaseURLForLocale($locale);
+            return $defaultLink;
         }
 
-        return FluentState::singleton()->withState(function (FluentState $newState) use ($locale) {
+        return FluentState::singleton()->withState(function (FluentState $newState) use ($locale, $defaultLink) {
             $newState->setLocale($locale);
-            // Query new record in other locale
-            if ($this->owner->ID) {
-                $record = DataObject::get($this->owner->ClassName)->byID($this->owner->ID);
-                if ($record) {
-                    return $record->Link();
-                }
+            // Non-db records fall back to internal behaviour
+            if (!$this->owner->isInDB()) {
+                return $this->owner->Link();
             }
-            return $this->owner->Link();
+
+            // Reload this record in the correct locale
+            $record = DataObject::get($this->owner->ClassName)->byID($this->owner->ID);
+            if ($record) {
+                return $record->Link();
+            } else {
+                // may not be published in this locale
+                return $defaultLink;
+            }
         });
     }
 }
