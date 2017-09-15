@@ -8,6 +8,7 @@ use SilverStripe\Forms\FieldList;
 use SilverStripe\Forms\GridField\GridField;
 use SilverStripe\Forms\GridField\GridFieldConfig_RelationEditor;
 use SilverStripe\Forms\GridField\GridFieldDataColumns;
+use SilverStripe\Forms\LiteralField;
 use SilverStripe\Forms\Tab;
 use SilverStripe\Forms\TabSet;
 use SilverStripe\Forms\TextField;
@@ -65,6 +66,18 @@ class Domain extends DataObject
                 _t(__CLASS__.'.DOMAIN_HOSTNAME', 'Domain Hostname')
             )->setAttribute('placeholder', 'www.mydomain.com')
         );
+
+        if (!$this->exists()) {
+            // Don't allow relations to be added until the record itself is saved
+            $fields->addFieldToTab(
+                'Root.Locales',
+                LiteralField::create(
+                    'UnsavedNotice',
+                    '<p>' . _t(__CLASS__ . '.UnsavedNotice', "You can add locales once you've saved the domain.")
+                )
+            );
+            return $fields;
+        }
 
         // Don't show "Is Default" column, as this is not locale-specific default
         $localeConfig = GridFieldConfig_RelationEditor::create();
