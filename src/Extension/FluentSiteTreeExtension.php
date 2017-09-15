@@ -2,88 +2,91 @@
 
 namespace TractorCow\Fluent\Extension;
 
-use SilverStripe\Control\Director;
-use SilverStripe\i18n\i18n;
-use SilverStripe\ORM\ArrayList;
-use SilverStripe\View\ArrayData;
-use TractorCow\Fluent\Model\Locale;
-use TractorCow\Fluent\State\FluentState;
+use SilverStripe\CMS\Controllers\RootURLController;
+use SilverStripe\CMS\Model\SiteTree;
+use SilverStripe\Control\Controller;
 
 /**
  * Fluent extension for SiteTree
+ *
+ * @property FluentSiteTreeExtension|SiteTree $owner
  */
 class FluentSiteTreeExtension extends FluentVersionedExtension
 {
     /**
-     * Retrieves information about this object in the specified locale
+     * Add the current locale's URL segment to the start of the URL
      *
-     * @param string $locale The locale (code) information to request, or null to use the default locale
-     * @return ArrayData Mapped list of locale properties
+     * @param string &$base
+     * @param string &$action
      */
-    public function LocaleInformation($locale = null)
+    public function updateRelativeLink(&$base, &$action)
     {
-        // Check locale and get object
-        if ($locale) {
-            $localeObj = Locale::getByLocale($locale);
-        } else {
-            $localeObj = Locale::getDefault();
+        // Don't inject locale to subpages
+        if ($this->owner->ParentID && SiteTree::config()->nested_urls) {
+            return;
         }
-        $locale = $localeObj->getLocale();
 
-        // Check linking mode
-        $linkingMode = $this->getLinkingMode($locale);
+        // Get appropriate locale for this record
+        $localeObj = $this->getRecordLocale();
+        if (!$localeObj) {
+            return;
+        }
 
-        // Check link
-        $link = FluentState::singleton()->withState(function ($newState) use ($locale) {
-            $newState->setLocale($locale);
-            return $this->owner->Link();
-        });
+        // For blank/temp pages such as Security controller fallback to querystring
+        if (!$this->owner->exists()) {
+            $base = Controller::join_links(
+                $base,
+                '?' . FluentDirectorExtension::config()->get('query_param') . '=' . urlencode($localeObj->Locale)
+            );
+            return;
+        }
 
-        // Store basic locale information
-        return ArrayData::create([
-            'Locale' => $locale,
-            'LocaleRFC1766' => i18n::convert_rfc1766($locale),
-            'URLSegment' => $localeObj->getURLSegment(),
-            'Title' => $localeObj->getTitle(),
-            'LanguageNative' => $localeObj->getNativeName(),
-            'Language' => i18n::getData()->langFromLocale($locale),
-            'Link' => $link,
-            'AbsoluteLink' => $link ? Director::absoluteURL($link) : null,
-            'LinkingMode' => $linkingMode
-        ]);
+        // Check if this locale is the default for its own domain
+        if ($localeObj->getIsDefault()) {
+            // For home page in the default locale, do not alter home URL
+            if ($base === null || $base === RootURLController::get_homepage_link()) {
+                return;
+            }
+
+            // If default locale shouldn't have prefix, then don't add prefix
+            if (FluentDirectorExtension::config()->get('disable_default_prefix')) {
+                return;
+            }
+
+            // For all pages on a domain where there is only a single locale,
+            // then the domain itself is sufficient to distinguish that domain
+            // See https://github.com/tractorcow/silverstripe-fluent/issues/75
+            if ($localeObj->getIsOnlyLocale()) {
+                return;
+            }
+        }
+
+        // Simply join locale root with base relative URL
+        $base = Controller::join_links($localeObj->getURLSegment(), $base);
     }
 
     /**
-     * Templatable list of all locales
+     * Update link to include hostname if in domain mode
      *
-     * @return ArrayList
+     * @param string $link root-relative url (includes baseurl)
+     * @param string $action
+     * @param string $relativeLink
      */
-    public function Locales()
+    public function updateLink(&$link, &$action, &$relativeLink)
     {
-        $data = [];
-        foreach (Locale::getCached() as $localeObj) {
-            /** @var Locale $localeObj */
-            $data[] = $this->owner->LocaleInformation($localeObj->getLocale());
-        }
-        return ArrayList::create($data);
-    }
-
-    /**
-     * Return the linking mode for the current locale and object
-     *
-     * @param string $locale
-     * @return string
-     */
-    public function getLinkingMode($locale)
-    {
-        $linkingMode = 'link';
-
-        if ($this->owner->hasMethod('canViewInLocale') && !$this->owner->canViewInLocale($locale)) {
-            $linkingMode = 'invalid';
-        } elseif ($locale === FluentState::singleton()->getLocale()) {
-            $linkingMode = 'current';
+        // Get appropriate locale for this record
+        $localeObj = $this->getRecordLocale();
+        if (!$localeObj) {
+            return;
         }
 
-        return $linkingMode;
+        // Don't rewrite outside of domain mode
+        $domain = $localeObj->getDomain();
+        if (!$domain) {
+            return;
+        }
+
+        // Prefix with domain
+        $link = Controller::join_links($domain->Link(), $link);
     }
 }

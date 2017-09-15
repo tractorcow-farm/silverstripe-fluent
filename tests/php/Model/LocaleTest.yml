@@ -16,8 +16,12 @@ TractorCow\Fluent\Model\Locale:
 TractorCow\Fluent\Model\Domain:
   kiwi:
     Domain: fluent.co.nz
-    Locales: =>TractorCow\Fluent\Model\Locale.en_NZ, =>TractorCow\Fluent\Model\Locale.en_AU
+    Locales:
+      - =>TractorCow\Fluent\Model\Locale.en_NZ
+      - =>TractorCow\Fluent\Model\Locale.en_AU
   spanish:
     Domain: fluent.es
-    Locales: =>TractorCow\Fluent\Model\Locale.es_ES, =>TractorCow\Fluent\Model\Locale.es_US
+    Locales:
+      - =>TractorCow\Fluent\Model\Locale.es_ES
+      - =>TractorCow\Fluent\Model\Locale.es_US
     DefaultLocale: =>TractorCow\Fluent\Model\Locale.es_US

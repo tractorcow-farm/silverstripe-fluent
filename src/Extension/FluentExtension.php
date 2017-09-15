@@ -3,21 +3,24 @@
 namespace TractorCow\Fluent\Extension;
 
 use LogicException;
-use SilverStripe\Control\Controller;
+use SilverStripe\Control\Director;
 use SilverStripe\Core\Config\Config;
 use SilverStripe\Core\Convert;
-use SilverStripe\CMS\Controllers\RootURLController;
+use SilverStripe\i18n\i18n;
+use SilverStripe\ORM\ArrayList;
 use SilverStripe\ORM\DataExtension;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\DataQuery;
 use SilverStripe\ORM\DB;
 use SilverStripe\ORM\Queries\SQLSelect;
-use TractorCow\Fluent\Extension\FluentDirectorExtension;
+use SilverStripe\View\ArrayData;
 use TractorCow\Fluent\Model\Locale;
 use TractorCow\Fluent\State\FluentState;
 
 /**
  * Basic fluent extension
+ *
+ * @property FluentSiteTreeExtension|DataObject $owner
  */
 class FluentExtension extends DataExtension
 {
@@ -331,7 +334,7 @@ class FluentExtension extends DataExtension
      */
     public function augmentWrite(&$manipulation)
     {
-        $locale = $this->getWriteLocale();
+        $locale = $this->getRecordLocale();
         if (!$locale) {
             return;
         }
@@ -401,21 +404,6 @@ class FluentExtension extends DataExtension
 
         // Save back modifications to the manipulation
         $manipulation[$localeTable] = $localisedUpdate;
-    }
-
-    /**
-     * Get locale to write this record to
-     *
-     * @return null|Locale
-     */
-    protected function getWriteLocale()
-    {
-        $localeCode = $this->owner->getSourceQueryParam('Fluent.Locale') ?: FluentState::singleton()->getLocale();
-        if (!$localeCode) {
-            return null;
-        }
-
-        return Locale::getByLocale($localeCode);
     }
 
     /**
@@ -496,6 +484,23 @@ class FluentExtension extends DataExtension
     }
 
     /**
+     * Get locale this record was originally queried from, or belongs to
+     *
+     * @return Locale|null
+     */
+    protected function getRecordLocale()
+    {
+        $localeCode = $this->owner->getSourceQueryParam('Fluent.Locale');
+        if ($localeCode) {
+            $locale = Locale::getByLocale($localeCode);
+            if ($locale) {
+                return $locale;
+            }
+        }
+        return Locale::getCurrentLocale();
+    }
+
+    /**
      * Extract the RecordID value for the given write
      *
      * @param array $updates Updates for the current table
@@ -516,61 +521,115 @@ class FluentExtension extends DataExtension
     }
 
     /**
-     * Add the current locale's URL segment to the start of the URL
+     * Templatable list of all locales
      *
-     * @param  string &$base
-     * @param  string &$action
-     * @return null
+     * @return ArrayList
      */
-    public function updateRelativeLink(&$base, &$action)
+    public function Locales()
     {
-        // Don't inject locale to subpages
-        if ($this->owner->ParentID && SiteTree::config()->nested_urls) {
-            return;
+        $data = [];
+        foreach (Locale::getCached() as $localeObj) {
+            /** @var Locale $localeObj */
+            $data[] = $this->owner->LocaleInformation($localeObj->getLocale());
         }
-        $state = FluentState::singleton();
+        return ArrayList::create($data);
+    }
+    /**
+     * Retrieves information about this object in the specified locale
+     *
+     * @param string $locale The locale (code) information to request, or null to use the default locale
+     * @return ArrayData Mapped list of locale properties
+     */
+    public function LocaleInformation($locale = null)
+    {
+        // Check locale and get object
+        if ($locale) {
+            $localeObj = Locale::getByLocale($locale);
+        } else {
+            $localeObj = Locale::getDefault();
+        }
+        $locale = $localeObj->getLocale();
 
-        // For blank/temp pages such as Security controller fallback to querystring
-        $locale = $state->getLocale();
-        if (!$this->owner->exists()) {
-            $base = Controller::join_links(
-                $base,
-                '?' . FluentDirectorExtension::config()->get('query_param') . '=' . urlencode($locale)
-            );
-            return;
+        // Check linking mode
+        $linkingMode = $this->getLinkingMode($locale);
+
+        // Check link
+        $link = $this->LocaleLink($locale);
+
+        // Store basic locale information
+        return ArrayData::create([
+            'Locale' => $locale,
+            'LocaleRFC1766' => i18n::convert_rfc1766($locale),
+            'URLSegment' => $localeObj->getURLSegment(),
+            'Title' => $localeObj->getTitle(),
+            'LanguageNative' => $localeObj->getNativeName(),
+            'Language' => i18n::getData()->langFromLocale($locale),
+            'Link' => $link,
+            'AbsoluteLink' => $link ? Director::absoluteURL($link) : null,
+            'LinkingMode' => $linkingMode
+        ]);
+    }
+
+    /**
+     * Return the linking mode for the current locale and object
+     *
+     * @param string $locale
+     * @return string
+     */
+    public function getLinkingMode($locale)
+    {
+        if ($this->owner->hasMethod('canViewInLocale') && !$this->owner->canViewInLocale($locale)) {
+            return 'invalid';
         }
 
-        if ($state->getIsDomainMode()) {
-            $currentDomain = Domain::getByDomain($state->getDomain());
+        if ($locale === FluentState::singleton()->getLocale()) {
+            return 'current';
+        }
 
-            // Check if this locale is the default for its own domain
-            if ($currentDomain
-                && $currentDomain->DefaultLocale()
-                && $currentDomain->DefaultLocale()->getLocale() === $locale
-            ) {
-                // For home page in the default locale, do not alter home URL
-                if ($base === null || $base === RootURLController::get_homepage_link()) {
-                    return;
-                }
+        return 'link';
+    }
 
-                // If default locale shouldn't have prefix, then don't add prefix
-                if (FluentDirectorExtension::config()->get('disable_default_prefix')) {
-                    return;
-                }
+    /**
+     * Determine the baseurl within a specified $locale.
+     *
+     * @param string $locale Locale
+     * @return string
+     */
+    public function BaseURLForLocale($locale)
+    {
+        $localeObject = Locale::getByLocale($locale);
+        if (!$localeObject) {
+            return null;
+        }
+        return $localeObject->getBaseURL();
+    }
 
-                // For all pages on a domain where there is only a single locale,
-                // then the domain itself is sufficient to distinguish that domain
-                // See https://github.com/tractorcow/silverstripe-fluent/issues/75
-                if ($currentDomain->Locales()->count() === 1) {
-                    return;
+    /**
+     * @param string $locale
+     * @return string
+     */
+    public function LocaleLink($locale)
+    {
+        // Skip dataobjects that do not have the Link method
+        if (!$this->owner->hasMethod('Link')) {
+            return null;
+        }
+
+        // Return locale root url if unable to view this item in this locale
+        if ($this->owner->hasMethod('canViewInLocale') && !$this->owner->canViewInLocale($locale)) {
+            return $this->owner->BaseURLForLocale($locale);
+        }
+
+        return FluentState::singleton()->withState(function (FluentState $newState) use ($locale) {
+            $newState->setLocale($locale);
+            // Query new record in other locale
+            if ($this->owner->ID) {
+                $record = DataObject::get($this->owner->ClassName)->byID($this->owner->ID);
+                if ($record) {
+                    return $record->Link();
                 }
             }
-        }
-
-        // Simply join locale root with base relative URL
-        $localeObj = Locale::getByLocale($locale);
-        if ($localeObj) {
-            $base = Controller::join_links($localeObj->getURLSegment(), $base);
-        }
+            return $this->owner->Link();
+        });
     }
 }
