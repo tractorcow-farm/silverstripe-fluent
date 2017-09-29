@@ -177,10 +177,8 @@ class Locale extends DataObject
                     ->setAttribute('data-hides', 'ParentDefaultID')
                     ->setDescription(_t(
                         __CLASS__.'.IS_DEFAULT_DESCRIPTION',
-                        <<<DESC
-    Note: Per-domain specific locale can be assigned on the Locales tab
-    and will override this value for specific domains.
-DESC
+                        'Note: Per-domain specific locale can be assigned on the Locales tab'
+                        . ' and will override this value for specific domains.'
                     )),
                 DropdownField::create(
                     'DomainID',
