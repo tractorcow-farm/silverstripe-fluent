@@ -41,6 +41,10 @@
             "TractorCow\\Fluent\\Tests\\": "tests/"
         }
     },
+    "scripts": {
+        "lint": "phpcs src/ tests/php/",
+        "lint-clean": "phpcbf src/ tests/php/"
+    },
     "prefer-stable": true,
     "minimum-stability": "dev"
 }
