@@ -12,6 +12,7 @@ use SilverStripe\ORM\DataExtension;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\DataQuery;
 use SilverStripe\ORM\DB;
+use SilverStripe\ORM\Queries\SQLConditionGroup;
 use SilverStripe\ORM\Queries\SQLSelect;
 use SilverStripe\View\ArrayData;
 use TractorCow\Fluent\Model\Locale;
@@ -315,6 +316,38 @@ class FluentExtension extends DataExtension
             $expression = $this->localiseSelect($table, $field, $locale);
             $query->selectField($expression, $alias);
         }
+
+        // Build all replacements for where conditions
+        $conditionSearch = [];
+        $conditionReplace = [];
+        foreach ($tables as $table => $fields) {
+            foreach ($fields as $field) {
+                $conditionSearch[] = "\"{$table}\".\"{$field}\"";
+                $conditionReplace[] = $this->localiseCondition($table, $field, $locale);
+            }
+        }
+
+        // Rewrite where conditions
+        $where = $query
+            ->getWhere();
+        foreach ($where as $index => $condition) {
+            // Extract parameters from condition
+            if ($condition instanceof SQLConditionGroup) {
+                $parameters = array();
+                $predicate = $condition->conditionSQL($parameters);
+            } else {
+                $parameters = array_values(reset($condition));
+                $predicate = key($condition);
+            }
+
+            // Apply substitutions
+            $localisedPredicate = str_replace($conditionSearch, $conditionReplace, $predicate);
+
+            $where[$index] = array(
+                $localisedPredicate => $parameters
+            );
+        }
+        $query->setWhere($where);
     }
 
     /**
@@ -462,6 +495,37 @@ class FluentExtension extends DataExtension
         // Fall back to null by default, but allow extensions to override this entire fragment
         // Note: Extensions are responsible for SQL escaping
         $this->owner->invokeWithExtensions('updateLocaliseSelect', $query, $table, $field, $locale);
+        return $query;
+    }
+
+    /**
+     * Generate a where fragment based on a field with a fallback.
+     * This will be used as a search replacement in all where conditions matching the "Table"."Field" name.
+     * Note that unlike localiseSelect, this uses a simple COLASECLE() for performance and to reduce
+     * overall query size.
+     *
+     * @param string $table
+     * @param string $field
+     * @param Locale $locale
+     * @return string Localised where replacement
+     */
+    protected function localiseCondition($table, $field, Locale $locale)
+    {
+        // Build all items in chain
+        $query = "COALESCE(";
+        foreach ($locale->getChain() as $joinLocale) {
+            $joinAlias = $this->getLocalisedTable($table, $joinLocale->Locale);
+            $query .= "\"{$joinAlias}\".\"{$field}\", ";
+        }
+
+        // Use root table as default
+        $sqlDefault = "\"{$table}\".\"{$field}\"";
+        $this->owner->invokeWithExtensions('updatelocaliseConditionDefault', $sqlDefault, $table, $field, $locale);
+        $query .= "$sqlDefault)";
+
+        // Fall back to null by default, but allow extensions to override this entire fragment
+        // Note: Extensions are responsible for SQL escaping
+        $this->owner->invokeWithExtensions('updatelocaliseCondition', $query, $table, $field, $locale);
         return $query;
     }
 
