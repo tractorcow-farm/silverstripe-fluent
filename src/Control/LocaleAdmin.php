@@ -24,12 +24,13 @@ class LocaleAdmin extends ModelAdmin
         Domain::class,
     ];
 
-    private static $menu_icon = 'fluent/client/dist/images/menu-icon-16.png';
+    private static $menu_icon = 'tractorcow/silverstripe-fluent:client/dist/images/menu-icon-16.png';
 
     protected function init()
     {
         parent::init();
-        Requirements::themedJavascript('client/dist/js/fluent.js');
+        Requirements::javascript('tractorcow/silverstripe-fluent:client/dist/js/fluent.js');
+        Requirements::css("tractorcow/silverstripe-fluent:client/dist/styles/fluent.css");
     }
 
     public function getClientConfig()

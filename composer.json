@@ -1,7 +1,7 @@
 {
     "name": "tractorcow/silverstripe-fluent",
     "description": "Simple localisation for Silverstripe",
-    "type": "silverstripe-module",
+    "type": "silverstripe-vendormodule",
     "keywords": [
         "silverstripe", "localisation", "localization", "translation", "language", "locale", "multilingual",
         "translatable", "i18n", "internationalisation", "internationalization"
@@ -21,6 +21,7 @@
         "issues": "http://github.com/tractorcow/silverstripe-fluent/issues"
     },
     "require": {
+        "silverstripe/vendor-plugin": "^1.0",
         "silverstripe/framework": "^4@dev",
         "silverstripe/cms": "^4@dev",
         "symbiote/silverstripe-gridfieldextensions": "^3@dev"
@@ -33,7 +34,9 @@
         "branch-alias": {
             "dev-develop": "4.0.x-dev"
         },
-        "installer-name": "fluent"
+        "expose": [
+            "client/dist"
+        ]
     },
     "autoload": {
         "psr-4": {
