@@ -173,4 +173,19 @@ class LocaleTest extends SapphireTest
         FluentState::singleton()->setIsDomainMode(false);
         $this->assertFalse($esUS->getIsOnlyLocale());
     }
+
+    public function testGlobalDefaultCheckedOnFirstLocale()
+    {
+        Locale::get()->removeAll();
+        Locale::clearCached();
+
+        $firstLocale = new Locale;
+
+        /** @var SilverStripe\Forms\FieldList $fields  */
+        $fields = $firstLocale->getCMSFields();
+
+        /** @var SilverStripe\Forms\CheckboxField $checkbox */
+        $checkbox = $fields->fieldByName('Root.Main.IsGlobalDefault');
+        $this->assertTrue((bool) $checkbox->Value());
+    }
 }

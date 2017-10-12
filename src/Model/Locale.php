@@ -174,7 +174,7 @@ class Locale extends DataObject
                     'URLSegment',
                     _t(__CLASS__.'.LOCALE_URL', 'URL Segment')
                 )->setAttribute('placeholder', $this->Locale),
-                CheckboxField::create(
+                $globalDefault = CheckboxField::create(
                     'IsGlobalDefault',
                     _t(__CLASS__.'.IS_DEFAULT', 'This is the global default locale')
                 )
@@ -226,6 +226,11 @@ class Locale extends DataObject
                     '<p>' . _t(__CLASS__ . '.UnsavedNotice', "You can add fallbacks once you've saved the locale.")
                 )
             );
+
+            // If this is the first locale, it should be checked by default
+            if (static::getCached()->count() === 0) {
+                $globalDefault->setValue(true);
+            }
         }
 
         return $fields;
