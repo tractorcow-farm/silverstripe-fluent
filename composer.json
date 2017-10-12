@@ -21,9 +21,6 @@
 		"silverstripe/cms": "~3.2"
 	},
 	"extra": {
-		"branch-alias": {
-			"dev-master": "3.7.x-dev"
-		},
 		"installer-name": "fluent"
 	}
 }
