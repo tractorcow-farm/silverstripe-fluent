@@ -4,11 +4,11 @@
 	<% loop $Items %>
 	<url>
 		<loc>$AbsoluteLink</loc>
-		<% if $LastEdited %><lastmod>$LastEdited.Format(c)</lastmod><% end_if %>
+		<% if $LastEdited %><lastmod>$LastEdited.Format('YYYY-MM-DDThh:mm:ss')</lastmod><% end_if %>
 		<% if $ChangeFrequency %><changefreq>$ChangeFrequency</changefreq><% end_if %>
 		<% if $GooglePriority %><priority>$GooglePriority</priority><% end_if %>
 		<% if $Locales %><% loop $Locales %><% if $LinkingMode != 'invalid' %>
-		<xhtml:link 
+		<xhtml:link
 			rel="alternate"
 			hreflang="$LocaleRFC1766"
 			href="$AbsoluteLink"

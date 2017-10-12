@@ -1,29 +1,53 @@
 {
-	"name": "tractorcow/silverstripe-fluent",
-	"description": "Simple localisation for Silverstripe",
-	"type": "silverstripe-module",
-	"keywords": [
+    "name": "tractorcow/silverstripe-fluent",
+    "description": "Simple localisation for Silverstripe",
+    "type": "silverstripe-vendormodule",
+    "keywords": [
         "silverstripe", "localisation", "localization", "translation", "language", "locale", "multilingual",
         "translatable", "i18n", "internationalisation", "internationalization"
     ],
-	"license": "BSD-3-Clause",
-	"authors": [
-		{
-			"name": "Damian Mooyman",
-			"email": "damian.mooyman@gmail.com"
-		}
-	],
-	"support": {
-		"issues": "http://github.com/tractorcow/silverstripe-fluent/issues"
-	},
-	"require": {
-		"silverstripe/framework": "~3.2",
-		"silverstripe/cms": "~3.2"
-	},
-	"extra": {
-		"branch-alias": {
-			"dev-master": "4.x-dev"
-		},
-		"installer-name": "fluent"
-	}
+    "license": "BSD-3-Clause",
+    "authors": [
+        {
+            "name": "Damian Mooyman",
+            "email": "damian.mooyman@gmail.com"
+        },
+        {
+            "name": "Robbie Averill",
+            "email": "robbie@silverstripe.com"
+        }
+    ],
+    "support": {
+        "issues": "http://github.com/tractorcow/silverstripe-fluent/issues"
+    },
+    "require": {
+        "silverstripe/vendor-plugin": "^1.0",
+        "silverstripe/framework": "^4@dev",
+        "silverstripe/cms": "^4@dev",
+        "symbiote/silverstripe-gridfieldextensions": "^3@dev"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^5.7",
+        "squizlabs/php_codesniffer": "*"
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-master": "4.0.x-dev"
+        },
+        "expose": [
+            "client/dist"
+        ]
+    },
+    "autoload": {
+        "psr-4": {
+            "TractorCow\\Fluent\\": "src/",
+            "TractorCow\\Fluent\\Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "lint": "phpcs src/ tests/php/",
+        "lint-clean": "phpcbf src/ tests/php/"
+    },
+    "prefer-stable": true,
+    "minimum-stability": "dev"
 }

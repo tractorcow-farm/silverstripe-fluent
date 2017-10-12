@@ -1,0 +1,27 @@
+TractorCow\Fluent\Model\Locale:
+  en_NZ:
+    Locale: en_NZ
+    URLSegment: nz
+  en_AU:
+    Locale: en_AU
+    URLSegment: au
+    IsDefault: 1
+  es_ES:
+    Locale: es_ES
+    URLSegment: es
+  es_US:
+    Locale: es_US
+    URLSegment: es-usa
+
+TractorCow\Fluent\Model\Domain:
+  kiwi:
+    Domain: fluent.co.nz
+    Locales:
+      - =>TractorCow\Fluent\Model\Locale.en_NZ
+      - =>TractorCow\Fluent\Model\Locale.en_AU
+  spanish:
+    Domain: fluent.es
+    Locales:
+      - =>TractorCow\Fluent\Model\Locale.es_ES
+      - =>TractorCow\Fluent\Model\Locale.es_US
+    DefaultLocale: =>TractorCow\Fluent\Model\Locale.es_US

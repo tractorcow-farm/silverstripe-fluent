@@ -1,12 +1,35 @@
 en:
-  Fluent:
-    BadgeHiddenHelp: 'Page is hidden in this locale'
-    BadgeHiddenShort: Hidden
-    ChangeLocale: 'Change Locale'
-    LocaleFilter: 'Locale Filter'
-    LocaleFilterDescription: 'Check a locale to show this item on that locale'
-    LocaleMenuFilterDescription: 'Select the locales where this item is visible in the menu'
-    TABLOCALES: Locales
-    DefaultLocale: 'This is the default locale'
-    DefaultLocaleIs: 'The default locale is'
-    EditingIn: 'Please note: You are editing in'
+  TractorCow\Fluent\Control\LocaleAdmin:
+    MENUTITLE: Locales
+  TractorCow\Fluent\Model\Domain:
+    DEFAULT: 'Default locale'
+    DEFAULT_NONE: (none)
+    DOMAIN_HOSTNAME: 'Domain Hostname'
+    DOMAIN_LOCALES: Locales
+    PLURALNAME: Domains
+    PLURALS:
+      one: 'A Domain'
+      other: '{count} Domains'
+    SINGULARNAME: Domain
+    UnsavedNotice: 'You can add locales once you''ve saved the domain.'
+  TractorCow\Fluent\Model\FallbackLocale:
+    LOCALE: Locale
+    PLURALNAME: 'Fallback Locales'
+    PLURALS:
+      one: 'A Fallback Locale'
+      other: '{count} Fallback Locales'
+    SINGULARNAME: 'Fallback Locale'
+  TractorCow\Fluent\Model\Locale:
+    DEFAULT_NONE: (none)
+    DOMAIN: Domain
+    FALLBACKS: 'Fallback Locales'
+    IS_DEFAULT: 'This is the global default locale'
+    IS_DEFAULT_DESCRIPTION: 'Note: Per-domain specific locale can be assigned on the Locales tab and will override this value for specific domains.'
+    LOCALE: Locale
+    LOCALE_TITLE: Title
+    LOCALE_URL: 'URL Segment'
+    PLURALNAME: Locales
+    PLURALS:
+      one: 'A Locale'
+      other: '{count} Locales'
+    SINGULARNAME: Locale

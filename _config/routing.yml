@@ -1,0 +1,15 @@
+---
+Name: fluentrouting
+After:
+  - requestprocessors
+---
+SilverStripe\Control\Director:
+  extensions:
+    FluentDirectorExtension: TractorCow\Fluent\Extension\FluentDirectorExtension
+
+SilverStripe\Core\Injector\Injector:
+  SilverStripe\Control\Director:
+    properties:
+      Middlewares:
+        InitStateMiddleware: %$TractorCow\Fluent\Middleware\InitStateMiddleware
+        DetectLocaleMiddleware: %$TractorCow\Fluent\Middleware\DetectLocaleMiddleware
