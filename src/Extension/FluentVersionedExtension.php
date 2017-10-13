@@ -218,4 +218,21 @@ class FluentVersionedExtension extends FluentExtension
             }
         }
     }
+
+    /**
+     * Decorate table to delete with _Live suffix as necessary
+     *
+     * @param string $tableName
+     * @param string $locale
+     * @return string
+     */
+    protected function getDeleteTableTarget($tableName, $locale = '')
+    {
+        // Rewrite to _Live when deleting from live / unpublishing
+        $table = parent::getDeleteTableTarget($tableName, $locale);
+        if (Versioned::get_stage() === Versioned::LIVE) {
+            $table .= '_' . self::SUFFIX_LIVE;
+        }
+        return $table;
+    }
 }
