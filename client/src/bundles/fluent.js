@@ -82,7 +82,7 @@ window.jQuery.entwine('ss', ($) => {
       this._super();
       const config = fluentConfig();
       // Skip if no locales defined
-      if (typeof config.locales === 'undefined') {
+      if (typeof config.locales === 'undefined' || config.locales.length === 0) {
         return;
       }
       // Note: Remove c-select once admin upgraded to bootstrap v4.0.0-alpha.6
