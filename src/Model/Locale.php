@@ -201,16 +201,18 @@ class Locale extends DataObject
                     $editable = new GridFieldEditableColumns(),
                     new GridFieldDeleteAction()
                 );
+
             $editable->setDisplayFields([
                 'LocaleID' => function () {
                     return DropdownField::create(
                         'LocaleID',
                         _t(FallbackLocale::class . '.LOCALE', 'Locale'),
-                        Locale::getCached()->map('ID', 'Title')
+                        Locale::getCached()->exclude('Locale', $this->Locale)->map('ID', 'Title')
                     );
                 }
             ]);
-        // Add default selection
+
+            // Add default selection
             $defaultField = GridField::create(
                 'FallbackLocales',
                 _t(__CLASS__.'.FALLBACKS', 'Fallback Locales'),
