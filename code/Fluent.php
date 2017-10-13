@@ -246,7 +246,7 @@ class Fluent extends Object implements TemplateGlobalProvider
      */
     public static function locales($domain = null)
     {
-        if ($domain === true) {
+        if (!Director::is_cli() && $domain === true) {
             $domain = strtolower($_SERVER['HTTP_HOST']);
         }
 
@@ -378,7 +378,7 @@ class Fluent extends Object implements TemplateGlobalProvider
      */
     public static function default_locale($domain = null)
     {
-        if ($domain === true) {
+        if (!Director::is_cli() && $domain === true) {
             $domain = strtolower($_SERVER['HTTP_HOST']);
         }
 
