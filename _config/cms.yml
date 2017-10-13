@@ -7,3 +7,6 @@ SilverStripe\CMS\Model\SiteTree:
 SilverStripe\Admin\LeftAndMain:
   extensions:
     FluentLeftAndMainExtension: TractorCow\Fluent\Extension\FluentLeftAndMainExtension
+SilverStripe\Versioned\ChangeSetItem:
+  extensions:
+    FluentChangesExtension: TractorCow\Fluent\Extension\FluentChangesExtension

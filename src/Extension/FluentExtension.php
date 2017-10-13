@@ -4,6 +4,7 @@ namespace TractorCow\Fluent\Extension;
 
 use LogicException;
 use SilverStripe\Control\Director;
+use SilverStripe\Core\ClassInfo;
 use SilverStripe\Core\Config\Config;
 use SilverStripe\Core\Convert;
 use SilverStripe\i18n\i18n;
@@ -13,6 +14,7 @@ use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\DataQuery;
 use SilverStripe\ORM\DB;
 use SilverStripe\ORM\Queries\SQLConditionGroup;
+use SilverStripe\ORM\Queries\SQLDelete;
 use SilverStripe\ORM\Queries\SQLSelect;
 use SilverStripe\View\ArrayData;
 use TractorCow\Fluent\Model\Locale;
@@ -168,12 +170,8 @@ class FluentExtension extends DataExtension
     {
         $includedTables = [];
         $baseClass = $this->owner->baseClass();
-        foreach ($this->owner->getClassAncestry() as $class) {
-            // Skip classes without tables
-            if (!DataObject::getSchema()->classHasTable($class)) {
-                continue;
-            }
-
+        $tableClasses = ClassInfo::ancestry($this->owner, true);
+        foreach ($tableClasses as $class) {
             // Check translated fields for this class (except base table, which is always scaffolded)
             $translatedFields = $this->getLocalisedFields($class);
             if (empty($translatedFields) && $class !== $baseClass) {
@@ -283,14 +281,11 @@ class FluentExtension extends DataExtension
             }
         }
 
-        // On frontend, ensure at least one localised version exists in localised base table (404 otherwise)
+        // On frontend only show if published in this specific locale
         if (FluentState::singleton()->getIsFrontend()) {
-            $wheres = [];
-            foreach ($locale->getChain() as $joinLocale) {
-                $joinAlias = $this->getLocalisedTable($this->owner->baseTable(), $joinLocale->Locale);
-                $wheres[] = "\"{$joinAlias}\".\"ID\" IS NOT NULL";
-            }
-            $query->addWhereAny($wheres);
+            $joinAlias = $this->getLocalisedTable($this->owner->baseTable(), $locale->Locale);
+            $where = "\"{$joinAlias}\".\"ID\" IS NOT NULL";
+            $query->addWhereAny($where);
         }
 
         // Iterate through each select clause, replacing each with the translated version
@@ -351,13 +346,63 @@ class FluentExtension extends DataExtension
     }
 
     /**
-     * If any field is changed, mark entire record as changed
+     * Override delete behaviour
+     *
+     * @param array $queriedTables
+     */
+    public function updateDeleteTables(&$queriedTables)
+    {
+        // Fluent takes over deletion of objects
+        $queriedTables = [];
+
+        $locale = $this->getRecordLocale();
+        $localisedTables = $this->getLocalisedTables();
+        $tableClasses = ClassInfo::ancestry($this->owner, true);
+        foreach ($tableClasses as $class) {
+            // Check main table name
+            $table = DataObject::getSchema()->tableName($class);
+
+            // Create root table delete
+            $rootTable = $this->getDeleteTableTarget($table);
+            $rootDelete = SQLDelete::create("\"{$rootTable}\"");
+
+            // If table isn't localised, simple delete
+            if (!isset($localisedTables[$table])) {
+                $rootDelete->execute();
+                continue;
+            }
+
+            // Remove _Localised record
+            $localisedTable = $this->getDeleteTableTarget($table, $locale);
+            $localisedDelete = SQLDelete::create(
+                "\"{$localisedTable}\"",
+                [
+                    '"Locale"' => $locale->Locale,
+                    '"RecordID"' => $this->owner->ID,
+                ]
+            );
+            $localisedDelete->execute();
+
+            // Remove orphaned ONLY base table (delete after deleting last localised row)
+            // Note: No "Locale" filter as we are excluding any tables that have any localised records
+            $rootDelete
+                ->setDelete("\"{$rootTable}\"")
+                ->addLeftJoin(
+                    $localisedTable,
+                    "\"{$rootTable}\".\"ID\" = \"{$localisedTable}\".\"RecordID\""
+                )
+                // Only when join matches no localisations is it safe to delete
+                ->addWhere("\"{$localisedTable}\".\"ID\" IS NULL")
+                ->execute();
+        }
+    }
+
+    /**
+     * Force all changes, since we may need to cross-publish unchanged records between locales
      */
     public function onBeforeWrite()
     {
-        if ($this->owner->isChanged()) {
-            $this->owner->forceChange();
-        }
+        $this->owner->forceChange();
     }
 
     /**
@@ -467,6 +512,22 @@ class FluentExtension extends DataExtension
             $localisedTable .= '_' . $locale;
         }
         return $localisedTable;
+    }
+
+    /**
+     * Get real table name for deleting records (Note: Must have all table replacements applied)
+     *
+     * @param string $tableName
+     * @param string $locale If passed, this is the locale we wish to delete in. If empty this is the root table
+     * @return string
+     */
+    protected function getDeleteTableTarget($tableName, $locale = '')
+    {
+        if (!$locale) {
+            return $tableName;
+        }
+        // Note: For any locale, just return the real table without the alias
+        return $this->getLocalisedTable($tableName);
     }
 
     /**
