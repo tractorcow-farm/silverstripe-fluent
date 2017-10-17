@@ -1,8 +1,8 @@
 # Fluent
 
-[![Build Status](https://travis-ci.org/tractorcow/silverstripe-fluent.svg?branch=develop)](https://travis-ci.org/tractorcow/silverstripe-fluent)
-[![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/tractorcow/silverstripe-fluent/badges/quality-score.png?b=develop)](https://scrutinizer-ci.com/g/tractorcow/silverstripe-fluent/?branch=develop)
-[![codecov](https://codecov.io/gh/tractorcow/silverstripe-fluent/branch/develop/graph/badge.svg)](https://codecov.io/gh/tractorcow/silverstripe-fluent)
+[![Build Status](https://travis-ci.org/tractorcow/silverstripe-fluent.svg?branch=master)](https://travis-ci.org/tractorcow/silverstripe-fluent)
+[![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/tractorcow/silverstripe-fluent/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/tractorcow/silverstripe-fluent/?branch=master)
+[![codecov](https://codecov.io/gh/tractorcow/silverstripe-fluent/branch/master/graph/badge.svg)](https://codecov.io/gh/tractorcow/silverstripe-fluent)
 
 ## Simple Silverstripe Localisation
 
