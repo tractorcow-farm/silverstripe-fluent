@@ -21,9 +21,9 @@ before_script:
   - phpenv config-rm xdebug.ini
 
   # Install composer dependencies
-  - composer install --prefer-dist
-  - composer require --prefer-dist --no-update silverstripe/recipe-cms:1.0.x-dev
-  - composer update
+  - composer validate
+  - composer require --no-update silverstripe/recipe-cms:1.0.x-dev
+  - composer install --prefer-dist --no-interaction --no-progress --no-suggest --optimize-autoloader --verbose --profile
 
 script:
   - if [[ $PHPUNIT_TEST ]]; then vendor/bin/phpunit tests/php; fi
