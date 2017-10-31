@@ -53,6 +53,14 @@ class LocaleTest extends SapphireTest
         $this->assertSame('en_AU', $result2->Locale, 'First Locale in Domain with IsDefault true is returned');
     }
 
+    public function testGetDefaultWithCurrentDomainArgument()
+    {
+        // Get current default
+        $result = Locale::getDefault(true); // Should use fluent.co.nz current domain
+        $this->assertInstanceOf(Locale::class, $result);
+        $this->assertSame('en_AU', $result->Locale, 'First Locale in Domain with IsDefault true is returned');
+    }
+
     /**
      * @dataProvider isLocaleProvider
      * @param string $locale
