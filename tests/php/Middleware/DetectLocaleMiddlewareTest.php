@@ -2,11 +2,13 @@
 
 namespace TractorCow\Fluent\Tests\Middleware;
 
+use PHPUnit_Framework_MockObject_MockObject;
 use SilverStripe\Control\Controller;
 use SilverStripe\Control\HTTPRequest;
 use SilverStripe\Core\Config\Config;
 use SilverStripe\Dev\SapphireTest;
 use TractorCow\Fluent\Extension\FluentDirectorExtension;
+use TractorCow\Fluent\Middleware\DetectLocaleMiddleware;
 use TractorCow\Fluent\Model\Domain;
 use TractorCow\Fluent\Model\Locale;
 use TractorCow\Fluent\State\FluentState;
@@ -16,7 +18,7 @@ class DetectLocaleMiddlewareTest extends SapphireTest
     protected static $fixture_file = 'DetectLocaleMiddlewareTest.yml';
 
     /**
-     * @var DetectLocaleMiddleware
+     * @var Stub\DetectLocaleMiddlewareSpy
      */
     protected $middleware;
 
@@ -47,6 +49,12 @@ class DetectLocaleMiddlewareTest extends SapphireTest
 
     /**
      * @dataProvider localePriorityProvider
+     * @param string $url
+     * @param array $routeParams
+     * @param array $queryParams
+     * @param bool $persisted
+     * @param string $header
+     * @param string $expected
      */
     public function testGetLocalePriority($url, $routeParams, $queryParams, $persisted, $header, $expected)
     {
@@ -89,7 +97,8 @@ class DetectLocaleMiddlewareTest extends SapphireTest
         $request = new HTTPRequest('GET', '/');
         FluentState::singleton()->setLocale('dummy');
 
-        $middleware = $this->getMockBuilder(Stub\DetectLocaleMiddlewareSpy::class)
+        /** @var DetectLocaleMiddleware|PHPUnit_Framework_MockObject_MockObject $middleware */
+        $middleware = $this->getMockBuilder(DetectLocaleMiddleware::class)
             ->setMethods(['getLocale', 'setPersistLocale'])
             ->getMock();
 

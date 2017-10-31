@@ -3,6 +3,7 @@
 namespace TractorCow\Fluent\Tests\Model;
 
 use SilverStripe\Dev\SapphireTest;
+use SilverStripe\Forms\CheckboxField;
 use TractorCow\Fluent\Model\Domain;
 use TractorCow\Fluent\Model\Locale;
 use TractorCow\Fluent\State\FluentState;
@@ -116,7 +117,7 @@ class LocaleTest extends SapphireTest
     public function testGetSiblings()
     {
         $esUS = Locale::getByLocale('es_US');
-        $this->assertDOSEquals([
+        $this->assertListEquals([
             [ 'Locale' => 'es_US' ],
             [ 'Locale' => 'es_ES' ],
         ], $esUS->getSiblingLocales());
@@ -125,7 +126,7 @@ class LocaleTest extends SapphireTest
         FluentState::singleton()->setIsDomainMode(false);
 
         $esUS = Locale::getByLocale('es_US');
-        $this->assertDOSEquals([
+        $this->assertListEquals([
             [ 'Locale' => 'es_US' ],
             [ 'Locale' => 'es_ES' ],
             [ 'Locale' => 'en_NZ' ],
@@ -181,10 +182,9 @@ class LocaleTest extends SapphireTest
 
         $firstLocale = new Locale;
 
-        /** @var SilverStripe\Forms\FieldList $fields  */
         $fields = $firstLocale->getCMSFields();
 
-        /** @var SilverStripe\Forms\CheckboxField $checkbox */
+        /** @var CheckboxField $checkbox */
         $checkbox = $fields->fieldByName('Root.Main.IsGlobalDefault');
         $this->assertTrue((bool) $checkbox->Value());
     }
