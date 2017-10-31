@@ -763,4 +763,14 @@ class FluentExtension extends DataExtension
             }
         });
     }
+
+    /**
+     * Ensure has_one cache is segmented by locale
+     *
+     * @return string
+     */
+    public function cacheKeyComponent()
+    {
+        return 'fluentlocale-' . FluentState::singleton()->getLocale();
+    }
 }

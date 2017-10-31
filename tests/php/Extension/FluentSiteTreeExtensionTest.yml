@@ -1,14 +1,47 @@
 TractorCow\Fluent\Model\Locale:
   nz:
     Locale: en_NZ
-    Title: English (New Zealand)
+    Title: 'English (New Zealand)'
     URLSegment: newzealand
+  us:
+    Locale: en_US
+    Title: 'English (US)'
+    URLSegment: usa
   de:
     Locale: de_DE
     Title: German
     URLSegment: german
+  es:
+    Locale: es_ES
+    Title: Spanish
+
+TractorCow\Fluent\Model\Domain:
+  com:
+    Domain: www.example.com
+    Locales:
+      - =>TractorCow\Fluent\Model\Locale.es
+      - =>TractorCow\Fluent\Model\Locale.us
+    DefaultLocale: =>TractorCow\Fluent\Model\Locale.us
+  de:
+    Domain: www.example.de
+    Locales:
+      - =>TractorCow\Fluent\Model\Locale.de
+  conz:
+    Domain: www.example.co.nz
+    Locales:
+      - =>TractorCow\Fluent\Model\Locale.nz
 
 Page:
   nz-page:
     Title: A Page
     URLSegment: a-page
+  home:
+    Title: Home
+    URLSegment: home
+  about:
+    Title: About Us
+    URLSegment: about-us
+  staff:
+    Title: Staff
+    URLSegment: my-staff
+    Parent: =>Page.about

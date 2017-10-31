@@ -2,15 +2,16 @@
 
 namespace TractorCow\Fluent\Tests\Extension\Stub;
 
-use SilverStripe\Core\Extensible;
 use SilverStripe\Dev\TestOnly;
+use SilverStripe\ORM\DataObject;
+use TractorCow\Fluent\Extension\FluentExtension;
 
-class FluentStubObject implements TestOnly
+/**
+ * @mixin FluentExtension
+ */
+class FluentStubObject extends DataObject implements TestOnly
 {
-    use Extensible;
-
-    public function __construct()
-    {
-        $this->constructExtensions();
-    }
+    private static $extensions = [
+        FluentExtension::class,
+    ];
 }

@@ -10,6 +10,8 @@ class InitStateMiddlewareTest extends SapphireTest
 {
     /**
      * @dataProvider isFrontendProvider
+     * @param string $url
+     * @param string $expected
      */
     public function testGetIsFrontend($url, $expected)
     {

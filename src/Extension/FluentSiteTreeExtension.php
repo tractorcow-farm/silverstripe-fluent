@@ -5,6 +5,7 @@ namespace TractorCow\Fluent\Extension;
 use SilverStripe\CMS\Controllers\RootURLController;
 use SilverStripe\CMS\Model\SiteTree;
 use SilverStripe\Control\Controller;
+use TractorCow\Fluent\State\FluentState;
 
 /**
  * Fluent extension for SiteTree
@@ -83,6 +84,11 @@ class FluentSiteTreeExtension extends FluentVersionedExtension
         // Don't rewrite outside of domain mode
         $domain = $localeObj->getDomain();
         if (!$domain) {
+            return;
+        }
+
+        // Don't need to prepend domain if on the same domain
+        if (FluentState::singleton()->getDomain() === $domain->Domain) {
             return;
         }
 
