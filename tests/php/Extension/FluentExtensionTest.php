@@ -4,6 +4,7 @@ namespace TractorCow\Fluent\Tests\Extension;
 
 use SilverStripe\CMS\Model\SiteTree;
 use SilverStripe\Dev\SapphireTest;
+use SilverStripe\Core\Config\Config;
 use TractorCow\Fluent\Extension\FluentSiteTreeExtension;
 use TractorCow\Fluent\State\FluentState;
 use TractorCow\Fluent\Tests\Extension\Stub\FluentStubObject;
@@ -44,5 +45,47 @@ class FluentExtensionTest extends SapphireTest
         // Does not have a canViewInLocale method, locale is current
         FluentState::singleton()->setLocale('foo');
         $this->assertSame('current', $stub->getLinkingMode('foo'));
+    }
+
+    public function testLocalisedFieldFieldIncludeActive()
+    {
+        Config::modify()->set(SiteTree::class, 'field_include', ['TestField']);
+
+        $isLocalised = SiteTree::singleton()->isFieldLocalised('TestField', 'UnsupportedType');
+        $this->assertEquals(true, $isLocalised);
+    }
+
+    public function testLocalisedFieldFieldIncludeInactive()
+    {
+        $isLocalised = SiteTree::singleton()->isFieldLocalised('TestField', 'UnsupportedType');
+        $this->assertEquals(false, $isLocalised);
+    }
+
+    public function testLocalisedFieldFieldExcludeActive()
+    {
+        Config::modify()->set(SiteTree::class, 'field_exclude', ['TestField']);
+
+        $isLocalised = SiteTree::singleton()->isFieldLocalised('TestField', 'Text');
+        $this->assertEquals(false, $isLocalised);
+    }
+
+    public function testLocalisedFieldFieldExcludeInactive()
+    {
+        $isLocalised = SiteTree::singleton()->isFieldLocalised('TestField', 'Text');
+        $this->assertEquals(true, $isLocalised);
+    }
+
+    public function testLocalisedFieldDataIncludeActive()
+    {
+        Config::modify()->set(SiteTree::class, 'data_include', ['UnsupportedType']);
+
+        $isLocalised = SiteTree::singleton()->isFieldLocalised('TestField', 'UnsupportedType');
+        $this->assertEquals(true, $isLocalised);
+    }
+
+    public function testLocalisedFieldDataIncludeInactive()
+    {
+        $isLocalised = SiteTree::singleton()->isFieldLocalised('TestField', 'UnsupportedType');
+        $this->assertEquals(false, $isLocalised);
     }
 }
