@@ -110,6 +110,11 @@ class FluentExtension extends DataExtension
     protected $localisedFields = [];
 
     /**
+     * @var bool
+     */
+    private static $frontend_publish_required = true;
+
+    /**
      * Get list of fields that are localised
      *
      * @param string $class Class to get fields for (if parent)
@@ -282,7 +287,7 @@ class FluentExtension extends DataExtension
         }
 
         // On frontend only show if published in this specific locale
-        if (FluentState::singleton()->getIsFrontend()) {
+        if ($this->owner->config()->get('frontend_publish_required') && FluentState::singleton()->getIsFrontend()) {
             $joinAlias = $this->getLocalisedTable($this->owner->baseTable(), $locale->Locale);
             $where = "\"{$joinAlias}\".\"ID\" IS NOT NULL";
             $query->addWhereAny($where);
