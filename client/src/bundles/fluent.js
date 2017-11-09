@@ -133,9 +133,8 @@ window.jQuery.entwine('ss', ($) => {
       const locale = this.val();
       const url = urlForLocale(document.location.href, locale);
 
-      // Load panel
-      $('.cms-container').loadPanel(url);
-      return false;
+      // Load new URL
+      window.location.href = url;
     },
   });
 });
