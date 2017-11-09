@@ -1,0 +1,26 @@
+TractorCow\Fluent\Model\Locale:
+  nz:
+    Locale: en_NZ
+    Title: 'English (New Zealand)'
+    URLSegment: newzealand
+
+Page:
+  home:
+    ID: 1
+    Title: Home
+    URLSegment: home
+
+SiteTree_Localised:
+  home:
+    ID: 1
+    RecordID: 1
+    Title: Home
+    URLSegment: home
+    Locale: en_NZ
+SiteTree_Localised_Live:
+  home:
+    ID: 1
+    RecordID: 1
+    Title: Home
+    URLSegment: home
+    Locale: en_NZ

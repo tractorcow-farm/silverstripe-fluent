@@ -33,3 +33,12 @@ en:
       one: 'A Locale'
       other: '{count} Locales'
     SINGULARNAME: Locale
+  TractorCow\Fluent\Extension\FluentSiteTreeExtension:
+    LOCALECOPYTODRAFT: 'Copy to draft'
+    LOCALECOPYANDPUBLISH: 'Copy & publish'
+    LOCALEDRAFTEDSHORT: 'Locale drafted'
+    LOCALEDRAFTEDHELP: 'Drafted locale edition has not been published'
+    LOCALEINHERITEDSHORT: 'Inherited'
+    LOCALEINHERITEDHELP: 'Page is inherited from fallback locale'
+    LOCALESTATUSINHERITED: 'Content for this Page is being inherited from another Locale. If you wish you make an independent copy of this Page, please use one of the "Copy" actions provided.'
+    LOCALESTATUSDRAFT: 'A draft has been created for this Locale, however, published content is still being inherited from another Locale. To publish this content for this Locale, use the "Save & publish" action provided.'

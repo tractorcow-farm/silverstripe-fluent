@@ -8,6 +8,7 @@ use SilverStripe\ORM\DB;
 use SilverStripe\ORM\Queries\SQLSelect;
 use SilverStripe\Versioned\Versioned;
 use TractorCow\Fluent\Model\Locale;
+use TractorCow\Fluent\State\FluentState;
 
 /**
  * Extension for versioned localised objects
@@ -234,5 +235,57 @@ class FluentVersionedExtension extends FluentExtension
             $table .= '_' . self::SUFFIX_LIVE;
         }
         return $table;
+    }
+
+    /**
+     * @param string $locale
+     * @return bool
+     */
+    public function isDraftedInLocale($locale = '')
+    {
+        $localisedTable = $this->getLocalisedTable($this->owner->baseTable());
+
+        return $this->localeRecordExistsInTable($localisedTable, $locale);
+    }
+
+    /**
+     * @param string $locale
+     * @return bool
+     */
+    public function isPublishedInLocale($locale = '')
+    {
+        $localisedTable = $this->getLocalisedTable($this->owner->baseTable()) . '_' . self::SUFFIX_LIVE;
+
+        return $this->localeRecordExistsInTable($localisedTable, $locale);
+    }
+
+    /**
+     * Check to see whether or not a record exists for a specific Locale in a specific table.
+     *
+     * @param $table
+     * @param string $locale
+     * @return bool
+     */
+    protected function localeRecordExistsInTable($table, $locale = '')
+    {
+        if ($locale === '') {
+            $locale = FluentState::singleton()->getLocale();
+
+            // Potentially no Locales have been created in the system yet.
+            if (!$locale) {
+                return false;
+            }
+        }
+
+        $query = new SQLSelect();
+        $query->selectField('ID');
+        $query->addFrom($table);
+        $query->addWhere([
+            'RecordID' => $this->owner->ID,
+            'Locale' => $locale,
+        ]);
+        $query->firstRow();
+
+        return $query->execute()->value() !== null;
     }
 }

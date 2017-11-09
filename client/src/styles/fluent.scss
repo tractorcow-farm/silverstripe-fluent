@@ -8,6 +8,15 @@ $fluent-color-base: rgb(31, 148, 51);
 // $fluent-color-modified: #FF9100;
 $fluent-color-modified: rgb(244, 145, 0);
 
+// $fluent-color-inherited-background: #f2f2f2;
+$fluent-color-inherited-background: rgb(242, 242, 242);
+
+// $fluent-color-inherited-text: #525252;
+$fluent-color-inherited-text: rgb(82, 82, 82);
+
+// $fluent-color-inherited-text-badge: #7A4500;
+$fluent-color-inherited-text-badge: rgb(122, 69, 0);
+
 // Fix cms-menu collapsed for dropdown
 .cms-menu.collapsed {
   .cms-menu-list {
@@ -23,6 +32,25 @@ $fluent-color-modified: rgb(244, 145, 0);
     }
     .short-title {
       display: block;
+    }
+  }
+}
+
+.cms-tree {
+  &.jstree {
+    .status-fluentinherited {
+      a {
+        background: $fluent-color-inherited-background;
+        color: $fluent-color-inherited-text;
+      }
+    }
+
+    span {
+      &.badge {
+        &.status-fluentinherited {
+          color: $fluent-color-inherited-text-badge;
+        }
+      }
     }
   }
 }
