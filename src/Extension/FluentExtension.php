@@ -136,12 +136,6 @@ class FluentExtension extends DataExtension
             return $this->localisedFields[$class] = [];
         }
 
-        // Data and field filters
-        $fieldsInclude = Config::inst()->get($class, 'field_include');
-        $fieldsExclude = Config::inst()->get($class, 'field_exclude');
-        $dataInclude = Config::inst()->get($class, 'data_include');
-        $dataExclude = Config::inst()->get($class, 'data_exclude');
-
         // filter out DB
         foreach ($fields as $field => $type) {
             // If given an explicit field name filter, then remove non-presented fields
@@ -153,16 +147,50 @@ class FluentExtension extends DataExtension
             }
 
             // Without a name filter then check against each filter type
-            if (($fieldsInclude && !$this->anyMatch($field, $fieldsInclude))
-                || ($fieldsExclude && $this->anyMatch($field, $fieldsExclude))
-                || ($dataInclude && !$this->anyMatch($type, $dataInclude))
-                || ($dataExclude && $this->anyMatch($type, $dataExclude))
-            ) {
+            if (!$this->isFieldLocalised($field, $type)) {
                 unset($fields[$field]);
             }
         }
 
         return $this->localisedFields[$class] = $fields;
+    }
+
+    /**
+     * @param string $field
+     * @param string $type
+     * @param string|null $class
+     * @return bool
+     */
+    public function isFieldLocalised($field, $type, $class = null)
+    {
+        if (!$class) {
+            $class = get_class($this->owner);
+        }
+
+        // Data and field filters
+        $fieldsInclude = Config::inst()->get($class, 'field_include');
+        $fieldsExclude = Config::inst()->get($class, 'field_exclude');
+
+        if ($fieldsInclude && $this->anyMatch($field, $fieldsInclude)) {
+            return true;
+        }
+
+        if ($fieldsExclude && $this->anyMatch($field, $fieldsExclude)) {
+            return false;
+        }
+
+        $dataInclude = Config::inst()->get($class, 'data_include');
+        $dataExclude = Config::inst()->get($class, 'data_exclude');
+
+        if ($dataInclude && !$this->anyMatch($type, $dataInclude)) {
+            return false;
+        }
+
+        if ($dataExclude && $this->anyMatch($type, $dataExclude)) {
+            return false;
+        }
+
+        return true;
     }
 
     /**
