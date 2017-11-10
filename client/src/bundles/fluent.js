@@ -1,3 +1,4 @@
+/* eslint-env browser */
 import liburl from 'url';
 import queryString from 'query-string';
 

@@ -5,6 +5,7 @@ namespace TractorCow\Fluent\Extension;
 use SilverStripe\CMS\Controllers\RootURLController;
 use SilverStripe\CMS\Model\SiteTree;
 use SilverStripe\Control\Controller;
+use SilverStripe\Forms\CompositeField;
 use SilverStripe\Forms\FieldList;
 use SilverStripe\Forms\LiteralField;
 use TractorCow\Fluent\State\FluentState;
@@ -16,7 +17,13 @@ use TractorCow\Fluent\State\FluentState;
  */
 class FluentSiteTreeExtension extends FluentVersionedExtension
 {
-    private static $disable_locale_published_status_message = false;
+    /**
+     * Determine if status messages are enabled
+     *
+     * @config
+     * @var bool
+     */
+    private static $locale_published_status_message = true;
 
     /**
      * Add the current locale's URL segment to the start of the URL
@@ -27,7 +34,7 @@ class FluentSiteTreeExtension extends FluentVersionedExtension
     public function updateRelativeLink(&$base, &$action)
     {
         // Don't inject locale to subpages
-        if ($this->owner->ParentID && SiteTree::config()->nested_urls) {
+        if ($this->owner->ParentID && SiteTree::config()->get('nested_urls')) {
             return;
         }
 
@@ -144,8 +151,6 @@ class FluentSiteTreeExtension extends FluentVersionedExtension
      */
     public function updateCMSFields(FieldList $fields)
     {
-        parent::updateCMSFields($fields);
-
         // If there is no current FluentState, then we shouldn't update.
         if (!FluentState::singleton()->getLocale()) {
             return;
@@ -159,8 +164,6 @@ class FluentSiteTreeExtension extends FluentVersionedExtension
      */
     public function updateCMSActions(FieldList $actions)
     {
-        parent::updateCMSActions($actions);
-
         // If there is no current FluentState, then we shouldn't update.
         if (!FluentState::singleton()->getLocale()) {
             return;
@@ -177,7 +180,7 @@ class FluentSiteTreeExtension extends FluentVersionedExtension
     protected function addLocaleStatusMessage(FieldList $fields)
     {
         // Don't display these messages if the owner class has asked us not to.
-        if ($this->owner->config()->get('disable_locale_published_status_message')) {
+        if (!$this->owner->config()->get('locale_published_status_message')) {
             return;
         }
 
@@ -221,7 +224,7 @@ class FluentSiteTreeExtension extends FluentVersionedExtension
      */
     protected function updateSavePublishActions(FieldList $actions)
     {
-        /** @var \SilverStripe\Forms\CompositeField $majorActions */
+        /** @var CompositeField $majorActions */
         $majorActions = $actions->fieldByName('MajorActions');
 
         // If another extension has removed this CompositeField then we don't need to update them.
