@@ -33,15 +33,41 @@ TractorCow\Fluent\Model\Domain:
 
 Page:
   nz-page:
+    ID: 1
     Title: A Page
     URLSegment: a-page
   home:
+    ID: 2
     Title: Home
     URLSegment: home
   about:
+    ID: 3
     Title: About Us
     URLSegment: about-us
   staff:
+    ID: 4
     Title: Staff
     URLSegment: my-staff
     Parent: =>Page.about
+
+SiteTree_Localised:
+  nz-page:
+    ID: 1
+    RecordID: 1
+    Title: A Page
+    URLSegment: a-page
+    Locale: de_DE
+  about:
+    ID: 2
+    RecordID: 3
+    Title: About Us
+    URLSegment: about-us
+    Locale: de_DE
+
+SiteTree_Localised_Live:
+  nz-page:
+    ID: 1
+    RecordID: 1
+    Title: A Page
+    URLSegment: a-page
+    Locale: de_DE

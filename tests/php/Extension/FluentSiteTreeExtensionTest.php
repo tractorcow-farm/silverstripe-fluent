@@ -7,6 +7,7 @@ use SilverStripe\CMS\Model\SiteTree;
 use SilverStripe\Control\Director;
 use SilverStripe\Core\Config\Config;
 use SilverStripe\Dev\SapphireTest;
+use SilverStripe\Forms\FieldList;
 use SilverStripe\ORM\ArrayList;
 use SilverStripe\View\ArrayData;
 use TractorCow\Fluent\Extension\FluentDirectorExtension;
@@ -149,5 +150,98 @@ class FluentSiteTreeExtensionTest extends SapphireTest
         /** @var Page|FluentSiteTreeExtension $page */
         $page = $this->objFromFixture('Page', $pageName);
         $this->assertEquals($url, $page->Link());
+    }
+
+    public function testUpdateStatusFlagsInherited()
+    {
+        /** @var Page|FluentSiteTreeExtension $page */
+        $page = $this->objFromFixture('Page', 'home');
+        $flags = $page->getStatusFlags();
+
+        $this->assertTrue(array_key_exists('fluentinherited', $flags));
+    }
+
+    public function testUpdateStatusFlagsDrafted()
+    {
+        /** @var Page|FluentSiteTreeExtension $page */
+        $page = $this->objFromFixture('Page', 'about');
+        $flags = $page->getStatusFlags();
+
+        $this->assertTrue(array_key_exists('modified', $flags));
+
+        if (!array_key_exists('modified', $flags)) {
+            return;
+        }
+
+        $this->assertEquals('Locale drafted', $flags['modified']['text']);
+    }
+
+    public function testUpdateCMSFields()
+    {
+        /** @var Page|FluentSiteTreeExtension $page */
+        $page = $this->objFromFixture('Page', 'home');
+        $fields = new FieldList();
+
+        $page->updateCMSFields($fields);
+
+        $this->assertNotNull($fields->fieldByName('LocaleStatusMessage'));
+    }
+
+    public function testUpdateCMSActionsInherited()
+    {
+        /** @var Page|FluentSiteTreeExtension $page */
+        $page = $this->objFromFixture('Page', 'home');
+        $actions = $page->getCMSActions();
+
+        /** @var \SilverStripe\Forms\CompositeField $majorActions */
+        $majorActions = $actions->fieldByName('MajorActions');
+
+        $this->assertNotNull($majorActions);
+
+        if ($majorActions === null) {
+            return;
+        }
+
+        $actionSave = $majorActions->getChildren()->fieldByName('action_save');
+        $actionPublish = $majorActions->getChildren()->fieldByName('action_publish');
+
+        $this->assertNotNull($actionSave);
+        $this->assertNotNull($actionPublish);
+
+        if ($actionSave === null || $actionPublish === null) {
+            return;
+        }
+
+        $this->assertEquals('Copy to draft', $actionSave->Title());
+        $this->assertEquals('Copy & publish', $actionPublish->Title());
+    }
+
+    public function testUpdateCMSActionsDrafted()
+    {
+        /** @var Page|FluentSiteTreeExtension $page */
+        $page = $this->objFromFixture('Page', 'about');
+        $actions = $page->getCMSActions();
+
+        /** @var \SilverStripe\Forms\CompositeField $majorActions */
+        $majorActions = $actions->fieldByName('MajorActions');
+
+        $this->assertNotNull($majorActions);
+
+        if ($majorActions === null) {
+            return;
+        }
+
+        $actionSave = $majorActions->getChildren()->fieldByName('action_save');
+        $actionPublish = $majorActions->getChildren()->fieldByName('action_publish');
+
+        $this->assertNotNull($actionSave);
+        $this->assertNotNull($actionPublish);
+
+        if ($actionSave === null || $actionPublish === null) {
+            return;
+        }
+
+        $this->assertEquals('Saved', $actionSave->Title());
+        $this->assertEquals('Save & publish', $actionPublish->Title());
     }
 }

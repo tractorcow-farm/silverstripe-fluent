@@ -8,6 +8,7 @@ use SilverStripe\ORM\DB;
 use SilverStripe\ORM\Queries\SQLSelect;
 use SilverStripe\Versioned\Versioned;
 use TractorCow\Fluent\Model\Locale;
+use TractorCow\Fluent\State\FluentState;
 
 /**
  * Extension for versioned localised objects
@@ -20,12 +21,12 @@ class FluentVersionedExtension extends FluentExtension
     /**
      * Live table suffix
      */
-    const SUFFIX_LIVE = 'Live';
+    const SUFFIX_LIVE = '_Live';
 
     /**
      * Versions table suffix
      */
-    const SUFFIX_VERSIONS = 'Versions';
+    const SUFFIX_VERSIONS = '_Versions';
 
     /**
      * Default version table fields. _Versions has extra Version column.
@@ -52,11 +53,18 @@ class FluentVersionedExtension extends FluentExtension
         ],
     ];
 
+    /**
+     * Cache of published status of this record
+     *
+     * @var array
+     */
+    protected $localisedStageCache = [];
+
     protected function augmentDatabaseDontRequire($localisedTable)
     {
         DB::dont_require_table($localisedTable);
-        DB::dont_require_table($localisedTable . '_' . self::SUFFIX_LIVE);
-        DB::dont_require_table($localisedTable . '_' . self::SUFFIX_VERSIONS);
+        DB::dont_require_table($localisedTable . self::SUFFIX_LIVE);
+        DB::dont_require_table($localisedTable . self::SUFFIX_VERSIONS);
     }
 
     protected function augmentDatabaseRequireTable($localisedTable, $fields, $indexes)
@@ -64,13 +72,13 @@ class FluentVersionedExtension extends FluentExtension
         DB::require_table($localisedTable, $fields, $indexes, false);
 
         // _Live record
-        DB::require_table($localisedTable . '_' . self::SUFFIX_LIVE, $fields, $indexes, false);
+        DB::require_table($localisedTable . self::SUFFIX_LIVE, $fields, $indexes, false);
 
         // Merge fields and indexes with Fluent defaults
         $versionsFields = array_merge($this->defaultVersionsFields, $fields);
         $versionsIndexes = array_merge($indexes, $this->defaultVersionsIndexes);
 
-        DB::require_table($localisedTable . '_' . self::SUFFIX_VERSIONS, $versionsFields, $versionsIndexes, false);
+        DB::require_table($localisedTable . self::SUFFIX_VERSIONS, $versionsFields, $versionsIndexes, false);
     }
 
     /**
@@ -130,7 +138,7 @@ class FluentVersionedExtension extends FluentExtension
         foreach ($tables as $tableName => $fields) {
             // Rename to _Versions suffixed versions
             $localisedTable = $this->getLocalisedTable($tableName);
-            $query->renameTable($localisedTable, $localisedTable . '_' . self::SUFFIX_VERSIONS);
+            $query->renameTable($localisedTable, $localisedTable . self::SUFFIX_VERSIONS);
 
             // Add the chain of locale fallbacks
             $this->addLocaleFallbackChain($query, $tableName, $locale);
@@ -151,12 +159,13 @@ class FluentVersionedExtension extends FluentExtension
         foreach ($locale->getChain() as $joinLocale) {
             /** @var Locale $joinLocale */
             $joinAlias = $this->getLocalisedTable($tableName, $joinLocale->Locale);
+            $versionTable = $baseTable . self::SUFFIX_VERSIONS;
 
             $query->setJoinFilter(
                 $joinAlias,
-                "\"{$baseTable}_Versions\".\"RecordID\" = \"{$joinAlias}\".\"RecordID\" "
+                "\"{$versionTable}\".\"RecordID\" = \"{$joinAlias}\".\"RecordID\" "
                 . "AND \"{$joinAlias}\".\"Locale\" = ? "
-                . "AND \"{$joinAlias}\".\"Version\" = \"{$baseTable}_" . self::SUFFIX_VERSIONS . "\".\"Version\""
+                . "AND \"{$joinAlias}\".\"Version\" = \"{$versionTable}\".\"Version\""
             );
         }
     }
@@ -171,7 +180,7 @@ class FluentVersionedExtension extends FluentExtension
     {
         foreach ($tables as $table => $fields) {
             $localisedTable = $this->getLocalisedTable($table);
-            $query->renameTable($localisedTable, $localisedTable . '_' . self::SUFFIX_LIVE);
+            $query->renameTable($localisedTable, $localisedTable . self::SUFFIX_LIVE);
         }
     }
 
@@ -195,8 +204,8 @@ class FluentVersionedExtension extends FluentExtension
         foreach ($includedTables as $table => $localisedFields) {
             // Localise both _Versions and _Live writes
             foreach ([self::SUFFIX_LIVE, self::SUFFIX_VERSIONS] as $suffix) {
-                $versionedTable = $table . '_' . $suffix;
-                $localisedTable = $this->getLocalisedTable($table) . '_' . $suffix;
+                $versionedTable = $table . $suffix;
+                $localisedTable = $this->getLocalisedTable($table) . $suffix;
 
                 // Add extra case for "Version" column when localising Versions
                 $localisedVersionFields = $localisedFields;
@@ -231,8 +240,82 @@ class FluentVersionedExtension extends FluentExtension
         // Rewrite to _Live when deleting from live / unpublishing
         $table = parent::getDeleteTableTarget($tableName, $locale);
         if (Versioned::get_stage() === Versioned::LIVE) {
-            $table .= '_' . self::SUFFIX_LIVE;
+            $table .= self::SUFFIX_LIVE;
         }
         return $table;
+    }
+
+    /**
+     * Check if this record is saved in this locale
+     *
+     * @param string $locale
+     * @return bool
+     */
+    public function isDraftedInLocale($locale = null)
+    {
+        return $this->isLocalisedInStage(Versioned::DRAFT, $locale);
+    }
+
+    /**
+     * Check if this record is published in this locale
+     *
+     * @param string $locale
+     * @return bool
+     */
+    public function isPublishedInLocale($locale = null)
+    {
+        return $this->isLocalisedInStage(Versioned::LIVE, $locale);
+    }
+
+    /**
+     * Check to see whether or not a record exists for a specific Locale in a specific stage.
+     *
+     * @param string $stage Version stage
+     * @param string $locale Locale to check. Defaults to current locale.
+     * @return bool
+     */
+    protected function isLocalisedInStage($stage, $locale = null)
+    {
+        // Get locale
+        if (!$locale) {
+            $locale = FluentState::singleton()->getLocale();
+
+            // Potentially no Locales have been created in the system yet.
+            if (!$locale) {
+                return false;
+            }
+        }
+
+        // Get table
+        $baseTable = $this->owner->baseTable();
+        $table = $this->getLocalisedTable($baseTable);
+        if ($stage === Versioned::LIVE) {
+            $table .= self::SUFFIX_LIVE;
+        }
+
+        // Check cache
+        $key = $table . '/' . $locale . '/' . $this->owner->ID;
+        if (isset($this->localisedStageCache[$key])) {
+            return $this->localisedStageCache[$key];
+        }
+
+        $query = new SQLSelect();
+        $query->selectField('ID');
+        $query->addFrom($table);
+        $query->addWhere([
+            'RecordID' => $this->owner->ID,
+            'Locale' => $locale,
+        ]);
+        $query->firstRow();
+        $result = $query->execute()->value() !== null;
+
+        // Set cache
+        $this->localisedStageCache[$key] = $result;
+        return $result;
+    }
+
+    public function flushCache()
+    {
+        $this->localisedStageCache = [];
     }
 }
