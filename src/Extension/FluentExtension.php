@@ -23,16 +23,26 @@ use TractorCow\Fluent\State\FluentState;
 /**
  * Basic fluent extension
  *
+ * When determining whether a field is localised, the following config options are checked in order:
+ * - translate (uninherited, for each class in the chain)
+ * - field_exclude
+ * - field_include
+ * - data_exclude
+ * - data_include
+ *
  * @property FluentSiteTreeExtension|DataObject $owner
  */
 class FluentExtension extends DataExtension
 {
     /**
      * The table suffix that will be applied to create localisation tables
-     *
-     * @var string
      */
     const SUFFIX = 'Localised';
+
+    /**
+     * translate config key to disable localisations for this table
+     */
+    const TRANSLATE_NONE = 'none';
 
     /**
      * DB fields to be used added in when creating a localised version of the owner's table
@@ -63,7 +73,20 @@ class FluentExtension extends DataExtension
     ];
 
     /**
-     * Filter whitelist of fields to localise
+     * List of fields to translate for this record
+     *
+     * Can be set to a list of fields, or a single string 'none' to disable all fields.
+     * Not inherited, and must be set per class.
+     *
+     * If set takes priority over all white / black lists
+     *
+     * @var array|string
+     */
+    private static $translate = [];
+
+    /**
+     * Filter whitelist of fields to localise.
+     * Note: Blacklist takes priority over whitelist.
      *
      * @config
      * @var array
@@ -71,7 +94,8 @@ class FluentExtension extends DataExtension
     private static $field_include = [];
 
     /**
-     * Filter blacklist of fields to localise
+     * Filter blacklist of fields to localise.
+     * Note: Blacklist takes priority over whitelist.
      *
      * @config
      * @var array
@@ -85,6 +109,7 @@ class FluentExtension extends DataExtension
 
     /**
      * Filter whitelist of field types to localise
+     * Note: Blacklist takes priority over whitelist.
      *
      * @config
      * @var
@@ -97,7 +122,8 @@ class FluentExtension extends DataExtension
     ];
 
     /**
-     * Filter blacklist of field types to localise
+     * Filter blacklist of field types to localise.
+     * Note: Blacklist takes priority over whitelist.
      *
      * @config
      * @var array
@@ -132,37 +158,64 @@ class FluentExtension extends DataExtension
         // List of DB fields
         $fields = DataObject::getSchema()->databaseFields($class, false);
         $filter = Config::inst()->get($class, 'translate', Config::UNINHERITED);
-        if ($filter === 'none' || empty($fields)) {
+        if ($filter === self::TRANSLATE_NONE || empty($fields)) {
             return $this->localisedFields[$class] = [];
         }
 
-        // Data and field filters
-        $fieldsInclude = Config::inst()->get($class, 'field_include');
-        $fieldsExclude = Config::inst()->get($class, 'field_exclude');
-        $dataInclude = Config::inst()->get($class, 'data_include');
-        $dataExclude = Config::inst()->get($class, 'data_exclude');
-
         // filter out DB
         foreach ($fields as $field => $type) {
-            // If given an explicit field name filter, then remove non-presented fields
-            if ($filter) {
-                if (!in_array($field, $filter)) {
-                    unset($fields[$field]);
-                }
-                continue;
-            }
-
-            // Without a name filter then check against each filter type
-            if (($fieldsInclude && !$this->anyMatch($field, $fieldsInclude))
-                || ($fieldsExclude && $this->anyMatch($field, $fieldsExclude))
-                || ($dataInclude && !$this->anyMatch($type, $dataInclude))
-                || ($dataExclude && $this->anyMatch($type, $dataExclude))
-            ) {
+            if (!$this->isFieldLocalised($field, $type, $class)) {
                 unset($fields[$field]);
             }
         }
 
         return $this->localisedFields[$class] = $fields;
+    }
+
+    /**
+     * Check if a field is marked for localisation
+     *
+     * @param string $field Field name
+     * @param string $type Field type
+     * @param string $class Class this field is defined in
+     * @return bool
+     */
+    protected function isFieldLocalised($field, $type, $class)
+    {
+        // Explicit per-table filter
+        $filter = Config::inst()->get($class, 'translate', Config::UNINHERITED);
+        if ($filter === self::TRANSLATE_NONE) {
+            return false;
+        }
+        if ($filter && is_array($filter)) {
+            return in_array($field, $filter);
+        }
+
+        // Named blacklist
+        $fieldsExclude = Config::inst()->get($class, 'field_exclude');
+        if ($fieldsExclude && $this->anyMatch($field, $fieldsExclude)) {
+            return false;
+        }
+
+        // Named whitelist
+        $fieldsInclude = Config::inst()->get($class, 'field_include');
+        if ($fieldsInclude && $this->anyMatch($field, $fieldsInclude)) {
+            return true;
+        }
+
+        // Typed blacklist
+        $dataExclude = Config::inst()->get($class, 'data_exclude');
+        if ($dataExclude && $this->anyMatch($type, $dataExclude)) {
+            return false;
+        }
+
+        // Typed whitelist
+        $dataInclude = Config::inst()->get($class, 'data_include');
+        if ($dataInclude && $this->anyMatch($type, $dataInclude)) {
+            return true;
+        }
+
+        return false;
     }
 
     /**
