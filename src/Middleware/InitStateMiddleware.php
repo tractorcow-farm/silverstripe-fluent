@@ -70,6 +70,12 @@ class InitStateMiddleware implements HTTPMiddleware
                 return false;
             }
         }
+
+        // If using the CMS preview, do not treat the site as frontend
+        if ($request->getVar('CMSPreview')) {
+            return false;
+        }
+
         return true;
     }
 
