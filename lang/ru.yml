@@ -1,0 +1,44 @@
+ru:
+  TractorCow\Fluent\Control\LocaleAdmin:
+    MENUTITLE: Языки
+  TractorCow\Fluent\Model\Domain:
+    DEFAULT: 'Стандартный язык'
+    DEFAULT_NONE: '(не выбран)'
+    DOMAIN_HOSTNAME: 'Название Домена'
+    DOMAIN_LOCALES: Языки
+    PLURALNAME: Домены
+    PLURALS:
+      one: 'Домен'
+      other: '{count} Доменов'
+    SINGULARNAME: Домен
+    UnsavedNotice: 'Вы можете добавить языки для домена как только его сохраните.'
+  TractorCow\Fluent\Model\FallbackLocale:
+    LOCALE: Язык
+    PLURALNAME: 'Резервные Языки'
+    PLURALS:
+      one: 'Резервный Язык'
+      other: '{count} Резервных Языков'
+    SINGULARNAME: 'Резервный Язык'
+  TractorCow\Fluent\Model\Locale:
+    DEFAULT_NONE: '(не выбран)'
+    DOMAIN: Домен
+    FALLBACKS: 'Резервные Языки'
+    IS_DEFAULT: 'Это язык по умолчанию на весь сайт'
+    IS_DEFAULT_DESCRIPTION: 'Внимание: Язык назначаемый для домена может быть определен в разделе "Языки" и перепишет это значение для конкретного домена.'
+    LOCALE: Язык
+    LOCALE_TITLE: Название
+    LOCALE_URL: 'URL-адрес'
+    PLURALNAME: Языки
+    PLURALS:
+      one: 'Язык'
+      other: '{count} Языков'
+    SINGULARNAME: Язык
+  TractorCow\Fluent\Extension\FluentSiteTreeExtension:
+    LOCALECOPYTODRAFT: 'Скопировать в Черновик'
+    LOCALECOPYANDPUBLISH: 'Скопировать и опубликовать'
+    LOCALEDRAFTEDSHORT: 'Язык в черновиках'
+    LOCALEDRAFTEDHELP: 'Черновая редакция перевода не опубликована'
+    LOCALEINHERITEDSHORT: 'Унаследовано'
+    LOCALEINHERITEDHELP: 'Данные страницы унаследованы от резевного языка'
+    LOCALESTATUSINHERITED: 'Данные страницы унаследованы от резевного языка. Если вы хотите сделать независимую копию страницы. Пожалуйста воскользуйтесь одной из кнопок "Скопировать".'
+    LOCALESTATUSDRAFT: 'Черновая версия перевода была создана для этого языка, однако, опубликованное содержимое всё ещё на другом языке. Для публикации этого языка воспользуйтесь кнопкой "Сохранить и Опубликовать".'
