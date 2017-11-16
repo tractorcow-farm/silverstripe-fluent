@@ -1,0 +1,32 @@
+TractorCow\Fluent\Model\Locale:
+  nz:
+    Locale: en_NZ
+    Title: 'English (New Zealand)'
+    URLSegment: newzealand
+  us:
+    Locale: en_US
+    Title: 'English (US)'
+    URLSegment: usa
+
+Page:
+  home:
+    Title: Home
+    URLSegment: home
+    FilteredLocales:
+      - '=>TractorCow\Fluent\Model\Locale.nz'
+  about:
+    Title: About
+    URLSegment: about
+
+# All pages are saved in each locale, but not all are visible in all locales
+SiteTree_Localised:
+  home:
+    RecordID: =>Page.home
+    Title: Home
+    URLSegment: home
+    Locale: en_NZ
+  about:
+    RecordID: =>Page.about
+    Title: About
+    URLSegment: about
+    Locale: en_NZ

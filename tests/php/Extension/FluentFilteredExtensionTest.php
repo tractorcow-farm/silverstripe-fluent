@@ -4,7 +4,6 @@ namespace TractorCow\Fluent\Tests\Extension;
 
 use Page;
 use SilverStripe\CMS\Model\SiteTree;
-use SilverStripe\Dev\FixtureFactory;
 use SilverStripe\Dev\SapphireTest;
 use TractorCow\Fluent\Extension\FluentFilteredExtension;
 use TractorCow\Fluent\Extension\FluentSiteTreeExtension;
@@ -33,28 +32,6 @@ class FluentFilteredExtensionTest extends SapphireTest
         FluentState::singleton()
             ->setLocale('en_NZ')
             ->setIsDomainMode(false);
-
-        /** @var FixtureFactory $factory */
-        $factory = $this->getFixtureFactory();
-
-        $factory->clear();
-
-        $factory->createObject('TractorCow\Fluent\Model\Locale', 'nz', [
-            'Locale' => 'en_NZ',
-            'Title' => 'English (New Zealand)',
-            'URLSegment' => 'newzealand',
-        ]);
-
-        $factory->createObject('SilverStripe\CMS\Model\SiteTree', 'home', [
-            'Title' => 'Home',
-            'URLSegment' => 'home',
-            'FilteredLocales' => '=>TractorCow\Fluent\Model\Locale.nz',
-        ]);
-
-        $factory->createObject('SilverStripe\CMS\Model\SiteTree', 'about', [
-            'Title' => 'About',
-            'URLSegment' => 'about',
-        ]);
     }
 
     public function testAugmentSQLFrontend()

@@ -16,10 +16,7 @@ use TractorCow\Fluent\Model\Locale;
 use TractorCow\Fluent\State\FluentState;
 
 /**
- * Class FluentFilteredExtension
- * @package TractorCow\Fluent\Extension
- *
- * @property FluentSiteTreeExtension|DataObject $owner
+ * @property FluentFilteredExtension|DataObject $owner
  * @method DataList|Locale[] FilteredLocales()
  */
 class FluentFilteredExtension extends DataExtension
@@ -37,7 +34,7 @@ class FluentFilteredExtension extends DataExtension
             return;
         }
 
-        $fields->insertAfter(new Tab('Locales'), 'Main');
+        $fields->insertAfter('Main', new Tab('Locales'));
 
         $config = GridFieldConfig_RelationEditor::create();
         $config->removeComponentsByType(GridFieldAddNewButton::class);
