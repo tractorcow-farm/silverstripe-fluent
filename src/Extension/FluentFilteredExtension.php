@@ -67,7 +67,7 @@ class FluentFilteredExtension extends DataExtension
         $table = $schema->baseDataTable(get_class($this->owner));
         $filteredLocalesTable = $table . '_FilteredLocales';
 
-        $query->addInnerJoin(
+        $query->addLeftJoin(
             $filteredLocalesTable,
             "\"{$filteredLocalesTable}\".\"{$table}ID\" = \"{$table}\".\"ID\" AND \"{$filteredLocalesTable}\".\"{$locale->baseTable()}ID\" = ?",
             null,
@@ -76,6 +76,16 @@ class FluentFilteredExtension extends DataExtension
                 $locale->ID,
             ]
         );
+
+        $joinAlias = $this->getLocalisedTable($table, $locale->Locale);
+
+        // Only select records that either have their own Localisation, or have been added as a Filtered Locale.
+        $where = [
+            "\"{$joinAlias}\".\"ID\" IS NOT NULL",
+            "\"{$filteredLocalesTable}\".\"ID\" IS NOT NULL",
+        ];
+
+        $query->addWhereAny($where);
     }
 
     /**
@@ -96,5 +106,21 @@ class FluentFilteredExtension extends DataExtension
         }
 
         return null;
+    }
+
+    /**
+     * Get the localised table name with the localised suffix and optionally with a locale suffix for aliases
+     *
+     * @param string $tableName
+     * @param string $locale
+     * @return string
+     */
+    public function getLocalisedTable($tableName, $locale = '')
+    {
+        $localisedTable = $tableName . '_' . FluentExtension::SUFFIX;
+        if ($locale) {
+            $localisedTable .= '_' . $locale;
+        }
+        return $localisedTable;
     }
 }

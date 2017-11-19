@@ -34,10 +34,19 @@ class FluentFilteredExtensionTest extends SapphireTest
             ->setIsDomainMode(false);
     }
 
-    public function testAugmentSQLFrontend()
+    public function testLocalisedFrontend()
     {
         FluentState::singleton()
             ->setLocale('en_NZ')
+            ->setIsFrontend(true);
+
+        $this->assertEquals(2, SiteTree::get()->count());
+    }
+
+    public function testFilteredFrontend()
+    {
+        FluentState::singleton()
+            ->setLocale('en_US')
             ->setIsFrontend(true);
 
         $this->assertEquals(1, SiteTree::get()->count());

@@ -8,17 +8,18 @@ TractorCow\Fluent\Model\Locale:
     Title: 'English (US)'
     URLSegment: usa
 
+# US has been granted permission to inherit the content of the Home page. NZ has not.
 Page:
   home:
     Title: Home
     URLSegment: home
     FilteredLocales:
-      - '=>TractorCow\Fluent\Model\Locale.nz'
+      - '=>TractorCow\Fluent\Model\Locale.us'
   about:
     Title: About
     URLSegment: about
 
-# All pages are saved in each locale, but not all are visible in all locales
+# NZ cannot inherit content, but it has a Localised version of each Page.
 SiteTree_Localised:
   home:
     RecordID: =>Page.home
