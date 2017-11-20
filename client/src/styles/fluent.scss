@@ -17,6 +17,9 @@ $fluent-color-inherited-text: rgb(82, 82, 82);
 // $fluent-color-inherited-text-badge: #7A4500;
 $fluent-color-inherited-text-badge: rgb(122, 69, 0);
 
+// $fluent-color-filtered-text: #aaaaaa;
+$fluent-color-filtered-text: rgb(170, 170, 170);
+
 // Fix cms-menu collapsed for dropdown
 .cms-menu.collapsed {
   .cms-menu-list {
@@ -45,10 +48,20 @@ $fluent-color-inherited-text-badge: rgb(122, 69, 0);
       }
     }
 
+    .status-fluentfiltered {
+      a {
+        color: $fluent-color-filtered-text;
+      }
+    }
+
     span {
       &.badge {
         &.status-fluentinherited {
           color: $fluent-color-inherited-text-badge;
+        }
+
+        &.status-fluentfiltered {
+          display: none;
         }
       }
     }

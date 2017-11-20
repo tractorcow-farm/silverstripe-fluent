@@ -21,6 +21,11 @@ use TractorCow\Fluent\State\FluentState;
  */
 class FluentFilteredExtension extends DataExtension
 {
+    /**
+     * The table suffix that will be applied to a DataObject's base table.
+     */
+    const SUFFIX = 'FilteredLocales';
+
     private static $many_many = [
         'FilteredLocales' => Locale::class,
     ];
@@ -51,6 +56,53 @@ class FluentFilteredExtension extends DataExtension
         );
     }
 
+    /**
+     * This method is only called if the Extension has been applied to SiteTree. If you are using this Extension on
+     * other DataObjects you will need to implement your own Extension or method on that DataObject for flagging the
+     * "filtered" state.
+     *
+     * @param array $flags
+     */
+    public function updateStatusFlags(&$flags)
+    {
+        // If there is no current FluentState, then we shouldn't update.
+        if (!FluentState::singleton()->getLocale()) {
+            return;
+        }
+
+        // No need to update flags if the Page is available in this Locale.
+        if ($this->isAvailableInLocale()) {
+            return;
+        }
+
+        // Add new status flag for "not visible".
+        $flags['fluentfiltered'] = array(
+            'text' => _t(__CLASS__ . '.LOCALEFILTEREDSHORT', 'Filtered'),
+            'title' => _t(__CLASS__ . '.LOCALEFILTEREDHELP', 'This Page is not visible in this Locale')
+        );
+    }
+
+    /**
+     * @param Locale|null $locale
+     * @return bool
+     */
+    public function isAvailableInLocale(Locale $locale = null)
+    {
+        if ($locale === null) {
+            $locale = Locale::getCurrentLocale();
+        }
+
+        $locales = $this->owner->FilteredLocales()->filter([
+            $locale->baseTable() . 'ID' => $locale->ID,
+        ]);
+
+        return $locales->count() === 1;
+    }
+
+    /**
+     * @param SQLSelect $query
+     * @param DataQuery|null $dataQuery
+     */
     public function augmentSQL(SQLSelect $query, DataQuery $dataQuery = null)
     {
         // We don't want this logic applied in the CMS.
@@ -63,9 +115,8 @@ class FluentFilteredExtension extends DataExtension
             return;
         }
 
-        $schema = DataObject::getSchema();
-        $table = $schema->baseDataTable(get_class($this->owner));
-        $filteredLocalesTable = $table . '_FilteredLocales';
+        $table = $this->owner->baseTable();
+        $filteredLocalesTable = $table . '_' . self::SUFFIX;
 
         $query->addInnerJoin(
             $filteredLocalesTable,
