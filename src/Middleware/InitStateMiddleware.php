@@ -7,6 +7,7 @@ use SilverStripe\Control\Director;
 use SilverStripe\Control\HTTPRequest;
 use SilverStripe\Control\Middleware\HTTPMiddleware;
 use SilverStripe\Core\Config\Configurable;
+use SilverStripe\Core\Environment;
 use SilverStripe\Core\Injector\Injector;
 use TractorCow\Fluent\Extension\FluentDirectorExtension;
 use TractorCow\Fluent\Model\Domain;
@@ -93,7 +94,7 @@ class InitStateMiddleware implements HTTPMiddleware
         }
 
         // Check environment for a forced override
-        if (getenv('SS_FLUENT_FORCE_DOMAIN')) {
+        if (Environment::getEnv('SS_FLUENT_FORCE_DOMAIN')) {
             return true;
         }
 

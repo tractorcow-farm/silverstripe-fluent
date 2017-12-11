@@ -22,11 +22,7 @@ Fluent also supports the use of multiple domains to assist in locale filtering
 
 Back end control is provided by a simple CMS filter.
 
-| **Locale Menu** | **Locale Menu (expanded)** |
-| --------------- | -------------------------- |
-| ![Locale Menu](docs/en/images/menu.jpg "Locale menu") | ![Locale Menu](docs/en/images/menu-expanded.jpg "Locale menu (expanded)") |
-
-_Please read the [Configuration](docs/en/configuration.md) section before trying to install!_
+![Locale Menu](docs/en/images/menu.png "Locale menu")
 
 Also, please [report any issues](https://github.com/tractorcow/silverstripe-fluent/issues)
 you may encounter, as it helps us all out!
@@ -34,15 +30,13 @@ you may encounter, as it helps us all out!
 ## Credits and Authors
 
  * Damian Mooyman - <https://github.com/tractorcow/silverstripe-fluent>
+ * Robbie Averill - <https://github.com/robbieaverill> Migrating to SilverStripe 4.0
  * Attribution to Michael (dAKirby309) for his metro translate icon - <http://dakirby309.deviantart.com/>
 
 ## Requirements
 
- * SilverStripe 3.1.1 or above (3.1 dev branch)
- * PHP 5.3
-
-You can use Silverstripe 3.1 RC1 (3.1.0) if you use the 3.1.0 branch of fluent, but this does not support
-translatable urls.
+ * SilverStripe 4.0.0 or above
+ * PHP 5.6 or above
 
 ## Documentation
 
@@ -52,7 +46,6 @@ translatable urls.
  * [Deployment under multiple domains](docs/en/domain-configuration.md)
  * [Templating for Fluent](docs/en/templating.md)
  * [How Fluent works](docs/en/how-fluent-works.md)
- * [Migration guide for Translatable sites](docs/en/translatable.md)
  * [Changelogs](CHANGELOG.md)
 
 ## License
