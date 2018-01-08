@@ -410,10 +410,14 @@ class FluentExtension extends DataExtension
      */
     public function updateDeleteTables(&$queriedTables)
     {
+        // Ensure a locale exists
+        $locale = $this->getRecordLocale();
+        if (!$locale) {
+            return;
+        }
+
         // Fluent takes over deletion of objects
         $queriedTables = [];
-
-        $locale = $this->getRecordLocale();
         $localisedTables = $this->getLocalisedTables();
         $tableClasses = ClassInfo::ancestry($this->owner, true);
         foreach ($tableClasses as $class) {
