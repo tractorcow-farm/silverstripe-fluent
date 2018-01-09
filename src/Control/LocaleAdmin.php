@@ -24,7 +24,7 @@ class LocaleAdmin extends ModelAdmin
         Domain::class,
     ];
 
-    private static $menu_icon = 'tractorcow/silverstripe-fluent:client/dist/images/menu-icon-16.png';
+    private static $menu_icon_class = 'font-icon-globe-1';
 
     protected function init()
     {
