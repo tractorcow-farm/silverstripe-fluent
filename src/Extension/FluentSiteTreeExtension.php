@@ -197,14 +197,14 @@ class FluentSiteTreeExtension extends FluentVersionedExtension
         if (!$this->isDraftedInLocale()) {
             $message = _t(
                 __CLASS__ . 'LOCALESTATUSINHERITED',
-                'Content for this Page is being inherited from another Locale. If you wish you make an independent copy
-                of this Page, please use one of the "Copy" actions provided.'
+                'Content for this page is being inherited from another locale. If you wish you make an independent copy
+                of this page, please use one of the "Copy" actions provided.'
             );
         } else {
             $message = _t(
                 __CLASS__ . 'LOCALESTATUSDRAFT',
-                'A draft has been created for this Locale, however, published content is still being inherited from
-                another Locale. To publish this content for this Locale, use the "Save & publish" action provided.'
+                'A draft has been created for this locale, however, published content is still being inherited from
+                another locale. To publish this content for this locale, use the "Save & publish" action provided.'
             );
         }
 

@@ -49,7 +49,7 @@ class FluentFilteredExtension extends DataExtension
             'Root.Locales',
             GridField::create(
                 'FilteredLocales',
-                _t(__CLASS__.'.FILTERED_LOCALES', 'Display in the following Locales'),
+                _t(__CLASS__.'.FILTERED_LOCALES', 'Display in the following locales'),
                 $this->owner->FilteredLocales(),
                 $config
             )
@@ -78,7 +78,7 @@ class FluentFilteredExtension extends DataExtension
         // Add new status flag for "not visible".
         $flags['fluentfiltered'] = array(
             'text' => _t(__CLASS__ . '.LOCALEFILTEREDSHORT', 'Filtered'),
-            'title' => _t(__CLASS__ . '.LOCALEFILTEREDHELP', 'This Page is not visible in this Locale')
+            'title' => _t(__CLASS__ . '.LOCALEFILTEREDHELP', 'This page is not visible in this locale')
         );
     }
 
