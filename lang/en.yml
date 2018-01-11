@@ -40,9 +40,9 @@ en:
     LOCALEDRAFTEDHELP: 'Drafted locale edition has not been published'
     LOCALEINHERITEDSHORT: 'Inherited'
     LOCALEINHERITEDHELP: 'Page is inherited from fallback locale'
-    LOCALESTATUSINHERITED: 'Content for this Page is being inherited from another Locale. If you wish you make an independent copy of this Page, please use one of the "Copy" actions provided.'
-    LOCALESTATUSDRAFT: 'A draft has been created for this Locale, however, published content is still being inherited from another Locale. To publish this content for this Locale, use the "Save & publish" action provided.'
+    LOCALESTATUSINHERITED: 'Content for this page is being inherited from another locale. If you wish you make an independent copy of this page, please use one of the "Copy" actions provided.'
+    LOCALESTATUSDRAFT: 'A draft has been created for this locale, however, published content is still being inherited from another locale. To publish this content for this locale, use the "Save & publish" action provided.'
   TractorCow\Fluent\Extension\FluentFilteredExtension:
-    FILTERED_LOCALES: 'Display in the following Locales'
+    FILTERED_LOCALES: 'Display in the following locales'
     LOCALEFILTEREDSHORT: 'Filtered'
-    LOCALEFILTEREDHELP: 'This Page is not visible in this Locale'
+    LOCALEFILTEREDHELP: 'This page is not visible in this locale'
