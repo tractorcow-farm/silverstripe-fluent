@@ -34,12 +34,14 @@ class FallbackLocale extends DataObject
 
     public function getCMSFields()
     {
-        return FieldList::create(
+        $fields = FieldList::create(
             DropdownField::create(
                 'LocaleID',
                 _t(__CLASS__.'.LOCALE', 'Locale'),
                 Locale::getCached()->map('ID', 'Title')
             )
         );
+        $this->extend('updateCMSFields', $fields);
+        return $fields;
     }
 }

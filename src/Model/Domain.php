@@ -76,6 +76,7 @@ class Domain extends DataObject
                     '<p>' . _t(__CLASS__ . '.UnsavedNotice', "You can add locales once you've saved the domain.")
                 )
             );
+            $this->extend('updateCMSFields', $fields);
             return $fields;
         }
 
@@ -106,6 +107,8 @@ class Domain extends DataObject
             )->setEmptyString(_t(__CLASS__.'.DEFAULT_NONE', '(none)'));
             $fields->addFieldToTab('Root.Locales', $defaultField);
         }
+
+        $this->extend('updateCMSFields', $fields);
         return $fields;
     }
 

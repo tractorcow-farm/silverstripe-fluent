@@ -235,6 +235,7 @@ class Locale extends DataObject
             }
         }
 
+        $this->extend('updateCMSFields', $fields);
         return $fields;
     }
 
