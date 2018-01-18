@@ -2,8 +2,6 @@
 
 namespace TractorCow\Fluent\Extension;
 
-use SilverStripe\CMS\Controllers\ModelAsController;
-use SilverStripe\CMS\Controllers\RootURLController;
 use SilverStripe\Core\Config\Configurable;
 use SilverStripe\Core\Extension;
 use TractorCow\Fluent\Model\Locale;
@@ -66,7 +64,7 @@ class FluentDirectorExtension extends Extension
     public function updateRules(&$rules)
     {
         $originalRules = $rules;
-        $rules = $this->getExplicitRoutes();
+        $rules = $this->getExplicitRoutes($originalRules);
 
         // @todo - Build SitemapController after GoogleSitemap module is migrated to ss4
         // If Google sitemap module is installed then replace default controller with custom controller
@@ -89,8 +87,9 @@ class FluentDirectorExtension extends Extension
         // If we do not wish to detect the locale automatically, fix the home page route
         // to the default locale for this domain.
         if (!static::config()->get('detect_locale')) {
+            // Respect existing home controller
             $rules[''] = [
-                'Controller' => RootURLController::class,
+                'Controller' => $this->getRuleController($originalRules[''], $defaultLocale),
                 static::config()->get('query_param') => $defaultLocale->Locale,
             ];
         }
@@ -99,7 +98,7 @@ class FluentDirectorExtension extends Extension
         // the default locale for this domain
         if (static::config()->get('disable_default_prefix')) {
             $rules['$URLSegment//$Action/$ID/$OtherID'] = [
-                'Controller' => ModelAsController::class,
+                'Controller' => $this->getRuleController($originalRules['$URLSegment//$Action/$ID/$OtherID'], $defaultLocale),
                 static::config()->get('query_param') => $defaultLocale->Locale
             ];
         }
@@ -108,9 +107,10 @@ class FluentDirectorExtension extends Extension
     /**
      * Generate an array of explicit routing rules for each locale
      *
+     * @param array $originalRules
      * @return array
      */
-    protected function getExplicitRoutes()
+    protected function getExplicitRoutes($originalRules)
     {
         $queryParam = static::config()->get('query_param');
         $rules = [];
@@ -119,15 +119,34 @@ class FluentDirectorExtension extends Extension
             $locale = $localeObj->getLocale();
             $url = $localeObj->getURLSegment();
 
+            // Apply to nested page url
+            $controller = $this->getRuleController($originalRules['$URLSegment//$Action/$ID/$OtherID'], $localeObj);
             $rules[$url . '/$URLSegment!//$Action/$ID/$OtherID'] = [
-                'Controller' => ModelAsController::class,
+                'Controller' => $controller,
                 $queryParam => $locale,
             ];
+
+            // Home url for that locale
+            $controller = $this->getRuleController($originalRules[''], $localeObj);
             $rules[$url] = [
-                'Controller' => RootURLController::class,
+                'Controller' => $controller,
                 $queryParam => $locale,
             ];
         }
         return $rules;
+    }
+
+    /**
+     * Get controller that fluent should inject
+     * @param array|string $existingRule
+     * @param Locale $localeObj
+     * @return string Class name of controller to use
+     */
+    protected function getRuleController($existingRule, $localeObj)
+    {
+        $controller = isset($existingRule['Controller']) ? $existingRule['Controller'] : $existingRule;
+        // Decorate Director class to override controllers for a specific locale
+        $this->owner->extend('updateLocalePageController', $controller, $localeObj);
+        return $controller;
     }
 }
