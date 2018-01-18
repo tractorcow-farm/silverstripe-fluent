@@ -59,6 +59,24 @@ class FluentDirectorExtension extends Extension
     private static $force_domain = false;
 
     /**
+     * An option to override root controller class
+     * useful for custom routing
+     *
+     * @config
+     * @var string
+     */
+    private static $root_controller_class = RootURLController::class;
+
+    /**
+     * An option to override model controller class
+     * useful for custom routing
+     *
+     * @config
+     * @var string
+     */
+    private static $model_controller_class = ModelAsController::class;
+
+    /**
      * Forces regeneration of all locale routes
      *
      * @param array &$rules
@@ -90,7 +108,7 @@ class FluentDirectorExtension extends Extension
         // to the default locale for this domain.
         if (!static::config()->get('detect_locale')) {
             $rules[''] = [
-                'Controller' => RootURLController::class,
+                'Controller' => static::config()->get('root_controller_class'),
                 static::config()->get('query_param') => $defaultLocale->Locale,
             ];
         }
@@ -99,7 +117,7 @@ class FluentDirectorExtension extends Extension
         // the default locale for this domain
         if (static::config()->get('disable_default_prefix')) {
             $rules['$URLSegment//$Action/$ID/$OtherID'] = [
-                'Controller' => ModelAsController::class,
+                'Controller' => static::config()->get('model_controller_class'),
                 static::config()->get('query_param') => $defaultLocale->Locale
             ];
         }
@@ -120,11 +138,11 @@ class FluentDirectorExtension extends Extension
             $url = $localeObj->getURLSegment();
 
             $rules[$url . '/$URLSegment!//$Action/$ID/$OtherID'] = [
-                'Controller' => ModelAsController::class,
+                'Controller' => static::config()->get('model_controller_class'),
                 $queryParam => $locale,
             ];
             $rules[$url] = [
-                'Controller' => RootURLController::class,
+                'Controller' => static::config()->get('root_controller_class'),
                 $queryParam => $locale,
             ];
         }
