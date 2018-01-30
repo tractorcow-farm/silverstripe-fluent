@@ -68,12 +68,6 @@ class FluentDirectorExtension extends Extension
         $originalRules = $rules;
         $rules = $this->getExplicitRoutes();
 
-        // @todo - Build SitemapController after GoogleSitemap module is migrated to ss4
-        // If Google sitemap module is installed then replace default controller with custom controller
-        //if (class_exists(GoogleSitemapController::class)) {
-        //    $rules['sitemap.xml'] = SitemapController::class;
-        //}
-
         // Merge all other routes (maintain priority)
         foreach ($originalRules as $key => $route) {
             if (!isset($rules[$key])) {
