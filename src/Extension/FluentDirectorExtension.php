@@ -7,6 +7,8 @@ use SilverStripe\CMS\Controllers\RootURLController;
 use SilverStripe\Core\Config\Configurable;
 use SilverStripe\Core\Extension;
 use TractorCow\Fluent\Model\Locale;
+use TractorCow\Fluent\Control\FluentSitemapController;
+use Wilr\GoogleSitemaps\Control\GoogleSitemapController;
 
 /**
  * Fluent extension for {@link \SilverStripe\Control\Director} to apply routing rules for locales
@@ -70,9 +72,9 @@ class FluentDirectorExtension extends Extension
 
         // @todo - Build SitemapController after GoogleSitemap module is migrated to ss4
         // If Google sitemap module is installed then replace default controller with custom controller
-        //if (class_exists(GoogleSitemapController::class)) {
-        //    $rules['sitemap.xml'] = SitemapController::class;
-        //}
+        if (class_exists(GoogleSitemapController::class)) {
+            $rules['sitemap.xml'] = FluentSitemapController::class;
+        }
 
         // Merge all other routes (maintain priority)
         foreach ($originalRules as $key => $route) {
