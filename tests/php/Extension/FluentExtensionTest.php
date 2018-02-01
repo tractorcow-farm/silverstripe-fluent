@@ -4,6 +4,8 @@ namespace TractorCow\Fluent\Tests\Extension;
 
 use SilverStripe\CMS\Model\SiteTree;
 use SilverStripe\Dev\SapphireTest;
+use SilverStripe\ORM\DataObject;
+use SilverStripe\ORM\Queries\SQLSelect;
 use TractorCow\Fluent\Extension\FluentSiteTreeExtension;
 use TractorCow\Fluent\State\FluentState;
 use TractorCow\Fluent\Tests\Extension\FluentExtensionTest\LocalisedAnother;
@@ -14,6 +16,8 @@ use TractorCow\Fluent\Tests\Extension\Stub\FluentStubObject;
 
 class FluentExtensionTest extends SapphireTest
 {
+    protected static $fixture_file = 'FluentExtensionTest.yml';
+
     protected static $extra_dataobjects = [
         LocalisedAnother::class,
         LocalisedChild::class,
@@ -43,7 +47,11 @@ class FluentExtensionTest extends SapphireTest
         /** @var SiteTree|FluentSiteTreeExtension $page */
         $page = new SiteTree;
         $this->assertSame('SiteTree_Localised', $page->getLocalisedTable('SiteTree'));
-        $this->assertSame('SiteTree_Localised_FR', $page->getLocalisedTable('SiteTree', 'FR'));
+        $this->assertSame(
+            'SiteTree_Localised_FR',
+            $page->getLocalisedTable('SiteTree', 'FR'),
+            'Table aliases can be generated with getLocalisedTable()'
+        );
     }
 
     public function testGetLinkingMode()
@@ -103,5 +111,43 @@ class FluentExtensionTest extends SapphireTest
             $parentLocalised,
             $unlocalised->getLocalisedFields(LocalisedParent::class)
         );
+    }
+
+    public function testWritesToCurrentLocale()
+    {
+        FluentState::singleton()->setLocale('en_US');
+        $record = $this->objFromFixture(LocalisedParent::class, 'record_a');
+        $this->assertSame(
+            'en_US',
+            $this->getLocalisedLocaleFromDb($record),
+            'Record can be read from default locale'
+        );
+
+        FluentState::singleton()->setLocale('de_DE');
+        $record->write();
+
+        $record2 = $this->objFromFixture(LocalisedParent::class, 'record_a');
+        $this->assertSame(
+            'de_DE',
+            $this->getLocalisedLocaleFromDb($record2),
+            'Record Locale is set to current locale'
+        );
+    }
+
+    /**
+     * Get a Locale field value directly from a record's localised database table, skipping the ORM
+     *
+     * @param DataObject $record
+     * @return string|null
+     */
+    protected function getLocalisedLocaleFromDb(DataObject $record)
+    {
+        $result = SQLSelect::create()
+            ->setFrom($record->config()->get('table_name') . '_Localised')
+            ->setWhere(['RecordID' => $record->ID])
+            ->execute()
+            ->first();
+
+        return isset($result['Locale']) ? $result['Locale'] : null;
     }
 }
