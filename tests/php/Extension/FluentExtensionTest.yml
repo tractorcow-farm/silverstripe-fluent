@@ -1,0 +1,18 @@
+TractorCow\Fluent\Model\Locale:
+  default:
+    Title: US English
+    Locale: en_US
+    IsGlobalDefault: true
+  german:
+    Title: German
+    Locale: de_DE
+
+TractorCow\Fluent\Tests\Extension\FluentExtensionTest\LocalisedParent:
+  record_a:
+    Title: A record
+
+FluentExtensionTest_LocalisedParent_Localised:
+  record_a:
+    RecordID: =>TractorCow\Fluent\Tests\Extension\FluentExtensionTest\LocalisedParent.record_a
+    Title: A record
+    Locale: en_US
