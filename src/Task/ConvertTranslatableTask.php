@@ -125,7 +125,7 @@ class ConvertTranslatableTask extends BuildTask
     /**
      * Gets all classes with FluentExtension
      *
-     * @return array Aray of classes to migrate
+     * @return array Array of classes to migrate
      */
     public function fluentClasses()
     {

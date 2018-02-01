@@ -47,7 +47,7 @@ Either one of:
  * Ensure that all domains configured are the only domains that the site can be accessed under, or
  * Add `SS_FLUENT_FORCE_DOMAIN=true` to your `.env` file, or
  * Set the `TractorCow\Fluent\Extension\FluentDirectorExtension.force_domain` config to true.
-   (this will effect your development environment).
+   (this will affect your development environment).
 
 Outside of these conditions, the domains configuration property will be entirely ignored, meaning you will not normally
 need to alter your SilverStripe configuration between environments.
