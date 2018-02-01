@@ -411,7 +411,7 @@ class FluentExtension extends DataExtension
     public function updateDeleteTables(&$queriedTables)
     {
         // Ensure a locale exists
-        $locale = $this->getRecordLocale();
+        $locale = Locale::getCurrentLocale();
         if (!$locale) {
             return;
         }
@@ -474,7 +474,7 @@ class FluentExtension extends DataExtension
      */
     public function augmentWrite(&$manipulation)
     {
-        $locale = $this->getRecordLocale();
+        $locale = Locale::getCurrentLocale();
         if (!$locale) {
             return;
         }

@@ -194,7 +194,7 @@ class FluentVersionedExtension extends FluentExtension
         parent::augmentWrite($manipulation);
 
         // Only rewrite if the locale is valid
-        $locale = $this->getRecordLocale();
+        $locale = Locale::getCurrentLocale();
         if (!$locale) {
             return;
         }
