@@ -10,6 +10,7 @@ use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\DB;
 use SilverStripe\ORM\Queries\SQLSelect;
 use SilverStripe\Security\DefaultAdminService;
+use SilverStripe\Security\Member;
 use SilverStripe\Security\Security;
 use SilverStripe\Versioned\Versioned;
 use TractorCow\Fluent\Extension\FluentExtension;
@@ -40,13 +41,6 @@ class ConvertTranslatableTask extends BuildTask
     private static $segment = 'ConvertTranslatableTask';
 
     /**
-     * Fields that are localised per class (key = class name)
-     *
-     * @var array[]
-     */
-    protected $localisedFields = [];
-
-    /**
      * Checks that fluent is configured correctly
      *
      * @throws ConvertTranslatableTask\Exception
@@ -65,61 +59,6 @@ class ConvertTranslatableTask extends BuildTask
                 "Please configure a Fluent default locale (in the CMS) prior to migrating from translatable"
             );
         }
-    }
-
-    /**
-     * Do something inside a DB transaction
-     *
-     * @param callable $callback
-     * @throws \Exception
-     */
-    protected function withTransaction($callback)
-    {
-        try {
-            Debug::message('Beginning transaction', false);
-            DB::get_conn()->transactionStart();
-            $callback($this);
-            Debug::message('Comitting transaction', false);
-            DB::get_conn()->transactionEnd();
-        } catch (\Exception $ex) {
-            Debug::message('Rolling back transaction', false);
-            DB::get_conn()->transactionRollback();
-            throw $ex;
-        }
-    }
-
-    protected $translatedFields = [];
-
-    /**
-     * Get all database fields to translate
-     *
-     * @param string $class Class name
-     * @return array List of translated fields
-     */
-    public function getTranslatedFields($class)
-    {
-        if (isset($this->localisedFields[$class])) {
-            return $this->localisedFields[$class];
-        }
-        $fields = [];
-        $hierarchy = ClassInfo::ancestry($class);
-        foreach ($hierarchy as $class) {
-            // Skip classes without tables
-            if (!DataObject::getSchema()->classHasTable($class)) {
-                continue;
-            }
-
-            // Check fields localised by Fluent for this class
-            $localisedFields = singleton($class)->getLocalisedFields();
-            if (empty($localisedFields)) {
-                continue;
-            }
-
-            // Save fields
-            $fields = array_merge($fields, array_keys($localisedFields));
-        }
-        $this->localisedFields[$class] = $fields;
-        return $fields;
     }
 
     /**
@@ -149,106 +88,109 @@ class ConvertTranslatableTask extends BuildTask
         // Extend time limit
         set_time_limit(100000);
 
+        $this->checkInstalled();
+
         // we may need some privileges for this to work
         // without this, running under sake is a problem
         // maybe sake could take care of it ...
-        Security::setCurrentUser(
-            DefaultAdminService::singleton()->findOrCreateDefaultAdmin()
-        );
-
-        $this->checkInstalled();
-        $this->withTransaction(function (ConvertTranslatableTask $task) {
-            Versioned::set_stage(Versioned::DRAFT);
-            $classes = $task->fluentClasses();
-            $tables = DB::get_schema()->tableList();
-            if (empty($classes)) {
-                Debug::message('No classes have Fluent enabled, so skipping.', false);
-            }
-
-            foreach ($classes as $class) {
-                /** @var DataObject $class */
-
-                // Ensure that a translationgroup table exists for this class
-                $baseTable = DataObject::getSchema()->baseDataTable($class);
-                $groupTable = strtolower($baseTable . "_translationgroups");
-                if (isset($tables[$groupTable])) {
-                    $groupTable = $tables[$groupTable];
-                } else {
-                    Debug::message("Ignoring class without _translationgroups table $class", false);
-                    continue;
-                }
-
-                // Disable filter if it has been applied to the class
-                if (singleton($class)->hasMethod('has_extension')
-                    && $class::has_extension(FluentFilteredExtension::class)
-                ) {
-                    $class::remove_extension(FluentFilteredExtension::class);
-                }
-
-                // Select all instances of this class in the base table, where the Locale field is not null.
-                // Translatable has a Locale column on the base table in SS3, but Fluent doesn't use it. Newly
-                // created records via SS4 Fluent will not set this column, but will set it in {$baseTable}_Localised
-                $instances = DataObject::get($class, sprintf(
-                    '"%s"."Locale" IS NOT NULL',
-                    $baseTable
-                ));
-
-                foreach ($instances as $instance) {
-                    /** @var DataObject $instance */
-
-                    // Get the Locale column directly from the base table, since the SS ORM will not include it
-                    $instanceLocale = SQLSelect::create()
-                        ->setFrom($baseTable)
-                        ->setSelect('Locale')
-                        ->setWhere(['ID' => $instance->ID])
-                        ->execute()
-                        ->first();
-
-                    // Ensure that we got the Locale out of the base table before continuing
-                    if (empty($instanceLocale['Locale'])) {
-                        Debug::message("Skipping {$instance->Title} with ID {$instanceID} - couldn't find Locale");
-                        continue;
-                    }
-                    $instanceLocale = $instanceLocale['Locale'];
-
-                    // Check for obsolete classes that don't need to be handled any more
-                    if ($instance->ObsoleteClassName) {
-                        Debug::message("Skipping {$instance->ClassName} with ID {$instanceID} because it from an obsolete class", false);
-                        continue;
+        Member::actAs(
+            DefaultAdminService::singleton()->findOrCreateDefaultAdmin(),
+            function () {
+                DB::get_conn()->withTransaction(function () {
+                    Versioned::set_stage(Versioned::DRAFT);
+                    $classes = $this->fluentClasses();
+                    $tables = DB::get_schema()->tableList();
+                    if (empty($classes)) {
+                        Debug::message('No classes have Fluent enabled, so skipping.', false);
                     }
 
-                    Debug::message(
-                        "Updating {$instance->ClassName} {$instance->MenuTitle} ({$instance->ID}) with locale {$instanceLocale}",
-                        false
-                    );
+                    foreach ($classes as $class) {
+                        /** @var DataObject $class */
 
-                    FluentState::singleton()
-                        ->withState(function (FluentState $state) use ($instance, $instanceLocale) {
-                            // Use Fluent's ORM to write and/or publish the record into the correct locale
-                            // from Translatable
-                            $state->setLocale($instanceLocale);
+                        // Ensure that a translationgroup table exists for this class
+                        $baseTable = DataObject::getSchema()->baseDataTable($class);
+                        $groupTable = strtolower($baseTable . "_translationgroups");
+                        if (isset($tables[$groupTable])) {
+                            $groupTable = $tables[$groupTable];
+                        } else {
+                            Debug::message("Ignoring class without _translationgroups table $class", false);
+                            continue;
+                        }
 
-                            if (!$this->isPublished($instance)) {
-                                $instance->write();
-                                Debug::message("  --  Saved to draft", false);
-                            } elseif ($instance->publishRecursive() === false) {
-                                Debug::message("  --  Publishing FAILED", false);
-                                throw new Exception("Failed to publish");
-                            } else {
-                                Debug::message("  --  Published", false);
+                        // Disable filter if it has been applied to the class
+                        if (singleton($class)->hasMethod('has_extension')
+                            && $class::has_extension(FluentFilteredExtension::class)
+                        ) {
+                            $class::remove_extension(FluentFilteredExtension::class);
+                        }
+
+                        // Select all instances of this class in the base table, where the Locale field is not null.
+                        // Translatable has a Locale column on the base table in SS3, but Fluent doesn't use it. Newly
+                        // created records via SS4 Fluent will not set this column, but will set it in {$baseTable}_Localised
+                        $instances = DataObject::get($class, sprintf(
+                            '"%s"."Locale" IS NOT NULL',
+                            $baseTable
+                        ));
+
+                        foreach ($instances as $instance) {
+                            /** @var DataObject $instance */
+
+                            // Get the Locale column directly from the base table, since the SS ORM will not include it
+                            $instanceLocale = SQLSelect::create()
+                                ->setFrom("\"{$baseTable}\"")
+                                ->setSelect('"Locale"')
+                                ->setWhere(["\"{$baseTable}\".\"ID\"" => $instance->ID])
+                                ->execute()
+                                ->first();
+
+                            // Ensure that we got the Locale out of the base table before continuing
+                            if (empty($instanceLocale['Locale'])) {
+                                Debug::message("Skipping {$instance->Title} with ID {$instanceID} - couldn't find Locale");
+                                continue;
                             }
-                        });
-                }
+                            $instanceLocale = $instanceLocale['Locale'];
 
-                // Drop the "Locale" column from the base table
-                Debug::message('Dropping "Locale" column from ' . $baseTable, false);
-                DB::query(sprintf('ALTER TABLE "%s" DROP COLUMN "Locale"', Convert::raw2sql($baseTable)));
+                            // Check for obsolete classes that don't need to be handled any more
+                            if ($instance->ObsoleteClassName) {
+                                Debug::message("Skipping {$instance->ClassName} with ID {$instanceID} because it from an obsolete class",
+                                    false);
+                                continue;
+                            }
 
-                // Drop the "_translationgroups" translatable table
-                Debug::message('Deleting Translatable table ' . $groupTable, false);
-                DB::query(sprintf('DROP TABLE IF EXISTS "%s"', $groupTable));
+                            Debug::message(
+                                "Updating {$instance->ClassName} {$instance->Title} ({$instance->ID}) with locale {$instanceLocale}",
+                                false
+                            );
+
+                            FluentState::singleton()
+                                ->withState(function (FluentState $state) use ($instance, $instanceLocale) {
+                                    // Use Fluent's ORM to write and/or publish the record into the correct locale
+                                    // from Translatable
+                                    $state->setLocale($instanceLocale);
+
+                                    if (!$this->isPublished($instance)) {
+                                        $instance->write();
+                                        Debug::message("  --  Saved to draft", false);
+                                    } elseif ($instance->publishRecursive() === false) {
+                                        Debug::message("  --  Publishing FAILED", false);
+                                        throw new Exception("Failed to publish");
+                                    } else {
+                                        Debug::message("  --  Published", false);
+                                    }
+                                });
+                        }
+
+                        // Drop the "Locale" column from the base table
+                        Debug::message('Dropping "Locale" column from ' . $baseTable, false);
+                        DB::query(sprintf('ALTER TABLE "%s" DROP COLUMN "Locale"', Convert::raw2sql($baseTable)));
+
+                        // Drop the "_translationgroups" translatable table
+                        Debug::message('Deleting Translatable table ' . $groupTable, false);
+                        DB::query(sprintf('DROP TABLE IF EXISTS "%s"', $groupTable));
+                    }
+                });
             }
-        });
+        );
     }
 
     /**
