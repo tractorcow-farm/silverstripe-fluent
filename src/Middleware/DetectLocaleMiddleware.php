@@ -7,6 +7,7 @@ use SilverStripe\Control\HTTPRequest;
 use SilverStripe\Control\Middleware\HTTPMiddleware;
 use SilverStripe\Core\Config\Configurable;
 use SilverStripe\Core\Injector\Injector;
+use SilverStripe\i18n\i18n;
 use TractorCow\Fluent\Extension\FluentDirectorExtension;
 use TractorCow\Fluent\Model\Domain;
 use TractorCow\Fluent\Model\Locale;
@@ -56,11 +57,15 @@ class DetectLocaleMiddleware implements HTTPMiddleware
     public function process(HTTPRequest $request, callable $delegate)
     {
         $state = FluentState::singleton();
+        $locale = $state->getLocale();
 
-        if (!$state->getLocale()) {
+        if (!$locale) {
             $locale = $this->getLocale($request);
-
             $state->setLocale($locale);
+        }
+
+        if ($locale && $state->getIsFrontend()) {
+            i18n::set_locale($state->getLocale());
         }
 
         // Always persist the current locale
