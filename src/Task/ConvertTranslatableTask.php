@@ -85,9 +85,6 @@ class ConvertTranslatableTask extends BuildTask
 
     public function run($request)
     {
-        // Extend time limit
-        set_time_limit(100000);
-
         $this->checkInstalled();
 
         // we may need some privileges for this to work
@@ -152,8 +149,10 @@ class ConvertTranslatableTask extends BuildTask
 
                             // Check for obsolete classes that don't need to be handled any more
                             if ($instance->ObsoleteClassName) {
-                                Debug::message("Skipping {$instance->ClassName} with ID {$instanceID} because it from an obsolete class",
-                                    false);
+                                Debug::message(
+                                    "Skipping {$instance->ClassName} with ID {$instanceID} because it from an obsolete class",
+                                    false
+                                );
                                 continue;
                             }
 
