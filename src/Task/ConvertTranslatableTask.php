@@ -181,7 +181,7 @@ class ConvertTranslatableTask extends BuildTask
 
                         // Drop the "Locale" column from the base table
                         Debug::message('Dropping "Locale" column from ' . $baseTable, false);
-                        DB::query(sprintf('ALTER TABLE "%s" DROP COLUMN "Locale"', Convert::raw2sql($baseTable)));
+                        DB::query(sprintf('ALTER TABLE "%s" DROP COLUMN "Locale"', $baseTable));
 
                         // Drop the "_translationgroups" translatable table
                         Debug::message('Deleting Translatable table ' . $groupTable, false);
