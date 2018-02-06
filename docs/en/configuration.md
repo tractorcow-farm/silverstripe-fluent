@@ -60,6 +60,7 @@ or excluded, either by name, or by type (in order of priority):
 E.g.
 
 ```yaml
+---
 Name: fluentfieldconfig
 ---
 TractorCow\Fluent\Extension\FluentExtension:
