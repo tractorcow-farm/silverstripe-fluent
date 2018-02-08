@@ -849,10 +849,18 @@ class FluentExtension extends DataExtension
 
 // <editor-fold defaultstate="collapsed" desc="CMS Field Augmentation">
 
+    /**
+     * @param FieldList $fields
+     */
     public function updateCMSFields(FieldList $fields)
     {
         // get all fields to translate and remove
         $translated = $this->getLocalisedTables();
+
+        $currentLocale = Locale::getCurrentLocale();
+        $locale = $currentLocale->Locale;
+        $language = $currentLocale ? strtok($locale, '_') : '';
+
         foreach ($translated as $table => $translatedFields) {
             foreach ($translatedFields as $translatedField) {
                 // Find field matching this translated field
@@ -866,29 +874,22 @@ class FluentExtension extends DataExtension
                 // Highlight any translatable field
                 if ($field && !$field->hasClass('LocalisedField')) {
                     // Add a language indicator next to the fluent icon
-                    $currentLocale = Locale::getCurrentLocale();
-                    $locale = $currentLocale->Locale;
-                    $language = $currentLocale ? strtok($locale, '_') : '';
+
                     $title = $field->Title();
 
                     $titleClasses = 'fluent-locale-label';
                     $modifiedTitle = 'Using default locale value';
 
-                    // Add a visual indicator for whether the value has been changed from the default locale
-//                    if (Fluent::isFieldModified($this->owner, $field, $locale)) {
-//                        $titleClasses .= ' fluent-modified-value';
-//                        $modifiedTitle = 'Modified from default locale value - click to reset';
-//                    }
-
                     $field->setTitle(
                         DBHTMLText::create()->setValue(
-                        sprintf(
-                            '<span class="%s" title="%s">%s</span>%s',
-                            $titleClasses,
-                            $modifiedTitle,
-                            $language,
-                            $title
-                        ))
+                            sprintf(
+                                '<span class="%s" title="%s">%s</span>%s',
+                                $titleClasses,
+                                $modifiedTitle,
+                                $language,
+                                $title
+                            )
+                        )
                     );
 
                     // Set the default value to the element so we can compare it with JavaScript
@@ -938,19 +939,25 @@ class FluentExtension extends DataExtension
         $currentLocaleKey = $currentLocale ? $currentLocale->Locale : '';
         $messageClass    = ($isDefaultLocale) ? 'good' : 'notice';
         $message         = ($isDefaultLocale)
-            ? _t('Fluent.DefaultLocale', 'This is the default locale')
-            : _t('Fluent.DefaultLocaleIs', 'The default locale is') . ' ' . $localeNames[$defaultLocaleKey];
+            ? _t(__CLASS__.'DefaultLocale', 'This is the default locale')
+            : _t(
+                __CLASS__.'DefaultLocaleIs',
+                'The default locale is {locale}',
+                ['locale' => $localeNames[$defaultLocaleKey]]
+            );
 
         $fields->unshift(
             LiteralField::create(
                 'CurrentLocaleMessage',
                 sprintf(
-                    '<p class="message %s">' . _t(
-                        'Fluent.EditingIn',
-                        'Please note: You are editing in'
-                    ) . ' %s. %s.</p>',
+                    '<p class="message %s">'
+                    . _t(
+                        __CLASS__.'.EditingIn',
+                        'Please note: You are editing in {locale}.',
+                        ['locale' => $localeNames[$currentLocaleKey]]
+                    )
+                    . ' %s.</p>',
                     $messageClass,
-                    $localeNames[$currentLocaleKey],
                     $message
                 )
             )
