@@ -155,7 +155,7 @@ class FluentSiteTreeExtension extends FluentVersionedExtension
         if (!FluentState::singleton()->getLocale()) {
             return;
         }
-
+        parent::updateCMSFields($fields);
         $this->addLocaleStatusMessage($fields);
     }
 

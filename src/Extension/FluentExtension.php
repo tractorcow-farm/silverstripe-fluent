@@ -7,12 +7,15 @@ use SilverStripe\Control\Director;
 use SilverStripe\Core\ClassInfo;
 use SilverStripe\Core\Config\Config;
 use SilverStripe\Core\Convert;
+use SilverStripe\Forms\FieldList;
+use SilverStripe\Forms\LiteralField;
 use SilverStripe\i18n\i18n;
 use SilverStripe\ORM\ArrayList;
 use SilverStripe\ORM\DataExtension;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\DataQuery;
 use SilverStripe\ORM\DB;
+use SilverStripe\ORM\FieldType\DBHTMLText;
 use SilverStripe\ORM\Queries\SQLConditionGroup;
 use SilverStripe\ORM\Queries\SQLDelete;
 use SilverStripe\ORM\Queries\SQLSelect;
@@ -139,6 +142,14 @@ class FluentExtension extends DataExtension
      * @var bool
      */
     private static $frontend_publish_required = true;
+
+    /**
+     * Controls whether the message indicating whether you are editing in the default locale is disabled
+     *
+     * @config
+     * @var bool
+     */
+    private static $disable_current_locale_message = false;
 
     /**
      * Get list of fields that are localised
@@ -835,4 +846,118 @@ class FluentExtension extends DataExtension
     {
         return 'fluentlocale-' . FluentState::singleton()->getLocale();
     }
+
+// <editor-fold defaultstate="collapsed" desc="CMS Field Augmentation">
+
+    public function updateCMSFields(FieldList $fields)
+    {
+        // get all fields to translate and remove
+        $translated = $this->getLocalisedTables();
+        foreach ($translated as $table => $translatedFields) {
+            foreach ($translatedFields as $translatedField) {
+                // Find field matching this translated field
+                // If the translated field has an ID suffix also check for the non-suffixed version
+                // E.g. UploadField()
+                $field = $fields->dataFieldByName($translatedField);
+                if (!$field && preg_match('/^(?<field>\w+)ID$/', $translatedField, $matches)) {
+                    $field = $fields->dataFieldByName($matches['field']);
+                }
+
+                // Highlight any translatable field
+                if ($field && !$field->hasClass('LocalisedField')) {
+                    // Add a language indicator next to the fluent icon
+                    $currentLocale = Locale::getCurrentLocale();
+                    $locale = $currentLocale->Locale;
+                    $language = $currentLocale ? strtok($locale, '_') : '';
+                    $title = $field->Title();
+
+                    $titleClasses = 'fluent-locale-label';
+                    $modifiedTitle = 'Using default locale value';
+
+                    // Add a visual indicator for whether the value has been changed from the default locale
+//                    if (Fluent::isFieldModified($this->owner, $field, $locale)) {
+//                        $titleClasses .= ' fluent-modified-value';
+//                        $modifiedTitle = 'Modified from default locale value - click to reset';
+//                    }
+
+                    $field->setTitle(
+                        DBHTMLText::create()->setValue(
+                        sprintf(
+                            '<span class="%s" title="%s">%s</span>%s',
+                            $titleClasses,
+                            $modifiedTitle,
+                            $language,
+                            $title
+                        ))
+                    );
+
+                    // Set the default value to the element so we can compare it with JavaScript
+//                    if (Locale::getDefault() !== $locale) {
+//                        $field->setAttribute(
+//                            'data-default-locale-value',
+//                            $this->owner->{Fluent::db_field_for_locale($field->getName(), Locale::getDefault())}
+//                        );
+//                    }
+
+                    $field->addExtraClass('LocalisedField');
+                }
+
+                // Remove translation DBField from automatic scaffolded fields
+//                foreach (Fluent::locales() as $locale) {
+//                    $fieldName = Fluent::db_field_for_locale($translatedField, $locale);
+//                    $fields->removeByName($fieldName, true);
+//                }
+            }
+        }
+
+        $this->addLocaleIndicatorMessage($fields);
+    }
+
+    /**
+     * Adds a UI message to indicate whether you're editing in the default locale or not
+     *
+     * @param  FieldList $fields
+     * @return $this
+     */
+    protected function addLocaleIndicatorMessage(FieldList $fields)
+    {
+        if (Config::inst()->get(__CLASS__, 'disable_current_locale_message')) {
+            return $this;
+        }
+
+        // If the field is already present, don't add it a second time
+        if ($fields->fieldByName('CurrentLocaleMessage')) {
+            return $this;
+        }
+
+        $localeNames     = Locale::get()->map('Locale', 'Title')->toArray();
+        $defaultLocale   = Locale::getDefault();
+        $isDefaultLocale = ($defaultLocale === Locale::getCurrentLocale());
+        $defaultLocaleKey = $defaultLocale ? $defaultLocale->Locale : '';
+        $currentLocale = Locale::getCurrentLocale();
+        $currentLocaleKey = $currentLocale ? $currentLocale->Locale : '';
+        $messageClass    = ($isDefaultLocale) ? 'good' : 'notice';
+        $message         = ($isDefaultLocale)
+            ? _t('Fluent.DefaultLocale', 'This is the default locale')
+            : _t('Fluent.DefaultLocaleIs', 'The default locale is') . ' ' . $localeNames[$defaultLocaleKey];
+
+        $fields->unshift(
+            LiteralField::create(
+                'CurrentLocaleMessage',
+                sprintf(
+                    '<p class="message %s">' . _t(
+                        'Fluent.EditingIn',
+                        'Please note: You are editing in'
+                    ) . ' %s. %s.</p>',
+                    $messageClass,
+                    $localeNames[$currentLocaleKey],
+                    $message
+                )
+            )
+        );
+
+        return $this;
+    }
+
+    // </editor-fold>
 }
