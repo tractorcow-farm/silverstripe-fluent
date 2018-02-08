@@ -212,7 +212,7 @@ class FluentSiteTreeExtension extends FluentVersionedExtension
             LiteralField::create(
                 'LocaleStatusMessage',
                 sprintf(
-                    '<p class="message notice">%s</p>',
+                    '<p class="alert alert-info">%s</p>',
                     $message
                 )
             )
