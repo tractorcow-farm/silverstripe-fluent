@@ -3,11 +3,15 @@
 namespace TractorCow\Fluent\Extension;
 
 use SilverStripe\CMS\Controllers\RootURLController;
+use SilverStripe\CMS\Forms\SiteTreeURLSegmentField;
 use SilverStripe\CMS\Model\SiteTree;
 use SilverStripe\Control\Controller;
+use SilverStripe\Control\Director;
 use SilverStripe\Forms\CompositeField;
 use SilverStripe\Forms\FieldList;
 use SilverStripe\Forms\LiteralField;
+use TractorCow\Fluent\Model\Domain;
+use TractorCow\Fluent\Model\Locale;
 use TractorCow\Fluent\State\FluentState;
 
 /**
@@ -157,6 +161,7 @@ class FluentSiteTreeExtension extends FluentVersionedExtension
         }
 
         $this->addLocaleStatusMessage($fields);
+        $this->addLocalePrefixToUrlSegment($fields);
     }
 
     /**
@@ -217,6 +222,50 @@ class FluentSiteTreeExtension extends FluentVersionedExtension
                 )
             )
         );
+    }
+
+    /**
+     * Add the locale's URLSegment to the URL prefix for a page's URL segment field
+     *
+     * @param FieldList $fields
+     * @return $this
+     */
+    protected function addLocalePrefixToUrlSegment(FieldList $fields)
+    {
+        // Ensure the field is available in the list
+        $segmentField = $fields->fieldByName('Root.Main.URLSegment');
+        if (!$segmentField || !($segmentField instanceof SiteTreeURLSegmentField)) {
+            return $this;
+        }
+
+        /** @var Locale $currentLocale */
+        $currentLocale = Locale::getCurrentLocale();
+
+        /** @var Domain|null $domain */
+        $domain = $currentLocale->Domain() && $currentLocale->Domain()->exists() ? $currentLocale->Domain() : null;
+        $localeUrlSegment = $currentLocale->getURLSegment();
+
+        $baseUrl = ($domain) ? $domain->Link() : Director::absoluteBaseURL();
+
+        // Add any hierarchy segments from parent pages (see SiteTree::getCMSFields)
+        $parentSegment = SiteTree::config()->get('nested_urls') && $this->owner->ParentID
+            ? $this->owner->Parent()->RelativeLink(true)
+            : null;
+
+        // $parentSegment could contain the locale's URL segment now. If we're in domain mode then remove it
+        if ($domain && substr($parentSegment, 0, strlen($localeUrlSegment)) === $localeUrlSegment) {
+            $parentSegment = ltrim(substr($parentSegment, strlen($localeUrlSegment)), '/');
+        }
+
+        // Join the base URL component (domain, or absolute URL with locale's URL segment) to any parent page segemnts
+        $baseUrl = Controller::join_links($baseUrl, $localeUrlSegment, $parentSegment);
+
+        // The URL prefix needs to have a trailing slash
+        $baseUrl = rtrim($baseUrl, '/') . '/';
+
+        $segmentField->setURLPrefix($baseUrl);
+
+        return $this;
     }
 
     /**

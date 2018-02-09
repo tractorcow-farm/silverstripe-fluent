@@ -3,6 +3,7 @@
 namespace TractorCow\Fluent\Tests\Extension;
 
 use Page;
+use SilverStripe\CMS\Forms\SiteTreeURLSegmentField;
 use SilverStripe\CMS\Model\SiteTree;
 use SilverStripe\Control\Director;
 use SilverStripe\Core\Config\Config;
@@ -68,12 +69,13 @@ class FluentSiteTreeExtensionTest extends SapphireTest
         $result = $page->Locales();
 
         $this->assertInstanceOf(ArrayList::class, $result);
-        $this->assertCount(4, $result);
+        $this->assertCount(5, $result);
         $this->assertListEquals([
             ['Locale' => 'en_NZ'],
             ['Locale' => 'de_DE'],
             ['Locale' => 'en_US'],
             ['Locale' => 'es_ES'],
+            ['Locale' => 'zh_CN'],
         ], $result);
     }
 
@@ -243,5 +245,39 @@ class FluentSiteTreeExtensionTest extends SapphireTest
 
         $this->assertEquals('Saved', $actionSave->Title());
         $this->assertEquals('Save & publish', $actionPublish->Title());
+    }
+
+    /**
+     * @param string $localeCode
+     * @param string $fixture
+     * @param string $expected
+     * @dataProvider localePrefixUrlProvider
+     */
+    public function testAddLocalePrefixToUrlSegment($localeCode, $fixture, $expected)
+    {
+        FluentState::singleton()
+            ->setLocale($localeCode)
+            ->setIsDomainMode(true);
+
+        /** @var FieldList $fields */
+        $fields = $this->objFromFixture(Page::class, $fixture)->getCMSFields();
+
+        /** @var SiteTreeURLSegmentField $segmentField */
+        $segmentField = $fields->fieldByName('Root.Main.URLSegment');
+        $this->assertInstanceOf(SiteTreeURLSegmentField::class, $segmentField);
+
+        $this->assertSame($expected, $segmentField->getURLPrefix());
+    }
+
+    /**
+     * @return array[]
+     */
+    public function localePrefixUrlProvider()
+    {
+        return [
+            'locale_with_domain' => ['en_US', 'about', 'http://www.example.com/usa/'],
+            'locale_without_domain' => ['zh_CN', 'about', 'http://mocked/zh_CN/'],
+            'locale_withalias_and_parent_page' => ['de_DE', 'staff', 'http://www.example.de/german/about-us/'],
+        ];
     }
 }
