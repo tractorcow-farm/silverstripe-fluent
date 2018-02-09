@@ -872,7 +872,6 @@ class FluentExtension extends DataExtension
                 // Highlight any translatable field
                 if ($field && !$field->hasClass('LocalisedField')) {
                     // Add a language indicator next to the fluent icon
-
                     $title = $field->Title();
 
                     $titleClasses = 'fluent-locale-label';
@@ -890,22 +889,8 @@ class FluentExtension extends DataExtension
                         )
                     );
 
-                    // Set the default value to the element so we can compare it with JavaScript
-//                    if (Locale::getDefault() !== $locale) {
-//                        $field->setAttribute(
-//                            'data-default-locale-value',
-//                            $this->owner->{Fluent::db_field_for_locale($field->getName(), Locale::getDefault())}
-//                        );
-//                    }
-
                     $field->addExtraClass('LocalisedField');
                 }
-
-                // Remove translation DBField from automatic scaffolded fields
-//                foreach (Fluent::locales() as $locale) {
-//                    $fieldName = Fluent::db_field_for_locale($translatedField, $locale);
-//                    $fields->removeByName($fieldName, true);
-//                }
             }
         }
 
