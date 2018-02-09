@@ -5,7 +5,7 @@ en:
     DefaultLocale: 'This is the default locale'
     DefaultLocaleIs: 'The default locale is {locale}'
     EditingIn: 'Please note: You are editing in {locale}.'
-    ModifiedTitle: 'Using default locale value'
+    ModifiedTitle: 'Using default locale value.'
   TractorCow\Fluent\Extension\FluentFilteredExtension:
     FILTERED_LOCALES: 'Display in the following locales'
     LOCALEFILTEREDHELP: 'This page is not visible in this locale'

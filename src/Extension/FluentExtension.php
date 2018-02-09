@@ -870,27 +870,28 @@ class FluentExtension extends DataExtension
                 }
 
                 // Highlight any translatable field
-                if ($field && !$field->hasClass('LocalisedField')) {
-                    // Add a language indicator next to the fluent icon
-                    $title = $field->Title();
-
-                    $titleClasses = 'fluent-locale-label';
-                    $modifiedTitle = 'Using default locale value';
-
-                    $field->setTitle(
-                        DBHTMLText::create()->setValue(
-                            sprintf(
-                                '<span class="%s" title="%s">%s</span>%s',
-                                $titleClasses,
-                                $modifiedTitle,
-                                $language,
-                                $title
-                            )
-                        )
-                    );
-
-                    $field->addExtraClass('LocalisedField');
+                if (!$field || $field->hasClass('LocalisedField')) {
+                    continue;
                 }
+
+                // Add a language indicator next to the fluent icon
+                $title = $field->Title();
+
+                $titleClasses = 'fluent-locale-label';
+                $modifiedTitle = _t(__CLASS__.'.ModifiedTitle', 'Using default locale value.');
+
+                $field->setTitle(
+                    DBHTMLText::create()->setValue(
+                        sprintf(
+                            '<span class="%s" title="%s">%s</span>%s',
+                            $titleClasses,
+                            $modifiedTitle,
+                            $language,
+                            $title
+                        )
+                    )
+                );
+                $field->addExtraClass('LocalisedField');
             }
         }
 
