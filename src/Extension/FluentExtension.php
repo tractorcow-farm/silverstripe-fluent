@@ -916,15 +916,15 @@ class FluentExtension extends DataExtension
 
         $localeNames     = Locale::getCached()->map('Locale', 'Title')->toArray();
         $defaultLocale   = Locale::getDefault();
-        $isDefaultLocale = ($defaultLocale === Locale::getCurrentLocale());
-        $defaultLocaleKey = $defaultLocale ? $defaultLocale->Locale : '';
         $currentLocale = Locale::getCurrentLocale();
         $currentLocaleKey = $currentLocale ? $currentLocale->Locale : '';
+        $isDefaultLocale = $currentLocale->getIsDefault();
+        $defaultLocaleKey = $defaultLocale ? $defaultLocale->Locale : '';
         $messageClass    = ($isDefaultLocale) ? 'alert-success' : 'alert-info';
         $message         = ($isDefaultLocale)
-            ? _t(__CLASS__.'DefaultLocale', 'This is the default locale')
+            ? _t(__CLASS__.'.DefaultLocale', 'This is the default locale')
             : _t(
-                __CLASS__.'DefaultLocaleIs',
+                __CLASS__.'.DefaultLocaleIs',
                 'The default locale is {locale}',
                 ['locale' => $localeNames[$defaultLocaleKey]]
             );
