@@ -14,6 +14,9 @@ TractorCow\Fluent\Model\Locale:
   es:
     Locale: es_ES
     Title: Spanish
+  zh:
+    Locale: zh_CN
+    Title: Chinese
 
 TractorCow\Fluent\Model\Domain:
   com:
