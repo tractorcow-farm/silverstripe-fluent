@@ -85,3 +85,21 @@ class PlayerExtension extends FluentExtension
     }
 }
 ```
+
+#### Versioned extension
+
+**Important:** If you're applying the `FluentVersionedExtension` to a versioned DataObject, you will need to ensure that
+it is applied _after_ the `Versioned` extension. You can control this with an `after: '#versionedfiles'` rule in your
+YAML title block. An example configuration block might look like this:
+
+```yaml
+---
+Name: mysitefluent
+After: '#versionedfiles'
+---
+SilverStripe\Assets\File:
+  extensions:
+    - TractorCow\Fluent\Extension\FluentVersionedExtension
+  translate:
+    - Title
+```
