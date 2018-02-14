@@ -1,0 +1,7 @@
+---
+Name: fluent-priority
+Before: modules-other
+---
+SilverStripe\Core\Manifest\ModuleManifest:
+  module_priority:
+    - tractorcow/silverstripe-fluent
