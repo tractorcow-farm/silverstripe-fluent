@@ -108,45 +108,6 @@ class FluentSiteTreeExtension extends FluentVersionedExtension
     }
 
     /**
-     * Check the current state of the Page in the current locale and set appropriate flags.
-     *
-     * fluentinherited: This state means that the data viewed on this page is being inherited from one of this Locale's
-     * fallbacks.
-     *
-     * modified: This state means that the published data viewed on the frontend is being inherited from one of this
-     * Local'es fallbacks, but that there is a drafted (unique) state awaiting publication.
-     *
-     * @param array $flags
-     */
-    public function updateStatusFlags(&$flags)
-    {
-        // If there is no current FluentState, then we shouldn't update.
-        if (!FluentState::singleton()->getLocale()) {
-            return;
-        }
-
-        // No need to update flags if the Page is already published in this locale
-        if ($this->isPublishedInLocale()) {
-            return;
-        }
-
-        // We only want one of these statuses added. Inherited the the stronger of the two.
-        if (!$this->isDraftedInLocale()) {
-            // Add new status flag for inherited.
-            $flags['fluentinherited'] = array(
-                'text' => _t(__CLASS__ . '.LOCALEINHERITEDSHORT', 'Inherited'),
-                'title' => _t(__CLASS__ . '.LOCALEINHERITEDHELP', 'Page is inherited from fallback locale')
-            );
-        } else {
-            // Override the 'modified' flag so that we don't get any duplication of flags.
-            $flags['modified'] = array(
-                'text' => _t(__CLASS__ . '.LOCALEDRAFTEDSHORT', 'Locale drafted'),
-                'title' => _t(__CLASS__ . '.LOCALEDRAFTEDHELP', 'Drafted locale edition has not been published'),
-            );
-        }
-    }
-
-    /**
      * @param FieldList $fields
      */
     public function updateCMSFields(FieldList $fields)
