@@ -99,3 +99,9 @@ $fluent-color-localised: rgb(102, 15, 242);
     background-color: $fluent-color-localised;
   }
 }
+.fluent__localised-field .font-icon-translatable {
+  color: $fluent-color-localised;
+  top: 2px;
+  position: relative;
+  margin-right: 3px;
+}
