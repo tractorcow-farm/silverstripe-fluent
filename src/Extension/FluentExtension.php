@@ -426,7 +426,8 @@ class FluentExtension extends DataExtension
 
             // Create root table delete
             $rootTable = $this->getDeleteTableTarget($table);
-            $rootDelete = SQLDelete::create("\"{$rootTable}\"");
+            $rootDelete = SQLDelete::create("\"{$rootTable}\"")
+                ->addWhere(["\"{$rootTable}\".\"ID\"" => $this->owner->ID]);
 
             // If table isn't localised, simple delete
             if (!isset($localisedTables[$table])) {
