@@ -5,67 +5,34 @@
 // $fluent-color-base: #1F9433;
 $fluent-color-base: rgb(31, 148, 51);
 
-// $fluent-color-modified: #FF9100;
-$fluent-color-modified: rgb(244, 145, 0);
-
-// $fluent-color-inherited-background: #f2f2f2;
-$fluent-color-inherited-background: rgb(242, 242, 242);
-
-// $fluent-color-inherited-text: #525252;
-$fluent-color-inherited-text: rgb(82, 82, 82);
-
-// $fluent-color-inherited-text-badge: #7A4500;
-$fluent-color-inherited-text-badge: rgb(122, 69, 0);
-
-// $fluent-color-filtered-text: #aaaaaa;
-$fluent-color-filtered-text: rgb(170, 170, 170);
+// $fluent-color-invisible-text
+$fluent-color-invisible-text: $text-muted;
 
 // Fix cms-menu collapsed for dropdown
 .cms-menu.collapsed {
   .cms-menu-list {
     float: left;
   }
+
   .cms-fluent-selector .text {
     display: none;
   }
+
   .cms-fluent-selector-locales {
     width: 100%;
+
     .full-title {
       display: none;
     }
+
     .short-title {
       display: block;
     }
   }
 }
 
-.cms-tree {
-  &.jstree {
-    .status-fluentinherited {
-      a {
-        background: $fluent-color-inherited-background;
-        color: $fluent-color-inherited-text;
-      }
-    }
-
-    .status-fluentfiltered {
-      a {
-        color: $fluent-color-filtered-text;
-      }
-    }
-
-    span {
-      &.badge {
-        &.status-fluentinherited {
-          color: $fluent-color-inherited-text-badge;
-        }
-
-        &.status-fluentfiltered {
-          display: none;
-        }
-      }
-    }
-  }
+.cms-tree.jstree .status-fluentinvisible a {
+  color: $fluent-color-invisible-text;
 }
 
 // Style of selector dropdown
@@ -110,42 +77,6 @@ $fluent-color-filtered-text: rgb(170, 170, 170);
   }
 }
 
-.field.LocalisedField label.left {
-  &:after {
-    float: left;
-    content: url('../images/menu-icon-16-green.png');
-    display: block;
-    width: 16px;
-    height: 16px;
-    padding: 0 6px 0 0;
-    opacity: 0.7;
-  }
-
-  span.fluent-locale-label {
-    color: #FFFFFF;
-    background: $fluent-color-base;
-    display: inline-block;
-    padding: 3px 3px 1px 3px;
-    margin-right: 6px;
-    border-radius: 2px;
-    font-size: 9px;
-    text-transform: uppercase;
-    font-weight: 100;
-    text-shadow: none;
-    line-height: 1;
-    cursor: default;
-
-    &.fluent-modified-value {
-      background: $fluent-color-modified;
-
-      &:hover {
-        cursor: pointer;
-        background: $fluent-color-base;
-      }
-    }
-  }
-}
-
 .jstree li.status-fluenthidden .item {
   opacity: 0.5;
 }
@@ -156,3 +87,4 @@ span.badge.status-fluenthidden {
   background-color: $fluent-color-base;
   text-shadow: none;
 }
+
