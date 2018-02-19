@@ -112,13 +112,9 @@ class FluentSiteTreeExtension extends FluentVersionedExtension
     }
 
     /**
-     * Check the current state of the Page in the current locale and set appropriate flags.
+     * Check whether the current page is exists in the current locale.
      *
-     * fluentinherited: This state means that the data viewed on this page is being inherited from one of this Locale's
-     * fallbacks.
-     *
-     * modified: This state means that the published data viewed on the frontend is being inherited from one of this
-     * Local'es fallbacks, but that there is a drafted (unique) state awaiting publication.
+     * If it is invisible then we add a class to show it slightly greyed out in the site tree.
      *
      * @param array $flags
      */
@@ -129,24 +125,12 @@ class FluentSiteTreeExtension extends FluentVersionedExtension
             return;
         }
 
-        // No need to update flags if the Page is already published in this locale
-        if ($this->isPublishedInLocale()) {
-            return;
-        }
-
-        // We only want one of these statuses added. Inherited the the stronger of the two.
-        if (!$this->isDraftedInLocale()) {
-            // Add new status flag for inherited.
-            $flags['fluentinherited'] = array(
-                'text' => _t(__CLASS__ . '.LOCALEINHERITEDSHORT', 'Inherited'),
-                'title' => _t(__CLASS__ . '.LOCALEINHERITEDHELP', 'Page is inherited from fallback locale')
-            );
-        } else {
-            // Override the 'modified' flag so that we don't get any duplication of flags.
-            $flags['modified'] = array(
-                'text' => _t(__CLASS__ . '.LOCALEDRAFTEDSHORT', 'Locale drafted'),
-                'title' => _t(__CLASS__ . '.LOCALEDRAFTEDHELP', 'Drafted locale edition has not been published'),
-            );
+        // If this page does not exist it should be "invisible"
+        if (!$this->isDraftedInLocale() && !$this->isPublishedInLocale()) {
+            $flags['fluentinvisible'] = [
+                'text' => '',
+                'title' => '',
+            ];
         }
     }
 

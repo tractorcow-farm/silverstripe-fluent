@@ -154,28 +154,13 @@ class FluentSiteTreeExtensionTest extends SapphireTest
         $this->assertEquals($url, $page->Link());
     }
 
-    public function testUpdateStatusFlagsInherited()
+    public function testUpdateStatusFlagsFluentInivisible()
     {
         /** @var Page|FluentSiteTreeExtension $page */
         $page = $this->objFromFixture('Page', 'home');
         $flags = $page->getStatusFlags();
 
-        $this->assertTrue(array_key_exists('fluentinherited', $flags));
-    }
-
-    public function testUpdateStatusFlagsDrafted()
-    {
-        /** @var Page|FluentSiteTreeExtension $page */
-        $page = $this->objFromFixture('Page', 'about');
-        $flags = $page->getStatusFlags();
-
-        $this->assertTrue(array_key_exists('modified', $flags));
-
-        if (!array_key_exists('modified', $flags)) {
-            return;
-        }
-
-        $this->assertEquals('Locale drafted', $flags['modified']['text']);
+        $this->assertTrue(array_key_exists('fluentinvisible', $flags));
     }
 
     public function testUpdateCMSFields()
