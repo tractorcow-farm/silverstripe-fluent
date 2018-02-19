@@ -57,32 +57,6 @@ class FluentFilteredExtension extends DataExtension
     }
 
     /**
-     * This method is only called if the Extension has been applied to SiteTree. If you are using this Extension on
-     * other DataObjects you will need to implement your own Extension or method on that DataObject for flagging the
-     * "filtered" state.
-     *
-     * @param array $flags
-     */
-    public function updateStatusFlags(&$flags)
-    {
-        // If there is no current FluentState, then we shouldn't update.
-        if (!FluentState::singleton()->getLocale()) {
-            return;
-        }
-
-        // No need to update flags if the Page is available in this Locale.
-        if ($this->isAvailableInLocale()) {
-            return;
-        }
-
-        // Add new status flag for "not visible".
-        $flags['fluentfiltered'] = array(
-            'text' => _t(__CLASS__ . '.LOCALEFILTEREDSHORT', 'Filtered'),
-            'title' => _t(__CLASS__ . '.LOCALEFILTEREDHELP', 'This page is not visible in this locale')
-        );
-    }
-
-    /**
      * @param Locale|null $locale
      * @return bool
      */

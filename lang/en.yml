@@ -1,6 +1,24 @@
 en:
   TractorCow\Fluent\Control\LocaleAdmin:
     MENUTITLE: Locales
+  TractorCow\Fluent\Extension\FluentExtension:
+    DefaultLocale: 'This is the default locale'
+    DefaultLocaleIs: 'The default locale is {locale}'
+    EditingIn: 'Please note: You are editing in {locale}.'
+    ModifiedTitle: 'Using default locale value.'
+  TractorCow\Fluent\Extension\FluentFilteredExtension:
+    FILTERED_LOCALES: 'Display in the following locales'
+    LOCALEFILTEREDHELP: 'This page is not visible in this locale'
+    LOCALEFILTEREDSHORT: Filtered
+  TractorCow\Fluent\Extension\FluentSiteTreeExtension:
+    LOCALECOPYANDPUBLISH: 'Copy & publish'
+    LOCALECOPYTODRAFT: 'Copy to draft'
+    LOCALEDRAFTEDHELP: 'Drafted locale edition has not been published'
+    LOCALEDRAFTEDSHORT: 'Locale drafted'
+    LOCALEINHERITEDHELP: 'Page is inherited from fallback locale'
+    LOCALEINHERITEDSHORT: Inherited
+    LOCALESTATUSDRAFT: "A draft has been created for this locale, however, published content is still being inherited from\n                another locale. To publish this content for this locale, use the \"Save & publish\" action provided."
+    LOCALESTATUSINHERITED: "Content for this page is being inherited from another locale. If you wish you make an independent copy\n                of this page, please use one of the \"Copy\" actions provided."
   TractorCow\Fluent\Model\Domain:
     DEFAULT: 'Default locale'
     DEFAULT_NONE: (none)
@@ -33,16 +51,4 @@ en:
       one: 'A Locale'
       other: '{count} Locales'
     SINGULARNAME: Locale
-  TractorCow\Fluent\Extension\FluentSiteTreeExtension:
-    LOCALECOPYTODRAFT: 'Copy to draft'
-    LOCALECOPYANDPUBLISH: 'Copy & publish'
-    LOCALEDRAFTEDSHORT: 'Locale drafted'
-    LOCALEDRAFTEDHELP: 'Drafted locale edition has not been published'
-    LOCALEINHERITEDSHORT: 'Inherited'
-    LOCALEINHERITEDHELP: 'Page is inherited from fallback locale'
-    LOCALESTATUSINHERITED: 'Content for this page is being inherited from another locale. If you wish you make an independent copy of this page, please use one of the "Copy" actions provided.'
-    LOCALESTATUSDRAFT: 'A draft has been created for this locale, however, published content is still being inherited from another locale. To publish this content for this locale, use the "Save & publish" action provided.'
-  TractorCow\Fluent\Extension\FluentFilteredExtension:
-    FILTERED_LOCALES: 'Display in the following locales'
-    LOCALEFILTEREDSHORT: 'Filtered'
-    LOCALEFILTEREDHELP: 'This page is not visible in this locale'
+    UnsavedNotice: 'You can add fallbacks once you''ve saved the locale.'

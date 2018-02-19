@@ -60,23 +60,4 @@ class FluentFilteredExtensionTest extends SapphireTest
 
         $this->assertNotNull($fields->dataFieldByName('FilteredLocales'));
     }
-
-    public function testUpdateStatusFlags()
-    {
-        FluentState::singleton()
-            ->setLocale('en_US')
-            ->setIsFrontend(false);
-
-        /** @var Page|FluentSiteTreeExtension $page */
-        $page = $this->objFromFixture('Page', 'about');
-        $flags = $page->getStatusFlags();
-
-        $this->assertTrue(array_key_exists('fluentfiltered', $flags));
-
-        if (!array_key_exists('fluentfiltered', $flags)) {
-            return;
-        }
-
-        $this->assertEquals('Filtered', $flags['fluentfiltered']['text']);
-    }
 }

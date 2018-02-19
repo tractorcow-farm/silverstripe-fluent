@@ -112,45 +112,6 @@ class FluentSiteTreeExtension extends FluentVersionedExtension
     }
 
     /**
-     * Check the current state of the Page in the current locale and set appropriate flags.
-     *
-     * fluentinherited: This state means that the data viewed on this page is being inherited from one of this Locale's
-     * fallbacks.
-     *
-     * modified: This state means that the published data viewed on the frontend is being inherited from one of this
-     * Local'es fallbacks, but that there is a drafted (unique) state awaiting publication.
-     *
-     * @param array $flags
-     */
-    public function updateStatusFlags(&$flags)
-    {
-        // If there is no current FluentState, then we shouldn't update.
-        if (!FluentState::singleton()->getLocale()) {
-            return;
-        }
-
-        // No need to update flags if the Page is already published in this locale
-        if ($this->isPublishedInLocale()) {
-            return;
-        }
-
-        // We only want one of these statuses added. Inherited the the stronger of the two.
-        if (!$this->isDraftedInLocale()) {
-            // Add new status flag for inherited.
-            $flags['fluentinherited'] = array(
-                'text' => _t(__CLASS__ . '.LOCALEINHERITEDSHORT', 'Inherited'),
-                'title' => _t(__CLASS__ . '.LOCALEINHERITEDHELP', 'Page is inherited from fallback locale')
-            );
-        } else {
-            // Override the 'modified' flag so that we don't get any duplication of flags.
-            $flags['modified'] = array(
-                'text' => _t(__CLASS__ . '.LOCALEDRAFTEDSHORT', 'Locale drafted'),
-                'title' => _t(__CLASS__ . '.LOCALEDRAFTEDHELP', 'Drafted locale edition has not been published'),
-            );
-        }
-    }
-
-    /**
      * @param FieldList $fields
      */
     public function updateCMSFields(FieldList $fields)
@@ -159,7 +120,7 @@ class FluentSiteTreeExtension extends FluentVersionedExtension
         if (!FluentState::singleton()->getLocale()) {
             return;
         }
-
+        parent::updateCMSFields($fields);
         $this->addLocaleStatusMessage($fields);
         $this->addLocalePrefixToUrlSegment($fields);
     }
@@ -201,13 +162,13 @@ class FluentSiteTreeExtension extends FluentVersionedExtension
 
         if (!$this->isDraftedInLocale()) {
             $message = _t(
-                __CLASS__ . 'LOCALESTATUSINHERITED',
+                __CLASS__ . '.LOCALESTATUSINHERITED',
                 'Content for this page is being inherited from another locale. If you wish you make an independent copy
                 of this page, please use one of the "Copy" actions provided.'
             );
         } else {
             $message = _t(
-                __CLASS__ . 'LOCALESTATUSDRAFT',
+                __CLASS__ . '.LOCALESTATUSDRAFT',
                 'A draft has been created for this locale, however, published content is still being inherited from
                 another locale. To publish this content for this locale, use the "Save & publish" action provided.'
             );
