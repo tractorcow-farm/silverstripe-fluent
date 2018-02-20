@@ -47,4 +47,22 @@ class FluentVersionedExtensionTest extends SapphireTest
 
         $this->assertTrue($page->isPublishedInLocale());
     }
+
+    public function testExistsInLocale()
+    {
+        /** @var Page $page */
+        $page = $this->objFromFixture(Page::class, 'home');
+
+        $this->assertTrue($page->existsInLocale());
+    }
+
+    /** @group wip */
+    public function testSourceLocaleIsCurrentWhenPageExistsInIt()
+    {
+        // Read from the locale that the page exists in already
+        /** @var Page $page */
+        $page = $this->objFromFixture(Page::class, 'home');
+
+        $this->assertEquals('en_NZ', $page->getSourceLocale()->Locale);
+    }
 }

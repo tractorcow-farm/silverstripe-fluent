@@ -196,4 +196,11 @@ class LocaleTest extends SapphireTest
         $checkbox = $fields->fieldByName('Root.Main.IsGlobalDefault');
         $this->assertTrue((bool) $checkbox->Value());
     }
+
+    public function testGetLocaleSuffix()
+    {
+        $locale = Locale::getByLocale('es_US');
+
+        $this->assertSame('US', $locale->getLocaleSuffix());
+    }
 }

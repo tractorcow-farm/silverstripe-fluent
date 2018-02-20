@@ -138,6 +138,17 @@ class Locale extends DataObject
     }
 
     /**
+     * Get a short segment of the locale code for display in things like badges
+     *
+     * @return string e.g. "NZ" for "en_NZ"
+     */
+    public function getLocaleSuffix()
+    {
+        $bits = explode('_', $this->Locale);
+        return array_pop($bits);
+    }
+
+    /**
      * Get URLSegment for this locale
      *
      * @return string

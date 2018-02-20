@@ -1,0 +1,16 @@
+TractorCow\Fluent\Model\Locale:
+  en_NZ:
+    Title: English (NZ)
+    Locale: en_NZ
+    URLSegment: en_NZ
+    IsGlobalDefault: true
+  de_DE:
+    Title: German
+    Locale: de_DE
+    URLSegment: de_DE
+
+SilverStripe\CMS\Model\SiteTree:
+  test_page:
+    Title: Test page
+    URLSegment: test-page
+    Content: Test content

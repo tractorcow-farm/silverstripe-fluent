@@ -229,7 +229,7 @@ class FluentSiteTreeExtensionTest extends SapphireTest
         }
 
         $this->assertEquals('Saved', $actionSave->Title());
-        $this->assertEquals('Save & publish', $actionPublish->Title());
+        $this->assertEquals('Publish', $actionPublish->Title());
     }
 
     /**
