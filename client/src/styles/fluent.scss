@@ -1,12 +1,17 @@
 // See includePaths in webpack-config module
 @import "variables";
-@import "legacy/themes/default";
 
-// $fluent-color-base: #1F9433;
-$fluent-color-base: rgb(31, 148, 51);
+// $fluent-color-base: #008a00;
+$fluent-color-base: rgb(0, 138, 0);
+
+// $fluent-color-invisible: #566b8d
+$fluent-color-invisible: rgb(86, 107, 141);
 
 // $fluent-color-invisible-text
 $fluent-color-invisible-text: $text-muted;
+
+// $fluent-color-localised: #660ff2
+$fluent-color-localised: rgb(102, 15, 242);
 
 // Fix cms-menu collapsed for dropdown
 .cms-menu.collapsed {
@@ -39,7 +44,7 @@ $fluent-color-invisible-text: $text-muted;
 .cms-fluent-selector {
   display: block;
   height: auto;
-  line-height: $grid-y * 3;
+  line-height: $line-height-sm;
   overflow: visible;
   padding: 5px;
   position: relative;
@@ -77,14 +82,20 @@ $fluent-color-invisible-text: $text-muted;
   }
 }
 
-.jstree li.status-fluenthidden .item {
-  opacity: 0.5;
-}
+// Styles for the custom badges that are pushed into the CMS breadcrumbs
+.fluent-badge {
+  color: $white;
+  margin-left: 5px;
 
-span.badge.status-fluenthidden {
-  color: $color-text-light;
-  border: 1px solid darken($fluent-color-base, 20%);
-  background-color: $fluent-color-base;
-  text-shadow: none;
-}
+  &--default {
+    background-color: $fluent-color-base;
+  }
 
+  &--invisible {
+    background-color: $fluent-color-invisible;
+  }
+
+  &--localised {
+    background-color: $fluent-color-localised;
+  }
+}

@@ -346,6 +346,16 @@ class FluentExtension extends DataExtension
             $query->addWhereAny($where);
         }
 
+        // Add the "source locale", which the content exists in up the chain
+        $sourceLocaleQuery = 'CASE ';
+        foreach ($locale->getChain() as $joinLocale) {
+            $joinAlias = $this->getLocalisedTable($table, $joinLocale->Locale);
+            $localeSQL = Convert::raw2sql($joinLocale->Locale);
+            $sourceLocaleQuery .= "\tWHEN \"{$joinAlias}\".\"ID\" IS NOT NULL THEN '{$localeSQL}' \n";
+        }
+        $sourceLocaleQuery .= 'ELSE NULL END';
+        $query->selectField($sourceLocaleQuery, 'SourceLocale');
+
         // Iterate through each select clause, replacing each with the translated version
         foreach ($query->getSelect() as $alias => $select) {
             // Skip fields without table context
@@ -686,6 +696,21 @@ class FluentExtension extends DataExtension
             }
         }
         return Locale::getCurrentLocale();
+    }
+
+
+    /**
+     * Returns the source locale that will display the content for this record
+     *
+     * @return Locale|null
+     */
+    public function getSourceLocale()
+    {
+        $sourceLocale = $this->owner->getField('SourceLocale');
+        if ($sourceLocale) {
+            return Locale::getByLocale($sourceLocale);
+        }
+        return Locale::getDefault();
     }
 
     /**

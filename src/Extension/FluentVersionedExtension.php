@@ -268,6 +268,17 @@ class FluentVersionedExtension extends FluentExtension
     }
 
     /**
+     * Check if this record exists (in either state) in this locale
+     *
+     * @param string $locale
+     * @return bool
+     */
+    public function existsInLocale($locale = null)
+    {
+        return $this->isDraftedInLocale($locale) || $this->isPublishedInLocale($locale);
+    }
+
+    /**
      * Check to see whether or not a record exists for a specific Locale in a specific stage.
      *
      * @param string $stage Version stage
