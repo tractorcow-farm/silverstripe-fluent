@@ -144,6 +144,7 @@ class FluentSiteTreeExtension extends FluentVersionedExtension
             return;
         }
 
+        parent::updateCMSFields($fields);
         $this->addLocaleStatusMessage($fields);
         $this->addLocalePrefixToUrlSegment($fields);
     }

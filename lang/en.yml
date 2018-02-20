@@ -1,6 +1,8 @@
 en:
   TractorCow\Fluent\Control\LocaleAdmin:
     MENUTITLE: Locales
+  TractorCow\Fluent\Extension\FluentExtension:
+    FLUENT_ICON_TOOLTIP: 'Translatable field'
   TractorCow\Fluent\Extension\FluentFilteredExtension:
     FILTERED_LOCALES: 'Display in the following locales'
     LOCALEFILTEREDHELP: 'This page is not visible in this locale'
