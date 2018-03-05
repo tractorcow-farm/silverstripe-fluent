@@ -10,7 +10,6 @@ use SilverStripe\Control\Director;
 use SilverStripe\Forms\CompositeField;
 use SilverStripe\Forms\FieldList;
 use SilverStripe\Forms\LiteralField;
-use TractorCow\Fluent\Model\Domain;
 use TractorCow\Fluent\Model\Locale;
 use TractorCow\Fluent\State\FluentState;
 
@@ -216,33 +215,35 @@ class FluentSiteTreeExtension extends FluentVersionedExtension
             return $this;
         }
 
-        /** @var Locale $currentLocale */
-        $currentLocale = Locale::getCurrentLocale();
+        // Mock frontend and get link to parent object / page
+        $baseURL = FluentState::singleton()
+            ->withState(function (FluentState $tempState) {
+                $tempState->setIsDomainMode(true);
+                $tempState->setIsFrontend(true);
 
-        /** @var Domain|null $domain */
-        $domain = $currentLocale->Domain() && $currentLocale->Domain()->exists() ? $currentLocale->Domain() : null;
-        $localeUrlSegment = $currentLocale->getURLSegment();
+                // Get relative link up until the current URL segment
+                if (SiteTree::config()->get('nested_urls') && $this->owner->ParentID) {
+                    $parentRelative = $this->owner->Parent()->RelativeLink();
+                } else {
+                    $parentRelative = '/';
+                    $action = null;
+                    $this->updateRelativeLink($parentRelative, $action);
+                }
 
-        $baseUrl = ($domain) ? $domain->Link() : Director::absoluteBaseURL();
+                // Get absolute base path
+                $domain = Locale::getCurrentLocale()->getDomain();
+                if ($domain) {
+                    $parentBase = Controller::join_links($domain->Link(), Director::baseURL());
+                } else {
+                    $parentBase = Director::absoluteBaseURL();
+                }
 
-        // Add any hierarchy segments from parent pages (see SiteTree::getCMSFields)
-        $parentSegment = SiteTree::config()->get('nested_urls') && $this->owner->ParentID
-            ? $this->owner->Parent()->RelativeLink(true)
-            : null;
+                // Join base / relative links
+                return Controller::join_links($parentBase, $parentRelative);
+            });
 
-        // $parentSegment could contain the locale's URL segment now. If we're in domain mode then remove it
-        if ($domain && substr($parentSegment, 0, strlen($localeUrlSegment)) === $localeUrlSegment) {
-            $parentSegment = ltrim(substr($parentSegment, strlen($localeUrlSegment)), '/');
-        }
 
-        // Join the base URL component (domain, or absolute URL with locale's URL segment) to any parent page segemnts
-        $baseUrl = Controller::join_links($baseUrl, $localeUrlSegment, $parentSegment);
-
-        // The URL prefix needs to have a trailing slash
-        $baseUrl = rtrim($baseUrl, '/') . '/';
-
-        $segmentField->setURLPrefix($baseUrl);
-
+        $segmentField->setURLPrefix($baseURL);
         return $this;
     }
 

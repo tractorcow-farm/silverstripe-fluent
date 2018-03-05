@@ -263,7 +263,7 @@ class FluentSiteTreeExtensionTest extends SapphireTest
         return [
             'locale_with_domain' => ['en_US', 'about', 'http://www.example.com/usa/'],
             'locale_without_domain' => ['zh_CN', 'about', 'http://mocked/zh_CN/'],
-            'locale_withalias_and_parent_page' => ['de_DE', 'staff', 'http://www.example.de/german/about-us/'],
+            'locale_alone_on_domain_nested' => ['de_DE', 'staff', 'http://www.example.de/about-us/'],
         ];
     }
 }
