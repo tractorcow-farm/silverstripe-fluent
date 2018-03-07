@@ -53,8 +53,7 @@ you may encounter, as it helps us all out!
 
 Revised BSD License
 
-Copyright (c) 2013, Damian Mooyman
-All rights reserved.
+Copyright (c) 2018, Damian Mooyman
 
 All rights reserved.
 

@@ -22,7 +22,9 @@ record for each object, even if there are multiple `_Localised` rows.
 
 Missing localisations gracefully degrade, meaning that missing strings will simply be
 drawn either from other locales declared under "Fallbacks" for the current locale, or
-from the base table.
+from the selected default locale's `_Localised` table.
+
+**Note:** Once a page is published, no 'falling back' happens, as the data is copied to the locale on publish.
 
 This method has the following benefits:
 
@@ -35,4 +37,4 @@ This method has the following benefits:
  * There is only ever one sitemap, so the page hierarchy doesn't need to be
    duplicated for each additional locale.
  * Additional locales are not constrained by MySQL physical row size limits, which
-   was an issue in fluent 3.x.
+   was an issue in Fluent 3.x.
