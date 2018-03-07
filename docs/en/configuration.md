@@ -24,10 +24,10 @@ Navigate to the `Fallbacks` tab, which allows you to specify one or more fallbac
 
 Once you add at least two locales to your site, you can begin localising your content. 
 
-***Important:** Pages in locales that fall back must be added and published in each locale you want them to be visible 
+_**Important:** Pages in locales that fall back must be added and published in each locale you want them to be visible 
 in - including the default locale. This essentially requires the re-publication of content in each locale, once content 
 is localised. Be aware that the site will not appear as it did before the creation of Fluent locales until this step is 
-completed.*
+completed._
 
 If desired, Fluent can be enabled on a field by field basis. Note that non-translated fields on any page will be 
 displayed in the default locale.
@@ -153,8 +153,8 @@ class FormPage extends Page
 }
 ```
 
-**Note:** Editing a non-default locale affects the `SiteTree(_live)` table. In contrast to SilverStripe 3, the 
-SiteTree table is only used for non-localised fields and *not* for the default table.
+**Note:** Editing any locale affects the `SiteTree(_live)` table. In contrast to SilverStripe 3, the SiteTree table is 
+only used for non-localised fields.
 
 ## Locale based filter configuration
 
