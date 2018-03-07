@@ -153,6 +153,9 @@ class FormPage extends Page
 }
 ```
 
+**Note:** Editing a non-default locale affects the `SiteTree(_live)` table. In contrast to SilverStripe 3, the 
+SiteTree table is only used for non-localised fields and *not* for the default table.
+
 ## Locale based filter configuration
 
 In addition to localising fields within a DataObject, a filter can also be applied
