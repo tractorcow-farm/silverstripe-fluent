@@ -7,17 +7,30 @@ will interfere with locale bootstrapping in certain situations (such as `Securit
 
 ## Locale configuration
 
-You can create locales via the `/admin/locales` CMS section. Once you add at least two
-locales to your site, you can begin localising your content.
+You can create locales via the `/admin/locales` CMS section. 
 
 Each locale has these fields in the CMS editor:
  - `Locale`: Dropdown which lets you select a locale code from the global locale source
  - `Title`: Name to use for this locale in the locale switcher
  - `URL Segment`: Defaults to the locale (e.g. `en_NZ`) but can be customised. Must be unique.
- - `Default`: Check this to set as the global default. Note: If using domains, you can
-   additionally assign per-domain defaults as well.
+ 
+Check the box titled `This is the global default locale` to set this locale as the global default. 
+ 
+**Note:** If using domains, you can additionally assign per-domain defaults as well.
+
  - `Domain`: Dropdown to assign this locale to a domain.
- - `Fallbacks`: Allows you to specify one or more fallback locales for this locale.
+ 
+Navigate to the `Fallbacks` tab, which allows you to specify one or more fallback locales for this locale.
+
+Once you add at least two locales to your site, you can begin localising your content. 
+
+_**Important:** Pages in locales that fall back must be added and published in each locale you want them to be visible 
+in - including the default locale. This essentially requires the re-publication of content in each locale, once content 
+is localised. Be aware that the site will not appear as it did before the creation of Fluent locales until this step is 
+completed._
+
+If desired, Fluent can be enabled on a field by field basis. Note that non-translated fields on any page will be 
+displayed in the default locale.
 
 ## Default locale options
 
@@ -45,11 +58,11 @@ for the default locale intact.
 
 ## Field localisation configuration
 
-Great, now we've setup our languages. Our next job is to decide which DataObjects, and which
+Great, now we've set up our languages. Our next job is to decide which DataObjects, and which
 fields of those DataObjects, should be localised.
 
 By default Fluent will attempt to analyse the field type and name of each `DBField` specified in your `DataObject`.
-Rules specified by the below configs can be used to determine if a field should be included
+Rules specified by the below configurations can be used to determine if a field should be included
 or excluded, either by name, or by type (in order of priority):
 
  - `TractorCow\Fluent\Extension\FluentExtension.field_exclude` Exclude by name
@@ -113,8 +126,8 @@ BlogHolder:
     - 'OwnerID'
 ```
 
-Note: If you wish to translate `has_many` or `many_many` then those objects will need
-to be filtered via another method. See [Locale based filter configuration](#locale-based-filter-configuration)
+**Note:** If you wish to translate `has_many` or `many_many` then those objects will need
+to be filtered via another method. See [Locale based filter configuration](#locale-based-filter-configuration).
 
 If you want to localise a `DataObject` that doesn't extend `SiteTree` then you'll need
 to add the appropriate extension:
@@ -140,6 +153,9 @@ class FormPage extends Page
 }
 ```
 
+**Note:** Editing any locale affects the `SiteTree(_live)` table. In contrast to SilverStripe 3, the SiteTree table is 
+only used for non-localised fields.
+
 ## Locale based filter configuration
 
 In addition to localising fields within a DataObject, a filter can also be applied
@@ -151,10 +167,10 @@ This feature is also necessary in cases where has_many or many_many relationship
 to be customised for each locale. For example, this could be applied to a `Product` with
 limited availability in other countries.
 
-Note: It's not necessary to actually localise this object in order for it to be
+**Note:** It's not necessary to actually localise this object in order for it to be
 filterable; `FluentFilteredExtension` and `FluentExtension` each work independently.
 
-Warning: This must be added to the base class, such as `SiteTree` in order for it to filter
+**Warning:** This must be added to the base class, such as `SiteTree` in order for it to filter
 for pages, or for queries of that base type.
 
 ```yaml
@@ -181,7 +197,7 @@ public function getCMSFields()
 }
 ```
 
-Now when editing this item in the CMS there will be a gridfield where you can assign
+Now, when editing this item in the CMS, there will be a gridfield where you can assign
 visible locales for this object.
 
 ![Locale Filter](images/locale-filter.png "Locale filter")
@@ -194,7 +210,7 @@ in the CMS in order to allow access by site administrators in all locales.
 When a visitor lands on the home page for the first time, Fluent can attempt to detect that user's locale based
 on the `Accept-Language` http headers sent.
 
-This functionality can interfere with certain applications, such as Facebook opengraph tools, so it
+This functionality can interfere with certain applications, such as Facebook Open Graph tools, so it
 is turned off by default. To turn it on set the below setting:
 
 ```yaml

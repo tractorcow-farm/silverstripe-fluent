@@ -9,6 +9,7 @@ composer require tractorcow/silverstripe-fluent ^4
 
  * Run a `dev/build` to ensure all additional table fields have been generated
  * Configure your locales in the `/admin/locales` section
+ * Publish pages in each of the locales you want them to be visible in
 
 Fluent will automatically localise SiteTree objects. If you want to localise other DataObjects you will need to
 add the appropriate extension yourself.
