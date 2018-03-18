@@ -43,6 +43,22 @@ class DetectLocaleMiddleware implements HTTPMiddleware
     private static $persist_cookie_expiry = 90;
 
     /**
+     * Use this path when setting the locale cookie
+     *
+     * @config
+     * @var int
+     */
+    private static $persist_cookie_path = null;
+
+    /**
+     * Use this domain when setting the locale cookie
+     *
+     * @config
+     * @var int
+     */
+    private static $persist_cookie_domain = null;
+
+    /**
      * Whether cookies have already been set during {@link setPersistLocale()}
      *
      * @var bool
@@ -163,7 +179,15 @@ class DetectLocaleMiddleware implements HTTPMiddleware
 
         // Don't set cookie if headers already sent
         if (!headers_sent()) {
-            Cookie::set($key, $locale, static::config()->get('persist_cookie_expiry'), null, null, false, false);
+            Cookie::set(
+                $key,
+                $locale,
+                static::config()->get('persist_cookie_expiry'),
+                static::config()->get('persist_cookie_path'),
+                static::config()->get('persist_cookie_domain'),
+                false,
+                false
+            );
         }
 
         return $this;
