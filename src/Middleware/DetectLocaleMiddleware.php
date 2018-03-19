@@ -46,7 +46,7 @@ class DetectLocaleMiddleware implements HTTPMiddleware
      * Use this path when setting the locale cookie
      *
      * @config
-     * @var int
+     * @var string
      */
     private static $persist_cookie_path = null;
 
@@ -54,7 +54,7 @@ class DetectLocaleMiddleware implements HTTPMiddleware
      * Use this domain when setting the locale cookie
      *
      * @config
-     * @var int
+     * @var string
      */
     private static $persist_cookie_domain = null;
 
