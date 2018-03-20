@@ -4,7 +4,7 @@
 	<% loop $Items %>
         <url>
             <loc>$AbsoluteLink</loc>
-            <% if $LastEdited %><lastmod>$LastEdited.Format("y-MM-dd'T'HH:mm:ss")</lastmod><% end_if %>
+            <% if $LastEdited %><lastmod>$LastEdited.Rfc3339()</lastmod><% end_if %>
             <% if $ChangeFrequency %><changefreq>$ChangeFrequency</changefreq><% end_if %>
             <% if $GooglePriority %><priority>$GooglePriority</priority><% end_if %>
             <% if $Locales %><% loop $Locales %><% if $LinkingMode != 'invalid' %>
