@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<?xml-stylesheet type='text/xsl' href='$StylesheetPath'?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
+<?xml-stylesheet type='text/xsl' href='{$BaseHref}sitemap.xml/styleSheet'?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
 	<% loop $Items %>
         <url>
             <loc>$AbsoluteLink</loc>
@@ -14,6 +14,11 @@
                 href="$AbsoluteLink"
                 />
             <% end_if %><% end_loop %><% end_if %>
+            <% if $ImagesForSitemap %><% loop $ImagesForSitemap %>
+                <image:image>
+                    <image:loc>{$AbsoluteLink}</image:loc>
+                </image:image>
+            <% end_loop %><% end_if %>
         </url>
 	<% end_loop %>
 </urlset>
