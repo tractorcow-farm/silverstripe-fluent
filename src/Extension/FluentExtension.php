@@ -295,6 +295,9 @@ class FluentExtension extends DataExtension
             $localisedFields
         );
         $indexes = $this->owner->config()->get('indexes_for_localised_table');
+        foreach ($indexes as &$value) {
+            $value['columns'] = array_unique($value['columns']);
+        }
         $this->augmentDatabaseRequireTable($localisedTable, $fields, $indexes);
     }
 
