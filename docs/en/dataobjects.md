@@ -103,3 +103,21 @@ SilverStripe\Assets\File:
   translate:
     - Title
 ```
+
+### Fluent `has_one`s
+
+By default when you specify a related field to be `fluent`ed the same ID is used for both versions this can cause problems where you update the object and it is updated for all languages. To get around this you can use the `TractorCow\Fluent\Extension\FluentBlackListFields` Extension to specify explicit fields to not copy the value of when creating the new translation.
+An example configuration where you want separate MessageObjects for different languages may look like this:
+
+```php
+class MyObject extends DataObject
+{
+    private static $has_one = [
+        'Message' => 'MessageObject'
+    ];
+
+    private static $extensions = [
+        'TractorCow\Fluent\Extension\FluentBlackListFields("MessageID")',
+    ];
+}
+```
