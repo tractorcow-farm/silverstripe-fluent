@@ -18,9 +18,9 @@ class FluentBlackListFields extends Extension
 {
     private $fieldsToNotCopy;
 
-    public function __construct()
+    public function __construct(...$fields)
     {
-        $this->fieldsToNotCopy = func_get_args();
+        $this->fieldsToNotCopy = $fields;
     }
 
     /**
