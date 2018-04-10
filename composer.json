@@ -21,10 +21,10 @@
         "issues": "http://github.com/tractorcow/silverstripe-fluent/issues"
     },
     "require": {
-        "silverstripe/vendor-plugin": "^1.0",
-        "silverstripe/framework": "^4@dev",
-        "silverstripe/cms": "^4@dev",
-        "symbiote/silverstripe-gridfieldextensions": "^3.0.3@dev"
+        "silverstripe/vendor-plugin": "^1",
+        "silverstripe/framework": "^4",
+        "silverstripe/cms": "^4",
+        "symbiote/silverstripe-gridfieldextensions": "^3.0.3"
     },
     "require-dev": {
         "phpunit/phpunit": "^5.7",
