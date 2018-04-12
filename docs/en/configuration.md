@@ -156,6 +156,32 @@ class FormPage extends Page
 **Note:** Editing any locale affects the `SiteTree(_live)` table. In contrast to SilverStripe 3, the SiteTree table is 
 only used for non-localised fields.
 
+## Frontend publish required
+
+By default, DataObjects must be Localised in order for them to be viewed on the frontend. In the case of a `SiteTree`
+record, this means that there must be a `SiteTree_Localised` row for this record and Locale to view the page in
+`stage=Stage`, and there must be a `SiteTree_Localised_Live` row for this record and Locale to view the page in
+`stage=Live`.
+
+We can change this behaviour by updating the `frontend_publish_required` configuration.
+
+Globally:
+```yaml
+TractorCow\Fluent\Extension\FluentExtension:
+  frontend_publish_required: false
+```
+
+For a specific DataObject:
+```yaml
+MySite\Model\MyModel:
+  frontend_publish_required: false
+```
+
+**Note:** If you are applying this via an `Extension`, be sure to apply it after the `FluentExtension`.
+
+The result is that a DataObject that has *not* been Localised, will display on the frontend with content populated by
+it's Fallbacks (the same beheviour as what you see when viewing DataObjects from within the CMS).
+
 ## Locale based filter configuration
 
 In addition to localising fields within a DataObject, a filter can also be applied

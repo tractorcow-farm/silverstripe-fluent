@@ -18,6 +18,8 @@ use SilverStripe\i18n\i18n;
 use SilverStripe\ORM\ArrayList;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\DB;
+use SilverStripe\ORM\HasManyList;
+use SilverStripe\ORM\ManyManyList;
 use Symbiote\GridFieldExtensions\GridFieldAddNewInlineButton;
 use Symbiote\GridFieldExtensions\GridFieldEditableColumns;
 use Symbiote\GridFieldExtensions\GridFieldOrderableRows;
@@ -29,8 +31,8 @@ use TractorCow\Fluent\State\FluentState;
  * @property string $URLSegment
  * @property bool $IsGlobalDefault
  * @property int $DomainID
- * @method FallbackLocale FallbackLocales()
- * @method Locale Fallbacks()
+ * @method HasManyList|FallbackLocale[] FallbackLocales()
+ * @method ManyManyList|Locale[] Fallbacks()
  * @method Domain Domain() Raw SQL Domain (unfiltered by domain mode)
  */
 class Locale extends DataObject
