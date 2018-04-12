@@ -227,7 +227,7 @@ class FluentExtension extends DataExtension
      *
      * @return array
      */
-    protected function getLocalisedTables()
+    public function getLocalisedTables()
     {
         $includedTables = [];
         $baseClass = $this->owner->baseClass();
