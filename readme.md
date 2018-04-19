@@ -46,6 +46,7 @@ you may encounter, as it helps us all out!
  * [Deployment under multiple domains](docs/en/domain-configuration.md)
  * [Templating for Fluent](docs/en/templating.md)
  * [How Fluent works](docs/en/how-fluent-works.md)
+ * [Scenarios](docs/en/scenarios.md)
  * [Migrating from Translatable](docs/en/migrating-from-translatable.md)
  * [Changelogs](CHANGELOG.md)
 
