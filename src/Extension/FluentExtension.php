@@ -7,6 +7,7 @@ use SilverStripe\Control\Director;
 use SilverStripe\Core\ClassInfo;
 use SilverStripe\Core\Config\Config;
 use SilverStripe\Core\Convert;
+use SilverStripe\Dev\Deprecation;
 use SilverStripe\Forms\FieldList;
 use SilverStripe\Forms\LiteralField;
 use SilverStripe\i18n\i18n;
@@ -137,11 +138,6 @@ class FluentExtension extends DataExtension
      * Cache of localised fields for this model
      */
     protected $localisedFields = [];
-
-    /**
-     * @var bool
-     */
-    private static $frontend_publish_required = true;
 
     /**
      * Get list of fields that are localised
@@ -343,7 +339,7 @@ class FluentExtension extends DataExtension
         }
 
         // On frontend only show if published in this specific locale
-        if ($this->owner->config()->get('frontend_publish_required') && FluentState::singleton()->getIsFrontend()) {
+        if ($this->requireSavedInLocale()) {
             $joinAlias = $this->getLocalisedTable($this->owner->baseTable(), $locale->Locale);
             $where = "\"{$joinAlias}\".\"ID\" IS NOT NULL";
             $query->addWhereAny($where);
@@ -897,5 +893,28 @@ class FluentExtension extends DataExtension
                 $field->setTitle(DBField::create_field('HTMLFragment', $tooltip . $field->Title()));
             }
         }
+    }
+
+    /**
+     * Require that this record is saved in the given locale for it to be visible
+     *
+     * @return bool
+     */
+    protected function requireSavedInLocale()
+    {
+        // Filter is disabled in CMS
+        if (!FluentState::singleton()->getIsFrontend()) {
+            return false;
+        }
+
+        // Check legacy (deprecated) config
+        $frontendPublishRequired = $this->owner->config()->get('frontend_publish_required');
+        if (isset($frontendPublishRequired)) {
+            Deprecation::notification_version('5.0.0', 'Use ignore_frontend_publish=true instead');
+            return (bool)$frontendPublishRequired;
+        }
+
+        // Require saved unless ignoring frontend published
+        return !$this->owner->config()->get('ignore_frontend_publish');
     }
 }
