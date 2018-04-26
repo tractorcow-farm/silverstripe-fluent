@@ -907,14 +907,6 @@ class FluentExtension extends DataExtension
             return false;
         }
 
-        // Check legacy (deprecated) config
-        $frontendPublishRequired = $this->owner->config()->get('frontend_publish_required');
-        if (isset($frontendPublishRequired)) {
-            Deprecation::notification_version('5.0.0', 'Use ignore_frontend_publish=true instead');
-            return (bool)$frontendPublishRequired;
-        }
-
-        // Require saved unless ignoring frontend published
-        return !$this->owner->config()->get('ignore_frontend_publish');
+        return $this->owner->config()->get('frontend_publish_required');
     }
 }
