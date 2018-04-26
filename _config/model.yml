@@ -1,0 +1,6 @@
+---
+Name: fluentmodel
+---
+SilverStripe\ORM\DataObject:
+  frontend_publish_required: true
+
