@@ -14,6 +14,7 @@ use SilverStripe\Forms\TabSet;
 use SilverStripe\Forms\TextField;
 use SilverStripe\ORM\ArrayList;
 use SilverStripe\ORM\DataObject;
+use SilverStripe\ORM\FieldType\DBField;
 use SilverStripe\ORM\HasManyList;
 use TractorCow\Fluent\State\FluentState;
 
@@ -139,13 +140,13 @@ class Domain extends DataObject
     }
 
     /**
-     * @return string
+     * @return DBField|null
      */
     public function DefaultLocaleTitle()
     {
         $locale = $this->DefaultLocale();
         if ($locale) {
-            return $locale->getTitle();
+            return DBField::create_field('Text', $locale->getTitle());
         }
         return null;
     }
