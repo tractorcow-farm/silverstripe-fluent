@@ -78,6 +78,9 @@ $fluent-color-localised: rgb(102, 15, 242);
       // hide text on main dropdown when collapsed, show icon only
       color: transparent;
       padding: 2px;
+      > option {
+        color: white;
+      }
     }
   }
 }
