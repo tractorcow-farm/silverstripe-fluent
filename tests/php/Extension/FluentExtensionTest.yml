@@ -10,9 +10,33 @@ TractorCow\Fluent\Model\Locale:
 TractorCow\Fluent\Tests\Extension\FluentExtensionTest\LocalisedParent:
   record_a:
     Title: A record
+  record_b:
+    Title: Read about things
+  record_c:
+    Title: Go for a run
 
 FluentExtensionTest_LocalisedParent_Localised:
-  record_a:
+  record_a_us:
     RecordID: =>TractorCow\Fluent\Tests\Extension\FluentExtensionTest\LocalisedParent.record_a
     Title: A record
     Locale: en_US
+  record_b_us:
+    RecordID: =>TractorCow\Fluent\Tests\Extension\FluentExtensionTest\LocalisedParent.record_b
+    Title: Read about things
+    Locale: en_US
+  record_c_us:
+    RecordID: =>TractorCow\Fluent\Tests\Extension\FluentExtensionTest\LocalisedParent.record_c
+    Title: Go for a run
+    Locale: en_US
+  record_a_de:
+    RecordID: =>TractorCow\Fluent\Tests\Extension\FluentExtensionTest\LocalisedParent.record_a
+    Title: Eine Akte
+    Locale: de_DE
+  record_b_de:
+    RecordID: =>TractorCow\Fluent\Tests\Extension\FluentExtensionTest\LocalisedParent.record_b
+    Title: Lesen Sie mehr
+    Locale: de_DE
+  record_c_de:
+    RecordID: =>TractorCow\Fluent\Tests\Extension\FluentExtensionTest\LocalisedParent.record_c
+    Title: Rennen
+    Locale: de_DE

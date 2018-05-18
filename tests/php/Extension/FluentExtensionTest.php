@@ -150,4 +150,34 @@ class FluentExtensionTest extends SapphireTest
 
         return isset($result['Locale']) ? $result['Locale'] : null;
     }
+
+    /**
+     * Ensure that records can be sorted in their locales
+     *
+     * @dataProvider sortRecordProvider
+     * @param string $locale
+     * @param string $direction
+     * @param string[] $expected
+     */
+    public function testLocalisedFieldsCanBeSorted($locale, $direction, $expected)
+    {
+        FluentState::singleton()->setLocale($locale);
+
+        $records = LocalisedParent::get()->sort('Title', $direction);
+        $titles = $records->column('Title');
+        $this->assertEquals($expected, $titles);
+    }
+
+    /**
+     * @return array[]
+     */
+    public function sortRecordProvider()
+    {
+        return [
+            'german ascending' => ['de_DE', 'ASC', ['Eine Akte', 'Lesen Sie mehr', 'Rennen']],
+            'german descending' => ['de_DE', 'DESC', ['Rennen', 'Lesen Sie mehr', 'Eine Akte']],
+            'english ascending' => ['en_US', 'ASC', ['A record', 'Go for a run', 'Read about things']],
+            'english descending' => ['en_US', 'DESC', ['Read about things', 'Go for a run', 'A record']],
+        ];
+    }
 }
