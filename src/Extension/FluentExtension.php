@@ -389,9 +389,59 @@ class FluentExtension extends DataExtension
             }
         }
 
+
+        // Iterate through each order clause, replacing each with the translated version
+        $order = $query->getOrderBy();
+        foreach ($order as $column => $direction) {
+            // Look for table context
+            if (preg_match('/^"(?<table>[\w\\\\]+)"\."(?<field>\w+)"$/i', $column, $matches)) {
+                $field = $matches['field'];
+            } else {
+                // If no table context is given, see if we can find one in the select
+                // e.g. "Title" -> "SomeTable"."Title"
+                $foundInConditionSearch = false;
+                foreach ($conditionSearch as $conditionSearchOption) {
+                    if (preg_match(
+                        '/^"(?<table>[\w\\\\]+)"\."(?<field>' . trim($column, '"') . ')"$/i',
+                        $conditionSearchOption,
+                        $matches
+                    )) {
+                        $foundInConditionSearch = true;
+                        break;
+                    }
+                }
+
+                if ($foundInConditionSearch) {
+                    $field = trim($column, '"');
+                } else {
+                    // If we still can't find a table, skip
+                    continue;
+                }
+            }
+
+            $table = $matches['table'];
+
+            // If this table doesn't have translated fields then skip
+            if (empty($tables[$table])) {
+                continue;
+            }
+
+            // If this field shouldn't be translated, skip
+            if (!in_array($field, $tables[$table])) {
+                continue;
+            }
+
+            $predicate = sprintf('"%s"."%s"', $table, $field);
+
+            // Apply substitutions
+            unset($order[$column]);
+            $column = str_replace($conditionSearch, $conditionReplace, $predicate);
+            $order[$column] = $direction;
+        }
+        $query->setOrderBy($order);
+
         // Rewrite where conditions
-        $where = $query
-            ->getWhere();
+        $where = $query->getWhere();
         foreach ($where as $index => $condition) {
             // Extract parameters from condition
             if ($condition instanceof SQLConditionGroup) {
