@@ -12,6 +12,7 @@ use SilverStripe\Forms\FieldList;
 use SilverStripe\Forms\LiteralField;
 use TractorCow\Fluent\Model\Locale;
 use TractorCow\Fluent\State\FluentState;
+use SilverStripe\Core\Config\Configurable;
 
 /**
  * Fluent extension for SiteTree
@@ -20,6 +21,8 @@ use TractorCow\Fluent\State\FluentState;
  */
 class FluentSiteTreeExtension extends FluentVersionedExtension
 {
+    use Configurable;
+
     /**
      * Determine if status messages are enabled
      *
@@ -29,6 +32,12 @@ class FluentSiteTreeExtension extends FluentVersionedExtension
     private static $locale_published_status_message = true;
 
     /**
+     * @config
+     * @var bool
+     */
+    private static $prefix_locale_in_link = true;
+
+    /**
      * Add the current locale's URL segment to the start of the URL
      *
      * @param string &$base
@@ -36,6 +45,11 @@ class FluentSiteTreeExtension extends FluentVersionedExtension
      */
     public function updateRelativeLink(&$base, &$action)
     {
+        // Don't prefix locale if it's disabled
+        if (!$this->config()->get('prefix_locale_in_link')) {
+            return;
+        }
+
         // Don't inject locale to subpages
         if ($this->owner->ParentID && SiteTree::config()->get('nested_urls')) {
             return;
@@ -89,6 +103,11 @@ class FluentSiteTreeExtension extends FluentVersionedExtension
      */
     public function updateLink(&$link, &$action, &$relativeLink)
     {
+        // Don't prefix locale if it's disabled
+        if (!$this->config()->get('prefix_locale_in_link')) {
+            return;
+        }
+
         // Get appropriate locale for this record
         $localeObj = $this->getRecordLocale();
         if (!$localeObj) {
