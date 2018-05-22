@@ -87,6 +87,12 @@ class Locale extends DataObject
     ];
 
     /**
+     * @config
+     * @var boolean
+     */
+    private static $disable_implicit_default = false;
+
+    /**
      * @var ArrayList
      */
     protected $chain = null;
@@ -257,7 +263,7 @@ class Locale extends DataObject
      *
      * @param string|null|true $domain If provided, the default locale for the given domain will be returned.
      * If true, then the current state domain will be used (if in domain mode).
-     * @return Locale
+     * @return Locale|null
      */
     public static function getDefault($domain = null)
     {
@@ -272,8 +278,19 @@ class Locale extends DataObject
 
         // Get explicit or implicit default
         $locales = static::getLocales();
-        return $locales->filter('IsGlobalDefault', 1)->first()
-            ?: $locales->first();
+
+        // Return the first local which has IsGlobalDefault checked
+        if ($first = $locales->filter('IsGlobalDefault', 1)->first()) {
+            return $first;
+        }
+
+        // Return the first overall locale if implicit default flag is set
+        if (!static::config()->get('disable_implicit_default')) {
+            return $locales->first();
+        }
+
+        // No default!
+        return null;
     }
 
     /**
