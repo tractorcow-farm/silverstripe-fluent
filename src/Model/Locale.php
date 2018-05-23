@@ -334,6 +334,10 @@ class Locale extends DataObject
      */
     public function isLocale($locale)
     {
+        if (strlen($locale) > strlen($this->Locale)) {
+            return stripos(i18n::convert_rfc1766($locale), i18n::convert_rfc1766($this->Locale)) === 0;
+        }
+
         return stripos(i18n::convert_rfc1766($this->Locale), i18n::convert_rfc1766($locale)) === 0;
     }
 
