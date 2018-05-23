@@ -311,11 +311,11 @@ class FluentVersionedExtension extends FluentExtension
         }
 
         $query = new SQLSelect();
-        $query->selectField('ID');
-        $query->addFrom($table);
+        $query->selectField('"ID"');
+        $query->addFrom('"'. $table . '"');
         $query->addWhere([
-            'RecordID' => $this->owner->ID,
-            'Locale' => $locale,
+            '"RecordID"' => $this->owner->ID,
+            '"Locale"' => $locale,
         ]);
         $query->firstRow();
         $result = $query->execute()->value() !== null;
