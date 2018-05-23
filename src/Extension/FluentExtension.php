@@ -705,10 +705,14 @@ class FluentExtension extends DataExtension
      */
     public function getSourceLocale()
     {
-        $sourceLocale = $this->owner->getField('SourceLocale');
-        if ($sourceLocale) {
+        if ($sourceLocale = $this->owner->getField('SourceLocale')) {
             return Locale::getByLocale($sourceLocale);
         }
+
+        if ($locale = $this->owner->Locale) {
+            return Locale::getByLocale($locale);
+        }
+
         return Locale::getDefault();
     }
 

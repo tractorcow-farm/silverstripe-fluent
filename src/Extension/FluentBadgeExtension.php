@@ -8,9 +8,18 @@ use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\FieldType\DBField;
 use TractorCow\Fluent\Model\Locale;
 use TractorCow\Fluent\State\FluentState;
+use SilverStripe\Core\Config\Configurable;
 
 class FluentBadgeExtension extends Extension
 {
+    use Configurable;
+
+    /**
+     * @config
+     * @var boolean
+     */
+    private static $show_full_locale_badge = false;
+
     /**
      * Push a badge to indicate the language that owns the current item
      *
@@ -98,13 +107,23 @@ class FluentBadgeExtension extends Extension
             ]);
         }
 
+        if ($sourceLocale = $record->getSourceLocale()) {
+            if ($this->config()->get('show_full_locale_badge')) {
+                $localeTitle = $sourceLocale->getTitle();
+            } else {
+                $localeTitle = $sourceLocale->getLocaleSuffix();
+            }
+        } else {
+            $localeTitle = '&#9888;';
+        }
+
         return DBField::create_field(
             'HTMLFragment',
             sprintf(
                 '<span class="%s" title="%s">%s</span>',
                 implode(' ', $badgeClasses),
                 $tooltip,
-                $record->getSourceLocale()->getLocaleSuffix()
+                $localeTitle
             )
         );
     }
