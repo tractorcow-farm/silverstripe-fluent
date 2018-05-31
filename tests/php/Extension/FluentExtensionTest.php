@@ -117,20 +117,27 @@ class FluentExtensionTest extends SapphireTest
     {
         FluentState::singleton()->setLocale('en_US');
         $record = $this->objFromFixture(LocalisedParent::class, 'record_a');
-        $this->assertSame(
-            'en_US',
-            $this->getLocalisedLocaleFromDb($record),
+        $this->assertTrue(
+            $this->hasLocalisedRecord($record, 'en_US'),
             'Record can be read from default locale'
         );
 
         FluentState::singleton()->setLocale('de_DE');
-        $record->write();
-
         $record2 = $this->objFromFixture(LocalisedParent::class, 'record_a');
-        $this->assertSame(
-            'de_DE',
-            $this->getLocalisedLocaleFromDb($record2),
-            'Record Locale is set to current locale'
+        $this->assertTrue(
+            $this->hasLocalisedRecord($record2, 'de_DE'),
+            'Existing record can be read from German locale'
+        );
+
+        // There's no Spanish record yet, so this should create a record in the _Localised table
+        FluentState::singleton()->setLocale('es_ES');
+        $record2->Title = 'Un archivo';
+        $record2->write();
+
+        $record3 = $this->objFromFixture(LocalisedParent::class, 'record_a');
+        $this->assertTrue(
+            $this->hasLocalisedRecord($record3, 'es_ES'),
+            'Record Locale is set to current locale when writing new records'
         );
     }
 
@@ -138,17 +145,21 @@ class FluentExtensionTest extends SapphireTest
      * Get a Locale field value directly from a record's localised database table, skipping the ORM
      *
      * @param DataObject $record
-     * @return string|null
+     * @param string $locale
+     * @return boolean
      */
-    protected function getLocalisedLocaleFromDb(DataObject $record)
+    protected function hasLocalisedRecord(DataObject $record, $locale)
     {
         $result = SQLSelect::create()
             ->setFrom($record->config()->get('table_name') . '_Localised')
-            ->setWhere(['RecordID' => $record->ID])
+            ->setWhere([
+                'RecordID' => $record->ID,
+                'Locale' => $locale,
+            ])
             ->execute()
             ->first();
 
-        return isset($result['Locale']) ? $result['Locale'] : null;
+        return !empty($result);
     }
 
     /**

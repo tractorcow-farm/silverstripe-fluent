@@ -1,3 +1,5 @@
+# Three locales - English and German will have translated records and Spanish records will be created
+# by the unit tests
 TractorCow\Fluent\Model\Locale:
   default:
     Title: US English
@@ -6,7 +8,11 @@ TractorCow\Fluent\Model\Locale:
   german:
     Title: German
     Locale: de_DE
+  spanish:
+    Title: Spanish
+    Locale: es_ES
 
+# Three base records, all defined initially in English
 TractorCow\Fluent\Tests\Extension\FluentExtensionTest\LocalisedParent:
   record_a:
     Title: A record
@@ -16,6 +22,7 @@ TractorCow\Fluent\Tests\Extension\FluentExtensionTest\LocalisedParent:
     Title: Go for a run
 
 FluentExtensionTest_LocalisedParent_Localised:
+  # English translated records
   record_a_us:
     RecordID: =>TractorCow\Fluent\Tests\Extension\FluentExtensionTest\LocalisedParent.record_a
     Title: A record
@@ -28,6 +35,7 @@ FluentExtensionTest_LocalisedParent_Localised:
     RecordID: =>TractorCow\Fluent\Tests\Extension\FluentExtensionTest\LocalisedParent.record_c
     Title: Go for a run
     Locale: en_US
+  # German translated records
   record_a_de:
     RecordID: =>TractorCow\Fluent\Tests\Extension\FluentExtensionTest\LocalisedParent.record_a
     Title: Eine Akte
