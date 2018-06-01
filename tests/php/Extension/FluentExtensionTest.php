@@ -167,28 +167,121 @@ class FluentExtensionTest extends SapphireTest
      *
      * @dataProvider sortRecordProvider
      * @param string $locale
-     * @param string $direction
+     * @param string[] $sortArgs
      * @param string[] $expected
      */
-    public function testLocalisedFieldsCanBeSorted($locale, $direction, $expected)
+    public function testLocalisedFieldsCanBeSorted($locale, array $sortArgs, $expected)
     {
         FluentState::singleton()->setLocale($locale);
 
-        $records = LocalisedParent::get()->sort('Title', $direction);
+        $records = LocalisedParent::get()->sort(...$sortArgs);
         $titles = $records->column('Title');
         $this->assertEquals($expected, $titles);
     }
 
     /**
-     * @return array[]
+     * @return array[] Keys: Locale, sorting arguments, expected titles in result
      */
     public function sortRecordProvider()
     {
         return [
-            'german ascending' => ['de_DE', 'ASC', ['Eine Akte', 'Lesen Sie mehr', 'Rennen']],
-            'german descending' => ['de_DE', 'DESC', ['Rennen', 'Lesen Sie mehr', 'Eine Akte']],
-            'english ascending' => ['en_US', 'ASC', ['A record', 'Go for a run', 'Read about things']],
-            'english descending' => ['en_US', 'DESC', ['Read about things', 'Go for a run', 'A record']],
+            /**
+             * Single field (non-composite) sorting syntax (either string or array syntax)
+             *
+             * E.g. `->sort('"foo"')`, `->sort('Title', 'DESC')` etc
+             */
+            'german ascending single sort' => [
+                'de_DE',
+                ['Title', 'ASC'],
+                ['Eine Akte', 'Lesen Sie mehr', 'Rennen'],
+            ],
+            'german descending single sort' => [
+                'de_DE',
+                ['"Title" DESC'],
+                ['Rennen', 'Lesen Sie mehr', 'Eine Akte'],
+            ],
+            'english ascending single sort' => [
+                'en_US',
+                ['"Title" ASC'],
+                ['A record', 'Go for a run', 'Read about things'],
+            ],
+            'english descending single sort' => [
+                'en_US',
+                ['Title', 'DESC'],
+                ['Read about things', 'Go for a run', 'A record'],
+            ],
+            'english ascending on unlocalised field' => [
+                'en_US',
+                ['"Description"'],
+                ['Read about things', 'Go for a run', 'A record'],
+            ],
+            'english descending on unlocalised field' => [
+                'en_US',
+                ['"Description" DESC'],
+                ['A record', 'Read about things', 'Go for a run'],
+            ],
+            'german ascending on unlocalised field' => [
+                'de_DE',
+                ['"Description"'],
+                ['Lesen Sie mehr', 'Rennen', 'Eine Akte'],
+            ],
+            'german descending on unlocalised field' => [
+                'de_DE',
+                ['"Description" DESC'],
+                ['Eine Akte', 'Lesen Sie mehr', 'Rennen'],
+            ],
+            /**
+             * Composite sorting tests (either string syntax or array syntax)
+             *
+             * E.g. `->sort(['foo' => 'ASC', 'bar' => 'DESC'])`
+             */
+            'english composite sort, string' => [
+                'en_US',
+                ['"Details" ASC, "Title" ASC'],
+                ['Go for a run', 'A record', 'Read about things']
+            ],
+            'german composite sort, string' => [
+                'de_DE',
+                ['"Details" ASC, "Title" ASC'],
+                ['Rennen', 'Eine Akte', 'Lesen Sie mehr'],
+            ],
+            'english, composite sort, array' => [
+                'en_US',
+                [[
+                    'Details' => 'ASC',
+                    'Title' => 'ASC'
+                ]],
+                ['Go for a run', 'A record', 'Read about things'],
+            ],
+            'german, composite sort, array' => [
+                'de_DE',
+                [[
+                    'Details' => 'ASC',
+                    'Title' => 'ASC'
+                ]],
+                ['Rennen', 'Eine Akte', 'Lesen Sie mehr'],
+            ],
+            'german, composite sort, array (flipped)' => [
+                'de_DE',
+                [[
+                    'Details' => 'ASC',
+                    'Title' => 'DESC'
+                ]],
+                ['Rennen', 'Lesen Sie mehr', 'Eine Akte'],
+            ],
+            'english, composite sort, array (flipped)' => [
+                'en_US',
+                [[
+                    'Details' => 'DESC',
+                    'Title' => 'DESC'
+                ]],
+                ['Read about things', 'A record', 'Go for a run'],
+            ],
+            'german, composite sort, no directions' => [
+                'de_DE',
+                ['"Details", "Title"'],
+                ['Rennen', 'Eine Akte', 'Lesen Sie mehr'],
+            ],
         ];
     }
 }
