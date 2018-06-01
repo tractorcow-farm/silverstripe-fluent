@@ -253,11 +253,27 @@ class FluentExtensionTest extends SapphireTest
                 ]],
                 ['Go for a run', 'A record', 'Read about things'],
             ],
+            'english, composite sort, array of strings' => [
+                'en_US',
+                [[
+                    '"Details" ASC',
+                    '"Title" ASC'
+                ]],
+                ['Go for a run', 'A record', 'Read about things'],
+            ],
             'german, composite sort, array' => [
                 'de_DE',
                 [[
                     'Details' => 'ASC',
                     'Title' => 'ASC'
+                ]],
+                ['Rennen', 'Eine Akte', 'Lesen Sie mehr'],
+            ],
+            'german, composite sort, array of strings' => [
+                'de_DE',
+                [[
+                    '"Details" ASC',
+                    '"Title" ASC'
                 ]],
                 ['Rennen', 'Eine Akte', 'Lesen Sie mehr'],
             ],
@@ -282,6 +298,15 @@ class FluentExtensionTest extends SapphireTest
                 ['"Details", "Title"'],
                 ['Rennen', 'Eine Akte', 'Lesen Sie mehr'],
             ],
+            /**
+             * Ignored types of sorting, e.g. subqueries. Ignored sorting should use the ORM default
+             * and sort on whatever is in the base table.
+             */
+            'english, subquery sort' => [
+                'en_US',
+                ['CONCAT((SELECT COUNT(*) FROM "FluentExtensionTest_LocalisedParent_Localised"), "ID")'],
+                ['A record', 'Read about things', 'Go for a run'],
+            ]
         ];
     }
 }
