@@ -2,6 +2,7 @@
 
 namespace TractorCow\Fluent\State;
 
+use InvalidArgumentException;
 use SilverStripe\Core\Injector\Injectable;
 use SilverStripe\Core\Injector\Injector;
 
@@ -20,9 +21,9 @@ class FluentState
     protected $locale;
 
     /**
-     * Current domain
+     * Current domain, if set
      *
-     * @var string
+     * @var string|null
      */
     protected $domain;
 
@@ -58,6 +59,9 @@ class FluentState
      */
     public function setLocale($locale)
     {
+        if (empty($locale) || !is_string($locale)) {
+            throw new InvalidArgumentException("Invalid locale");
+        }
         $this->locale = $locale;
         return $this;
     }
@@ -65,7 +69,7 @@ class FluentState
     /**
      * Get the current domain code
      *
-     * @return string
+     * @return string|null
      */
     public function getDomain()
     {
@@ -75,11 +79,14 @@ class FluentState
     /**
      * Set the current domain code
      *
-     * @param string $domain
+     * @param string|null $domain
      * @return $this
      */
     public function setDomain($domain)
     {
+        if ($domain && !is_string($domain)) {
+            throw new InvalidArgumentException("Invalid domain");
+        }
         $this->domain = $domain;
         return $this;
     }
