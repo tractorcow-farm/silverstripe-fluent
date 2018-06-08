@@ -59,7 +59,7 @@ class FluentState
      */
     public function setLocale($locale)
     {
-        if (empty($locale) || !is_string($locale)) {
+        if ($locale && !is_string($locale)) {
             throw new InvalidArgumentException("Invalid locale");
         }
         $this->locale = $locale;
