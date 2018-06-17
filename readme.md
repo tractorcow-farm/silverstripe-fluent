@@ -3,6 +3,7 @@
 [![Build Status](https://travis-ci.org/tractorcow/silverstripe-fluent.svg?branch=master)](https://travis-ci.org/tractorcow/silverstripe-fluent)
 [![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/tractorcow/silverstripe-fluent/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/tractorcow/silverstripe-fluent/?branch=master)
 [![codecov](https://codecov.io/gh/tractorcow/silverstripe-fluent/branch/master/graph/badge.svg)](https://codecov.io/gh/tractorcow/silverstripe-fluent)
+[![SilverStripe supported module](https://img.shields.io/badge/silverstripe-supported-0071C4.svg)](https://www.silverstripe.org/software/addons/silverstripe-commercially-supported-module-list/)
 
 ## Simple Silverstripe Localisation
 
