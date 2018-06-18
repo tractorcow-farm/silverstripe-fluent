@@ -470,11 +470,28 @@ class FluentExtension extends DataExtension
     }
 
     /**
-     * Force all changes, since we may need to cross-publish unchanged records between locales
+     * Force all changes, since we may need to cross-publish unchanged records between locales. Without this,
+     * loading a page in a different locale and pressing "save" won't actually make the record available in
+     * this locale.
      */
     public function onBeforeWrite()
     {
-        $this->owner->forceChange();
+        /** @var string $currentLocale */
+        $currentLocale = FluentState::singleton()->getLocale();
+        if (!$currentLocale) {
+            return;
+        }
+
+        // If the record is not versioned, force change
+        if (!$this->owner->hasExtension(FluentVersionedExtension::class)) {
+            $this->owner->forceChange();
+            return;
+        }
+
+        // Force a change if the record doesn't already exist in the current locale
+        if (!$this->owner->existsInLocale($currentLocale)) {
+            $this->owner->forceChange();
+        }
     }
 
     /**
