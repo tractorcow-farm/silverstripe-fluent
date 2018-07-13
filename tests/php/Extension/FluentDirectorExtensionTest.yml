@@ -1,0 +1,18 @@
+TractorCow\Fluent\Model\Locale:
+  nz:
+    Locale: en_NZ
+    Title: 'English (New Zealand - multibyte)'
+    URLSegment: nouvelle-zélande
+
+Page:
+  page1-base:
+    Title: Page1
+    URLSegment: page-1
+    FilteredLocales: =>TractorCow\Fluent\Model\Locale.nz
+
+SiteTree_Localised:
+  page1-nz:
+    RecordID: =>Page.page1-base
+    Title: 'Page1 (en_NZ)'
+    URLSegment: page-1
+    Locale: en_NZ
