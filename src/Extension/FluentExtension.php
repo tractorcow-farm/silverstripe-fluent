@@ -7,9 +7,7 @@ use SilverStripe\Control\Director;
 use SilverStripe\Core\ClassInfo;
 use SilverStripe\Core\Config\Config;
 use SilverStripe\Core\Convert;
-use SilverStripe\Dev\Deprecation;
 use SilverStripe\Forms\FieldList;
-use SilverStripe\Forms\LiteralField;
 use SilverStripe\i18n\i18n;
 use SilverStripe\ORM\ArrayList;
 use SilverStripe\ORM\DataExtension;
@@ -333,7 +331,7 @@ class FluentExtension extends DataExtension
                     "\"{$table}\".\"ID\" = \"{$joinAlias}\".\"RecordID\" AND \"{$joinAlias}\".\"Locale\" = ?",
                     $joinAlias,
                     20,
-                    [ $joinLocale->Locale ]
+                    [$joinLocale->Locale]
                 );
             }
         }
@@ -357,29 +355,15 @@ class FluentExtension extends DataExtension
 
         // Iterate through each select clause, replacing each with the translated version
         foreach ($query->getSelect() as $alias => $select) {
-            // Skip fields without table context
-            if (!preg_match('/^"(?<table>[\w\\\\]+)"\."(?<field>\w+)"$/i', $select, $matches)) {
-                continue;
+            // Parse fragment for localised field and table
+            list ($table, $field) = $this->detectLocalisedTableField($tables, $select);
+            if ($table && $field) {
+                $expression = $this->localiseSelect($table, $field, $locale);
+                $query->selectField($expression, $alias);
             }
-
-            $table = $matches['table'];
-            $field = $matches['field'];
-
-            // If this table doesn't have translated fields then skip
-            if (empty($tables[$table])) {
-                continue;
-            }
-
-            // If this field shouldn't be translated, skip
-            if (!in_array($field, $tables[$table])) {
-                continue;
-            }
-
-            $expression = $this->localiseSelect($table, $field, $locale);
-            $query->selectField($expression, $alias);
         }
 
-        // Build all replacements for where conditions
+        // Build all replacements for where / sort conditions
         $conditionSearch = [];
         $conditionReplace = [];
         foreach ($tables as $table => $fields) {
@@ -389,54 +373,29 @@ class FluentExtension extends DataExtension
             }
         }
 
-
         // Iterate through each order clause, replacing each with the translated version
         $order = $query->getOrderBy();
         foreach ($order as $column => $direction) {
-            // Look for table context
-            if (preg_match('/^"(?<table>[\w\\\\]+)"\."(?<field>\w+)"$/i', $column, $matches)) {
-                $field = $matches['field'];
-            } else {
-                // If no table context is given, see if we can find one in the select
-                // e.g. "Title" -> "SomeTable"."Title"
-                $foundInConditionSearch = false;
-                foreach ($conditionSearch as $conditionSearchOption) {
-                    if (preg_match(
-                        '/^"(?<table>[\w\\\\]+)"\."(?<field>' . trim($column, '"') . ')"$/i',
-                        $conditionSearchOption,
-                        $matches
-                    )) {
-                        $foundInConditionSearch = true;
-                        break;
-                    }
+            // Parse fragment for localised field and table
+            list ($table, $field, $fqn) = $this->detectLocalisedTableField($tables, $column);
+            if ($table && $field) {
+                $localisedColumn = $column;
+                // Fix non-fully-qualified name
+                if (!$fqn) {
+                    $localisedColumn = str_replace(
+                        "\"{$field}\"",
+                        "\"{$table}\".\"{$field}\"",
+                        $localisedColumn
+                    );
                 }
-
-                if ($foundInConditionSearch) {
-                    $field = trim($column, '"');
-                } else {
-                    // If we still can't find a table, skip
-                    continue;
+                // Apply substitutions
+                $localisedColumn = str_replace($conditionSearch, $conditionReplace, $localisedColumn);
+                if ($column !== $localisedColumn) {
+                    // Wrap sort in group to prevent dataquery messing it up
+                    unset($order[$column]);
+                    $order["({$localisedColumn})"] = $direction;
                 }
             }
-
-            $table = $matches['table'];
-
-            // If this table doesn't have translated fields then skip
-            if (empty($tables[$table])) {
-                continue;
-            }
-
-            // If this field shouldn't be translated, skip
-            if (!in_array($field, $tables[$table])) {
-                continue;
-            }
-
-            $predicate = sprintf('"%s"."%s"', $table, $field);
-
-            // Apply substitutions
-            unset($order[$column]);
-            $column = str_replace($conditionSearch, $conditionReplace, $predicate);
-            $order[$column] = $direction;
         }
         $query->setOrderBy($order);
 
@@ -455,9 +414,9 @@ class FluentExtension extends DataExtension
             // Apply substitutions
             $localisedPredicate = str_replace($conditionSearch, $conditionReplace, $predicate);
 
-            $where[$index] = array(
+            $where[$index] = [
                 $localisedPredicate => $parameters
-            );
+            ];
         }
         $query->setWhere($where);
     }
@@ -975,5 +934,45 @@ class FluentExtension extends DataExtension
         }
 
         return $this->owner->config()->get('frontend_publish_required');
+    }
+
+    /**
+     * Detect a localised field within a SQL fragment.
+     * Works with either select / sort fragments
+     *
+     * If successful, return an array [ thetable, thefield, fqn ]
+     * Otherwise [ null, null ]
+     *
+     * @param array $tables Map of known table and nested fields to search
+     * @param string $sql The SQL string to inspect
+     * @return array Three item array with table and field and a flag for whether the fragment is fully quolified
+     */
+    protected function detectLocalisedTableField($tables, $sql)
+    {
+        // Check explicit "table"."field" within the fragment
+        if (preg_match('/"(?<table>[\w\\\\]+)"\."(?<field>\w+)"/i', $sql, $matches)) {
+            $table = $matches['table'];
+            $field = $matches['field'];
+
+            // Ensure both table and this field are valid
+            if (empty($tables[$table]) || !in_array($field, $tables[$table])) {
+                return [null, null, false];
+            }
+            return [$table, $field, true];
+        }
+
+        // Check sole "field" without table specifier ("name" without leading or trailing '.')
+        if (preg_match('/(?<![.])"(?<field>\w+)"(?![.])/i', $sql, $matches)) {
+            $field = $matches['field'];
+
+            // Check if this field is in any of the tables, and just pick any that match
+            foreach ($tables as $table => $fields) {
+                if (in_array($field, $fields)){
+                    return [$table, $field, false];
+                }
+            }
+        }
+
+        return [null, null, false];
     }
 }

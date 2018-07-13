@@ -253,27 +253,11 @@ class FluentExtensionTest extends SapphireTest
                 ]],
                 ['Go for a run', 'A record', 'Read about things'],
             ],
-            'english, composite sort, array of strings' => [
-                'en_US',
-                [[
-                    '"Details" ASC',
-                    '"Title" ASC'
-                ]],
-                ['Go for a run', 'A record', 'Read about things'],
-            ],
             'german, composite sort, array' => [
                 'de_DE',
                 [[
                     'Details' => 'ASC',
                     'Title' => 'ASC'
-                ]],
-                ['Rennen', 'Eine Akte', 'Lesen Sie mehr'],
-            ],
-            'german, composite sort, array of strings' => [
-                'de_DE',
-                [[
-                    '"Details" ASC',
-                    '"Title" ASC'
                 ]],
                 ['Rennen', 'Eine Akte', 'Lesen Sie mehr'],
             ],
@@ -304,7 +288,7 @@ class FluentExtensionTest extends SapphireTest
              */
             'english, subquery sort' => [
                 'en_US',
-                ['CONCAT((SELECT COUNT(*) FROM "FluentExtensionTest_LocalisedParent_Localised"), "ID")'],
+                ['CONCAT((SELECT COUNT(*) FROM "FluentExtensionTest_LocalisedParent_Localised"), "FluentExtensionTest_LocalisedParent"."ID")'],
                 ['A record', 'Read about things', 'Go for a run'],
             ]
         ];
