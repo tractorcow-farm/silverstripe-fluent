@@ -113,6 +113,9 @@ class FluentDirectorExtension extends Extension
             $locale = $localeObj->getLocale();
             $url = $localeObj->getURLSegment();
 
+            // apply encode so we could route urls that contain multi-byte charaters
+            $url = urlencode($url);
+
             // Apply to nested page url
             $controller = $this->getRuleController($originalRules['$URLSegment//$Action/$ID/$OtherID'], $localeObj);
             $rules[$url . '/$URLSegment!//$Action/$ID/$OtherID'] = [
