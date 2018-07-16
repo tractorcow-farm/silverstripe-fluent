@@ -967,7 +967,7 @@ class FluentExtension extends DataExtension
 
             // Check if this field is in any of the tables, and just pick any that match
             foreach ($tables as $table => $fields) {
-                if (in_array($field, $fields)){
+                if (in_array($field, $fields)) {
                     return [$table, $field, false];
                 }
             }
