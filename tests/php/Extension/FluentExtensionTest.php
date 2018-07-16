@@ -117,20 +117,27 @@ class FluentExtensionTest extends SapphireTest
     {
         FluentState::singleton()->setLocale('en_US');
         $record = $this->objFromFixture(LocalisedParent::class, 'record_a');
-        $this->assertSame(
-            'en_US',
-            $this->getLocalisedLocaleFromDb($record),
+        $this->assertTrue(
+            $this->hasLocalisedRecord($record, 'en_US'),
             'Record can be read from default locale'
         );
 
         FluentState::singleton()->setLocale('de_DE');
-        $record->write();
-
         $record2 = $this->objFromFixture(LocalisedParent::class, 'record_a');
-        $this->assertSame(
-            'de_DE',
-            $this->getLocalisedLocaleFromDb($record2),
-            'Record Locale is set to current locale'
+        $this->assertTrue(
+            $this->hasLocalisedRecord($record2, 'de_DE'),
+            'Existing record can be read from German locale'
+        );
+
+        // There's no Spanish record yet, so this should create a record in the _Localised table
+        FluentState::singleton()->setLocale('es_ES');
+        $record2->Title = 'Un archivo';
+        $record2->write();
+
+        $record3 = $this->objFromFixture(LocalisedParent::class, 'record_a');
+        $this->assertTrue(
+            $this->hasLocalisedRecord($record3, 'es_ES'),
+            'Record Locale is set to current locale when writing new records'
         );
     }
 
@@ -138,16 +145,152 @@ class FluentExtensionTest extends SapphireTest
      * Get a Locale field value directly from a record's localised database table, skipping the ORM
      *
      * @param DataObject $record
-     * @return string|null
+     * @param string $locale
+     * @return boolean
      */
-    protected function getLocalisedLocaleFromDb(DataObject $record)
+    protected function hasLocalisedRecord(DataObject $record, $locale)
     {
         $result = SQLSelect::create()
             ->setFrom($record->config()->get('table_name') . '_Localised')
-            ->setWhere(['RecordID' => $record->ID])
+            ->setWhere([
+                'RecordID' => $record->ID,
+                'Locale' => $locale,
+            ])
             ->execute()
             ->first();
 
-        return isset($result['Locale']) ? $result['Locale'] : null;
+        return !empty($result);
+    }
+
+    /**
+     * Ensure that records can be sorted in their locales
+     *
+     * @dataProvider sortRecordProvider
+     * @param string $locale
+     * @param string[] $sortArgs
+     * @param string[] $expected
+     */
+    public function testLocalisedFieldsCanBeSorted($locale, array $sortArgs, $expected)
+    {
+        FluentState::singleton()->setLocale($locale);
+
+        $records = LocalisedParent::get()->sort(...$sortArgs);
+        $titles = $records->column('Title');
+        $this->assertEquals($expected, $titles);
+    }
+
+    /**
+     * @return array[] Keys: Locale, sorting arguments, expected titles in result
+     */
+    public function sortRecordProvider()
+    {
+        return [
+            /**
+             * Single field (non-composite) sorting syntax (either string or array syntax)
+             *
+             * E.g. `->sort('"foo"')`, `->sort('Title', 'DESC')` etc
+             */
+            'german ascending single sort' => [
+                'de_DE',
+                ['Title', 'ASC'],
+                ['Eine Akte', 'Lesen Sie mehr', 'Rennen'],
+            ],
+            'german descending single sort' => [
+                'de_DE',
+                ['"Title" DESC'],
+                ['Rennen', 'Lesen Sie mehr', 'Eine Akte'],
+            ],
+            'english ascending single sort' => [
+                'en_US',
+                ['"Title" ASC'],
+                ['A record', 'Go for a run', 'Read about things'],
+            ],
+            'english descending single sort' => [
+                'en_US',
+                ['Title', 'DESC'],
+                ['Read about things', 'Go for a run', 'A record'],
+            ],
+            'english ascending on unlocalised field' => [
+                'en_US',
+                ['"Description"'],
+                ['Read about things', 'Go for a run', 'A record'],
+            ],
+            'english descending on unlocalised field' => [
+                'en_US',
+                ['"Description" DESC'],
+                ['A record', 'Read about things', 'Go for a run'],
+            ],
+            'german ascending on unlocalised field' => [
+                'de_DE',
+                ['"Description"'],
+                ['Lesen Sie mehr', 'Rennen', 'Eine Akte'],
+            ],
+            'german descending on unlocalised field' => [
+                'de_DE',
+                ['"Description" DESC'],
+                ['Eine Akte', 'Lesen Sie mehr', 'Rennen'],
+            ],
+            /**
+             * Composite sorting tests (either string syntax or array syntax)
+             *
+             * E.g. `->sort(['foo' => 'ASC', 'bar' => 'DESC'])`
+             */
+            'english composite sort, string' => [
+                'en_US',
+                ['"Details" ASC, "Title" ASC'],
+                ['Go for a run', 'A record', 'Read about things']
+            ],
+            'german composite sort, string' => [
+                'de_DE',
+                ['"Details" ASC, "Title" ASC'],
+                ['Rennen', 'Eine Akte', 'Lesen Sie mehr'],
+            ],
+            'english, composite sort, array' => [
+                'en_US',
+                [[
+                    'Details' => 'ASC',
+                    'Title' => 'ASC'
+                ]],
+                ['Go for a run', 'A record', 'Read about things'],
+            ],
+            'german, composite sort, array' => [
+                'de_DE',
+                [[
+                    'Details' => 'ASC',
+                    'Title' => 'ASC'
+                ]],
+                ['Rennen', 'Eine Akte', 'Lesen Sie mehr'],
+            ],
+            'german, composite sort, array (flipped)' => [
+                'de_DE',
+                [[
+                    'Details' => 'ASC',
+                    'Title' => 'DESC'
+                ]],
+                ['Rennen', 'Lesen Sie mehr', 'Eine Akte'],
+            ],
+            'english, composite sort, array (flipped)' => [
+                'en_US',
+                [[
+                    'Details' => 'DESC',
+                    'Title' => 'DESC'
+                ]],
+                ['Read about things', 'A record', 'Go for a run'],
+            ],
+            'german, composite sort, no directions' => [
+                'de_DE',
+                ['"Details", "Title"'],
+                ['Rennen', 'Eine Akte', 'Lesen Sie mehr'],
+            ],
+            /**
+             * Ignored types of sorting, e.g. subqueries. Ignored sorting should use the ORM default
+             * and sort on whatever is in the base table.
+             */
+            'english, subquery sort' => [
+                'en_US',
+                ['CONCAT((SELECT COUNT(*) FROM "FluentExtensionTest_LocalisedParent_Localised"), "FluentExtensionTest_LocalisedParent"."ID")'],
+                ['A record', 'Read about things', 'Go for a run'],
+            ]
+        ];
     }
 }
