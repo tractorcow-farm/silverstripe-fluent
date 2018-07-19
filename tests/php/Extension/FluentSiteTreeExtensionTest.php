@@ -255,6 +255,24 @@ class FluentSiteTreeExtensionTest extends SapphireTest
         $this->assertSame($expected, $segmentField->getURLPrefix());
     }
 
+    public function testHomeNotVisibleOnFrontend()
+    {
+        FluentState::singleton()->setIsFrontend(true);
+
+        $page = Page::get()->filter('URLSegment', 'home')->first();
+
+        $this->assertNull($page);
+    }
+
+    public function testHomeVisibleInCMS()
+    {
+        FluentState::singleton()->setIsFrontend(false);
+
+        $page = Page::get()->filter('URLSegment', 'home')->first();
+
+        $this->assertNotNull($page);
+    }
+
     /**
      * @return array[]
      */

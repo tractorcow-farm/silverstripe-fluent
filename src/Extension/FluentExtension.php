@@ -919,11 +919,10 @@ class FluentExtension extends DataExtension
      */
     protected function requireSavedInLocale()
     {
-        // Filter is disabled in CMS
-        if (!FluentState::singleton()->getIsFrontend()) {
-            return false;
+        if (FluentState::singleton()->getIsFrontend()) {
+            return $this->owner->config()->get('frontend_publish_required');
         }
 
-        return $this->owner->config()->get('frontend_publish_required');
+        return $this->owner->config()->get('cms_publish_required');
     }
 }
