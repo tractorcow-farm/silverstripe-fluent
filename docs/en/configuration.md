@@ -231,9 +231,33 @@ visible locales for this object.
 Note: Although these objects will be filtered in the front end, this filter is disabled
 in the CMS in order to allow access by site administrators in all locales.
 
-## Locale detection
+## Routing and Locale Detection
 
-When a visitor lands on the home page for the first time, Fluent can attempt to detect that user's locale based
+The `DetectLocaleMiddleware` will detect if a locale has been requested (or is default) and is not the current
+locale, and will redirect the user to that locale if needed.
+
+Will cascade through different checks in order:
+1. Routing path (e.g. `/de/ueber-uns`)
+2. Request variable (e.g. `ueber-uns?FluentLocale=de`)
+3. Domain (e.g. `http://example.de/ueber-uns`)
+4. Session (if `DetectLocaleMiddleware.persist_session` is configured)
+5. Cookie (if `DetectLocaleMiddleware.persist_cookie` is configured)
+6. Request headers (if `FluentDirectorExtension.detect_locale` is configured)
+
+Additionally, detected locales will be set in session and cookies.
+This behaviour can be configured through `DetectLocaleMiddleware.persist_session`
+and `DetectLocaleMiddleware.persist_cookie`. To solely rely on stateless
+request data (routing path, request variable or domain),
+configure as follows:
+
+```yaml
+TractorCow\Fluent\Middleware\DetectLocaleMiddleware:
+  persist_session: false
+  persist_cookie: false
+```
+
+When a visitor lands on the home page for the first time,
+Fluent can also attempt to detect that user's locale based
 on the `Accept-Language` http headers sent.
 
 This functionality can interfere with certain applications, such as Facebook Open Graph tools, so it
