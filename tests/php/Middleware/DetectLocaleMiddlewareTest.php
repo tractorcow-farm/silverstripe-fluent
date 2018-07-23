@@ -153,7 +153,9 @@ class DetectLocaleMiddlewareTest extends SapphireTest
         $request->setSession($sessionMock);
 
         Cookie::set($key, $newLocale);
-        $middleware->process($request, function () {});
+        $middleware->process($request, function () {
+            // no-op
+        });
 
         // TODO PHPUnit's headers_sent() always returns true, so we can't check for cookie values.
         // PHPUnit has process isolation for this purpose, but we can't use it because autoloading breaks.
@@ -175,7 +177,9 @@ class DetectLocaleMiddlewareTest extends SapphireTest
         $sessionMock->expects($this->once())->method('set')->with($key, $newLocale);
         $request->setSession($sessionMock);
 
-        $middleware->process($request, function () {});
+        $middleware->process($request, function () {
+            // no-op
+        });
 
         // TODO PHPUnit's headers_sent() always returns true, so we can't check for cookie values.
         // PHPUnit has process isolation for this purpose, but we can't use it because autoloading breaks.
@@ -198,7 +202,9 @@ class DetectLocaleMiddlewareTest extends SapphireTest
         $sessionMock->expects($this->never())->method('set');
         $request->setSession($sessionMock);
 
-        $middleware->process($request, function () {});
+        $middleware->process($request, function () {
+            // no-op
+        });
 
         // TODO PHPUnit's headers_sent() always returns true, so we can't check for cookie values.
         // PHPUnit has process isolation for this purpose, but we can't use it because autoloading breaks.
@@ -225,7 +231,9 @@ class DetectLocaleMiddlewareTest extends SapphireTest
         // $sessionMock->expects($this->once())->method('set')->with($key, $this->globalDefaultLocale);
         // $request->setSession($sessionMock);
         //
-        // $middleware->process($request, function () {});
+        // $middleware->process($request, function () {
+        //     // no-op
+        // });
         //
         // $this->assertEquals($this->globalDefaultLocale, Cookie::get($key));
     }
