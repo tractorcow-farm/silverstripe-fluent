@@ -13,6 +13,11 @@ class LocalisedParent extends DataObject implements TestOnly
 {
     private static $table_name = 'FluentExtensionTest_LocalisedParent';
 
+    private static $translate = [
+        'Details',
+        'Title',
+    ];
+
     private static $extensions = [
         'FluentExtension' => FluentExtension::class,
     ];

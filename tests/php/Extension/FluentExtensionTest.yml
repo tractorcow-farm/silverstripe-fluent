@@ -1,3 +1,5 @@
+# Three locales - English and German will have translated records and Spanish records will be created
+# by the unit tests
 TractorCow\Fluent\Model\Locale:
   default:
     Title: US English
@@ -6,13 +8,56 @@ TractorCow\Fluent\Model\Locale:
   german:
     Title: German
     Locale: de_DE
+  spanish:
+    Title: Spanish
+    Locale: es_ES
 
+# Three base records, all defined initially in English. The Title and Description fields are used for sorting
+# unit tests, and the Description column is deliberately not localised. The Details field is localised.
 TractorCow\Fluent\Tests\Extension\FluentExtensionTest\LocalisedParent:
   record_a:
     Title: A record
+    Description: Unique value
+    Details: Not very interesting
+  record_b:
+    Title: Read about things
+    Description: Common value
+    Details: Not very interesting
+  record_c:
+    Title: Go for a run
+    Description: Common value
+    Details: Go to a library
 
 FluentExtensionTest_LocalisedParent_Localised:
-  record_a:
+  # English translated records
+  record_a_us:
     RecordID: =>TractorCow\Fluent\Tests\Extension\FluentExtensionTest\LocalisedParent.record_a
     Title: A record
+    Details: Not very interesting
     Locale: en_US
+  record_b_us:
+    RecordID: =>TractorCow\Fluent\Tests\Extension\FluentExtensionTest\LocalisedParent.record_b
+    Title: Read about things
+    Details: Not very interesting
+    Locale: en_US
+  record_c_us:
+    RecordID: =>TractorCow\Fluent\Tests\Extension\FluentExtensionTest\LocalisedParent.record_c
+    Title: Go for a run
+    Details: Go to a library
+    Locale: en_US
+  # German translated records
+  record_a_de:
+    RecordID: =>TractorCow\Fluent\Tests\Extension\FluentExtensionTest\LocalisedParent.record_a
+    Title: Eine Akte
+    Details: Nicht sehr interessant
+    Locale: de_DE
+  record_b_de:
+    RecordID: =>TractorCow\Fluent\Tests\Extension\FluentExtensionTest\LocalisedParent.record_b
+    Title: Lesen Sie mehr
+    Details: Nicht sehr interessant
+    Locale: de_DE
+  record_c_de:
+    RecordID: =>TractorCow\Fluent\Tests\Extension\FluentExtensionTest\LocalisedParent.record_c
+    Title: Rennen
+    Details: Gehe zur Bibliothek
+    Locale: de_DE
