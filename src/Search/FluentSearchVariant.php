@@ -47,7 +47,7 @@ class FluentSearchVariant extends SearchVariant
     public function alterQuery($query, $index)
     {
         if (FluentState::singleton()->getIsFrontend() && Locale::getCached()->count()) {
-            $query->filter('_locale', [
+            $query->addFilter('_locale', [
                 $this->currentState(),
                 SearchQuery::$missing
             ]);
