@@ -141,7 +141,7 @@ class DetectLocaleMiddlewareTest extends SapphireTest
     {
         $newLocale = 'fr_FR';
         $middleware = $this->middleware;
-        $key = $this->middleware->getPersistKey();
+        $key = $middleware->getPersistKey();
         $request = new HTTPRequest('GET', '/');
 
         $sessionData = [];
@@ -166,7 +166,7 @@ class DetectLocaleMiddlewareTest extends SapphireTest
     {
         $newLocale = 'fr_FR';
         $middleware = $this->middleware;
-        $key = $this->middleware->getPersistKey();
+        $key = $middleware->getPersistKey();
         $request = new HTTPRequest('GET', '/');
 
         $sessionData = [$key => $newLocale];
@@ -191,7 +191,7 @@ class DetectLocaleMiddlewareTest extends SapphireTest
         $newLocale = 'fr_FR';
         $middleware = $this->middleware;
         $middleware->config()->update('persist_session', false);
-        $key = $this->middleware->getPersistKey();
+        $key = $middleware->getPersistKey();
         $request = new HTTPRequest('GET', '/');
 
         $sessionData = [$key => $newLocale];

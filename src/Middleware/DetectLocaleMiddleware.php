@@ -164,11 +164,11 @@ class DetectLocaleMiddleware implements HTTPMiddleware
         }
 
         // check session then cookies
-        if (static::config()->get('persist_session') && $locale = $request->getSession()->get($key)) {
+        if (static::config()->get('persist_session') && ($locale = $request->getSession()->get($key))) {
             return $locale;
         }
 
-        if (static::config()->get('persist_cookie') && $locale = Cookie::get($key)) {
+        if (static::config()->get('persist_cookie') && ($locale = Cookie::get($key))) {
             return $locale;
         }
 
