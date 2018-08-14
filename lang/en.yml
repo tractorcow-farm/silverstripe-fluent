@@ -5,6 +5,7 @@ en:
     FLUENT_ICON_TOOLTIP: 'Translatable field'
   TractorCow\Fluent\Extension\FluentFilteredExtension:
     FILTERED_LOCALES: 'Display in the following locales'
+    TAB_LOCALES: Locales
     LOCALEFILTEREDHELP: 'This page is not visible in this locale'
     LOCALEFILTEREDSHORT: Filtered
   TractorCow\Fluent\Extension\FluentSiteTreeExtension:

@@ -2,13 +2,13 @@
 
 namespace TractorCow\Fluent\Search;
 
-use TractorCow\Fluent\Extension\FluentExtension;
-use TractorCow\Fluent\State\FluentState;
-use TractorCow\Fluent\Model\Locale;
-use SilverStripe\ORM\DataObject;
-use SilverStripe\FullTextSearch\Search\Variants\SearchVariant;
-use SilverStripe\FullTextSearch\Search\SearchIntrospection;
 use SilverStripe\FullTextSearch\Search\Queries\SearchQuery;
+use SilverStripe\FullTextSearch\Search\SearchIntrospection;
+use SilverStripe\FullTextSearch\Search\Variants\SearchVariant;
+use SilverStripe\ORM\DataObject;
+use TractorCow\Fluent\Extension\FluentExtension;
+use TractorCow\Fluent\Model\Locale;
+use TractorCow\Fluent\State\FluentState;
 
 if (!class_exists(SearchVariant::class)) {
     return;
@@ -47,7 +47,9 @@ class FluentSearchVariant extends SearchVariant
     public function alterQuery($query, $index)
     {
         if (FluentState::singleton()->getIsFrontend() && Locale::getCached()->count()) {
-            $query->filter('_locale', [
+            // Backwards compatibility for silverstripe/fulltextsearch 3.2/3.3
+            $method = method_exists($query, 'addFilter') ? 'addFilter' : 'filter';
+            $query->$method('_locale', [
                 $this->currentState(),
                 SearchQuery::$missing
             ]);

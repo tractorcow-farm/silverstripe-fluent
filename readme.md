@@ -51,6 +51,12 @@ you may encounter, as it helps us all out!
  * [Migrating from Translatable](docs/en/migrating-from-translatable.md)
  * [Changelogs](CHANGELOG.md)
 
+## Translations
+
+The translations for this project are managed via [Transifex](https://www.transifex.com/silverstripe/silverstripe-fluent)
+and are updated automatically during the release process. To contribute, please head to the link above and get
+translating!
+
 ## License
 
 Revised BSD License
