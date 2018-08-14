@@ -2,8 +2,12 @@
 
 namespace TractorCow\Fluent\Extension;
 
+use Exception;
+use SilverStripe\Control\HTTPRequest;
 use SilverStripe\Core\Config\Configurable;
 use SilverStripe\Core\Extension;
+use SilverStripe\Core\Injector\Injector;
+use TractorCow\Fluent\Middleware\InitStateMiddleware;
 use TractorCow\Fluent\Model\Locale;
 
 /**
@@ -72,6 +76,15 @@ class FluentDirectorExtension extends Extension
                 $rules[$key] = $route;
             }
         }
+
+        $request = Injector::inst()->get(HTTPRequest::class);
+        if (!$request) {
+            throw new Exception('No request found');
+        }
+
+        // Ensure InitStateMddleware is called here to set the correct defaultLocale
+        Injector::inst()->create(InitStateMiddleware::class)->process($request, function () {
+        });
 
         $defaultLocale = Locale::getDefault(true);
         if (!$defaultLocale) {
