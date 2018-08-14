@@ -39,7 +39,7 @@ class FluentFilteredExtension extends DataExtension
             return;
         }
 
-        $fields->insertAfter('Main', new Tab('Locales'));
+        $fields->insertAfter('Main', new Tab('Locales', _t(__CLASS__.'.TAB_LOCALES', 'Locales')));
 
         $config = GridFieldConfig_RelationEditor::create();
         $config->removeComponentsByType(GridFieldAddNewButton::class);
