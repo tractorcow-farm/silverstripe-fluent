@@ -76,10 +76,10 @@ class FluentFilteredExtension extends DataExtension
         }
 
         // Add new status flag for "not visible".
-        $flags['fluentfiltered'] = array(
-            'text' => _t(__CLASS__ . '.LOCALEFILTEREDSHORT', 'Filtered'),
+        $flags['fluentfiltered'] = [
+            'text' => null,
             'title' => _t(__CLASS__ . '.LOCALEFILTEREDHELP', 'This page is not visible in this locale')
-        );
+        ];
     }
 
     /**

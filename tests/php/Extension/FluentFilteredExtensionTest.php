@@ -72,11 +72,5 @@ class FluentFilteredExtensionTest extends SapphireTest
         $flags = $page->getStatusFlags();
 
         $this->assertTrue(array_key_exists('fluentfiltered', $flags));
-
-        if (!array_key_exists('fluentfiltered', $flags)) {
-            return;
-        }
-
-        $this->assertEquals('Filtered', $flags['fluentfiltered']['text']);
     }
 }
