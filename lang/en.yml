@@ -21,6 +21,7 @@ en:
     PLURALS:
       one: 'A Domain'
       other: '{count} Domains'
+
     SINGULARNAME: Domain
     UnsavedNotice: 'You can add locales once you''ve saved the domain.'
   TractorCow\Fluent\Model\FallbackLocale:
@@ -29,6 +30,7 @@ en:
     PLURALS:
       one: 'A Fallback Locale'
       other: '{count} Fallback Locales'
+
     SINGULARNAME: 'Fallback Locale'
   TractorCow\Fluent\Model\Locale:
     DEFAULT_NONE: (none)
@@ -43,5 +45,6 @@ en:
     PLURALS:
       one: 'A Locale'
       other: '{count} Locales'
+
     SINGULARNAME: Locale
     UnsavedNotice: 'You can add fallbacks once you''ve saved the locale.'
