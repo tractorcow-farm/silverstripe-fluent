@@ -183,22 +183,51 @@ class FluentSiteTreeExtension extends FluentVersionedExtension
             return;
         }
 
-        if (!$this->isDraftedInLocale()) {
-            $message = _t(
-                __CLASS__ . '.LOCALESTATUSFLUENTINVISIBLE',
-                'This page is not visible in this locale until it is added and published.'
-            );
+        $message = null;
 
-            $fields->unshift(
-                LiteralField::create(
-                    'LocaleStatusMessage',
-                    sprintf(
-                        '<p class="alert alert-info">%s</p>',
-                        $message
-                    )
-                )
-            );
+        if ($this->owner->config()->get('frontend_publish_required')) {
+            // If publishing is required, then we can just check whether or not this locale has been published.
+            if (!$this->isPublishedInLocale()) {
+                $message = _t(
+                    __CLASS__ . '.LOCALESTATUSFLUENTINVISIBLE',
+                    'This page will not be visible in this locale until it has been published.'
+                );
+            }
+        } else {
+            // If frontend publishing is *not* required, then we have two possibilities.
+            if (!$this->isDraftedInLocale()) {
+                // Our content hasn't been drafted or published. If this Locale has a Fallback, then content might be
+                // getting inherited from that Fallback.
+                $message = _t(
+                    __CLASS__ . '.LOCALESTATUSFLUENTINHERITED',
+                    'Content for this page may be inherited from another locale. If you wish you make an ' .
+                    'independent copy of this page, please use one of the "Copy" actions provided.'
+                );
+            } elseif (!$this->isPublishedInLocale()) {
+                // Our content has been saved to draft, but hasn't yet been published. That published content may be
+                // coming from a Fallback.
+                $message = _t(
+                    __CLASS__ . '.LOCALESTATUSFLUENTDRAFT',
+                    'A draft has been created for this locale, however, published content may still be ' .
+                    'inherited from another. To publish this content for this locale, use the "Save & publish" ' .
+                    'action provided.'
+                );
+            }
         }
+
+        if ($message === null) {
+            return;
+        }
+
+        $fields->unshift(
+            LiteralField::create(
+                'LocaleStatusMessage',
+                sprintf(
+                    '<p class="alert alert-info">%s</p>',
+                    $message
+                )
+            )
+        );
     }
 
     /**

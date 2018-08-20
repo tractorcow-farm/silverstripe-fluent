@@ -6,6 +6,14 @@ use SilverStripe\Forms\DropdownField;
 use SilverStripe\Forms\FieldList;
 use SilverStripe\ORM\DataObject;
 
+/**
+ * Class FallbackLocale
+ *
+ * @package TractorCow\Fluent\Model
+ * @property int Sort
+ * @method Locale Locale()
+ * @method Locale Parent()
+ */
 class FallbackLocale extends DataObject
 {
     private static $table_name = 'Fluent_FallbackLocale';

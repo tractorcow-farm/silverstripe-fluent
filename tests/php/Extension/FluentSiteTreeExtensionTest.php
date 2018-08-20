@@ -7,8 +7,10 @@ use SilverStripe\CMS\Forms\SiteTreeURLSegmentField;
 use SilverStripe\CMS\Model\SiteTree;
 use SilverStripe\Control\Director;
 use SilverStripe\Core\Config\Config;
+use SilverStripe\Dev\Debug;
 use SilverStripe\Dev\SapphireTest;
 use SilverStripe\Forms\FieldList;
+use SilverStripe\Forms\LiteralField;
 use SilverStripe\ORM\ArrayList;
 use SilverStripe\View\ArrayData;
 use TractorCow\Fluent\Extension\FluentDirectorExtension;
@@ -163,7 +165,7 @@ class FluentSiteTreeExtensionTest extends SapphireTest
         $this->assertTrue(array_key_exists('fluentinvisible', $flags));
     }
 
-    public function testUpdateCMSFields()
+    public function testStatusMessageNotVisibile()
     {
         /** @var Page|FluentSiteTreeExtension $page */
         $page = $this->objFromFixture('Page', 'home');
@@ -171,7 +173,46 @@ class FluentSiteTreeExtensionTest extends SapphireTest
 
         $page->updateCMSFields($fields);
 
+        /** @var LiteralField $statusMessage */
+        $statusMessage = $fields->fieldByName('LocaleStatusMessage');
+
         $this->assertNotNull($fields->fieldByName('LocaleStatusMessage'));
+        $this->assertContains('This page is not visible', $statusMessage->getContent());
+    }
+
+    public function testStatusMessageInherited()
+    {
+        /** @var Page|FluentSiteTreeExtension $page */
+        $page = $this->objFromFixture('Page', 'home');
+        $page->config()->update('frontend_publish_required', false);
+        $fields = new FieldList();
+
+        $page->updateCMSFields($fields);
+
+        /** @var LiteralField $statusMessage */
+        $statusMessage = $fields->fieldByName('LocaleStatusMessage');
+
+        $this->assertNotNull($fields->fieldByName('LocaleStatusMessage'));
+        $this->assertContains('Content for this page may be inherited', $statusMessage->getContent());
+    }
+
+    public function testStatusMessageDrafted()
+    {
+        FluentState::singleton()->setLocale('en_NZ');
+
+        /** @var Page|FluentSiteTreeExtension $page */
+        $page = $this->objFromFixture('Page', 'home');
+        $page->config()->update('frontend_publish_required', false);
+        $page->write();
+        $fields = new FieldList();
+
+        $page->updateCMSFields($fields);
+
+        /** @var LiteralField $statusMessage */
+        $statusMessage = $fields->fieldByName('LocaleStatusMessage');
+
+        $this->assertNotNull($fields->fieldByName('LocaleStatusMessage'));
+        $this->assertContains('A draft has been created for this locale', $statusMessage->getContent());
     }
 
     public function testUpdateCMSActionsInherited()
