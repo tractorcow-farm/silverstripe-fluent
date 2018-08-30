@@ -6,7 +6,7 @@
  * @package fluent
  * @author Damian Mooyman <damian.mooyman@gmail.com>
  */
-class Fluent extends Object implements TemplateGlobalProvider
+class Fluent extends SS_Object implements TemplateGlobalProvider
 {
     /**
      * If set, "is_frontend" can be forced to return a value
