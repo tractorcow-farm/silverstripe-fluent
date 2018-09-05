@@ -219,7 +219,7 @@ class Locale extends DataObject
                 'LocaleID' => function () {
                     return DropdownField::create(
                         'LocaleID',
-                        _t(FallbackLocale::class . '.LOCALE', 'Locale'),
+                        _t(__CLASS__.'.LOCALE', 'Locale'),
                         Locale::getCached()->exclude('Locale', $this->Locale)->map('ID', 'Title')
                     );
                 }
