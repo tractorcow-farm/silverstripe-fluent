@@ -12,6 +12,7 @@ use SilverStripe\ORM\DataList;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\DataQuery;
 use SilverStripe\ORM\Queries\SQLSelect;
+use SilverStripe\Versioned\Versioned;
 use TractorCow\Fluent\Model\Locale;
 use TractorCow\Fluent\State\FluentState;
 
@@ -115,6 +116,11 @@ class FluentFilteredExtension extends DataExtension
             return;
         }
 
+        // Dev has requested that we do not apply Filtered Locales when reading mode is set to DRAFT.
+        if (!$this->owner->config()->get('apply_filtered_locales_to_stage') && $this->getModeIsStage()) {
+            return;
+        }
+
         $table = $this->owner->baseTable();
         $filteredLocalesTable = $table . '_' . self::SUFFIX;
 
@@ -147,5 +153,23 @@ class FluentFilteredExtension extends DataExtension
         }
 
         return null;
+    }
+
+    /**
+     * There are two different DRAFT modes. One when browsing stage, and one when browsing archive. Both modes have
+     * "Stage" at the very end of their reading_mode name.
+     *
+     * @return bool
+     */
+    private function getModeIsStage()
+    {
+        $str = Versioned::get_reading_mode();
+        $test = Versioned::DRAFT;
+
+        if (strlen($str) === 0) {
+            $str = Versioned::DEFAULT_MODE;
+        }
+
+        return substr_compare($str, $test, strlen($str) - strlen($test), strlen($test)) === 0;
     }
 }
