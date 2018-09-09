@@ -10,6 +10,7 @@ use SilverStripe\Core\Config\Config;
 use SilverStripe\Dev\SapphireTest;
 use SilverStripe\Forms\FieldList;
 use SilverStripe\ORM\ArrayList;
+use SilverStripe\ORM\DataObject;
 use SilverStripe\View\ArrayData;
 use TractorCow\Fluent\Extension\FluentDirectorExtension;
 use TractorCow\Fluent\Extension\FluentSiteTreeExtension;
@@ -255,8 +256,32 @@ class FluentSiteTreeExtensionTest extends SapphireTest
         $this->assertSame($expected, $segmentField->getURLPrefix());
     }
 
-    public function testHomeNotVisibleOnFrontend()
+    public function testHomeVisibleOnFrontendBothConfigFalse()
     {
+        Config::modify()->set(DataObject::class, 'cms_publish_required', false);
+        Config::modify()->set(DataObject::class, 'frontend_publish_required', false);
+        FluentState::singleton()->setIsFrontend(true);
+
+        $page = Page::get()->filter('URLSegment', 'home')->first();
+
+        $this->assertNotNull($page);
+    }
+
+    public function testHomeVisibleOnFrontendOneConfigFalse()
+    {
+        Config::modify()->set(DataObject::class, 'cms_publish_required', true);
+        Config::modify()->set(DataObject::class, 'frontend_publish_required', false);
+        FluentState::singleton()->setIsFrontend(true);
+
+        $page = Page::get()->filter('URLSegment', 'home')->first();
+
+        $this->assertNotNull($page);
+    }
+
+    public function testHomeNotVisibleOnFrontendBothConfigTrue()
+    {
+        Config::modify()->set(DataObject::class, 'cms_publish_required', true);
+        Config::modify()->set(DataObject::class, 'frontend_publish_required', true);
         FluentState::singleton()->setIsFrontend(true);
 
         $page = Page::get()->filter('URLSegment', 'home')->first();
@@ -264,13 +289,59 @@ class FluentSiteTreeExtensionTest extends SapphireTest
         $this->assertNull($page);
     }
 
-    public function testHomeVisibleInCMS()
+    public function testHomeNotVisibleOnFrontendOneConfigTrue()
     {
+        Config::modify()->set(DataObject::class, 'cms_publish_required', false);
+        Config::modify()->set(DataObject::class, 'frontend_publish_required', true);
+        FluentState::singleton()->setIsFrontend(true);
+
+        $page = Page::get()->filter('URLSegment', 'home')->first();
+
+        $this->assertNull($page);
+    }
+
+    public function testHomeVisibleInCMSBothConfigFalse()
+    {
+        Config::modify()->set(DataObject::class, 'cms_publish_required', false);
+        Config::modify()->set(DataObject::class, 'frontend_publish_required', false);
         FluentState::singleton()->setIsFrontend(false);
 
         $page = Page::get()->filter('URLSegment', 'home')->first();
 
         $this->assertNotNull($page);
+    }
+
+    public function testHomeVisibleInCMSOneConfigFalse()
+    {
+        Config::modify()->set(DataObject::class, 'cms_publish_required', false);
+        Config::modify()->set(DataObject::class, 'frontend_publish_required', true);
+        FluentState::singleton()->setIsFrontend(false);
+
+        $page = Page::get()->filter('URLSegment', 'home')->first();
+
+        $this->assertNotNull($page);
+    }
+
+    public function testHomeNotVisibleInCMSBothConfigTrue()
+    {
+        Config::modify()->set(DataObject::class, 'cms_publish_required', true);
+        Config::modify()->set(DataObject::class, 'frontend_publish_required', true);
+        FluentState::singleton()->setIsFrontend(false);
+
+        $page = Page::get()->filter('URLSegment', 'home')->first();
+
+        $this->assertNull($page);
+    }
+
+    public function testHomeNotVisibleInCMSOneConfigTrue()
+    {
+        Config::modify()->set(DataObject::class, 'cms_publish_required', true);
+        Config::modify()->set(DataObject::class, 'frontend_publish_required', false);
+        FluentState::singleton()->setIsFrontend(false);
+
+        $page = Page::get()->filter('URLSegment', 'home')->first();
+
+        $this->assertNull($page);
     }
 
     /**
