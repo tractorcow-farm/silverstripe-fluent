@@ -53,7 +53,7 @@ class FluentFilteredExtensionTest extends SapphireTest
                 ->setLocale('en_NZ')
                 ->setIsFrontend(true);
 
-            $this->assertEquals(1, SiteTree::get()->count());
+            $this->assertCount(1, SiteTree::get());
         });
 
         if ($currentStage) {
@@ -80,7 +80,7 @@ class FluentFilteredExtensionTest extends SapphireTest
                 ->setLocale('en_NZ')
                 ->setIsFrontend(true);
 
-            $this->assertEquals(0, SiteTree::get()->count());
+            $this->assertCount(0, SiteTree::get());
         });
 
         if ($currentStage) {
@@ -108,7 +108,7 @@ class FluentFilteredExtensionTest extends SapphireTest
                 ->setLocale('en_NZ')
                 ->setIsFrontend(true);
 
-            $this->assertEquals(2, SiteTree::get()->count());
+            $this->assertCount(2, SiteTree::get());
         });
 
         if ($currentStage) {
@@ -123,7 +123,7 @@ class FluentFilteredExtensionTest extends SapphireTest
                 ->setLocale('en_NZ')
                 ->setIsFrontend(false);
 
-            $this->assertEquals(2, SiteTree::get()->count());
+            $this->assertCount(2, SiteTree::get());
         });
     }
 

@@ -161,15 +161,15 @@ class FluentFilteredExtension extends DataExtension
      *
      * @return bool
      */
-    private function getModeIsStage()
+    protected function getModeIsStage()
     {
-        $str = Versioned::get_reading_mode();
-        $test = Versioned::DRAFT;
+        $readingMode = Versioned::get_reading_mode();
+        $draft = Versioned::DRAFT;
 
-        if (strlen($str) === 0) {
-            $str = Versioned::DEFAULT_MODE;
+        if (strlen($readingMode) === 0) {
+            $readingMode = Versioned::DEFAULT_MODE;
         }
 
-        return substr_compare($str, $test, strlen($str) - strlen($test), strlen($test)) === 0;
+        return substr_compare($readingMode, $draft, strlen($readingMode) - strlen($draft), strlen($draft)) === 0;
     }
 }
