@@ -47,39 +47,51 @@ class FluentSiteTreeExtensionTest extends SapphireTest
 
     public function testGetLocaleInformation()
     {
-        /** @var Page|FluentSiteTreeExtension $page */
-        $page = $this->objFromFixture(Page::class, 'nz-page');
-        $result = $page->LocaleInformation('en_NZ');
+        FluentState::singleton()->withState(function (FluentState $newState) {
+            $newState
+                ->setLocale('de_DE')
+                ->setIsDomainMode(false);
 
-        $this->assertInstanceOf(ArrayData::class, $result);
-        $this->assertEquals([
-            'Locale' => 'en_NZ',
-            'LocaleRFC1766' => 'en-NZ',
-            'Title' => 'English (New Zealand)',
-            'LanguageNative' => 'English',
-            'Language' => 'en',
-            'Link' => '/newzealand/a-page/',
-            'AbsoluteLink' => 'http://mocked/newzealand/a-page/',
-            'LinkingMode' => 'link',
-            'URLSegment' => 'newzealand'
-        ], $result->toMap());
+            /** @var Page|FluentSiteTreeExtension $page */
+            $page = $this->objFromFixture(Page::class, 'nz-page');
+            $result = $page->LocaleInformation('en_NZ');
+
+            $this->assertInstanceOf(ArrayData::class, $result);
+            $this->assertEquals([
+                'Locale' => 'en_NZ',
+                'LocaleRFC1766' => 'en-NZ',
+                'Title' => 'English (New Zealand)',
+                'LanguageNative' => 'English',
+                'Language' => 'en',
+                'Link' => '/newzealand/a-page/',
+                'AbsoluteLink' => 'http://mocked/newzealand/a-page/',
+                'LinkingMode' => 'link',
+                'URLSegment' => 'newzealand'
+            ], $result->toMap());
+        });
     }
 
     public function testGetLocales()
     {
-        /** @var Page|FluentSiteTreeExtension $page */
-        $page = $this->objFromFixture(Page::class, 'nz-page');
-        $result = $page->Locales();
+        FluentState::singleton()->withState(function (FluentState $newState) {
+            $newState
+                ->setLocale('de_DE')
+                ->setIsDomainMode(false);
 
-        $this->assertInstanceOf(ArrayList::class, $result);
-        $this->assertCount(5, $result);
-        $this->assertListEquals([
-            ['Locale' => 'en_NZ'],
-            ['Locale' => 'de_DE'],
-            ['Locale' => 'en_US'],
-            ['Locale' => 'es_ES'],
-            ['Locale' => 'zh_CN'],
-        ], $result);
+            /** @var Page|FluentSiteTreeExtension $page */
+            $page = $this->objFromFixture(Page::class, 'nz-page');
+            $result = $page->Locales();
+
+            $this->assertInstanceOf(ArrayList::class, $result);
+            $this->assertCount(5, $result);
+            $this->assertListEquals([
+                ['Locale' => 'en_NZ'],
+                ['Locale' => 'de_DE'],
+                ['Locale' => 'en_US'],
+                ['Locale' => 'es_ES'],
+                ['Locale' => 'zh_CN'],
+            ], $result);
+        });
     }
 
     /**
@@ -143,18 +155,22 @@ class FluentSiteTreeExtensionTest extends SapphireTest
      */
     public function testFluentURLs($domain, $locale, $prefixDisabled, $pageName, $url)
     {
-        // Set state
-        FluentState::singleton()
-            ->setLocale($locale)
-            ->setDomain($domain)
-            ->setIsDomainMode(!empty($domain));
-        // Set url generation option
-        Config::modify()
-            ->set(FluentDirectorExtension::class, 'disable_default_prefix', $prefixDisabled);
+        FluentState::singleton()->withState(
+            function (FluentState $newState) use ($domain, $locale, $prefixDisabled, $pageName, $url) {
+                $newState
+                    ->setLocale($locale)
+                    ->setDomain($domain)
+                    ->setIsDomainMode(!empty($domain));
 
-        /** @var Page|FluentSiteTreeExtension $page */
-        $page = $this->objFromFixture('Page', $pageName);
-        $this->assertEquals($url, $page->Link());
+                // Set url generation option
+                Config::modify()
+                    ->set(FluentDirectorExtension::class, 'disable_default_prefix', $prefixDisabled);
+
+                /** @var Page|FluentSiteTreeExtension $page */
+                $page = $this->objFromFixture('Page', $pageName);
+                $this->assertEquals($url, $page->Link());
+            }
+        );
     }
 
     public function testUpdateStatusFlagsFluentInivisible()
@@ -199,21 +215,25 @@ class FluentSiteTreeExtensionTest extends SapphireTest
 
     public function testStatusMessageDrafted()
     {
-        FluentState::singleton()->setLocale('en_NZ');
+        FluentState::singleton()->withState(function (FluentState $newState) {
+            $newState
+                ->setLocale('en_NZ')
+                ->setIsDomainMode(false);
 
-        /** @var Page|FluentSiteTreeExtension $page */
-        $page = $this->objFromFixture('Page', 'home');
-        $page->config()->update('frontend_publish_required', false);
-        $page->write();
-        $fields = new FieldList();
+            /** @var Page|FluentSiteTreeExtension $page */
+            $page = $this->objFromFixture('Page', 'home');
+            $page->config()->update('frontend_publish_required', false);
+            $page->write();
+            $fields = new FieldList();
 
-        $page->updateCMSFields($fields);
+            $page->updateCMSFields($fields);
 
-        /** @var LiteralField $statusMessage */
-        $statusMessage = $fields->fieldByName('LocaleStatusMessage');
+            /** @var LiteralField $statusMessage */
+            $statusMessage = $fields->fieldByName('LocaleStatusMessage');
 
-        $this->assertNotNull($fields->fieldByName('LocaleStatusMessage'));
-        $this->assertContains('A draft has been created for this locale', $statusMessage->getContent());
+            $this->assertNotNull($fields->fieldByName('LocaleStatusMessage'));
+            $this->assertContains('A draft has been created for this locale', $statusMessage->getContent());
+        });
     }
 
     public function testUpdateCMSActionsInherited()
@@ -283,106 +303,159 @@ class FluentSiteTreeExtensionTest extends SapphireTest
      */
     public function testAddLocalePrefixToUrlSegment($localeCode, $fixture, $expected)
     {
-        FluentState::singleton()
-            ->setLocale($localeCode)
-            ->setIsDomainMode(true);
+        FluentState::singleton()->withState(
+            function (FluentState $newState) use ($localeCode, $fixture, $expected) {
+                $newState
+                    ->setLocale($localeCode)
+                    ->setIsDomainMode(true);
 
-        /** @var FieldList $fields */
-        $fields = $this->objFromFixture(Page::class, $fixture)->getCMSFields();
+                /** @var FieldList $fields */
+                $fields = $this->objFromFixture(Page::class, $fixture)->getCMSFields();
 
-        /** @var SiteTreeURLSegmentField $segmentField */
-        $segmentField = $fields->fieldByName('Root.Main.URLSegment');
-        $this->assertInstanceOf(SiteTreeURLSegmentField::class, $segmentField);
+                /** @var SiteTreeURLSegmentField $segmentField */
+                $segmentField = $fields->fieldByName('Root.Main.URLSegment');
+                $this->assertInstanceOf(SiteTreeURLSegmentField::class, $segmentField);
 
-        $this->assertSame($expected, $segmentField->getURLPrefix());
+                $this->assertSame($expected, $segmentField->getURLPrefix());
+            }
+        );
     }
 
     public function testHomeVisibleOnFrontendBothConfigFalse()
     {
         Config::modify()->set(DataObject::class, 'cms_publish_required', false);
         Config::modify()->set(DataObject::class, 'frontend_publish_required', false);
-        FluentState::singleton()->setIsFrontend(true);
 
-        $page = Page::get()->filter('URLSegment', 'home')->first();
+        FluentState::singleton()->withState(function (FluentState $newState) {
+            $newState
+                ->setLocale('de_DE')
+                ->setIsDomainMode(false)
+                ->setIsFrontend(true);
 
-        $this->assertNotNull($page);
+            $page = Page::get()->filter('URLSegment', 'home')->first();
+
+
+            $this->assertNotNull($page);
+        });
     }
 
     public function testHomeVisibleOnFrontendOneConfigFalse()
     {
         Config::modify()->set(DataObject::class, 'cms_publish_required', true);
         Config::modify()->set(DataObject::class, 'frontend_publish_required', false);
-        FluentState::singleton()->setIsFrontend(true);
 
-        $page = Page::get()->filter('URLSegment', 'home')->first();
+        FluentState::singleton()->withState(function (FluentState $newState) {
+            $newState
+                ->setLocale('de_DE')
+                ->setIsDomainMode(false)
+                ->setIsFrontend(true);
 
-        $this->assertNotNull($page);
+            $page = Page::get()->filter('URLSegment', 'home')->first();
+
+            $this->assertNotNull($page);
+        });
     }
 
     public function testHomeNotVisibleOnFrontendBothConfigTrue()
     {
         Config::modify()->set(DataObject::class, 'cms_publish_required', true);
         Config::modify()->set(DataObject::class, 'frontend_publish_required', true);
-        FluentState::singleton()->setIsFrontend(true);
 
-        $page = Page::get()->filter('URLSegment', 'home')->first();
+        FluentState::singleton()->withState(function (FluentState $newState) {
+            $newState
+                ->setLocale('de_DE')
+                ->setIsDomainMode(false)
+                ->setIsFrontend(true);
 
-        $this->assertNull($page);
+            $page = Page::get()->filter('URLSegment', 'home')->first();
+
+            $this->assertNull($page);
+        });
     }
 
     public function testHomeNotVisibleOnFrontendOneConfigTrue()
     {
         Config::modify()->set(DataObject::class, 'cms_publish_required', false);
         Config::modify()->set(DataObject::class, 'frontend_publish_required', true);
-        FluentState::singleton()->setIsFrontend(true);
 
-        $page = Page::get()->filter('URLSegment', 'home')->first();
+        FluentState::singleton()->withState(function (FluentState $newState) {
+            $newState
+                ->setLocale('de_DE')
+                ->setIsDomainMode(false)
+                ->setIsFrontend(true);
 
-        $this->assertNull($page);
+            $page = Page::get()->filter('URLSegment', 'home')->first();
+
+            $this->assertNull($page);
+        });
     }
 
     public function testHomeVisibleInCMSBothConfigFalse()
     {
         Config::modify()->set(DataObject::class, 'cms_publish_required', false);
         Config::modify()->set(DataObject::class, 'frontend_publish_required', false);
-        FluentState::singleton()->setIsFrontend(false);
 
-        $page = Page::get()->filter('URLSegment', 'home')->first();
+        FluentState::singleton()->withState(function (FluentState $newState) {
+            $newState
+                ->setLocale('de_DE')
+                ->setIsDomainMode(false)
+                ->setIsFrontend(false);
 
-        $this->assertNotNull($page);
+            $page = Page::get()->filter('URLSegment', 'home')->first();
+
+            $this->assertNotNull($page);
+        });
     }
 
     public function testHomeVisibleInCMSOneConfigFalse()
     {
         Config::modify()->set(DataObject::class, 'cms_publish_required', false);
         Config::modify()->set(DataObject::class, 'frontend_publish_required', true);
-        FluentState::singleton()->setIsFrontend(false);
 
-        $page = Page::get()->filter('URLSegment', 'home')->first();
+        FluentState::singleton()->withState(function (FluentState $newState) {
+            $newState
+                ->setLocale('de_DE')
+                ->setIsDomainMode(false)
+                ->setIsFrontend(false);
 
-        $this->assertNotNull($page);
+            $page = Page::get()->filter('URLSegment', 'home')->first();
+
+            $this->assertNotNull($page);
+        });
     }
 
     public function testHomeNotVisibleInCMSBothConfigTrue()
     {
         Config::modify()->set(DataObject::class, 'cms_publish_required', true);
         Config::modify()->set(DataObject::class, 'frontend_publish_required', true);
-        FluentState::singleton()->setIsFrontend(false);
 
-        $page = Page::get()->filter('URLSegment', 'home')->first();
+        FluentState::singleton()->withState(function (FluentState $newState) {
+            $newState
+                ->setLocale('de_DE')
+                ->setIsDomainMode(false)
+                ->setIsFrontend(false);
 
-        $this->assertNull($page);
+            $page = Page::get()->filter('URLSegment', 'home')->first();
+
+            $this->assertNull($page);
+        });
     }
 
     public function testHomeNotVisibleInCMSOneConfigTrue()
     {
         Config::modify()->set(DataObject::class, 'cms_publish_required', true);
         Config::modify()->set(DataObject::class, 'frontend_publish_required', false);
-        FluentState::singleton()->setIsFrontend(false);
 
-        $page = Page::get()->filter('URLSegment', 'home')->first();
+        FluentState::singleton()->withState(function (FluentState $newState) {
+            $newState
+                ->setLocale('de_DE')
+                ->setIsDomainMode(false)
+                ->setIsFrontend(false);
 
-        $this->assertNull($page);
+            $page = Page::get()->filter('URLSegment', 'home')->first();
+
+            $this->assertNull($page);
+        });
     }
 
     /**

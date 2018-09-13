@@ -29,54 +29,66 @@ class FluentFilteredExtensionTest extends SapphireTest
         // Clear cache
         Locale::clearCached();
         Domain::clearCached();
-        FluentState::singleton()
-            ->setLocale('en_NZ')
-            ->setIsDomainMode(false);
     }
 
     public function testAugmentSQLFrontend()
     {
-        FluentState::singleton()
-            ->setLocale('en_NZ')
-            ->setIsFrontend(true);
+        FluentState::singleton()->withState(function (FluentState $newState) {
+            $newState
+                ->setLocale('en_NZ')
+                ->setIsFrontend(true)
+                ->setIsDomainMode(false);
 
-        $this->assertEquals(1, SiteTree::get()->count());
+            $this->assertEquals(1, SiteTree::get()->count());
+        });
     }
 
     public function testAugmentSQLCMS()
     {
-        FluentState::singleton()
-            ->setLocale('en_NZ')
-            ->setIsFrontend(false);
+        FluentState::singleton()->withState(function (FluentState $newState) {
+            $newState
+                ->setLocale('en_NZ')
+                ->setIsFrontend(false)
+                ->setIsDomainMode(false);
 
-        $this->assertEquals(2, SiteTree::get()->count());
+            $this->assertEquals(2, SiteTree::get()->count());
+        });
     }
 
     public function testUpdateCMSFields()
     {
-        /** @var Page|FluentSiteTreeExtension $page */
-        $page = SiteTree::get()->filter('URLSegment', 'home')->first();
-        $fields = $page->getCMSFields();
+        FluentState::singleton()->withState(function (FluentState $newState) {
+            $newState
+                ->setLocale('en_NZ')
+                ->setIsDomainMode(false);
 
-        $this->assertNotNull($fields->dataFieldByName('FilteredLocales'));
+            /** @var Page|FluentSiteTreeExtension $page */
+            $page = SiteTree::get()->filter('URLSegment', 'home')->first();
+            $fields = $page->getCMSFields();
+
+            $this->assertNotNull($fields->dataFieldByName('FilteredLocales'));
+        });
     }
 
     public function testUpdateStatusFlags()
     {
-        FluentState::singleton()
-            ->setLocale('en_US')
-            ->setIsFrontend(false);
+        FluentState::singleton()->withState(function (FluentState $newState) {
+            $newState
+                ->setLocale('en_US')
+                ->setIsFrontend(false)
+                ->setIsDomainMode(false);
 
-        /** @var Page|FluentSiteTreeExtension $page */
-        $page = $this->objFromFixture('Page', 'about');
-        $flags = $page->getStatusFlags();
+            /** @var Page|FluentSiteTreeExtension $page */
+            $page = $this->objFromFixture('Page', 'about');
+            $flags = $page->getStatusFlags();
 
-        $this->assertTrue(array_key_exists('fluentfiltered', $flags));
+            $this->assertTrue(array_key_exists('fluentfiltered', $flags));
 
-        if (!array_key_exists('fluentfiltered', $flags)) {
-            return;
-        }
+            if (!array_key_exists('fluentfiltered', $flags)) {
+                return;
+            }
 
-        $this->assertEquals('Filtered', $flags['fluentfiltered']['text']);
+            $this->assertEquals('Filtered', $flags['fluentfiltered']['text']);
+        });
     }
 }

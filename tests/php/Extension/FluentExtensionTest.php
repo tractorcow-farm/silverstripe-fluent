@@ -33,13 +33,15 @@ class FluentExtensionTest extends SapphireTest
 
     public function testFluentLocaleAndFrontendAreAddedToDataQuery()
     {
-        FluentState::singleton()
-            ->setLocale('test')
-            ->setIsFrontend(true);
+        FluentState::singleton()->withState(function (FluentState $newState) {
+            $newState
+                ->setLocale('test')
+                ->setIsFrontend(true);
 
-        $query = SiteTree::get()->dataQuery();
-        $this->assertSame('test', $query->getQueryParam('Fluent.Locale'));
-        $this->assertTrue($query->getQueryParam('Fluent.IsFrontend'));
+            $query = SiteTree::get()->dataQuery();
+            $this->assertSame('test', $query->getQueryParam('Fluent.Locale'));
+            $this->assertTrue($query->getQueryParam('Fluent.IsFrontend'));
+        });
     }
 
     public function testGetLocalisedTable()
@@ -61,8 +63,11 @@ class FluentExtensionTest extends SapphireTest
         $this->assertSame('link', $stub->getLinkingMode('foo'));
 
         // Does not have a canViewInLocale method, locale is current
-        FluentState::singleton()->setLocale('foo');
-        $this->assertSame('current', $stub->getLinkingMode('foo'));
+        FluentState::singleton()->withState(function (FluentState $newState) use ($stub) {
+            $newState->setLocale('foo');
+
+            $this->assertSame('current', $stub->getLinkingMode('foo'));
+        });
     }
 
     public function testGetLocalisedFields()
@@ -115,51 +120,36 @@ class FluentExtensionTest extends SapphireTest
 
     public function testWritesToCurrentLocale()
     {
-        FluentState::singleton()->setLocale('en_US');
-        $record = $this->objFromFixture(LocalisedParent::class, 'record_a');
-        $this->assertTrue(
-            $this->hasLocalisedRecord($record, 'en_US'),
-            'Record can be read from default locale'
-        );
+        FluentState::singleton()->withState(function (FluentState $newState) {
+            $newState->setLocale('en_US');
 
-        FluentState::singleton()->setLocale('de_DE');
-        $record2 = $this->objFromFixture(LocalisedParent::class, 'record_a');
-        $this->assertTrue(
-            $this->hasLocalisedRecord($record2, 'de_DE'),
-            'Existing record can be read from German locale'
-        );
+            $record = $this->objFromFixture(LocalisedParent::class, 'record_a');
+            $this->assertTrue(
+                $this->hasLocalisedRecord($record, 'en_US'),
+                'Record can be read from default locale'
+            );
+        });
 
-        // There's no Spanish record yet, so this should create a record in the _Localised table
-        FluentState::singleton()->setLocale('es_ES');
-        $record2->Title = 'Un archivo';
-        $record2->write();
+        FluentState::singleton()->withState(function (FluentState $newState) {
+            $newState->setLocale('de_DE');
 
-        $record3 = $this->objFromFixture(LocalisedParent::class, 'record_a');
-        $this->assertTrue(
-            $this->hasLocalisedRecord($record3, 'es_ES'),
-            'Record Locale is set to current locale when writing new records'
-        );
-    }
+            $record2 = $this->objFromFixture(LocalisedParent::class, 'record_a');
+            $this->assertTrue(
+                $this->hasLocalisedRecord($record2, 'de_DE'),
+                'Existing record can be read from German locale'
+            );
 
-    /**
-     * Get a Locale field value directly from a record's localised database table, skipping the ORM
-     *
-     * @param DataObject $record
-     * @param string $locale
-     * @return boolean
-     */
-    protected function hasLocalisedRecord(DataObject $record, $locale)
-    {
-        $result = SQLSelect::create()
-            ->setFrom($record->config()->get('table_name') . '_Localised')
-            ->setWhere([
-                'RecordID' => $record->ID,
-                'Locale' => $locale,
-            ])
-            ->execute()
-            ->first();
+            $newState->setLocale('es_ES');
 
-        return !empty($result);
+            $record2->Title = 'Un archivo';
+            $record2->write();
+
+            $record3 = $this->objFromFixture(LocalisedParent::class, 'record_a');
+            $this->assertTrue(
+                $this->hasLocalisedRecord($record3, 'es_ES'),
+                'Record Locale is set to current locale when writing new records'
+            );
+        });
     }
 
     /**
@@ -172,11 +162,13 @@ class FluentExtensionTest extends SapphireTest
      */
     public function testLocalisedFieldsCanBeSorted($locale, array $sortArgs, $expected)
     {
-        FluentState::singleton()->setLocale($locale);
+        FluentState::singleton()->withState(function (FluentState $newState) use ($locale, $sortArgs, $expected) {
+            $newState->setLocale($locale);
 
-        $records = LocalisedParent::get()->sort(...$sortArgs);
-        $titles = $records->column('Title');
-        $this->assertEquals($expected, $titles);
+            $records = LocalisedParent::get()->sort(...$sortArgs);
+            $titles = $records->column('Title');
+            $this->assertEquals($expected, $titles);
+        });
     }
 
     /**
@@ -292,5 +284,26 @@ class FluentExtensionTest extends SapphireTest
                 ['A record', 'Read about things', 'Go for a run'],
             ]
         ];
+    }
+
+    /**
+     * Get a Locale field value directly from a record's localised database table, skipping the ORM
+     *
+     * @param DataObject $record
+     * @param string $locale
+     * @return boolean
+     */
+    protected function hasLocalisedRecord(DataObject $record, $locale)
+    {
+        $result = SQLSelect::create()
+            ->setFrom($record->config()->get('table_name') . '_Localised')
+            ->setWhere([
+                'RecordID' => $record->ID,
+                'Locale' => $locale,
+            ])
+            ->execute()
+            ->first();
+
+        return !empty($result);
     }
 }
