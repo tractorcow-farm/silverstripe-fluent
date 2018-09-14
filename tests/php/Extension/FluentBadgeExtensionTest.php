@@ -44,12 +44,14 @@ class FluentBadgeExtensionTest extends SapphireTest
         // Clear cache
         Locale::clearCached();
 
-        FluentState::singleton()->setLocale('en_NZ');
+        FluentState::singleton()->withState(function (FluentState $newState) {
+            $newState->setLocale('en_NZ');
 
-        $this->mockPage = $this->objFromFixture(SiteTree::class, 'test_page');
-        $this->mockController = new FluentStubController($this->mockPage->ID);
-        $this->extension = new FluentBadgeExtension();
-        $this->extension->setOwner($this->mockController);
+            $this->mockPage = $this->objFromFixture(SiteTree::class, 'test_page');
+            $this->mockController = new FluentStubController($this->mockPage->ID);
+            $this->extension = new FluentBadgeExtension();
+            $this->extension->setOwner($this->mockController);
+        });
     }
 
     public function testDefaultLocaleBadgeAdded()
@@ -58,24 +60,26 @@ class FluentBadgeExtensionTest extends SapphireTest
         FluentState::singleton()->withState(function (FluentState $newState) {
             $newState->setLocale('en_NZ');
             $this->mockPage->publishRecursive();
-        });
 
-        $result = $this->extension->getBadge($this->mockPage);
-        $this->assertInstanceOf(DBHTMLText::class, $result);
-        $this->assertContains('fluent-badge--default', $result->getValue());
-        $this->assertContains('Default locale', $result->getValue());
-        $this->assertContains('NZ', $result->getValue(), 'Badge shows owner locale');
+            $result = $this->extension->getBadge($this->mockPage);
+            $this->assertInstanceOf(DBHTMLText::class, $result);
+            $this->assertContains('fluent-badge--default', $result->getValue());
+            $this->assertContains('Default locale', $result->getValue());
+            $this->assertContains('NZ', $result->getValue(), 'Badge shows owner locale');
+        });
     }
 
     public function testInvisibleLocaleBadgeWasAdded()
     {
-        // Don't write the page in the non-default locale, then it shouldn't exist
-        FluentState::singleton()->setLocale('de_DE');
+        FluentState::singleton()->withState(function (FluentState $newState) {
+            // Don't write the page in the non-default locale, then it shouldn't exist
+            $newState->setLocale('de_DE');
 
-        $result = $this->extension->getBadge($this->mockPage);
-        $this->assertInstanceOf(DBHTMLText::class, $result);
-        $this->assertContains('fluent-badge--invisible', $result->getValue());
-        $this->assertContains('is not visible in this locale', $result->getValue());
-        $this->assertContains('NZ', $result->getValue(), 'Badge shows owner locale');
+            $result = $this->extension->getBadge($this->mockPage);
+            $this->assertInstanceOf(DBHTMLText::class, $result);
+            $this->assertContains('fluent-badge--invisible', $result->getValue());
+            $this->assertContains('is not visible in this locale', $result->getValue());
+            $this->assertContains('NZ', $result->getValue(), 'Badge shows owner locale');
+        });
     }
 }

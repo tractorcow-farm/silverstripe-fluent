@@ -27,42 +27,63 @@ class FluentVersionedExtensionTest extends SapphireTest
         // Clear cache
         Locale::clearCached();
         Domain::clearCached();
-        FluentState::singleton()
-            ->setLocale('en_NZ')
-            ->setIsDomainMode(false);
     }
 
     public function testIsDraftedInLocale()
     {
-        /** @var Page $page */
-        $page = $this->objFromFixture(Page::class, 'home');
+        FluentState::singleton()->withState(function (FluentState $newState) {
+            $newState
+                ->setLocale('en_NZ')
+                ->setIsDomainMode(false);
 
-        $this->assertTrue($page->isDraftedInLocale());
+            /** @var Page $page */
+            $page = $this->objFromFixture(Page::class, 'home');
+
+            $this->assertTrue($page->isDraftedInLocale());
+        });
     }
 
     public function testIsPublishedInLocale()
     {
-        /** @var Page $page */
-        $page = $this->objFromFixture(Page::class, 'home');
+        FluentState::singleton()->withState(function (FluentState $newState) {
+            $newState
+                ->setLocale('en_NZ')
+                ->setIsDomainMode(false);
 
-        $this->assertTrue($page->isPublishedInLocale());
+            /** @var Page $page */
+            $page = $this->objFromFixture(Page::class, 'home');
+
+            $this->assertTrue($page->isPublishedInLocale());
+        });
     }
 
     public function testExistsInLocale()
     {
-        /** @var Page $page */
-        $page = $this->objFromFixture(Page::class, 'home');
+        FluentState::singleton()->withState(function (FluentState $newState) {
+            $newState
+                ->setLocale('en_NZ')
+                ->setIsDomainMode(false);
 
-        $this->assertTrue($page->existsInLocale());
+            /** @var Page $page */
+            $page = $this->objFromFixture(Page::class, 'home');
+
+            $this->assertTrue($page->existsInLocale());
+        });
     }
 
     /** @group wip */
     public function testSourceLocaleIsCurrentWhenPageExistsInIt()
     {
-        // Read from the locale that the page exists in already
-        /** @var Page $page */
-        $page = $this->objFromFixture(Page::class, 'home');
+        FluentState::singleton()->withState(function (FluentState $newState) {
+            $newState
+                ->setLocale('en_NZ')
+                ->setIsDomainMode(false);
 
-        $this->assertEquals('en_NZ', $page->getSourceLocale()->Locale);
+            // Read from the locale that the page exists in already
+            /** @var Page $page */
+            $page = $this->objFromFixture(Page::class, 'home');
+
+            $this->assertEquals('en_NZ', $page->getSourceLocale()->Locale);
+        });
     }
 }

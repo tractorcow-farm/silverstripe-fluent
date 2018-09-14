@@ -39,12 +39,13 @@ class DetectLocaleMiddlewareTest extends SapphireTest
 
     public function testGetPersistKey()
     {
-        $state = FluentState::singleton();
-        $state->setIsFrontend(true);
-        $this->assertSame('FluentLocale', $this->middleware->getPersistKey());
+        FluentState::singleton()->withState(function (FluentState $newState) {
+            $newState->setIsFrontend(true);
+            $this->assertSame('FluentLocale', $this->middleware->getPersistKey());
 
-        $state->setIsFrontend(false);
-        $this->assertSame('FluentLocale_CMS', $this->middleware->getPersistKey());
+            $newState->setIsFrontend(false);
+            $this->assertSame('FluentLocale_CMS', $this->middleware->getPersistKey());
+        });
     }
 
     /**
@@ -94,19 +95,21 @@ class DetectLocaleMiddlewareTest extends SapphireTest
 
     public function testLocaleIsAlwaysPersistedEvenIfNotSetByTheMiddleware()
     {
-        $request = new HTTPRequest('GET', '/');
-        FluentState::singleton()->setLocale('dummy');
+        FluentState::singleton()->withState(function (FluentState $newState) {
+            $request = new HTTPRequest('GET', '/');
+            $newState->setLocale('dummy');
 
-        /** @var DetectLocaleMiddleware|PHPUnit_Framework_MockObject_MockObject $middleware */
-        $middleware = $this->getMockBuilder(DetectLocaleMiddleware::class)
-            ->setMethods(['getLocale', 'setPersistLocale'])
-            ->getMock();
+            /** @var DetectLocaleMiddleware|PHPUnit_Framework_MockObject_MockObject $middleware */
+            $middleware = $this->getMockBuilder(DetectLocaleMiddleware::class)
+                ->setMethods(['getLocale', 'setPersistLocale'])
+                ->getMock();
 
-        $middleware->expects($this->never())->method('getLocale');
-        $middleware->expects($this->once())->method('setPersistLocale')->with($request, 'dummy');
+            $middleware->expects($this->never())->method('getLocale');
+            $middleware->expects($this->once())->method('setPersistLocale')->with($request, 'dummy');
 
-        $middleware->process($request, function () {
-            // no-op
+            $middleware->process($request, function () {
+                // no-op
+            });
         });
     }
 }
