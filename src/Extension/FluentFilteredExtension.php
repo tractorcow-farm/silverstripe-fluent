@@ -2,7 +2,7 @@
 
 namespace TractorCow\Fluent\Extension;
 
-use SilverStripe\Core\ClassInfo;
+use SilverStripe\Core\Config\Config;
 use SilverStripe\Forms\FieldList;
 use SilverStripe\Forms\GridField\GridField;
 use SilverStripe\Forms\GridField\GridFieldAddNewButton;
@@ -12,7 +12,6 @@ use SilverStripe\ORM\DataExtension;
 use SilverStripe\ORM\DataList;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\DataQuery;
-use SilverStripe\ORM\DB;
 use SilverStripe\ORM\Queries\SQLSelect;
 use SilverStripe\Versioned\Versioned;
 use TractorCow\Fluent\Model\Locale;
@@ -128,13 +127,12 @@ class FluentFilteredExtension extends DataExtension
 
         // Get the filtered locales table
         foreach (array_reverse($this->owner->getClassAncestry()) as $class) {
-            $currentTable = DataObject::getSchema()->tableName($class);
-            $tableName = $currentTable . '_' . self::SUFFIX;
-
-            // Check for table
-            if (DB::get_schema()->hasTable($tableName)) {
-                $table = $currentTable;
-                $filteredLocalesTable = $tableName;
+            // Identify which class in the ancestry has the extension
+            $extensions = $class::config()->uninherited('extensions');
+            if (is_array($extensions) && in_array(FluentFilteredExtension::class, $extensions)) {
+                // Use its table for fitered locale queries
+                $table = DataObject::getSchema()->tableName($class);
+                $tableName = $table . '_' . self::SUFFIX;
                 break;
             }
         }
