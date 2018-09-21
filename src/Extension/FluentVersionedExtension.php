@@ -3,8 +3,13 @@
 namespace TractorCow\Fluent\Extension;
 
 use InvalidArgumentException;
+use SilverStripe\CMS\Model\SiteTree;
+use SilverStripe\Core\Config\Config;
+use SilverStripe\Core\Injector\Injector;
+use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\DataQuery;
 use SilverStripe\ORM\DB;
+use SilverStripe\ORM\Queries\SQLExpression;
 use SilverStripe\ORM\Queries\SQLSelect;
 use SilverStripe\Versioned\Versioned;
 use TractorCow\Fluent\Model\Locale;
@@ -59,6 +64,21 @@ class FluentVersionedExtension extends FluentExtension
      * @var array
      */
     protected $localisedStageCache = [];
+
+    /**
+     * Array of objectIds keyed by table (ie. stage) and locale. Indicates which object IDs exist in which locales.
+     *
+     * static::$idsInLocaleCache[ $locale ][ $table(.self::SUFFIX_LIVE) ][ $objectId ] === true
+     *
+     * @var string[][][]
+     */
+    protected static $idsInLocaleCache = [];
+
+    /**
+     * @config
+     * @var array
+     */
+    private static $prepopulate_locale_object_types = [];
 
     protected function augmentDatabaseDontRequire($localisedTable)
     {
@@ -297,11 +317,21 @@ class FluentVersionedExtension extends FluentExtension
             }
         }
 
+        $ownerClass = get_class($this->owner);
+        $prepopulateClasses = Config::inst()->get(self::class, 'prepopulate_locale_object_types');
+        if (is_array($prepopulateClasses) && in_array($ownerClass, $prepopulateClasses)) {
+            self::prepoulateIdsInLocale($locale, $ownerClass);
+        }
+
         // Get table
         $baseTable = $this->owner->baseTable();
         $table = $this->getLocalisedTable($baseTable);
         if ($stage === Versioned::LIVE) {
             $table .= self::SUFFIX_LIVE;
+        }
+
+        if (isset(self::$idsInLocaleCache[$locale][$table])) {
+            return in_array($this->owner->ID, self::$idsInLocaleCache[$locale][$table]);
         }
 
         // Check cache
@@ -310,15 +340,16 @@ class FluentVersionedExtension extends FluentExtension
             return $this->localisedStageCache[$key];
         }
 
-        $query = new SQLSelect();
-        $query->selectField('"ID"');
+        $query = new SQLSelect(
+            '"ID"'
+        );
         $query->addFrom('"'. $table . '"');
         $query->addWhere([
             '"RecordID"' => $this->owner->ID,
             '"Locale"' => $locale,
         ]);
-        $query->firstRow();
-        $result = $query->execute()->value() !== null;
+
+        $result = $query->firstRow()->execute()->value() !== null;
 
         // Set cache
         $this->localisedStageCache[$key] = $result;
@@ -328,5 +359,46 @@ class FluentVersionedExtension extends FluentExtension
     public function flushCache()
     {
         $this->localisedStageCache = [];
+    }
+
+    /**
+     * Prepopulate the cache of
+     *
+     * @param string $locale
+     * @param string $dataObject
+     */
+    public static function prepoulateIdsInLocale($locale, $dataObjectClass, $populateLive = true, $populateDraft = true)
+    {
+        // Get the table for the given DataObject class
+        $self = new static();
+        $table = $self->getLocalisedTable(Injector::inst()->get($dataObjectClass)->baseTable());
+
+        // If we already have items then we've been here before...
+        if (isset(self::$idsInLocaleCache[$locale][$table])) {
+            return;
+        }
+
+        $tables = [];
+        if ($populateDraft) {
+            $tables[] = $table;
+        }
+        if ($populateLive) {
+            $tables[] = $table . self::SUFFIX_LIVE;
+        }
+
+        // Populate both the draft and live stages
+        foreach ($tables as $table) {
+            /** @var SQLSelect $select */
+            $select = SQLSelect::create(
+                ['"RecordID"'],
+                '"' . $table . '"',
+                ['Locale' => $locale]
+            );
+            $result = $select->execute();
+            $ids = $result->column('RecordID');
+
+            // We need to execute ourselves as the param is lost from the subSelect
+            self::$idsInLocaleCache[$locale][$table] = $ids;
+        }
     }
 }
