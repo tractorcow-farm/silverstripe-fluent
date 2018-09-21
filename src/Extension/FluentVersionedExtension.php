@@ -75,10 +75,13 @@ class FluentVersionedExtension extends FluentExtension
     protected static $idsInLocaleCache = [];
 
     /**
+     * Used to enable or disable the prepopulation of the locale content cache
+     * Defaults to true.
+     *
      * @config
-     * @var array
+     * @var boolean
      */
-    private static $prepopulate_locale_object_types = [];
+    private static $prepopulate_localecontent_cache = true;
 
     protected function augmentDatabaseDontRequire($localisedTable)
     {
@@ -317,12 +320,6 @@ class FluentVersionedExtension extends FluentExtension
             }
         }
 
-        $ownerClass = get_class($this->owner);
-        $prepopulateClasses = Config::inst()->get(self::class, 'prepopulate_locale_object_types');
-        if (is_array($prepopulateClasses) && in_array($ownerClass, $prepopulateClasses)) {
-            self::prepoulateIdsInLocale($locale, $ownerClass);
-        }
-
         // Get table
         $baseTable = $this->owner->baseTable();
         $table = $this->getLocalisedTable($baseTable);
@@ -362,7 +359,32 @@ class FluentVersionedExtension extends FluentExtension
     }
 
     /**
-     * Prepopulate the cache of
+     * Hook into {@link Hierarchy::prepopulateTreeDataCache}.
+     *
+     * @param DataList $recordList The list of records to prepopulate caches for. Null for all records.
+     * @param array $options A map of hints about what should be cached. "numChildrenMethod" and
+     *                       "childrenMethod" are allowed keys.
+     */
+    public function onPrepopulateTreeDataCache(DataList $recordList = null, array $options = [])
+    {
+        if (!Config::inst()->get(static::class, 'prepopulate_localecontent_cache')) {
+            return;
+        }
+
+        // This functionality hasn't been implemented; it's not actually used right now, so assume you aren't going to
+        // need it.
+        if ($recordList) {
+            user_error(
+                "FluentVersionedExtension::onPrepopulateTreeDataCache not currently optimised for recordList use",
+                E_USER_WARNING
+            );
+        }
+
+        self::prepoulateIdsInLocale(FluentState::singleton()->getLocale(), $this->owner->baseClass());
+    }
+
+    /**
+     * Prepopulate the cache of IDs in a locale, to optimise batch calls to isLocalisedInStage.
      *
      * @param string $locale
      * @param string $dataObject
