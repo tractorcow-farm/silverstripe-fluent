@@ -20,3 +20,7 @@ SilverStripe\CMS\Controllers\CMSMain:
 SilverStripe\Versioned\VersionedGridFieldItemRequest:
   extensions:
     FluentBadgeExtension: TractorCow\Fluent\Extension\FluentBadgeExtension
+
+SilverStripe\Versioned\GraphQL\Operations\ReadVersions:
+  extensions:
+    FluentReadVersionsExtension: TractorCow\Fluent\Extension\FluentReadVersionsExtension
