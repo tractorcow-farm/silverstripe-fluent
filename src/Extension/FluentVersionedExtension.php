@@ -63,14 +63,18 @@ class FluentVersionedExtension extends FluentExtension
      *
      * @var array
      */
-    protected $localisedStageCache = [];
+    protected static $localisedStageCache = [];
 
     /**
-     * Array of objectIds keyed by table (ie. stage) and locale. Indicates which object IDs exist in which locales.
+     * Array of objectIds keyed by table (ie. stage) and locale. This knows ALL object IDs that exist in the given table
+     * and locale.
      *
-     * static::$idsInLocaleCache[ $locale ][ $table(.self::SUFFIX_LIVE) ][ $objectId ] === true
+     * This is different from the above cache which caches the result per object - each array (keyed by locale & table)
+     * will have ALL object IDs for that locale & table.
      *
-     * @var string[][][]
+     * static::$idsInLocaleCache[ $locale ][ $table(.self::SUFFIX_LIVE) ][ $objectId ] = $objectId
+     *
+     * @var int[][][]
      */
     protected static $idsInLocaleCache = [];
 
@@ -327,14 +331,14 @@ class FluentVersionedExtension extends FluentExtension
             $table .= self::SUFFIX_LIVE;
         }
 
-        if (isset(self::$idsInLocaleCache[$locale][$table])) {
-            return in_array($this->owner->ID, self::$idsInLocaleCache[$locale][$table]);
+        if (isset(static::$idsInLocaleCache[$locale][$table])) {
+            return isset(static::$idsInLocaleCache[$locale][$table][$this->owner->ID]);
         }
 
         // Check cache
         $key = $table . '/' . $locale . '/' . $this->owner->ID;
-        if (isset($this->localisedStageCache[$key])) {
-            return $this->localisedStageCache[$key];
+        if (isset(static::$localisedStageCache[$key])) {
+            return static::$localisedStageCache[$key];
         }
 
         $query = new SQLSelect(
@@ -349,35 +353,32 @@ class FluentVersionedExtension extends FluentExtension
         $result = $query->firstRow()->execute()->value() !== null;
 
         // Set cache
-        $this->localisedStageCache[$key] = $result;
+        static::$localisedStageCache[$key] = $result;
         return $result;
     }
 
     public function flushCache()
     {
-        $this->localisedStageCache = [];
+        static::$localisedStageCache = [];
     }
 
     /**
      * Hook into {@link Hierarchy::prepopulateTreeDataCache}.
      *
-     * @param DataList $recordList The list of records to prepopulate caches for. Null for all records.
+     * @param DataList|array $recordList The list of records to prepopulate caches for. Null for all records.
      * @param array $options A map of hints about what should be cached. "numChildrenMethod" and
      *                       "childrenMethod" are allowed keys.
      */
     public function onPrepopulateTreeDataCache(DataList $recordList = null, array $options = [])
     {
-        if (!Config::inst()->get(static::class, 'prepopulate_localecontent_cache')) {
+        if (!Config::inst()->get(self::class, 'prepopulate_localecontent_cache')) {
             return;
         }
 
-        // This functionality hasn't been implemented; it's not actually used right now, so assume you aren't going to
-        // need it.
+        // Prepopulating for a specific list of records hasn't been implemented yet and will have to rely on the
+        // fallback implementation of caching per record.
         if ($recordList) {
-            user_error(
-                "FluentVersionedExtension::onPrepopulateTreeDataCache not currently optimised for recordList use",
-                E_USER_WARNING
-            );
+            return;
         }
 
         self::prepoulateIdsInLocale(FluentState::singleton()->getLocale(), $this->owner->baseClass());
@@ -392,8 +393,8 @@ class FluentVersionedExtension extends FluentExtension
     public static function prepoulateIdsInLocale($locale, $dataObjectClass, $populateLive = true, $populateDraft = true)
     {
         // Get the table for the given DataObject class
-        $self = new static();
-        $table = $self->getLocalisedTable(Injector::inst()->get($dataObjectClass)->baseTable());
+        $dataObject = DataObject::singleton($dataObjectClass);
+        $table = $dataObject->getLocalisedTable($dataObject->baseTable());
 
         // If we already have items then we've been here before...
         if (isset(self::$idsInLocaleCache[$locale][$table])) {
@@ -420,7 +421,7 @@ class FluentVersionedExtension extends FluentExtension
             $ids = $result->column('RecordID');
 
             // We need to execute ourselves as the param is lost from the subSelect
-            self::$idsInLocaleCache[$locale][$table] = $ids;
+            self::$idsInLocaleCache[$locale][$table] = array_combine($ids, $ids);
         }
     }
 }
