@@ -6,6 +6,7 @@ use InvalidArgumentException;
 use SilverStripe\CMS\Model\SiteTree;
 use SilverStripe\Core\Config\Config;
 use SilverStripe\Core\Injector\Injector;
+use SilverStripe\ORM\DataList;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\DataQuery;
 use SilverStripe\ORM\DB;
@@ -369,7 +370,7 @@ class FluentVersionedExtension extends FluentExtension
      * @param array $options A map of hints about what should be cached. "numChildrenMethod" and
      *                       "childrenMethod" are allowed keys.
      */
-    public function onPrepopulateTreeDataCache(DataList $recordList = null, array $options = [])
+    public function onPrepopulateTreeDataCache($recordList = null, array $options = [])
     {
         if (!Config::inst()->get(self::class, 'prepopulate_localecontent_cache')) {
             return;
@@ -388,7 +389,9 @@ class FluentVersionedExtension extends FluentExtension
      * Prepopulate the cache of IDs in a locale, to optimise batch calls to isLocalisedInStage.
      *
      * @param string $locale
-     * @param string $dataObject
+     * @param $dataObjectClass
+     * @param bool $populateLive
+     * @param bool $populateDraft
      */
     public static function prepoulateIdsInLocale($locale, $dataObjectClass, $populateLive = true, $populateDraft = true)
     {
