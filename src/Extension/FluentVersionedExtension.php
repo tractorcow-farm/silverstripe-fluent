@@ -3,6 +3,9 @@
 namespace TractorCow\Fluent\Extension;
 
 use InvalidArgumentException;
+use SilverStripe\Core\Config\Config;
+use SilverStripe\ORM\DataList;
+use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\DataQuery;
 use SilverStripe\ORM\DB;
 use SilverStripe\ORM\Queries\SQLSelect;
@@ -58,7 +61,29 @@ class FluentVersionedExtension extends FluentExtension
      *
      * @var array
      */
-    protected $localisedStageCache = [];
+    protected static $localisedStageCache = [];
+
+    /**
+     * Array of objectIds keyed by table (ie. stage) and locale. This knows ALL object IDs that exist in the given table
+     * and locale.
+     *
+     * This is different from the above cache which caches the result per object - each array (keyed by locale & table)
+     * will have ALL object IDs for that locale & table.
+     *
+     * static::$idsInLocaleCache[ $locale ][ $table(.self::SUFFIX_LIVE) ][ $objectId ] = $objectId
+     *
+     * @var int[][][]
+     */
+    protected static $idsInLocaleCache = [];
+
+    /**
+     * Used to enable or disable the prepopulation of the locale content cache
+     * Defaults to true.
+     *
+     * @config
+     * @var boolean
+     */
+    private static $prepopulate_localecontent_cache = true;
 
     protected function augmentDatabaseDontRequire($localisedTable)
     {
@@ -304,29 +329,114 @@ class FluentVersionedExtension extends FluentExtension
             $table .= self::SUFFIX_LIVE;
         }
 
-        // Check cache
-        $key = $table . '/' . $locale . '/' . $this->owner->ID;
-        if (isset($this->localisedStageCache[$key])) {
-            return $this->localisedStageCache[$key];
+        // Check for a cached item in the full list of all objects. These are populated optimistically.
+        if (isset(static::$idsInLocaleCache[$locale][$table][$this->owner->ID])) {
+            return isset(static::$idsInLocaleCache[$locale][$table][$this->owner->ID]);
         }
 
-        $query = new SQLSelect();
-        $query->selectField('"ID"');
-        $query->addFrom('"'. $table . '"');
-        $query->addWhere([
-            '"RecordID"' => $this->owner->ID,
-            '"Locale"' => $locale,
-        ]);
-        $query->firstRow();
-        $result = $query->execute()->value() !== null;
+        // Check cache from local instance calls
+        $key = $table . '/' . $locale . '/' . $this->owner->ID;
+        if (isset(static::$localisedStageCache[$key])) {
+            return static::$localisedStageCache[$key];
+        }
 
-        // Set cache
-        $this->localisedStageCache[$key] = $result;
-        return $result;
+        // Set cache and return
+        return static::$localisedStageCache[$key] = $this->findRecordInLocale($locale, $table, $this->owner->ID);
     }
 
+    /**
+     * Checks whether the given record ID exists in the given locale, in the given table. Skips using the ORM because
+     * we don't need it for this call.
+     *
+     * @param string $locale
+     * @param string $table
+     * @param int $id
+     * @return bool
+     */
+    protected function findRecordInLocale($locale, $table, $id)
+    {
+        $query = SQLSelect::create('"ID"');
+        $query->addFrom('"'. $table . '"');
+        $query->addWhere([
+            '"RecordID"' => $id,
+            '"Locale"' => $locale,
+        ]);
+
+        return $query->firstRow()->execute()->value() !== null;
+    }
+
+    /**
+     * Clear internal static property caches
+     */
     public function flushCache()
     {
-        $this->localisedStageCache = [];
+        static::$idsInLocaleCache = [];
+        static::$localisedStageCache = [];
+    }
+
+    /**
+     * Hook into {@link Hierarchy::prepopulateTreeDataCache}.
+     *
+     * @param DataList|array $recordList The list of records to prepopulate caches for. Null for all records.
+     * @param array $options A map of hints about what should be cached. "numChildrenMethod" and
+     *                       "childrenMethod" are allowed keys.
+     */
+    public function onPrepopulateTreeDataCache($recordList = null, array $options = [])
+    {
+        if (!Config::inst()->get(self::class, 'prepopulate_localecontent_cache')) {
+            return;
+        }
+
+        // Prepopulating for a specific list of records hasn't been implemented yet and will have to rely on the
+        // fallback implementation of caching per record.
+        if ($recordList) {
+            return;
+        }
+
+        self::prepoulateIdsInLocale(FluentState::singleton()->getLocale(), $this->owner->baseClass());
+    }
+
+    /**
+     * Prepopulate the cache of IDs in a locale, to optimise batch calls to isLocalisedInStage.
+     *
+     * @param string $locale
+     * @param string $dataObjectClass
+     * @param bool $populateLive
+     * @param bool $populateDraft
+     */
+    public static function prepoulateIdsInLocale($locale, $dataObjectClass, $populateLive = true, $populateDraft = true)
+    {
+        // Get the table for the given DataObject class
+        /** @var DataObject|FluentExtension $dataObject */
+        $dataObject = DataObject::singleton($dataObjectClass);
+        $table = $dataObject->getLocalisedTable($dataObject->baseTable());
+
+        // If we already have items then we've been here before...
+        if (isset(self::$idsInLocaleCache[$locale][$table])) {
+            return;
+        }
+
+        $tables = [];
+        if ($populateDraft) {
+            $tables[] = $table;
+        }
+        if ($populateLive) {
+            $tables[] = $table . self::SUFFIX_LIVE;
+        }
+
+        // Populate both the draft and live stages
+        foreach ($tables as $table) {
+            /** @var SQLSelect $select */
+            $select = SQLSelect::create(
+                ['"RecordID"'],
+                '"' . $table . '"',
+                ['Locale' => $locale]
+            );
+            $result = $select->execute();
+            $ids = $result->column('RecordID');
+
+            // We need to execute ourselves as the param is lost from the subSelect
+            self::$idsInLocaleCache[$locale][$table] = array_combine($ids, $ids);
+        }
     }
 }
