@@ -240,19 +240,17 @@ Will cascade through different checks in order:
 1. Routing path (e.g. `/de/ueber-uns`)
 2. Request variable (e.g. `ueber-uns?FluentLocale=de`)
 3. Domain (e.g. `http://example.de/ueber-uns`)
-4. Session (if `DetectLocaleMiddleware.persist_session` is configured)
+4. Session (if a session is already started)
 5. Cookie (if `DetectLocaleMiddleware.persist_cookie` is configured)
 6. Request headers (if `FluentDirectorExtension.detect_locale` is configured)
 
-Additionally, detected locales will be set in session and cookies.
-This behaviour can be configured through `DetectLocaleMiddleware.persist_session`
-and `DetectLocaleMiddleware.persist_cookie`. To solely rely on stateless
-request data (routing path, request variable or domain),
-configure as follows:
+Additionally, detected locales will be set in cookies.
+This behaviour can be configured through `DetectLocaleMiddleware.persist_cookie`.
+To solely rely on sessions and stateless request data (routing path, request
+variable or domain), configure as follows:
 
 ```yaml
 TractorCow\Fluent\Middleware\DetectLocaleMiddleware:
-  persist_session: false
   persist_cookie: false
 ```
 

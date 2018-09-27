@@ -123,7 +123,7 @@ class DetectLocaleMiddlewareTest extends SapphireTest
     public function testLocaleIsOnlyPersistedWhenSet()
     {
         $request = new HTTPRequest('GET', '/');
-        // not calling setLocale(), should default to null
+        FluentState::singleton()->setLocale(null);
 
         /** @var DetectLocaleMiddleware|PHPUnit_Framework_MockObject_MockObject $middleware */
         $middleware = $this->getMockBuilder(DetectLocaleMiddleware::class)
@@ -171,9 +171,11 @@ class DetectLocaleMiddlewareTest extends SapphireTest
 
         $sessionData = [$key => $newLocale];
         $sessionMock = $this->getMockBuilder(Session::class)
-            ->setMethods(['set'])
+            ->setMethods(['set', 'isStarted'])
             ->setConstructorArgs([$sessionData])
             ->getMock();
+
+        $sessionMock->expects($this->exactly(2))->method('isStarted')->willReturn(true);
         $sessionMock->expects($this->once())->method('set')->with($key, $newLocale);
         $request->setSession($sessionMock);
 
@@ -186,19 +188,20 @@ class DetectLocaleMiddlewareTest extends SapphireTest
         // $this->assertEquals($newLocale, Cookie::get($key));
     }
 
-    public function testLocaleIsNotPersistedFromSessionWhenPersistSessionFalse()
+    public function testLocaleIsNotPersistedFromSessionWhenSessionIsNotStarted()
     {
         $newLocale = 'fr_FR';
         $middleware = $this->middleware;
-        $middleware->config()->update('persist_session', false);
         $key = $middleware->getPersistKey();
         $request = new HTTPRequest('GET', '/');
 
         $sessionData = [$key => $newLocale];
         $sessionMock = $this->getMockBuilder(Session::class)
-            ->setMethods(['set'])
+            ->setMethods(['set', 'isStarted'])
             ->setConstructorArgs([$sessionData])
             ->getMock();
+
+        $sessionMock->expects($this->exactly(2))->method('isStarted')->willReturn(false);
         $sessionMock->expects($this->never())->method('set');
         $request->setSession($sessionMock);
 

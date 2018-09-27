@@ -71,14 +71,6 @@ class DetectLocaleMiddleware implements HTTPMiddleware
     private static $persist_cookie_domain = null;
 
     /**
-     * Use sessions for locale persistence.
-     *
-     * @config
-     * @var bool
-     */
-    private static $persist_session = true;
-
-    /**
      * Whether cookies have already been set during {@link setPersistLocale()}
      *
      * @var bool
@@ -164,7 +156,8 @@ class DetectLocaleMiddleware implements HTTPMiddleware
         }
 
         // check session then cookies
-        if (static::config()->get('persist_session') && ($locale = $request->getSession()->get($key))) {
+        $session = $request->getSession();
+        if ($session->isStarted() && ($locale = $session->get($key))) {
             return $locale;
         }
 
@@ -195,11 +188,12 @@ class DetectLocaleMiddleware implements HTTPMiddleware
         }
 
         // Save locale
-        if (static::config()->get('persist_session')) {
+        $session = $request->getSession();
+        if ($session->isStarted()) {
             if ($locale) {
-                $request->getSession()->set($key, $locale);
+                $session->set($key, $locale);
             } else {
-                $request->getSession()->clear($key);
+                $session->clear($key);
             }
         }
 
