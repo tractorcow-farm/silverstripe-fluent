@@ -3,14 +3,11 @@
 namespace TractorCow\Fluent\Extension;
 
 use InvalidArgumentException;
-use SilverStripe\CMS\Model\SiteTree;
 use SilverStripe\Core\Config\Config;
-use SilverStripe\Core\Injector\Injector;
 use SilverStripe\ORM\DataList;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\DataQuery;
 use SilverStripe\ORM\DB;
-use SilverStripe\ORM\Queries\SQLExpression;
 use SilverStripe\ORM\Queries\SQLSelect;
 use SilverStripe\Versioned\Versioned;
 use TractorCow\Fluent\Model\Locale;
@@ -332,34 +329,48 @@ class FluentVersionedExtension extends FluentExtension
             $table .= self::SUFFIX_LIVE;
         }
 
-        if (isset(static::$idsInLocaleCache[$locale][$table])) {
+        // Check for a cached item in the full list of all objects. These are populated optimistically.
+        if (isset(static::$idsInLocaleCache[$locale][$table][$this->owner->ID])) {
             return isset(static::$idsInLocaleCache[$locale][$table][$this->owner->ID]);
         }
 
-        // Check cache
+        // Check cache from local instance calls
         $key = $table . '/' . $locale . '/' . $this->owner->ID;
         if (isset(static::$localisedStageCache[$key])) {
             return static::$localisedStageCache[$key];
         }
 
-        $query = new SQLSelect(
-            '"ID"'
-        );
+        // Set cache and return
+        return static::$localisedStageCache[$key] = $this->findRecordInLocale($locale, $table, $this->owner->ID);
+    }
+
+    /**
+     * Checks whether the given record ID exists in the given locale, in the given table. Skips using the ORM because
+     * we don't need it for this call.
+     *
+     * @param string $locale
+     * @param string $table
+     * @param int $id
+     * @return bool
+     */
+    protected function findRecordInLocale($locale, $table, $id)
+    {
+        $query = SQLSelect::create('"ID"');
         $query->addFrom('"'. $table . '"');
         $query->addWhere([
-            '"RecordID"' => $this->owner->ID,
+            '"RecordID"' => $id,
             '"Locale"' => $locale,
         ]);
 
-        $result = $query->firstRow()->execute()->value() !== null;
-
-        // Set cache
-        static::$localisedStageCache[$key] = $result;
-        return $result;
+        return $query->firstRow()->execute()->value() !== null;
     }
 
+    /**
+     * Clear internal static property caches
+     */
     public function flushCache()
     {
+        static::$idsInLocaleCache = [];
         static::$localisedStageCache = [];
     }
 
@@ -389,13 +400,14 @@ class FluentVersionedExtension extends FluentExtension
      * Prepopulate the cache of IDs in a locale, to optimise batch calls to isLocalisedInStage.
      *
      * @param string $locale
-     * @param $dataObjectClass
+     * @param string $dataObjectClass
      * @param bool $populateLive
      * @param bool $populateDraft
      */
     public static function prepoulateIdsInLocale($locale, $dataObjectClass, $populateLive = true, $populateDraft = true)
     {
         // Get the table for the given DataObject class
+        /** @var DataObject|FluentExtension $dataObject */
         $dataObject = DataObject::singleton($dataObjectClass);
         $table = $dataObject->getLocalisedTable($dataObject->baseTable());
 
