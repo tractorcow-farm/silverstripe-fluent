@@ -56,6 +56,10 @@ trait CachableModel
     {
         $serviceName = static::class . '_cached';
         Injector::inst()->unregisterNamedObject($serviceName);
+
+        if (isset(static::$locales_by_title)) {
+            static::$locales_by_title = null;
+        }
     }
 
     /**

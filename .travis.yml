@@ -28,8 +28,8 @@ before_script:
   - composer install --prefer-dist --no-interaction --no-progress --no-suggest --optimize-autoloader --verbose --profile
 
 script:
-  - if [[ $PHPUNIT_TEST ]]; then vendor/bin/phpunit tests/php; fi
-  - if [[ $PHPUNIT_COVERAGE_TEST ]]; then phpdbg -qrr vendor/bin/phpunit --coverage-clover=coverage.xml tests/php; fi
+  - if [[ $PHPUNIT_TEST ]]; then vendor/bin/phpunit --exclude-group exclude-from-travis; fi
+  - if [[ $PHPUNIT_COVERAGE_TEST ]]; then phpdbg -qrr vendor/bin/phpunit --coverage-clover=coverage.xml --exclude-group exclude-from-travis; fi
   - if [[ $PHPCS_TEST ]]; then vendor/bin/phpcs src/ tests/; fi
 
 after_success:
