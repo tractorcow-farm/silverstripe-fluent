@@ -244,15 +244,20 @@ Will cascade through different checks in order:
 5. Cookie (if `DetectLocaleMiddleware.persist_cookie` is configured)
 6. Request headers (if `FluentDirectorExtension.detect_locale` is configured)
 
-Additionally, detected locales will be set in cookies.
-This behaviour can be configured through `DetectLocaleMiddleware.persist_cookie`.
-To solely rely on sessions and stateless request data (routing path, request
-variable or domain), configure as follows:
+Additionally, detected locales will be set in cookies. This behaviour can be configured through
+`DetectLocaleMiddleware.persist_cookie`. To solely rely on sessions (if session is started) and
+stateless request data (routing path, request variable or domain), configure as follows:
 
 ```yaml
 TractorCow\Fluent\Middleware\DetectLocaleMiddleware:
   persist_cookie: false
 ```
+
+Note that locales will only be persisted to the session if the session is already started. If
+you want to guarantee session persistence, you will need to ensure you call `->start()`
+on the session in the active HTTPRequest via a \_config.php file, or add a higher priority
+middleware that always starts the session ensuring it runs before `DetectLocaleMiddleware`.
+Be aware that prematurely starting sessions may complicate HTTP caching in your website.
 
 When a visitor lands on the home page for the first time,
 Fluent can also attempt to detect that user's locale based
