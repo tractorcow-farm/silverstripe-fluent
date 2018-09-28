@@ -80,15 +80,15 @@ class FluentVersionedExtensionTest extends SapphireTest
         $extension->setOwner($page);
 
         // We only expect one call to this method, because subsequent calls should be cached
-        $extension->expects($this->once())->method('findRecordInLocale')->willReturn('foo');
+        $extension->expects($this->once())->method('findRecordInLocale')->willReturn(true);
 
         // Initial request
         $result = $extension->isPublishedInLocale('en_NZ');
-        $this->assertSame('foo', $result, 'Original method result is returned');
+        $this->assertSame(true, $result, 'Original method result is returned');
 
         // Checking the cache
         $result2 = $extension->isPublishedInLocale('en_NZ');
-        $this->assertSame('foo', $result2, 'Cached result is returned');
+        $this->assertSame(true, $result2, 'Cached result is returned');
     }
 
     public function testIdsInLocaleCacheIsUsedForIsLocalisedInLocale()
