@@ -57,13 +57,6 @@ class FluentVersionedExtension extends FluentExtension
     ];
 
     /**
-     * Cache of published status of this record
-     *
-     * @var array
-     */
-    protected static $localisedStageCache = [];
-
-    /**
      * Array of objectIds keyed by table (ie. stage) and locale. This knows ALL object IDs that exist in the given table
      * and locale.
      *
@@ -331,17 +324,15 @@ class FluentVersionedExtension extends FluentExtension
 
         // Check for a cached item in the full list of all objects. These are populated optimistically.
         if (isset(static::$idsInLocaleCache[$locale][$table][$this->owner->ID])) {
-            return isset(static::$idsInLocaleCache[$locale][$table][$this->owner->ID]);
-        }
+            return true;
 
-        // Check cache from local instance calls
-        $key = $table . '/' . $locale . '/' . $this->owner->ID;
-        if (isset(static::$localisedStageCache[$key])) {
-            return static::$localisedStageCache[$key];
+        } elseif (!empty(static::$idsInLocaleCache[$locale][$table]['_complete'])) {
+            return false;
         }
 
         // Set cache and return
-        return static::$localisedStageCache[$key] = $this->findRecordInLocale($locale, $table, $this->owner->ID);
+        return static::$idsInLocaleCache[$locale][$table][$this->owner->ID]
+            = $this->findRecordInLocale($locale, $table, $this->owner->ID);
     }
 
     /**
@@ -371,7 +362,6 @@ class FluentVersionedExtension extends FluentExtension
     public function flushCache()
     {
         static::$idsInLocaleCache = [];
-        static::$localisedStageCache = [];
     }
 
     /**
@@ -437,6 +427,7 @@ class FluentVersionedExtension extends FluentExtension
 
             // We need to execute ourselves as the param is lost from the subSelect
             self::$idsInLocaleCache[$locale][$table] = array_combine($ids, $ids);
+            self::$idsInLocaleCache[$locale][$table]['_complete'] = true;
         }
     }
 }
