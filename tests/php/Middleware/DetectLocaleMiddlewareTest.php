@@ -146,10 +146,11 @@ class DetectLocaleMiddlewareTest extends SapphireTest
 
         $sessionData = [];
         $sessionMock = $this->getMockBuilder(Session::class)
-            ->setMethods(['set'])
+            ->setMethods(['set', 'getAll'])
             ->setConstructorArgs([$sessionData])
             ->getMock();
         $sessionMock->expects($this->once())->method('set')->with($key, $newLocale);
+        $sessionMock->expects($this->once())->method('getAll')->willReturn([true]);
         $request->setSession($sessionMock);
 
         Cookie::set($key, $newLocale);
@@ -175,7 +176,7 @@ class DetectLocaleMiddlewareTest extends SapphireTest
             ->setConstructorArgs([$sessionData])
             ->getMock();
 
-        $sessionMock->expects($this->exactly(2))->method('isStarted')->willReturn(true);
+        $sessionMock->expects($this->any())->method('isStarted')->willReturn(true);
         $sessionMock->expects($this->once())->method('set')->with($key, $newLocale);
         $request->setSession($sessionMock);
 
@@ -201,7 +202,7 @@ class DetectLocaleMiddlewareTest extends SapphireTest
             ->setConstructorArgs([$sessionData])
             ->getMock();
 
-        $sessionMock->expects($this->exactly(2))->method('isStarted')->willReturn(false);
+        $sessionMock->expects($this->any())->method('isStarted')->willReturn(false);
         $sessionMock->expects($this->never())->method('set');
         $request->setSession($sessionMock);
 
