@@ -189,7 +189,7 @@ class DetectLocaleMiddleware implements HTTPMiddleware
 
         // Save locale
         $session = $request->getSession();
-        if ($session->isStarted()) {
+        if ($session->isStarted() && $session->getAll()) {
             if ($locale) {
                 $session->set($key, $locale);
             } else {
