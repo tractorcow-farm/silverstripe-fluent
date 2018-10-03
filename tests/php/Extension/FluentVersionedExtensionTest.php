@@ -59,6 +59,22 @@ class FluentVersionedExtensionTest extends SapphireTest
         $this->assertTrue($page->existsInLocale());
     }
 
+    public function testExistsInLocaleReturnsTheRightValueFromCache()
+    {
+        /** @var Page $page */
+        $page = $this->objFromFixture(Page::class, 'home');
+
+        //warm up cache
+        $this->assertTrue($page->existsInLocale());
+        $this->assertTrue($page->existsInLocale('en_NZ'));
+        $this->assertFalse($page->existsInLocale('de_AT'), 'Homepage does not exist in de_AT');
+
+        //get results from cache
+        $this->assertTrue($page->existsInLocale());
+        $this->assertTrue($page->existsInLocale('en_NZ'));
+        $this->assertFalse($page->existsInLocale('de_AT'), 'Homepage does not exist in de_AT, cache does not return false');
+    }
+
     public function testSourceLocaleIsCurrentWhenPageExistsInIt()
     {
         // Read from the locale that the page exists in already

@@ -324,8 +324,10 @@ class FluentVersionedExtension extends FluentExtension
 
         // Check for a cached item in the full list of all objects. These are populated optimistically.
         if (isset(static::$idsInLocaleCache[$locale][$table][$this->owner->ID])) {
-            return true;
-        } elseif (!empty(static::$idsInLocaleCache[$locale][$table]['_complete'])) {
+            return (bool) static::$idsInLocaleCache[$locale][$table][$this->owner->ID];
+        }
+
+        if (!empty(static::$idsInLocaleCache[$locale][$table]['_complete'])) {
             return false;
         }
 
