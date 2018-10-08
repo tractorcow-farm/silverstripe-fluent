@@ -5,10 +5,19 @@ namespace TractorCow\Fluent\Tests\Extension;
 use SilverStripe\CMS\Model\SiteTree;
 use SilverStripe\Dev\SapphireTest;
 use TractorCow\Fluent\Extension\FluentReadVersionsExtension;
+use TractorCow\Fluent\Extension\FluentSiteTreeExtension;
 use TractorCow\Fluent\State\FluentState;
 
 class FluentReadVersionsExtensionTest extends SapphireTest
 {
+    protected $usesDatabase = true;
+
+    protected static $required_extensions = [
+        SiteTree::class => [
+            FluentSiteTreeExtension::class,
+        ],
+    ];
+
     public function testUpdateListSetsCurrentLocaleIntoHavingInQuery()
     {
         FluentState::singleton()->withState(function (FluentState $newState) {

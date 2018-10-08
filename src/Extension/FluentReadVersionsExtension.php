@@ -3,7 +3,9 @@
 namespace TractorCow\Fluent\Extension;
 
 use SilverStripe\Core\Extension;
+use SilverStripe\Core\Injector\Injector;
 use SilverStripe\ORM\DataList;
+use SilverStripe\ORM\DataObject;
 use TractorCow\Fluent\State\FluentState;
 
 /**
@@ -19,6 +21,16 @@ class FluentReadVersionsExtension extends Extension
      */
     public function updateList(DataList &$list)
     {
+        /** @var DataObject $singleton */
+        $singleton = Injector::inst()->get($list->dataClass());
+        $locale = $list->dataQuery()->getQueryParam('Fluent.Locale') ?: FluentState::singleton()->getLocale();
+        if (!$singleton->hasExtension(FluentExtension::class)
+            || !$singleton->hasField('SourceLocale')
+            || !$locale
+        ) {
+            return;
+        }
+
         $locale = FluentState::singleton()->getLocale();
 
         $query = $list->dataQuery();
