@@ -3,6 +3,7 @@
 namespace TractorCow\Fluent\Extension;
 
 use SilverStripe\Core\Extension;
+use SilverStripe\Core\Injector\Injector;
 use SilverStripe\ORM\DataList;
 use TractorCow\Fluent\State\FluentState;
 
@@ -19,6 +20,10 @@ class FluentReadVersionsExtension extends Extension
      */
     public function updateList(DataList &$list)
     {
+        if (Injector::inst()->get($list->dataClass())->hasExtension(FluentVersionedExtension::class)) {
+            return;
+        }
+
         $locale = FluentState::singleton()->getLocale();
 
         $query = $list->dataQuery();
