@@ -176,7 +176,7 @@ class FluentSiteTreeExtensionTest extends SapphireTest
         );
     }
 
-    public function testUpdateStatusFlagsFluentInivisible()
+    public function testUpdateStatusFlagsFluentInvisible()
     {
         /** @var Page|FluentSiteTreeExtension $page */
         $page = $this->objFromFixture(Page::class, 'home');
