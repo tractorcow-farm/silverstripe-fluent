@@ -7,6 +7,7 @@ use SilverStripe\Dev\SapphireTest;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\Queries\SQLSelect;
 use TractorCow\Fluent\Extension\FluentSiteTreeExtension;
+use TractorCow\Fluent\Model\Locale;
 use TractorCow\Fluent\State\FluentState;
 use TractorCow\Fluent\Tests\Extension\FluentExtensionTest\LocalisedAnother;
 use TractorCow\Fluent\Tests\Extension\FluentExtensionTest\LocalisedChild;
@@ -30,6 +31,13 @@ class FluentExtensionTest extends SapphireTest
             FluentSiteTreeExtension::class,
         ],
     ];
+
+    protected function setUp()
+    {
+        parent::setUp();
+
+        Locale::clearCached();
+    }
 
     public function testFluentLocaleAndFrontendAreAddedToDataQuery()
     {
@@ -159,6 +167,7 @@ class FluentExtensionTest extends SapphireTest
      * @param string $locale
      * @param string[] $sortArgs
      * @param string[] $expected
+     * @group exclude-from-travis
      */
     public function testLocalisedFieldsCanBeSorted($locale, array $sortArgs, $expected)
     {

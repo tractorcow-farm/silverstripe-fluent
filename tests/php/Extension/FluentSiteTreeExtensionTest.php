@@ -16,6 +16,7 @@ use SilverStripe\ORM\DataObject;
 use SilverStripe\View\ArrayData;
 use TractorCow\Fluent\Extension\FluentDirectorExtension;
 use TractorCow\Fluent\Extension\FluentSiteTreeExtension;
+use TractorCow\Fluent\Extension\FluentVersionedExtension;
 use TractorCow\Fluent\Model\Domain;
 use TractorCow\Fluent\Model\Locale;
 use TractorCow\Fluent\State\FluentState;
@@ -40,6 +41,8 @@ class FluentSiteTreeExtensionTest extends SapphireTest
         // Clear cache
         Locale::clearCached();
         Domain::clearCached();
+        (new FluentVersionedExtension)->flushCache();
+
         FluentState::singleton()
             ->setLocale('de_DE')
             ->setIsDomainMode(false);

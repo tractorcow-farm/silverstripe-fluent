@@ -17,6 +17,8 @@ use TractorCow\Fluent\State\LocaleDetector;
 /**
  * DetectLocaleMiddleware will detect if a locale has been requested (or is default) and is not the current
  * locale, and will redirect the user to that locale if needed.
+ * Will cascade through different checks in order, see "configuration" docs for details.
+ * Additionally, detected locales will be set in session and cookies.
  */
 class DetectLocaleMiddleware implements HTTPMiddleware
 {
@@ -33,6 +35,16 @@ class DetectLocaleMiddleware implements HTTPMiddleware
         'frontend' => 'FluentLocale',
         'cms' => 'FluentLocale_CMS',
     ];
+
+    /**
+     * Use cookies for locale persistence.
+     * Caution: This can make it hard to activate HTTP caching,
+     * since many HTTP proxies (e.g. CDNs) won't cache with cookies.
+     *
+     * @config
+     * @var bool
+     */
+    private static $persist_cookie = true;
 
     /**
      * The expiry time in days for a locale persistence cookie
@@ -84,8 +96,12 @@ class DetectLocaleMiddleware implements HTTPMiddleware
             i18n::set_locale($state->getLocale());
         }
 
-        // Always persist the current locale
-        $this->setPersistLocale($request, $state->getLocale());
+        // Persist the current locale if it has a value.
+        // Distinguishes null from empty strings in order to unset locales.
+        $newLocale = $state->getLocale();
+        if (!is_null($newLocale)) {
+            $this->setPersistLocale($request, $newLocale);
+        }
 
         return $delegate($request);
     }
@@ -140,11 +156,12 @@ class DetectLocaleMiddleware implements HTTPMiddleware
         }
 
         // check session then cookies
-        if ($locale = $request->getSession()->get($key)) {
+        $session = $request->getSession();
+        if ($session->isStarted() && ($locale = $session->get($key))) {
             return $locale;
         }
 
-        if ($locale = Cookie::get($key)) {
+        if (static::config()->get('persist_cookie') && ($locale = Cookie::get($key))) {
             return $locale;
         }
 
@@ -171,14 +188,17 @@ class DetectLocaleMiddleware implements HTTPMiddleware
         }
 
         // Save locale
-        if ($locale) {
-            $request->getSession()->set($key, $locale);
-        } else {
-            $request->getSession()->clear($key);
+        $session = $request->getSession();
+        if ($session->isStarted() && $session->getAll()) {
+            if ($locale) {
+                $session->set($key, $locale);
+            } else {
+                $session->clear($key);
+            }
         }
 
         // Don't set cookie if headers already sent
-        if (!headers_sent()) {
+        if (static::config()->get('persist_cookie') && !headers_sent()) {
             Cookie::set(
                 $key,
                 $locale,

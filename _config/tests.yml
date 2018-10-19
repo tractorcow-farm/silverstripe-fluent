@@ -1,0 +1,8 @@
+---
+Name: fluentsapphiretest
+---
+SilverStripe\Core\Injector\Injector:
+  SilverStripe\Dev\State\SapphireTestState:
+    properties:
+      States:
+        fluent: '%$TractorCow\Fluent\Dev\FluentTestState'

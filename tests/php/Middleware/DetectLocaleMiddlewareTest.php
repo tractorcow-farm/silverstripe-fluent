@@ -4,7 +4,9 @@ namespace TractorCow\Fluent\Tests\Middleware;
 
 use PHPUnit_Framework_MockObject_MockObject;
 use SilverStripe\Control\Controller;
+use SilverStripe\Control\Cookie;
 use SilverStripe\Control\HTTPRequest;
+use SilverStripe\Control\Session;
 use SilverStripe\Core\Config\Config;
 use SilverStripe\Dev\SapphireTest;
 use TractorCow\Fluent\Extension\FluentDirectorExtension;
@@ -22,6 +24,11 @@ class DetectLocaleMiddlewareTest extends SapphireTest
      */
     protected $middleware;
 
+    /**
+     * @var string
+     */
+    protected $globalDefaultLocale;
+
     protected function setUp()
     {
         parent::setUp();
@@ -35,6 +42,9 @@ class DetectLocaleMiddlewareTest extends SapphireTest
         // Clear cache
         Locale::clearCached();
         Domain::clearCached();
+
+        // Get defaults from fixture
+        $this->globalDefaultLocale = Locale::get()->find('IsGlobalDefault', 1)->Locale;
     }
 
     public function testGetPersistKey()
@@ -111,5 +121,127 @@ class DetectLocaleMiddlewareTest extends SapphireTest
                 // no-op
             });
         });
+    }
+
+    public function testLocaleIsOnlyPersistedWhenSet()
+    {
+        $request = new HTTPRequest('GET', '/');
+        FluentState::singleton()->setLocale(null);
+
+        /** @var DetectLocaleMiddleware|PHPUnit_Framework_MockObject_MockObject $middleware */
+        $middleware = $this->getMockBuilder(DetectLocaleMiddleware::class)
+            ->setMethods(['getLocale', 'setPersistLocale'])
+            ->getMock();
+
+        $middleware->expects($this->never())->method('setPersistLocale');
+
+        $middleware->process($request, function () {
+            // no-op
+        });
+    }
+
+    public function testLocaleIsPersistedFromCookie()
+    {
+        $newLocale = 'fr_FR';
+        $middleware = $this->middleware;
+        $key = $middleware->getPersistKey();
+        $request = new HTTPRequest('GET', '/');
+
+        $sessionData = [];
+        $sessionMock = $this->getMockBuilder(Session::class)
+            ->setMethods(['set', 'getAll'])
+            ->setConstructorArgs([$sessionData])
+            ->getMock();
+        $sessionMock->expects($this->once())->method('set')->with($key, $newLocale);
+        $sessionMock->expects($this->once())->method('getAll')->willReturn([true]);
+        $request->setSession($sessionMock);
+
+        Cookie::set($key, $newLocale);
+        $middleware->process($request, function () {
+            // no-op
+        });
+
+        // TODO PHPUnit's headers_sent() always returns true, so we can't check for cookie values.
+        // PHPUnit has process isolation for this purpose, but we can't use it because autoloading breaks.
+        // $this->assertEquals($newLocale, Cookie::get($key));
+    }
+
+    public function testLocaleIsPersistedFromSession()
+    {
+        $newLocale = 'fr_FR';
+        $middleware = $this->middleware;
+        $key = $middleware->getPersistKey();
+        $request = new HTTPRequest('GET', '/');
+
+        $sessionData = [$key => $newLocale];
+        $sessionMock = $this->getMockBuilder(Session::class)
+            ->setMethods(['set', 'isStarted'])
+            ->setConstructorArgs([$sessionData])
+            ->getMock();
+
+        $sessionMock->expects($this->any())->method('isStarted')->willReturn(true);
+        $sessionMock->expects($this->once())->method('set')->with($key, $newLocale);
+        $request->setSession($sessionMock);
+
+        $middleware->process($request, function () {
+            // no-op
+        });
+
+        // TODO PHPUnit's headers_sent() always returns true, so we can't check for cookie values.
+        // PHPUnit has process isolation for this purpose, but we can't use it because autoloading breaks.
+        // $this->assertEquals($newLocale, Cookie::get($key));
+    }
+
+    public function testLocaleIsNotPersistedFromSessionWhenSessionIsNotStarted()
+    {
+        $newLocale = 'fr_FR';
+        $middleware = $this->middleware;
+        $key = $middleware->getPersistKey();
+        $request = new HTTPRequest('GET', '/');
+
+        $sessionData = [$key => $newLocale];
+        $sessionMock = $this->getMockBuilder(Session::class)
+            ->setMethods(['set', 'isStarted'])
+            ->setConstructorArgs([$sessionData])
+            ->getMock();
+
+        $sessionMock->expects($this->any())->method('isStarted')->willReturn(false);
+        $sessionMock->expects($this->never())->method('set');
+        $request->setSession($sessionMock);
+
+        $middleware->process($request, function () {
+            // no-op
+        });
+
+        // TODO PHPUnit's headers_sent() always returns true, so we can't check for cookie values.
+        // PHPUnit has process isolation for this purpose, but we can't use it because autoloading breaks.
+        // $this->assertEquals($this->globalDefaultLocale, Cookie::get($key));
+    }
+
+    public function testLocaleIsNotPersistedFromCookieWhenPersistCookieFalse()
+    {
+        // TODO PHPUnit's headers_sent() always returns true, so we can't check for cookie values.
+        // PHPUnit has process isolation for this purpose, but we can't use it because autoloading breaks.
+        $this->markTestIncomplete();
+
+        // $newLocale = 'fr_FR';
+        // $middleware = $this->middleware;
+        // $middleware->config()->update('persist_cookie', false);
+        // $key = $this->middleware->getPersistKey();
+        // $request = new HTTPRequest('GET', '/');
+        //
+        // $sessionData = [$key => $newLocale];
+        // $sessionMock = $this->getMockBuilder(Session::class)
+        //     ->setMethods(['set'])
+        //     ->setConstructorArgs([$sessionData])
+        //     ->getMock();
+        // $sessionMock->expects($this->once())->method('set')->with($key, $this->globalDefaultLocale);
+        // $request->setSession($sessionMock);
+        //
+        // $middleware->process($request, function () {
+        //     // no-op
+        // });
+        //
+        // $this->assertEquals($this->globalDefaultLocale, Cookie::get($key));
     }
 }

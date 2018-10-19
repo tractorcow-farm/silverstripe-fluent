@@ -92,6 +92,11 @@ class Locale extends DataObject
     protected $chain = null;
 
     /**
+     * @var Locale[]
+     */
+    protected static $locales_by_title;
+
+    /**
      * Get internal title for this locale
      *
      * @return string
@@ -219,7 +224,7 @@ class Locale extends DataObject
                 'LocaleID' => function () {
                     return DropdownField::create(
                         'LocaleID',
-                        _t(FallbackLocale::class . '.LOCALE', 'Locale'),
+                        _t(__CLASS__.'.LOCALE', 'Locale'),
                         Locale::getCached()->exclude('Locale', $this->Locale)->map('ID', 'Title')
                     );
                 }
@@ -303,10 +308,15 @@ class Locale extends DataObject
             return $locale;
         }
 
+        if (!static::$locales_by_title) {
+            static::$locales_by_title = [];
+            foreach (Locale::getCached() as $localeObj) {
+                static::$locales_by_title[$localeObj->Locale] = $localeObj;
+            }
+        }
+
         // Get filtered locale
-        return Locale::getCached()
-            ->filter('Locale', $locale)
-            ->first();
+        return isset(static::$locales_by_title[$locale]) ? static::$locales_by_title[$locale] : null;
     }
 
     /**

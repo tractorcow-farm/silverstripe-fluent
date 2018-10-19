@@ -231,9 +231,36 @@ visible locales for this object.
 Note: Although these objects will be filtered in the front end, this filter is disabled
 in the CMS in order to allow access by site administrators in all locales.
 
-## Locale detection
+## Routing and Locale Detection
 
-When a visitor lands on the home page for the first time, Fluent can attempt to detect that user's locale based
+The `DetectLocaleMiddleware` will detect if a locale has been requested (or is default) and is not the current
+locale, and will redirect the user to that locale if needed.
+
+Will cascade through different checks in order:
+1. Routing path (e.g. `/de/ueber-uns`)
+2. Request variable (e.g. `ueber-uns?FluentLocale=de`)
+3. Domain (e.g. `http://example.de/ueber-uns`)
+4. Session (if a session is already started)
+5. Cookie (if `DetectLocaleMiddleware.persist_cookie` is configured)
+6. Request headers (if `FluentDirectorExtension.detect_locale` is configured)
+
+Additionally, detected locales will be set in cookies. This behaviour can be configured through
+`DetectLocaleMiddleware.persist_cookie`. To solely rely on sessions (if session is started) and
+stateless request data (routing path, request variable or domain), configure as follows:
+
+```yaml
+TractorCow\Fluent\Middleware\DetectLocaleMiddleware:
+  persist_cookie: false
+```
+
+Note that locales will only be persisted to the session if the session is already started. If
+you want to guarantee session persistence, you will need to ensure you call `->start()`
+on the session in the active HTTPRequest via a \_config.php file, or add a higher priority
+middleware that always starts the session ensuring it runs before `DetectLocaleMiddleware`.
+Be aware that prematurely starting sessions may complicate HTTP caching in your website.
+
+When a visitor lands on the home page for the first time,
+Fluent can also attempt to detect that user's locale based
 on the `Accept-Language` http headers sent.
 
 This functionality can interfere with certain applications, such as Facebook Open Graph tools, so it

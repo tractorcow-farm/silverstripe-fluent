@@ -4,7 +4,10 @@ namespace TractorCow\Fluent\Tests\Extension;
 
 use Page;
 use SilverStripe\CMS\Model\SiteTree;
+use SilverStripe\Core\Config\Config;
 use SilverStripe\Dev\SapphireTest;
+use SilverStripe\ORM\DataObject;
+use SilverStripe\Versioned\Versioned;
 use TractorCow\Fluent\Extension\FluentFilteredExtension;
 use TractorCow\Fluent\Extension\FluentSiteTreeExtension;
 use TractorCow\Fluent\Model\Domain;
@@ -31,16 +34,87 @@ class FluentFilteredExtensionTest extends SapphireTest
         Domain::clearCached();
     }
 
+    /**
+     * Test that we only get 1 visible Page when browsing the frontend with:
+     * stage=Stage
+     * apply_filtered_locales_to_stage=true
+     */
     public function testAugmentSQLFrontend()
     {
+        // Specifically set this config value so that filtered locales ARE required in stage=Stage.
+        Config::modify()->set(DataObject::class, 'apply_filtered_locales_to_stage', true);
+
+        $currentStage = Versioned::get_stage();
+
+        Versioned::set_stage(Versioned::DRAFT);
+
         FluentState::singleton()->withState(function (FluentState $newState) {
             $newState
                 ->setLocale('en_NZ')
                 ->setIsFrontend(true)
                 ->setIsDomainMode(false);
 
-            $this->assertEquals(1, SiteTree::get()->count());
+            $this->assertCount(1, SiteTree::get());
         });
+
+        if ($currentStage) {
+            Versioned::set_stage($currentStage);
+        }
+    }
+
+    /**
+     * Test that we don't get any visible Pages when browsing the frontend with:
+     * stage=Live
+     * apply_filtered_locales_to_stage=true
+     */
+    public function testAugmentSQLFrontendLive()
+    {
+        // Specifically set this config value so that filtered locales ARE required in stage=Stage.
+        Config::modify()->set(DataObject::class, 'apply_filtered_locales_to_stage', true);
+
+        $currentStage = Versioned::get_stage();
+
+        Versioned::set_stage(Versioned::LIVE);
+
+        FluentState::singleton()->withState(function (FluentState $newState) {
+            $newState
+                ->setLocale('en_NZ')
+                ->setIsFrontend(true);
+
+            $this->assertCount(0, SiteTree::get());
+        });
+
+        if ($currentStage) {
+            Versioned::set_stage($currentStage);
+        }
+    }
+
+    /**
+     * Test that we get 2 visible Pages when browsing the frontend with:
+     * stage=Stage
+     * apply_filtered_locales_to_stage=true
+     */
+    public function testAugmentSQLStage()
+    {
+        // Specifically set this config value so that filtered locales are NOT required in stage=Stage.
+        Config::modify()->set(DataObject::class, 'apply_filtered_locales_to_stage', false);
+
+        $currentStage = Versioned::get_stage();
+
+        Versioned::set_stage(Versioned::DRAFT);
+
+        // Run test
+        FluentState::singleton()->withState(function (FluentState $newState) {
+            $newState
+                ->setLocale('en_NZ')
+                ->setIsFrontend(true);
+
+            $this->assertCount(2, SiteTree::get());
+        });
+
+        if ($currentStage) {
+            Versioned::set_stage($currentStage);
+        }
     }
 
     public function testAugmentSQLCMS()
@@ -51,7 +125,7 @@ class FluentFilteredExtensionTest extends SapphireTest
                 ->setIsFrontend(false)
                 ->setIsDomainMode(false);
 
-            $this->assertEquals(2, SiteTree::get()->count());
+            $this->assertCount(2, SiteTree::get());
         });
     }
 
@@ -83,11 +157,6 @@ class FluentFilteredExtensionTest extends SapphireTest
             $flags = $page->getStatusFlags();
 
             $this->assertTrue(array_key_exists('fluentfiltered', $flags));
-
-            if (!array_key_exists('fluentfiltered', $flags)) {
-                return;
-            }
-
             $this->assertEquals('Filtered', $flags['fluentfiltered']['text']);
         });
     }
