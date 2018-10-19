@@ -9,6 +9,7 @@ use SilverStripe\Control\Director;
 use SilverStripe\Core\Config\Config;
 use SilverStripe\Dev\SapphireTest;
 use SilverStripe\Forms\FieldList;
+use SilverStripe\Forms\LiteralField;
 use SilverStripe\ORM\ArrayList;
 use SilverStripe\View\ArrayData;
 use TractorCow\Fluent\Extension\FluentDirectorExtension;
@@ -157,24 +158,35 @@ class FluentSiteTreeExtensionTest extends SapphireTest
         $this->assertEquals($url, $page->Link());
     }
 
-    public function testUpdateStatusFlagsFluentInivisible()
+    public function testUpdateStatusFlagsFluentInvisible()
     {
         /** @var Page|FluentSiteTreeExtension $page */
         $page = $this->objFromFixture('Page', 'home');
         $flags = $page->getStatusFlags();
 
-        $this->assertTrue(array_key_exists('fluentinvisible', $flags));
+        $this->assertArrayHasKey('fluentinvisible', $flags);
     }
 
-    public function testUpdateCMSFields()
+    public function testStatusMessageNotVisible()
     {
-        /** @var Page|FluentSiteTreeExtension $page */
-        $page = $this->objFromFixture('Page', 'home');
-        $fields = new FieldList();
+        FluentState::singleton()->withState(function (FluentState $newState) {
+            $newState
+                ->setLocale('en_NZ')
+                ->setIsDomainMode(false);
 
-        $page->updateCMSFields($fields);
+            /** @var Page|FluentSiteTreeExtension $page */
+            $page = $this->objFromFixture(Page::class, 'staff');
+            $page->config()
+                ->set('locale_published_status_message', true)
+                ->set('frontend_publish_required', true);
 
-        $this->assertNotNull($fields->fieldByName('LocaleStatusMessage'));
+            $fields = $page->getCMSFields();
+
+            /** @var LiteralField $statusMessage */
+            $statusMessage = $fields->fieldByName('LocaleStatusMessage');
+            $this->assertNotNull($statusMessage, 'Locale message was not added');
+            $this->assertContains('This page is not visible in this locale', $statusMessage->getContent());
+        });
     }
 
     public function testUpdateCMSActionsInherited()
