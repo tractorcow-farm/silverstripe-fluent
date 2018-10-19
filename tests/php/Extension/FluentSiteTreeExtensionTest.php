@@ -170,7 +170,7 @@ class FluentSiteTreeExtensionTest extends SapphireTest
                     ->set(FluentDirectorExtension::class, 'disable_default_prefix', $prefixDisabled);
 
                 /** @var Page|FluentSiteTreeExtension $page */
-                $page = $this->objFromFixture('Page', $pageName);
+                $page = $this->objFromFixture(Page::class, $pageName);
                 $this->assertEquals($url, $page->Link());
             }
         );
@@ -179,41 +179,56 @@ class FluentSiteTreeExtensionTest extends SapphireTest
     public function testUpdateStatusFlagsFluentInivisible()
     {
         /** @var Page|FluentSiteTreeExtension $page */
-        $page = $this->objFromFixture('Page', 'home');
+        $page = $this->objFromFixture(Page::class, 'home');
         $flags = $page->getStatusFlags();
 
-        $this->assertTrue(array_key_exists('fluentinvisible', $flags));
+        $this->assertArrayHasKey('fluentinvisible', $flags);
     }
 
-    public function testStatusMessageNotVisibile()
+    public function testStatusMessageNotVisible()
     {
-        /** @var Page|FluentSiteTreeExtension $page */
-        $page = $this->objFromFixture('Page', 'home');
-        $fields = new FieldList();
+        FluentState::singleton()->withState(function (FluentState $newState) {
+            $newState
+                ->setLocale('en_NZ')
+                ->setIsDomainMode(false);
 
-        $page->updateCMSFields($fields);
+            /** @var Page|FluentSiteTreeExtension $page */
+            $page = $this->objFromFixture(Page::class, 'staff');
+            $page->config()
+                ->set('locale_published_status_message', true)
+                ->set('frontend_publish_required', true);
 
-        /** @var LiteralField $statusMessage */
-        $statusMessage = $fields->fieldByName('LocaleStatusMessage');
+            $fields = $page->getCMSFields();
 
-        $this->assertNotNull($fields->fieldByName('LocaleStatusMessage'));
-        $this->assertContains('This page is not visible', $statusMessage->getContent());
+            /** @var LiteralField $statusMessage */
+            $statusMessage = $fields->fieldByName('LocaleStatusMessage');
+
+            $this->assertNotNull($statusMessage, 'Locale message was not added');
+            $this->assertContains('This page will not be visible', $statusMessage->getContent());
+        });
     }
 
     public function testStatusMessageInherited()
     {
-        /** @var Page|FluentSiteTreeExtension $page */
-        $page = $this->objFromFixture('Page', 'home');
-        $page->config()->update('frontend_publish_required', false);
-        $fields = new FieldList();
+        FluentState::singleton()->withState(function (FluentState $newState) {
+            $newState
+                ->setLocale('en_NZ')
+                ->setIsDomainMode(false);
 
-        $page->updateCMSFields($fields);
+            /** @var Page|FluentSiteTreeExtension $page */
+            $page = $this->objFromFixture(Page::class, 'home');
+            $page->config()
+                ->set('locale_published_status_message', true)
+                ->set('frontend_publish_required', false);
 
-        /** @var LiteralField $statusMessage */
-        $statusMessage = $fields->fieldByName('LocaleStatusMessage');
+            $fields = $page->getCMSFields();
 
-        $this->assertNotNull($fields->fieldByName('LocaleStatusMessage'));
-        $this->assertContains('Content for this page may be inherited', $statusMessage->getContent());
+            /** @var LiteralField $statusMessage */
+            $statusMessage = $fields->fieldByName('LocaleStatusMessage');
+
+            $this->assertNotNull($fields->fieldByName('LocaleStatusMessage'));
+            $this->assertContains('Content for this page may be inherited', $statusMessage->getContent());
+        });
     }
 
     public function testStatusMessageDrafted()
@@ -224,12 +239,13 @@ class FluentSiteTreeExtensionTest extends SapphireTest
                 ->setIsDomainMode(false);
 
             /** @var Page|FluentSiteTreeExtension $page */
-            $page = $this->objFromFixture('Page', 'home');
-            $page->config()->update('frontend_publish_required', false);
+            $page = $this->objFromFixture(Page::class, 'home');
+            $page->config()
+                ->set('locale_published_status_message', true)
+                ->set('frontend_publish_required', false);
             $page->write();
-            $fields = new FieldList();
 
-            $page->updateCMSFields($fields);
+            $fields = $page->getCMSFields();
 
             /** @var LiteralField $statusMessage */
             $statusMessage = $fields->fieldByName('LocaleStatusMessage');
@@ -242,7 +258,7 @@ class FluentSiteTreeExtensionTest extends SapphireTest
     public function testUpdateCMSActionsInherited()
     {
         /** @var Page|FluentSiteTreeExtension $page */
-        $page = $this->objFromFixture('Page', 'home');
+        $page = $this->objFromFixture(Page::class, 'home');
         $actions = $page->getCMSActions();
 
         /** @var \SilverStripe\Forms\CompositeField $majorActions */
@@ -250,19 +266,11 @@ class FluentSiteTreeExtensionTest extends SapphireTest
 
         $this->assertNotNull($majorActions);
 
-        if ($majorActions === null) {
-            return;
-        }
-
         $actionSave = $majorActions->getChildren()->fieldByName('action_save');
         $actionPublish = $majorActions->getChildren()->fieldByName('action_publish');
 
         $this->assertNotNull($actionSave);
         $this->assertNotNull($actionPublish);
-
-        if ($actionSave === null || $actionPublish === null) {
-            return;
-        }
 
         $this->assertEquals('Copy to draft', $actionSave->Title());
         $this->assertEquals('Copy & publish', $actionPublish->Title());
@@ -271,7 +279,7 @@ class FluentSiteTreeExtensionTest extends SapphireTest
     public function testUpdateCMSActionsDrafted()
     {
         /** @var Page|FluentSiteTreeExtension $page */
-        $page = $this->objFromFixture('Page', 'about');
+        $page = $this->objFromFixture(Page::class, 'about');
         $actions = $page->getCMSActions();
 
         /** @var \SilverStripe\Forms\CompositeField $majorActions */
@@ -279,19 +287,11 @@ class FluentSiteTreeExtensionTest extends SapphireTest
 
         $this->assertNotNull($majorActions);
 
-        if ($majorActions === null) {
-            return;
-        }
-
         $actionSave = $majorActions->getChildren()->fieldByName('action_save');
         $actionPublish = $majorActions->getChildren()->fieldByName('action_publish');
 
         $this->assertNotNull($actionSave);
         $this->assertNotNull($actionPublish);
-
-        if ($actionSave === null || $actionPublish === null) {
-            return;
-        }
 
         $this->assertEquals('Saved', $actionSave->Title());
         // The default value changed between SS 4.0 and 4.1 - assert it contains Publish instead of exact matching
@@ -336,7 +336,6 @@ class FluentSiteTreeExtensionTest extends SapphireTest
                 ->setIsFrontend(true);
 
             $page = Page::get()->filter('URLSegment', 'home')->first();
-
 
             $this->assertNotNull($page);
         });

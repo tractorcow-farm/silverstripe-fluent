@@ -153,11 +153,17 @@ class FluentFilteredExtensionTest extends SapphireTest
                 ->setIsDomainMode(false);
 
             /** @var Page|FluentSiteTreeExtension $page */
-            $page = $this->objFromFixture('Page', 'about');
+            $page = $this->objFromFixture(Page::class, 'about');
             $flags = $page->getStatusFlags();
 
-            $this->assertTrue(array_key_exists('fluentfiltered', $flags));
-            $this->assertEquals('Filtered', $flags['fluentfiltered']['text']);
+            $this->assertArrayHasKey('fluentfiltered', $flags);
+            $this->assertSame(
+                _t(
+                    'TractorCow\\Fluent\\Extension\\FluentFilteredExtension.LOCALEFILTEREDHELP',
+                    'This page is not visible in this locale'
+                ),
+                $flags['fluentfiltered']['title']
+            );
         });
     }
 }

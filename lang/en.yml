@@ -10,12 +10,13 @@ en:
   TractorCow\Fluent\Extension\FluentFilteredExtension:
     FILTERED_LOCALES: 'Display in the following locales'
     LOCALEFILTEREDHELP: 'This page is not visible in this locale'
-    LOCALEFILTEREDSHORT: Filtered
     TAB_LOCALES: Locales
   TractorCow\Fluent\Extension\FluentSiteTreeExtension:
     LOCALECOPYANDPUBLISH: 'Copy & publish'
     LOCALECOPYTODRAFT: 'Copy to draft'
-    LOCALESTATUSFLUENTINVISIBLE: 'This page is not visible in this locale until it is added and published.'
+    LOCALESTATUSFLUENTDRAFT: 'A draft has been created for this locale, however, published content may still be inherited from another. To publish this content for this locale, use the "Save & publish" action provided.'
+    LOCALESTATUSFLUENTINHERITED: 'Content for this page may be inherited from another locale. If you wish you make an independent copy of this page, please use one of the "Copy" actions provided.'
+    LOCALESTATUSFLUENTINVISIBLE: 'This page will not be visible in this locale until it has been published.'
   TractorCow\Fluent\Model\Domain:
     DEFAULT: 'Default locale'
     DEFAULT_NONE: (none)
