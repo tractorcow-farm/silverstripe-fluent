@@ -7,6 +7,7 @@ use SilverStripe\Forms\CheckboxField;
 use TractorCow\Fluent\Model\Domain;
 use TractorCow\Fluent\Model\Locale;
 use TractorCow\Fluent\State\FluentState;
+use SilverStripe\Core\Config\Config;
 
 class LocaleTest extends SapphireTest
 {
@@ -120,6 +121,18 @@ class LocaleTest extends SapphireTest
         $result = Locale::getByLocale('es_US')->getBaseURL();
         $this->assertNotContains('fluent.es', $result, "Domain not used");
         $this->assertContains('/es-usa/', $result, 'URL Segment necessary for non-global default');
+    }
+
+    public function testUseFullDefaultBaseURL()
+    {
+        // Default base url shortens the default locale url base by excluding its url segment
+        $result = Locale::getDefault()->getBaseURL();
+        $this->assertNotContains('/au/', $result);
+
+        // Default base url preserves the default url segment
+        Config::inst()->set(Locale::class, 'use_full_default_base_url', true);
+        $result = Locale::getDefault()->getBaseURL();
+        $this->assertContains('/au/', $result);
     }
 
     public function testGetSiblings()

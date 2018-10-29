@@ -4,6 +4,7 @@ namespace TractorCow\Fluent\Model;
 
 use SilverStripe\Control\Controller;
 use SilverStripe\Control\Director;
+use SilverStripe\Core\Config\Config;
 use SilverStripe\Forms\CheckboxField;
 use SilverStripe\Forms\DropdownField;
 use SilverStripe\Forms\FieldList;
@@ -24,6 +25,9 @@ use Symbiote\GridFieldExtensions\GridFieldAddNewInlineButton;
 use Symbiote\GridFieldExtensions\GridFieldEditableColumns;
 use Symbiote\GridFieldExtensions\GridFieldOrderableRows;
 use TractorCow\Fluent\State\FluentState;
+
+use SilverStripe\Core\Injector\Injector;
+use Psr\Log\LoggerInterface;
 
 /**
  * @property string $Title
@@ -85,6 +89,13 @@ class Locale extends DataObject
             'to' => 'Locale',
         ],
     ];
+
+    /**
+     * Display the current domain's default locale url segment in base urls
+     *
+     * @var bool
+     */
+    private static $use_full_default_base_url = false;
 
     /**
      * @var ArrayList
@@ -455,8 +466,16 @@ class Locale extends DataObject
             $base = Controller::join_links($domain->Link(), $base);
         }
 
-        // Append locale urlsegment if a non-default locale
-        if (!$this->getIsDefault()) {
+        // Determine if base suffix should be appended
+        $append = true;
+
+        if ($this->getIsDefault()) {
+            // Apply config
+            $append = Config::inst()->get(self::class, 'use_full_default_base_url');
+        }
+
+        if ($append) {
+            // Append locale url segment
             $base = Controller::join_links($base, $this->getURLSegment(), '/');
         }
 
