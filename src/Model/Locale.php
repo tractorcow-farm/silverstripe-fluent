@@ -4,6 +4,7 @@ namespace TractorCow\Fluent\Model;
 
 use SilverStripe\Control\Controller;
 use SilverStripe\Control\Director;
+use SilverStripe\Core\Config\Config;
 use SilverStripe\Forms\CheckboxField;
 use SilverStripe\Forms\DropdownField;
 use SilverStripe\Forms\FieldList;
@@ -23,6 +24,7 @@ use SilverStripe\ORM\ManyManyList;
 use Symbiote\GridFieldExtensions\GridFieldAddNewInlineButton;
 use Symbiote\GridFieldExtensions\GridFieldEditableColumns;
 use Symbiote\GridFieldExtensions\GridFieldOrderableRows;
+use TractorCow\Fluent\Extension\FluentDirectorExtension;
 use TractorCow\Fluent\State\FluentState;
 
 /**
@@ -455,8 +457,15 @@ class Locale extends DataObject
             $base = Controller::join_links($domain->Link(), $base);
         }
 
-        // Append locale urlsegment if a non-default locale
-        if (!$this->getIsDefault()) {
+        // Determine if base suffix should be appended
+        $append = true;
+        if ($this->getIsDefault()) {
+            // Apply config
+            $append = !(bool) Config::inst()->get(FluentDirectorExtension::class, 'disable_default_prefix');
+        }
+
+        if ($append) {
+            // Append locale url segment
             $base = Controller::join_links($base, $this->getURLSegment(), '/');
         }
 

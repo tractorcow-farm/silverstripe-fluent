@@ -5,7 +5,7 @@ TractorCow\Fluent\Model\Locale:
   en_AU:
     Locale: en_AU
     URLSegment: au
-    IsDefault: 1
+    IsGlobalDefault: 1
   es_ES:
     Locale: es_ES
     URLSegment: es

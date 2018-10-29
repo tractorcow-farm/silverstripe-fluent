@@ -34,10 +34,12 @@ displayed in the default locale.
 
 ## Default locale options
 
-If you prefer to keep the prefix off from all links in the default locale, you can set the
-`TractorCow\Fluent\Extension\FluentDirectorExtension.disable_default_prefix` option via
-YML config. When this is enabled, the prefix will only be prepended to the beginning of
-links to non-default locales.
+### Disable default locale url segment prefix
+
+`TractorCow\Fluent\Extension\FluentDirectorExtension.disable_default_prefix` (default: `false`)
+
+If you prefer to keep the prefix off from all links in the default locale, you can set this option via
+YML config. When this is enabled, the prefix will only be used (prepended) in links to non-default locales.
 
 E.g.
 
