@@ -270,3 +270,12 @@ is turned off by default. To turn it on set the below setting:
 TractorCow\Fluent\Extension\FluentDirectorExtension:
   detect_locale: true
 ```
+
+## Use full default base URL for all locales
+
+By default, fluent will return `/` as the default locale's default base url. To enforce the use of full default base URLs for all locales (e.g always return `/en/`), set the below setting:
+
+```yaml
+TractorCow\Fluent\Model\Locale:
+  use_full_default_base_url: true
+```
