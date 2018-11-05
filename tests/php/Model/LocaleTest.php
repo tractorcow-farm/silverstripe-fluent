@@ -4,9 +4,12 @@ namespace TractorCow\Fluent\Tests\Model;
 
 use SilverStripe\Dev\SapphireTest;
 use SilverStripe\Forms\CheckboxField;
+use TractorCow\Fluent\Extension\FluentExtension;
+use TractorCow\Fluent\Extension\FluentDirectorExtension;
 use TractorCow\Fluent\Model\Domain;
 use TractorCow\Fluent\Model\Locale;
 use TractorCow\Fluent\State\FluentState;
+use SilverStripe\Core\Config\Config;
 
 class LocaleTest extends SapphireTest
 {
@@ -108,8 +111,22 @@ class LocaleTest extends SapphireTest
         $this->assertContains('/es/', $result, 'URL segment for non-default locale is in the URL');
     }
 
-    public function testGetBaseURLOnlyContainsDomainForDefaultLocale()
+    public function testBaseURLPrefixDisabled()
     {
+        // Default base url includes the default url segment
+        $result = Locale::getDefault()->getBaseURL();
+        $this->assertContains('/au/', $result);
+
+        // Default base url shortens the default locale url base by excluding the locale's url segment
+        Config::inst()->set(FluentDirectorExtension::class, 'disable_default_prefix', true);
+        $result = Locale::getDefault()->getBaseURL();
+        $this->assertNotContains('/au/', $result);
+    }
+
+    public function testGetBaseURLOnlyContainsDomainForPrefixDisabledDefaultLocale()
+    {
+        Config::inst()->set(FluentDirectorExtension::class, 'disable_default_prefix', true);
+
         // es_US has a domain and is the default
         $result = Locale::getByLocale('es_US')->getBaseURL();
         $this->assertContains('fluent.es', $result, "Locale's domain is in the URL");
