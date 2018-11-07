@@ -31,9 +31,6 @@
         "squizlabs/php_codesniffer": "^3"
     },
     "extra": {
-        "branch-alias": {
-            "dev-master": "4.2.x-dev"
-        },
         "expose": [
             "client/dist"
         ]
