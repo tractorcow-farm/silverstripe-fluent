@@ -449,7 +449,24 @@ class FluentExtension extends DataExtension
 
             // If table isn't localised, simple delete
             if (!isset($localisedTables[$table])) {
-                $rootDelete->execute();
+                $baseTable = $this->getDeleteTableTarget($this->owner->baseTable());
+
+                // The base table isn't localised? Delete the record then.
+                if ($baseTable === $rootTable) {
+                    $rootDelete->execute();
+                    continue;
+                }
+
+                $rootDelete
+                    ->setDelete("\"{$rootTable}\"")
+                    ->addLeftJoin(
+                        $baseTable,
+                        "\"{$rootTable}\".\"ID\" = \"{$baseTable}\".\"ID\""
+                    )
+                    // Only when join matches no localisations is it safe to delete
+                    ->addWhere("\"{$baseTable}\".\"ID\" IS NULL")
+                    ->execute();
+
                 continue;
             }
 
