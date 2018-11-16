@@ -315,4 +315,33 @@ class FluentExtensionTest extends SapphireTest
 
         return !empty($result);
     }
+
+    /**
+     * This test checks that the localised LastEdited values are included in the aggreated MAX value.
+     * See the fixtures for field definitions across locales.
+     *
+     * @group wip
+     * @param string $locale
+     * @param string $expected
+     * @dataProvider aggregatedMaxProvider
+     */
+    public function testAggregatedMaxValue($locale, $expected)
+    {
+        FluentState::singleton()->withState(function (FluentState $newState) use ($locale, $expected) {
+            $newState->setLocale($locale);
+            $result = LocalisedParent::get()->max('LastEdited');
+            $this->assertEquals($expected, $result);
+        });
+    }
+
+    /**
+     * @return array[]
+     */
+    public function aggregatedMaxProvider()
+    {
+        return [
+            ['de_DE', '2018-06-01 17:00:00'],
+            ['en_US', '2018-05-03 01:02:03'],
+        ];
+    }
 }

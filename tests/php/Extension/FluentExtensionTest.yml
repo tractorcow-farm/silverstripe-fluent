@@ -19,14 +19,17 @@ TractorCow\Fluent\Tests\Extension\FluentExtensionTest\LocalisedParent:
     Title: A record
     Description: Unique value
     Details: Not very interesting
+    LastEdited: '2018-05-02 01:02:03'
   record_b:
     Title: Read about things
     Description: Common value
     Details: Not very interesting
+    LastEdited: '2018-05-01 17:00:00'
   record_c:
     Title: Go for a run
     Description: Common value
     Details: Go to a library
+    LastEdited: '2014-04-20 12:32:45'
 
 FluentExtensionTest_LocalisedParent_Localised:
   # English translated records
@@ -35,29 +38,35 @@ FluentExtensionTest_LocalisedParent_Localised:
     Title: A record
     Details: Not very interesting
     Locale: en_US
+    LastEdited: '2018-05-03 01:02:03' # Edited in US locale a day later
   record_b_us:
     RecordID: =>TractorCow\Fluent\Tests\Extension\FluentExtensionTest\LocalisedParent.record_b
     Title: Read about things
     Details: Not very interesting
     Locale: en_US
+    LastEdited: '2018-05-01 17:00:00' # Same as parent
   record_c_us:
     RecordID: =>TractorCow\Fluent\Tests\Extension\FluentExtensionTest\LocalisedParent.record_c
     Title: Go for a run
     Details: Go to a library
     Locale: en_US
+    LastEdited: '2016-04-20 12:32:45' # Edited in US locale two years later
   # German translated records
   record_a_de:
     RecordID: =>TractorCow\Fluent\Tests\Extension\FluentExtensionTest\LocalisedParent.record_a
     Title: Eine Akte
     Details: Nicht sehr interessant
     Locale: de_DE
+    LastEdited: '2018-05-04 01:02:03' # Edited in German locale two days later
   record_b_de:
     RecordID: =>TractorCow\Fluent\Tests\Extension\FluentExtensionTest\LocalisedParent.record_b
     Title: Lesen Sie mehr
     Details: Nicht sehr interessant
     Locale: de_DE
+    LastEdited: '2018-06-01 17:00:00' # Edited in German locale one month later
   record_c_de:
     RecordID: =>TractorCow\Fluent\Tests\Extension\FluentExtensionTest\LocalisedParent.record_c
     Title: Rennen
     Details: Gehe zur Bibliothek
     Locale: de_DE
+    LastEdited: '2014-04-20 12:32:45' # Same as parent

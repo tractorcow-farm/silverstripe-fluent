@@ -56,6 +56,8 @@ class FluentExtension extends DataExtension
         'ID' => 'PrimaryKey',
         'RecordID' => 'Int',
         'Locale' => 'Varchar(10)',
+        'Created' => 'DBDatetime',
+        'LastEdited' => 'DBDatetime',
     ];
 
     /**
@@ -93,7 +95,10 @@ class FluentExtension extends DataExtension
      * @config
      * @var array
      */
-    private static $field_include = [];
+    private static $field_include = [
+        'Created',
+        'LastEdited',
+    ];
 
     /**
      * Filter blacklist of fields to localise.
@@ -961,7 +966,7 @@ class FluentExtension extends DataExtension
      *
      * @param array $tables Map of known table and nested fields to search
      * @param string $sql The SQL string to inspect
-     * @return array Three item array with table and field and a flag for whether the fragment is fully quolified
+     * @return array Three item array with table and field and a flag for whether the fragment is fully qualified
      */
     protected function detectLocalisedTableField($tables, $sql)
     {
