@@ -33,7 +33,8 @@ class FluentSiteTreeExtension extends FluentVersionedExtension
      *
      * @param string &$tags
      */
-    public function MetaTags(&$tags) {
+    public function MetaTags(&$tags)
+    {
         $tags .= $this->owner->renderWith('FluentSiteTree_MetaTags');
     }
 
