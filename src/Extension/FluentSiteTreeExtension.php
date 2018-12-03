@@ -29,6 +29,16 @@ class FluentSiteTreeExtension extends FluentVersionedExtension
     private static $locale_published_status_message = true;
 
     /**
+     * Add alternate links to metatags
+     *
+     * @param string &$tags
+     */
+    public function MetaTags(&$tags)
+    {
+        $tags .= $this->owner->renderWith('FluentSiteTree_MetaTags');
+    }
+
+    /**
      * Add the current locale's URL segment to the start of the URL
      *
      * @param string &$base
