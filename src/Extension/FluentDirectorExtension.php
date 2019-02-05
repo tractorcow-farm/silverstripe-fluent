@@ -68,14 +68,10 @@ class FluentDirectorExtension extends Extension
     public function updateRules(&$rules)
     {
         $originalRules = $rules;
-        $rules = $this->getExplicitRoutes($originalRules);
+        $fluentRules = $this->getExplicitRoutes($rules);
 
-        // Merge all other routes (maintain priority)
-        foreach ($originalRules as $key => $route) {
-            if (!isset($rules[$key])) {
-                $rules[$key] = $route;
-            }
-        }
+        // Insert Fluent Rules before the default '$URLSegment//$Action/$ID/$OtherID'
+        $rules = $this->insertRuleBefore($rules, '$URLSegment//$Action/$ID/$OtherID', $fluentRules);
 
         $request = Injector::inst()->get(HTTPRequest::class);
         if (!$request) {
@@ -158,5 +154,22 @@ class FluentDirectorExtension extends Extension
         // Decorate Director class to override controllers for a specific locale
         $this->owner->extend('updateLocalePageController', $controller, $localeObj);
         return $controller;
+    }
+
+    /**
+     * Inserts the given rule(s) before another rule
+     * @param array $rules Array of rules to insert before
+     * @param string $key Rule to insert the new rules before
+     * @param array $rule New Rules to insert
+     * @return array Resulting array of rules
+     */
+    protected function insertRuleBefore(array $rules, $key, array $rule)
+    {
+        $i = array_search($key, array_keys($rules));
+        if ($i !== false) {
+            return array_slice($rules, 0, $i, true) + $rule + array_slice($rules, $i, null, true);
+        }
+
+        return $rules;
     }
 }
