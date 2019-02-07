@@ -161,13 +161,16 @@ class FluentDirectorExtension extends Extension
      * @param array $rules Array of rules to insert before
      * @param string $key Rule to insert the new rules before
      * @param array $rule New Rules to insert
+     * @param boolean $prependIfMissing Prepend the new rules if the insert before rule cannot be found
      * @return array Resulting array of rules
      */
-    protected function insertRuleBefore(array $rules, $key, array $rule)
+    protected function insertRuleBefore(array $rules, $key, array $rule, $prependIfMissing = true)
     {
         $i = array_search($key, array_keys($rules));
         if ($i !== false) {
             return array_slice($rules, 0, $i, true) + $rule + array_slice($rules, $i, null, true);
+        } elseif ($prependIfMissing) {
+            $rules = $rule + $rules;
         }
 
         return $rules;
