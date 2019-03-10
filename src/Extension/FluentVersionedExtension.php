@@ -421,7 +421,7 @@ class FluentVersionedExtension extends FluentExtension
             $select = SQLSelect::create(
                 ['"RecordID"'],
                 '"' . $table . '"',
-                ['Locale' => $locale]
+                ['"Locale"' => $locale]
             );
             $result = $select->execute();
             $ids = $result->column('RecordID');
