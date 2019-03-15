@@ -12,6 +12,7 @@ use TractorCow\Fluent\State\FluentState;
 use TractorCow\Fluent\Tests\Extension\FluentExtensionTest\LocalisedAnother;
 use TractorCow\Fluent\Tests\Extension\FluentExtensionTest\LocalisedChild;
 use TractorCow\Fluent\Tests\Extension\FluentExtensionTest\LocalisedParent;
+use TractorCow\Fluent\Tests\Extension\FluentExtensionTest\MixedLocalisedSortObject;
 use TractorCow\Fluent\Tests\Extension\FluentExtensionTest\UnlocalisedChild;
 use TractorCow\Fluent\Tests\Extension\Stub\FluentStubObject;
 
@@ -23,6 +24,7 @@ class FluentExtensionTest extends SapphireTest
         LocalisedAnother::class,
         LocalisedChild::class,
         LocalisedParent::class,
+        MixedLocalisedSortObject::class,
         UnlocalisedChild::class,
     ];
 
@@ -156,6 +158,39 @@ class FluentExtensionTest extends SapphireTest
             $this->assertTrue(
                 $this->hasLocalisedRecord($record3, 'es_ES'),
                 'Record Locale is set to current locale when writing new records'
+            );
+        });
+    }
+
+    public function testLocalisedMixSorting()
+    {
+        FluentState::singleton()->withState(function (FluentState $newState) {
+            $newState->setLocale('en_US');
+
+            // Sort by the NonLocalisedSort field first then the LocalisedField second both in ascending order
+            // so the result will be opposite if the order of the columns is not maintained
+            $objects=MixedLocalisedSortObject::get()->sort(
+                '"FluentExtensionTest_MixedLocalisedSortObject"."LocalizedSort", '.
+                '"FluentExtensionTest_MixedLocalisedSortObject"."NonLocalizedSort", '.
+                '"FluentExtensionTest_MixedLocalisedSortObject"."Title"'
+            );
+
+            // Make sure Item A is first
+            $this->assertEquals(
+                'Item A',
+                $objects->offsetGet(0)->Title
+            );
+
+            // Make sure Item B is second
+            $this->assertEquals(
+                'Item B',
+                $objects->offsetGet(1)->Title
+            );
+
+            // Make sure Item C is third
+            $this->assertEquals(
+                'Item C',
+                $objects->offsetGet(2)->Title
             );
         });
     }
