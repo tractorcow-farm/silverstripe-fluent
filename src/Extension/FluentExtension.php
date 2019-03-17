@@ -394,7 +394,13 @@ class FluentExtension extends DataExtension
                     // Wrap sort in group to prevent dataquery messing it up
                     unset($order[$column]);
                     $order["({$localisedColumn})"] = $direction;
+                } else {
+                    unset($order[$column]);
+                    $order[$column] = $direction;
                 }
+            } else {
+                unset($order[$column]);
+                $order[$column] = $direction;
             }
         }
         $query->setOrderBy($order);

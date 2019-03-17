@@ -61,3 +61,34 @@ FluentExtensionTest_LocalisedParent_Localised:
     Title: Rennen
     Details: Gehe zur Bibliothek
     Locale: de_DE
+
+TractorCow\Fluent\Tests\Extension\FluentExtensionTest\MixedLocalisedSortObject:
+  record_a:
+    Title: Item A
+    LocalizedSort: 1
+    NonLocalizedSort: 3
+  record_b:
+    Title: Item B
+    LocalizedSort: 2
+    NonLocalizedSort: 2
+  record_c:
+    Title: Item C
+    LocalizedSort: 3
+    NonLocalizedSort: 1
+
+FluentExtensionTest_MixedLocalisedSortObject_Localised:
+  record_a:
+    RecordID: =>TractorCow\Fluent\Tests\Extension\FluentExtensionTest\MixedLocalisedSortObject.record_a
+    Title: Item A
+    LocalizedSort: 1
+    Locale: en_US
+  record_b:
+    RecordID: =>TractorCow\Fluent\Tests\Extension\FluentExtensionTest\MixedLocalisedSortObject.record_b
+    Title: Item B
+    LocalizedSort: 2
+    Locale: en_US
+  record_c:
+    RecordID: =>TractorCow\Fluent\Tests\Extension\FluentExtensionTest\MixedLocalisedSortObject.record_c
+    Title: Item C
+    LocalizedSort: 3
+    Locale: en_US
