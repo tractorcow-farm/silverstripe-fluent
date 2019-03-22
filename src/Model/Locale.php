@@ -158,6 +158,27 @@ class Locale extends DataObject
     }
 
     /**
+     * Returns the label to display for Fluent badges in the CMS. By default this is the locale suffix, e.g. 'US'
+     * or 'NZ', but can be configured with extensions.
+     *
+     * For example, you may want to display the full locale badge:
+     * <code>
+     * public function updateBadgeLabel(&$badgeLabel)
+     * {
+     *     $badgeLabel = $this->owner->Locale;
+     * }
+     * </code>
+     *
+     * @return string
+     */
+    public function getBadgeLabel()
+    {
+        $badgeLabel = $this->getLocaleSuffix();
+        $this->extend('updateBadgeLabel', $badgeLabel);
+        return (string) $badgeLabel;
+    }
+
+    /**
      * Get URLSegment for this locale
      *
      * @return string
