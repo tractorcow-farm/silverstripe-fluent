@@ -71,7 +71,7 @@ class FluentBadgeExtension extends Extension
     /**
      * Given a record with Fluent enabled, return a badge that represents the state of it in the current locale
      *
-     * @param DataObject $record
+     * @param DataObject&FluentVersionedExtension $record
      * @return DBField
      */
     public function getBadge(DataObject $record)
@@ -104,7 +104,7 @@ class FluentBadgeExtension extends Extension
                 '<span class="%s" title="%s">%s</span>',
                 implode(' ', $badgeClasses),
                 $tooltip,
-                $record->getSourceLocale()->getLocaleSuffix()
+                $record->getSourceLocale()->getBadgeLabel()
             )
         );
     }
