@@ -42,6 +42,7 @@ class FluentSearchVariant extends SearchVariant
     public function activateState($state)
     {
         $fluentState = FluentState::singleton()->setLocale($state);
+        $fluentState->setIsFrontend(true);
     }
 
     public function alterQuery($query, $index)
