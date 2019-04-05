@@ -143,8 +143,18 @@ MyDataObject:
     - 'TractorCow\Fluent\Extension\FluentExtension'
 ```
 
-**Note:** If `MyDataObject` is versioned, use `FluentVersionedExtension` instead and apply this config
+If `MyDataObject` is versioned, use `FluentVersionedExtension` instead and apply this config
 _after_ the `Versioned` extension using an `after` block in your config title block.
+
+```yaml
+---
+Name: myextensions
+after: '#versionedfiles'
+---
+MyDataObject:
+  extensions:
+    - 'TractorCow\Fluent\Extension\FluentVersionedExtension'
+``` 
 
 Set the translate option to 'none' to disable all translation on that `DataObject`.
 
