@@ -382,6 +382,10 @@ class FluentExtension extends DataExtension
                 $localisedColumn = $column;
                 // Fix non-fully-qualified name
                 if (!$fqn) {
+                    if (strpos($localisedColumn, '"') === false) {
+                        $localisedColumn = '"' . $localisedColumn . '"';
+                    }
+                    
                     $localisedColumn = str_replace(
                         "\"{$field}\"",
                         "\"{$table}\".\"{$field}\"",
@@ -985,6 +989,18 @@ class FluentExtension extends DataExtension
 
         // Check sole "field" without table specifier ("name" without leading or trailing '.')
         if (preg_match('/(?<![.])"(?<field>\w+)"(?![.])/i', $sql, $matches)) {
+            $field = $matches['field'];
+
+            // Check if this field is in any of the tables, and just pick any that match
+            foreach ($tables as $table => $fields) {
+                if (in_array($field, $fields)) {
+                    return [$table, $field, false];
+                }
+            }
+        }
+
+        // Check sole "field" without table specifier ("name" without leading or trailing '.' and without quotes)
+        if (preg_match('/(?<![.])(?<field>\w+)(?![.])/i', $sql, $matches)) {
             $field = $matches['field'];
 
             // Check if this field is in any of the tables, and just pick any that match
