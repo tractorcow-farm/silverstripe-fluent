@@ -136,6 +136,7 @@ class FluentVersionedExtension extends FluentExtension
             case 'archive':
             case 'all_versions':
             case 'latest_versions':
+            case 'latest_version_single':
             case 'version':
                 $this->rewriteVersionedTables($query, $tables, $locale);
                 break;
