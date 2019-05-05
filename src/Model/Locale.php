@@ -147,7 +147,7 @@ class Locale extends DataObject
     }
 
     /**
-     * Get a short segment of the locale code for display in things like badges
+     * Get the locale's country part
      *
      * @return string e.g. "NZ" for "en_NZ"
      */
@@ -158,8 +158,8 @@ class Locale extends DataObject
     }
 
     /**
-     * Returns the label to display for Fluent badges in the CMS. By default this is the locale suffix, e.g. 'US'
-     * or 'NZ', but can be configured with extensions.
+     * Returns the label to display for Fluent badges in the CMS. By default this is the
+     * locale's URLSegment as set in /admin/locales, but can be configured with extensions.
      *
      * For example, you may want to display the full locale badge:
      * <code>
@@ -173,7 +173,7 @@ class Locale extends DataObject
      */
     public function getBadgeLabel()
     {
-        $badgeLabel = $this->getLocaleSuffix();
+        $badgeLabel = $this->getURLSegment();
         $this->extend('updateBadgeLabel', $badgeLabel);
         return (string) $badgeLabel;
     }
