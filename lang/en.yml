@@ -1,22 +1,17 @@
 en:
   TractorCow\Fluent\Control\LocaleAdmin:
     MENUTITLE: Locales
-  TractorCow\Fluent\Extension\FluentBadgeExtension:
-    BadgeDefault: 'Default locale'
-    BadgeInvisible: 'Localised in {locale}'
-    BadgeLocalised: '{type} is not visible in this locale'
   TractorCow\Fluent\Extension\FluentExtension:
     FLUENT_ICON_TOOLTIP: 'Translatable field'
   TractorCow\Fluent\Extension\FluentFilteredExtension:
     FILTERED_LOCALES: 'Display in the following locales'
-    LOCALEFILTEREDHELP: 'This page is not visible in this locale'
     TAB_LOCALES: Locales
+    LOCALEFILTEREDHELP: 'This page is not visible in this locale'
+    LOCALEFILTEREDSHORT: Filtered
   TractorCow\Fluent\Extension\FluentSiteTreeExtension:
     LOCALECOPYANDPUBLISH: 'Copy & publish'
     LOCALECOPYTODRAFT: 'Copy to draft'
-    LOCALESTATUSFLUENTDRAFT: 'A draft has been created for this locale, however, published content may still be inherited from another. To publish this content for this locale, use the "Save & publish" action provided.'
-    LOCALESTATUSFLUENTINHERITED: 'Content for this page may be inherited from another locale. If you wish you make an independent copy of this page, please use one of the "Copy" actions provided.'
-    LOCALESTATUSFLUENTINVISIBLE: 'This page will not be visible in this locale until it has been published.'
+    LOCALESTATUSFLUENTINVISIBLE: 'This page is not visible in this locale until it is added and published.'
   TractorCow\Fluent\Model\Domain:
     DEFAULT: 'Default locale'
     DEFAULT_NONE: (none)

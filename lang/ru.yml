@@ -8,7 +8,7 @@ ru:
     DOMAIN_LOCALES: Языки
     PLURALNAME: Домены
     PLURALS:
-      one: 'Домен'
+      one: Домен
       other: '{count} Доменов'
     SINGULARNAME: Домен
     UnsavedNotice: 'Вы можете добавить языки для домена как только его сохраните.'
@@ -27,10 +27,10 @@ ru:
     IS_DEFAULT_DESCRIPTION: 'Внимание: Язык назначаемый для домена может быть определен в разделе "Языки" и перепишет это значение для конкретного домена.'
     LOCALE: Язык
     LOCALE_TITLE: Название
-    LOCALE_URL: 'URL-адрес'
+    LOCALE_URL: URL-адрес
     PLURALNAME: Языки
     PLURALS:
-      one: 'Язык'
+      one: Язык
       other: '{count} Языков'
     SINGULARNAME: Язык
   TractorCow\Fluent\Extension\FluentSiteTreeExtension:
@@ -38,7 +38,7 @@ ru:
     LOCALECOPYANDPUBLISH: 'Скопировать и опубликовать'
     LOCALEDRAFTEDSHORT: 'Язык в черновиках'
     LOCALEDRAFTEDHELP: 'Черновая редакция перевода не опубликована'
-    LOCALEINHERITEDSHORT: 'Унаследовано'
+    LOCALEINHERITEDSHORT: Унаследовано
     LOCALEINHERITEDHELP: 'Данные страницы унаследованы от резевного языка'
     LOCALESTATUSINHERITED: 'Данные страницы унаследованы от резевного языка. Если вы хотите сделать независимую копию страницы. Пожалуйста воскользуйтесь одной из кнопок "Скопировать".'
     LOCALESTATUSDRAFT: 'Черновая версия перевода была создана для этого языка, однако, опубликованное содержимое всё ещё на другом языке. Для публикации этого языка воспользуйтесь кнопкой "Сохранить и Опубликовать".'
