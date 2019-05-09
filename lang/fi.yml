@@ -3,7 +3,7 @@ fi:
     BadgeHiddenHelp: 'Sivu on piilotettu tämän kielen osalta'
     BadgeHiddenShort: Piilotettu
     ChangeLocale: 'Vaihda kieltä'
-    LocaleFilter: 'Kielisuodatin'
+    LocaleFilter: Kielisuodatin
     LocaleFilterDescription: 'Valitse kieli näyttääksesi tämän sivun/tietueen kyseisellä kielellä'
     LocaleMenuFilterDescription: 'Valitse kielet joilla tämä sivu/tietue näytetään valikoissa'
     TABLOCALES: Kielet
