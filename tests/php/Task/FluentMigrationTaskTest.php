@@ -9,9 +9,9 @@ use SilverStripe\Dev\SapphireTest;
 use SilverStripe\ORM\Queries\SQLSelect;
 use TractorCow\Fluent\Dev\TranslatedDataObject;
 
-class MigrateFluentTaskTest extends SapphireTest
+class FluentMigrationTaskTest extends SapphireTest
 {
-    protected static $fixture_file = 'MigrateFluentTaskTest.yml';
+    protected static $fixture_file = 'FluentMigrationTaskTest.yml';
 
     protected static $extra_dataobjects = [
         TranslatedDataObject::class
