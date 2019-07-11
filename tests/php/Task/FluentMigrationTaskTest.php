@@ -7,11 +7,11 @@ namespace TractorCow\Fluent\Tests\Task;
 use Exception;
 use SilverStripe\Core\Config\Config;
 use SilverStripe\Dev\SapphireTest;
+use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\Queries\SQLSelect;
-use TractorCow\Fluent\Dev\TranslatedDataObject;
 use TractorCow\Fluent\Extension\FluentExtension;
 use TractorCow\Fluent\Task\FluentMigrationTask;
-use TractorCow\Fluent\Tests\Extension\FluentExtensionTest;
+use TractorCow\Fluent\Tests\Task\FluentMigrationTaskTest\TranslatedDataObject;
 
 class FluentMigrationTaskTest extends SapphireTest
 {
@@ -55,10 +55,17 @@ class FluentMigrationTaskTest extends SapphireTest
 
     public function testMigrationTaskMigratesDataObjectsWithoutVersioning()
     {
-        $task = FluentMigrationTask::create();
-        $task->run();
-
         $house = $this->objFromFixture(TranslatedDataObject::class, 'house');
+
+        $this->assertFalse($this->hasLocalisedRecord($house, 'de_AT'), 'house should not exist in locale de_AT before migration');
+        $this->assertFalse($this->hasLocalisedRecord($house, 'en_US'), 'house should not exist in locale de_AT before migration');
+
+        $task = FluentMigrationTask::create();
+        $task->run(null);
+
+        $this->assertTrue($this->hasLocalisedRecord($house, 'de_AT'), 'house should exist in locale de_AT after migration');
+        $this->assertTrue($this->hasLocalisedRecord($house, 'en_US'), 'house should exist in locale de_AT after migration');
+
     }
 
     /**
@@ -87,5 +94,28 @@ class FluentMigrationTaskTest extends SapphireTest
         Config::modify()->set('Fluent', 'locales', []);
         $task = FluentMigrationTask::create();
         $task->getLocales();
+    }
+
+    /**
+     * Get a Locale field value directly from a record's localised database table, skipping the ORM
+     *
+     * taken from FluentExtensionTest
+     *
+     * @param DataObject $record
+     * @param string $locale
+     * @return boolean
+     */
+    protected function hasLocalisedRecord(DataObject $record, $locale)
+    {
+        $result = SQLSelect::create()
+            ->setFrom($record->config()->get('table_name') . '_Localised')
+            ->setWhere([
+                'RecordID' => $record->ID,
+                'Locale' => $locale,
+            ])
+            ->execute()
+            ->first();
+
+        return !empty($result);
     }
 }

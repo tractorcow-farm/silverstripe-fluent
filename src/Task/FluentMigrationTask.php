@@ -7,6 +7,7 @@ namespace TractorCow\Fluent\Task;
 use SilverStripe\Core\ClassInfo;
 use SilverStripe\Core\Config\Config;
 use SilverStripe\Dev\BuildTask;
+use SilverStripe\ORM\Connect\DatabaseException;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\DB;
 use TractorCow\Fluent\Extension\FluentExtension;
@@ -20,11 +21,14 @@ use TractorCow\Fluent\Extension\FluentExtension;
  *
  * Assumptions:
  * - we still have the locales defined in Fluent.locales yml config, but we also have the locales defined in the db
+ *
+ * TODO:
+ * - parameter for d
  */
 class FluentMigrationTask extends BuildTask
 {
 
-    protected $dryRun = true;
+    protected $dryRun = false;
 
     /**
      * Parameters in order:
@@ -100,7 +104,7 @@ class FluentMigrationTask extends BuildTask
     protected function buildQueries($tableFields)
     {
         $queries = [];
-        foreach ($this->getLocales as $locale) {
+        foreach ($this->getLocales() as $locale) {
             $queries[$locale] = $this->buildQueriesForLocale($tableFields, $locale);
         }
         return $queries;
@@ -173,7 +177,11 @@ class FluentMigrationTask extends BuildTask
             foreach ($localeQueries as $table => $query) {
                 echo "Updating table '{$table}'\n";
                 if ($this->dryRun === false) {
-                    DB::query($query);
+                    try{
+                        DB::query($query);
+                    }catch (DatabaseException $e) {
+                        echo $e->getMessage();
+                    }
                 } else {
                     echo $query;
                 }

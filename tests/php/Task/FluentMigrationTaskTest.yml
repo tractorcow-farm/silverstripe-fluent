@@ -9,7 +9,7 @@ TractorCow\Fluent\Model\Locale:
     URLSegment: at
 
 
-TractorCow\Fluent\Dev\TranslatedDataObject:
+TractorCow\Fluent\Tests\Task\FluentMigrationTaskTest\TranslatedDataObject:
   house:
     Title: 'A House'
     Title_en_US: 'A House'

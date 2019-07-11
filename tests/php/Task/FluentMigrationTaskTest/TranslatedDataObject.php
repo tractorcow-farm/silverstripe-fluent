@@ -1,7 +1,7 @@
 <?php
 
 
-namespace TractorCow\Fluent\Dev;
+namespace TractorCow\Fluent\Tests\Task\FluentMigrationTaskTest;
 
 
 use SilverStripe\Dev\TestOnly;
