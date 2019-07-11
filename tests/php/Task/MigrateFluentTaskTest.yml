@@ -1,0 +1,8 @@
+TractorCow\Fluent\Dev\TranslatedDataObject:
+  house:
+    Title: 'A House'
+    Title_en_US: 'A House'
+    Title_de_AT: 'Ein Haus'
+    Name: 'Something'
+    Name_en_US: 'Something'
+    Name_de_AT: 'Irgendwas'
