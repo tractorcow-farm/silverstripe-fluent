@@ -5,6 +5,7 @@ namespace TractorCow\Fluent\Task;
 
 
 use SilverStripe\Core\ClassInfo;
+use SilverStripe\Core\Config\Config;
 use SilverStripe\Dev\BuildTask;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\DB;
@@ -100,7 +101,7 @@ class FluentMigrationTask extends BuildTask
     protected function buildQueries($tableFields)
     {
         $queries = [];
-        foreach ($this->locales as $locale) {
+        foreach ($this->getLocales as $locale) {
             $queries[$locale] = $this->buildQueriesForLocale($tableFields, $locale);
         }
         return $queries;
@@ -179,5 +180,16 @@ class FluentMigrationTask extends BuildTask
                 }
             }
         }
+    }
+
+
+    /**
+     * We assume that the old config is still available to get the configured locales
+     *
+     * @return array
+     */
+    public function getLocales()
+    {
+        return Config::inst()->get('Fluent', 'locales');
     }
 }
