@@ -1,3 +1,14 @@
+TractorCow\Fluent\Model\Locale:
+  en:
+    Title: EN
+    Locale: en_US
+    URLSegment: en
+  at:
+    Title: AT
+    Locale: de_AT
+    URLSegment: at
+
+
 TractorCow\Fluent\Dev\TranslatedDataObject:
   house:
     Title: 'A House'
