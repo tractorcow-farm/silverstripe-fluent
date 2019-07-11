@@ -17,13 +17,12 @@ use TractorCow\Fluent\Extension\FluentExtension;
  * Migrate content from Fluent 3.x format to 4.x
  *
  * THIS IS A WORK IN PROGRESS. USE AT YOUR OWN RISK.
+ *
+ * Assumptions:
+ * - we still have the locales defined in Fluent.locales yml config, but we also have the locales defined in the db
  */
 class FluentMigrationTask extends BuildTask
 {
-    // TEMP
-    protected $locales = [
-        'vi_VN',
-    ];
 
     protected $dryRun = true;
 
@@ -186,10 +185,17 @@ class FluentMigrationTask extends BuildTask
     /**
      * We assume that the old config is still available to get the configured locales
      *
+     * @throws \Exception
      * @return array
      */
     public function getLocales()
     {
-        return Config::inst()->get('Fluent', 'locales');
+        $locales = Config::inst()->get('Fluent', 'locales');
+
+        if (empty($locales)) {
+            throw new \Exception('Fluent.locales is required');
+        }
+
+        return $locales;
     }
 }

@@ -4,6 +4,7 @@
 namespace TractorCow\Fluent\Tests\Task;
 
 
+use Exception;
 use SilverStripe\Core\Config\Config;
 use SilverStripe\Dev\SapphireTest;
 use SilverStripe\ORM\Queries\SQLSelect;
@@ -51,5 +52,17 @@ class FluentMigrationTaskTest extends SapphireTest
 
         $this->assertEquals($locales, $task->getLocales(), 'getLocales() should get locales from old fluent config');
 
+    }
+
+    /**
+     * @expectedException Exception
+     * @expectedExceptionMessage Fluent.locales is required
+     * @useDatabase false
+     */
+    public function testGetLocalesThrowsExceptionWhenNoConfigIsFound()
+    {
+        Config::modify()->set('Fluent', 'locales', []);
+        $task = FluentMigrationTask::create();
+        $task->getLocales();
     }
 }
