@@ -30,6 +30,8 @@ class FluentMigrationTask extends BuildTask
 
     protected $dryRun = false;
 
+    protected $migrate_sublcasses_of = DataObject::class;
+
     /**
      * Parameters in order:
      *    - Localised table name with suffix
@@ -81,7 +83,7 @@ class FluentMigrationTask extends BuildTask
      */
     protected function getFluentClasses()
     {
-        $dataObjects = ClassInfo::subclassesFor(DataObject::class);
+        $dataObjects = ClassInfo::subclassesFor($this->migrate_sublcasses_of);
         return array_filter(
             array_values($dataObjects),
             function($className) {
@@ -90,6 +92,10 @@ class FluentMigrationTask extends BuildTask
         );
     }
 
+    /**
+     * @param $classes
+     * @return array
+     */
     protected function getMigrationTables($classes)
     {
         $tables = [];
@@ -101,6 +107,11 @@ class FluentMigrationTask extends BuildTask
         return $tables;
     }
 
+    /**
+     * @param $tableFields
+     * @return array
+     * @throws \Exception
+     */
     protected function buildQueries($tableFields)
     {
         $queries = [];
@@ -110,6 +121,11 @@ class FluentMigrationTask extends BuildTask
         return $queries;
     }
 
+    /**
+     * @param $tableFields
+     * @param $locale
+     * @return array
+     */
     protected function buildQueriesForLocale($tableFields, $locale)
     {
         $localeQueries = [];
@@ -143,6 +159,11 @@ class FluentMigrationTask extends BuildTask
         return $localeQueries;
     }
 
+    /**
+     * @param $fields
+     * @param $locale
+     * @return string
+     */
     protected function buildSelectFieldList($fields, $locale)
     {
         return implode(
@@ -156,6 +177,11 @@ class FluentMigrationTask extends BuildTask
         );
     }
 
+    /**
+     * @param $fields
+     * @param $locale
+     * @return string
+     */
     protected function buildUpdateFieldList($fields, $locale)
     {
         return implode(
@@ -169,6 +195,9 @@ class FluentMigrationTask extends BuildTask
         );
     }
 
+    /**
+     * @param $queries
+     */
     protected function runQueries($queries)
     {
         foreach ($queries as $locale => $localeQueries) {
@@ -205,5 +234,16 @@ class FluentMigrationTask extends BuildTask
         }
 
         return $locales;
+    }
+
+    /**
+     * Setter for testing... or if you want to migrate only a specific dataobject
+     *
+     * @param string $dataobject
+     */
+    public function setMigrateSubclassesOf($dataobject)
+    {
+        $this->migrate_sublcasses_of = $dataobject;
+        return $this;
     }
 }

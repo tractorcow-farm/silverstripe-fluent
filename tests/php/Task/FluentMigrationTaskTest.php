@@ -73,6 +73,7 @@ class FluentMigrationTaskTest extends SapphireTest
         $this->assertFalse($this->hasLocalisedRecord($house, 'en_US'), 'house should not exist in locale de_AT before migration');
 
         $task = FluentMigrationTask::create();
+        $task->setMigrateSubclassesOf(TranslatedDataObject::class);
         $task->run(null);
 
         $this->assertTrue($this->hasLocalisedRecord($house, 'de_AT'), 'house should exist in locale de_AT after migration');
@@ -110,6 +111,7 @@ class FluentMigrationTaskTest extends SapphireTest
         $this->assertEquals(0, $localisedSelect->count(), 'there should be no localised rows when the test starts');
 
         $task = FluentMigrationTask::create();
+        $task->setMigrateSubclassesOf(TranslatedDataObject::class);
         $task->run(null);
 
         $countAfterMigration = $localisedSelect->count();
@@ -128,8 +130,9 @@ class FluentMigrationTaskTest extends SapphireTest
         Config::modify()->set('Fluent', 'locales', ['en_US', 'de_AT']);
         $tables = TranslatedDataObject::create()->getLocalisedTables();
 
+        $task = FluentMigrationTask::create()->setMigrateSubclassesOf(TranslatedDataObject::class);
 
-        $queries = self::callMethod(FluentMigrationTask::create(), 'buildQueries', [$tables]);
+        $queries = self::callMethod($task, 'buildQueries', [$tables]);
         $this->assertArrayHasKey('de_AT', $queries, 'buildQueries should build queries for de_AT');
 
         $this->assertArrayHasKey('FluentTestDataObject_Localised', $queries['de_AT'], 'buildQueries should have key for base table');
