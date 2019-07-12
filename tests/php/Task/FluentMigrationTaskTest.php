@@ -130,7 +130,8 @@ class FluentMigrationTaskTest extends SapphireTest
         Config::modify()->set('Fluent', 'locales', ['en_US', 'de_AT']);
         $tables = TranslatedDataObject::create()->getLocalisedTables();
 
-        $task = FluentMigrationTask::create()->setMigrateSubclassesOf(TranslatedDataObject::class);
+        $task = FluentMigrationTask::create()
+            ->setMigrateSubclassesOf(TranslatedDataObject::class);
 
         $queries = self::callMethod($task, 'buildQueries', [$tables]);
         $this->assertArrayHasKey('de_AT', $queries, 'buildQueries should build queries for de_AT');
