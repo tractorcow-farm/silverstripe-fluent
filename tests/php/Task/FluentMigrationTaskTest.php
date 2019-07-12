@@ -71,6 +71,24 @@ class FluentMigrationTaskTest extends SapphireTest
     /**
      * @useDatabase false
      */
+    public function testMigrationTaskBuildsOnlyQueryForBaseTableForUnverionedObjects()
+    {
+        Config::modify()->set('Fluent', 'locales', ['en_US', 'de_AT']);
+        $tables = TranslatedDataObject::create()->getLocalisedTables();
+
+
+        $queries = self::callMethod(FluentMigrationTask::create(), 'buildQueries', [$tables]);
+        $this->assertArrayHasKey('de_AT', $queries, 'buildQueries should build queries for de_AT');
+
+        $this->assertArrayHasKey('FluentTestDataObject_Localised', $queries['de_AT'], 'buildQueries should have key for base table');
+        $this->assertArrayNotHasKey('FluentTestDataObject_Localised_Live', $queries['de_AT'], 'buildQueries should not have key for live table');
+        $this->assertArrayNotHasKey('FluentTestDataObject_Localised_Versions', $queries['de_AT'], 'buildQueries should not have key for versions table');
+
+    }
+
+    /**
+     * @useDatabase false
+     */
     public function testGetLocales()
     {
         $locales = [
@@ -117,5 +135,21 @@ class FluentMigrationTaskTest extends SapphireTest
             ->first();
 
         return !empty($result);
+    }
+
+    /**
+     * Helper to test private methods, see https://stackoverflow.com/a/8702347/4137738
+     *
+     * @param $obj
+     * @param $name
+     * @param array $args
+     * @return mixed
+     * @throws \ReflectionException
+     */
+    public static function callMethod($obj, $name, array $args = []) {
+        $class = new \ReflectionClass($obj);
+        $method = $class->getMethod($name);
+        $method->setAccessible(true);
+        return $method->invokeArgs($obj, $args);
     }
 }
