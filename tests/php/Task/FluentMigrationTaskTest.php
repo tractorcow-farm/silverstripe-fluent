@@ -13,10 +13,10 @@ use TractorCow\Fluent\Extension\FluentExtension;
 use TractorCow\Fluent\State\FluentState;
 use TractorCow\Fluent\Task\FluentMigrationTask;
 use TractorCow\Fluent\Tests\Task\FluentMigrationTaskTest\TranslatedDataObject;
+use TractorCow\Fluent\Tests\Task\FluentMigrationTaskTest\TranslatedDataObjectSubclass;
 
 /**
  * @TODO:
- * - test dataobject subclass
  * - test page
  * - test page subclass
  * - test generated queries for versioned dataobjects
@@ -30,7 +30,8 @@ class FluentMigrationTaskTest extends SapphireTest
     protected static $fixture_file = 'FluentMigrationTaskTest.yml';
 
     protected static $extra_dataobjects = [
-        TranslatedDataObject::class
+        TranslatedDataObject::class,
+        TranslatedDataObjectSubclass::class
     ];
 
     /**
@@ -50,11 +51,9 @@ class FluentMigrationTaskTest extends SapphireTest
     {
         $house = $this->objFromFixture(TranslatedDataObject::class, 'house');
 
-        $id = $house->ID;
-
         $allFields = SQLSelect::create()
             ->setFrom(Config::inst()->get(TranslatedDataObject::class, 'table_name'))
-            ->addWhere('ID = ' . $id)
+            ->addWhere('ID = ' . $house->ID)
             ->firstRow()
             ->execute();
         $record = $allFields->record();
@@ -63,14 +62,31 @@ class FluentMigrationTaskTest extends SapphireTest
         $this->assertEquals('Something', $record['Name_en_US']);
         $this->assertEquals('Ein Haus', $record['Title_de_AT']);
         $this->assertEquals('Irgendwas', $record['Name_de_AT']);
+
+        $tree = $this->objFromFixture(TranslatedDataObjectSubclass::class, 'tree');
+        $subclassFields = SQLSelect::create()
+            ->setFrom(Config::inst()->get(TranslatedDataObjectSubclass::class, 'table_name'))
+            ->addWhere('ID = ' . $tree->ID)
+            ->firstRow()
+            ->execute();
+        $record = $subclassFields->record();
+        $this->assertEquals('deciduous trees', $record['Category_en_US']);
+        $this->assertEquals('Laubbäume', $record['Category_de_AT']);
+
     }
 
     public function testMigrationTaskMigratesDataObjectsWithoutVersioning()
     {
         $house = $this->objFromFixture(TranslatedDataObject::class, 'house');
+        $tree = $this->objFromFixture(TranslatedDataObjectSubclass::class, 'tree');
 
         $this->assertFalse($this->hasLocalisedRecord($house, 'de_AT'), 'house should not exist in locale de_AT before migration');
-        $this->assertFalse($this->hasLocalisedRecord($house, 'en_US'), 'house should not exist in locale de_AT before migration');
+        $this->assertFalse($this->hasLocalisedRecord($house, 'en_US'), 'house should not exist in locale en_US before migration');
+
+        $this->assertFalse($this->hasLocalisedRecord($tree, 'de_AT'), 'tree should not exist in locale de_AT before migration');
+        $this->assertFalse($this->hasLocalisedRecord($tree, 'en_US'), 'tree should not exist in locale en_US before migration');
+
+
 
         $task = FluentMigrationTask::create();
         $task->setMigrateSubclassesOf(TranslatedDataObject::class);
@@ -93,10 +109,32 @@ class FluentMigrationTaskTest extends SapphireTest
 
             return TranslatedDataObject::get()->byID($id);
         });
+
+        $id = $tree->ID;
+
+        $treeEN = FluentState::singleton()->withState(function ($newState) use ($id) {
+
+            $newState->setLocale('en_US');
+
+            return TranslatedDataObject::get()->byID($id);
+        });
+        $treeDE = FluentState::singleton()->withState(function ($newState) use ($id) {
+
+            $newState->setLocale('de_AT');
+
+            return TranslatedDataObject::get()->byID($id);
+        });
         $this->assertEquals('Ein Haus', $houseDE->Title, 'German home should have translated Title');
         $this->assertEquals('Irgendwas', $houseDE->Name, 'German home should have translated Name');
         $this->assertEquals('A House', $houseEN->Title, 'English home should have translated Title');
         $this->assertEquals('Something', $houseEN->Name, 'English home should have translated Name');
+
+        $this->assertEquals('Ein Baum', $treeDE->Title, 'German tree should have translated Title');
+        $this->assertEquals('Ahorn', $treeDE->Name, 'German tree should have translated Name');
+        $this->assertEquals('Laubbäume', $treeDE->Category, 'German tree should have translated Category');
+        $this->assertEquals('A Tree', $treeEN->Title, 'English tree should have translated Title');
+        $this->assertEquals('Marple', $treeEN->Name, 'English tree should have translated Name');
+        $this->assertEquals('deciduous trees', $treeEN->Category, 'English tree should have translated Category');
     }
 
     public function testMigrationTaskCanRunSafelyASecondTime()
@@ -139,6 +177,10 @@ class FluentMigrationTaskTest extends SapphireTest
         $this->assertArrayHasKey('FluentTestDataObject_Localised', $queries['de_AT'], 'buildQueries should have key for base table');
         $this->assertArrayNotHasKey('FluentTestDataObject_Localised_Live', $queries['de_AT'], 'buildQueries should not have key for live table');
         $this->assertArrayNotHasKey('FluentTestDataObject_Localised_Versions', $queries['de_AT'], 'buildQueries should not have key for versions table');
+
+        $this->assertArrayHasKey('FluentTestDataObjectSubclass_Localised', $queries['de_AT'], 'buildQueries should have key for subclass table');
+        $this->assertArrayNotHasKey('FluentTestDataObjectSubclass_Localised_Live', $queries['de_AT'], 'buildQueries should not have key for subclass live table');
+        $this->assertArrayNotHasKey('FluentTestDataObjectSubclass_Localised_Versions', $queries['de_AT'], 'buildQueries should not have key for subclass versions table');
 
     }
 

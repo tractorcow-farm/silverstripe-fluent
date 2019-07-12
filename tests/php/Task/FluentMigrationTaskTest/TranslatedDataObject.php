@@ -4,6 +4,8 @@
 namespace TractorCow\Fluent\Tests\Task\FluentMigrationTaskTest;
 
 
+use SilverStripe\Core\ClassInfo;
+use SilverStripe\Core\Config\Config;
 use SilverStripe\Dev\TestOnly;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\DB;
@@ -49,13 +51,25 @@ class TranslatedDataObject extends DataObject implements TestOnly
 
     public function onAfterWrite()
     {
-        $update = SQLUpdate::create()
-            ->setTable($this->baseTable());
+        $ancestry = array_reverse(ClassInfo::ancestry(static::class));
+        $schema = static::getSchema();
 
-        foreach (self::config()->get('old_fluent_fields') as $field) {
-            $update->assign($field, $this->getField($field)); //value is set from fixtures in $this->record
-            $update->execute();
+        foreach ($ancestry as $class) {
+            if (!$schema->classHasTable($class)) {
+                continue;
+            }
+            $table = $schema->tableName($class);
+            $update = SQLUpdate::create()
+                ->setTable($table)
+                ->setWhere('ID = ' . $this->ID);
+
+            foreach ($class::config()->get('old_fluent_fields', Config::UNINHERITED) as $field) {
+                $update->assign($field, $this->getField($field)); //value is set from fixtures in $this->record
+                $update->execute();
+            }
+
         }
+        parent::onAfterWrite();
     }
 
 
@@ -66,15 +80,15 @@ class TranslatedDataObject extends DataObject implements TestOnly
     {
         parent::requireTable();
 
-        $baseDataClass = DataObject::getSchema()->baseDataClass($this->ClassName);
-        if ($this->ClassName != $baseDataClass) {
-            return;
-        }
+//        $baseDataClass = DataObject::getSchema()->baseDataClass($this->ClassName);
+//        if ($this->ClassName != $baseDataClass) {
+//            return;
+//        }
 
         $schemaManager = DB::get_schema();
 
-        foreach (self::config()->get('old_fluent_fields') as $field) {
-            $schemaManager->requireField($this->baseTable(), $field, 'VARCHAR(255) NULL DEFAULT NULL ');
+        foreach (static::config()->get('old_fluent_fields') as $field) {
+            $schemaManager->requireField(self::getSchema()->tableName(static::class), $field, 'VARCHAR(255) NULL DEFAULT NULL ');
         }
     }
 }

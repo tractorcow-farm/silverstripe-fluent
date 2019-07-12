@@ -17,3 +17,15 @@ TractorCow\Fluent\Tests\Task\FluentMigrationTaskTest\TranslatedDataObject:
     Name: 'Something'
     Name_en_US: 'Something'
     Name_de_AT: 'Irgendwas'
+
+TractorCow\Fluent\Tests\Task\FluentMigrationTaskTest\TranslatedDataObjectSubclass:
+  tree:
+    Title: 'A Tree'
+    Title_en_US: 'A Tree'
+    Title_de_AT: 'Ein Baum'
+    Name: 'Marple'
+    Name_en_US: 'Marple'
+    Name_de_AT: 'Ahorn'
+    Category: 'deciduous trees'
+    Category_en_US: 'deciduous trees'
+    Category_de_AT: 'Laubbäume'
