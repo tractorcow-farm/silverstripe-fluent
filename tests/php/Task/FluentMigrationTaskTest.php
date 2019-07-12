@@ -5,7 +5,6 @@ namespace TractorCow\Fluent\Tests\Task;
 
 
 use Exception;
-use Page;
 use SilverStripe\Core\Config\Config;
 use SilverStripe\Dev\SapphireTest;
 use SilverStripe\ORM\DataObject;
@@ -15,6 +14,18 @@ use TractorCow\Fluent\State\FluentState;
 use TractorCow\Fluent\Task\FluentMigrationTask;
 use TractorCow\Fluent\Tests\Task\FluentMigrationTaskTest\TranslatedDataObject;
 
+/**
+ * @TODO:
+ * - test dataobject subclass
+ * - test page
+ * - test page subclass
+ * - test generated queries for versioned dataobjects
+ * - test what happens when task runs again
+ *
+ *
+ * Class FluentMigrationTaskTest
+ * @package TractorCow\Fluent\Tests\Task
+ */
 class FluentMigrationTaskTest extends SapphireTest
 {
     protected static $fixture_file = 'FluentMigrationTaskTest.yml';
