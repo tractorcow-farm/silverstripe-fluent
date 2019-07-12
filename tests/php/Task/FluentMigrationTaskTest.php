@@ -20,7 +20,6 @@ use TractorCow\Fluent\Tests\Task\FluentMigrationTaskTest\TranslatedDataObject;
  * - test page
  * - test page subclass
  * - test generated queries for versioned dataobjects
- * - test what happens when task runs again
  *
  *
  * Class FluentMigrationTaskTest
@@ -97,6 +96,28 @@ class FluentMigrationTaskTest extends SapphireTest
         $this->assertEquals('Irgendwas', $houseDE->Name, 'German home should have translated Name');
         $this->assertEquals('A House', $houseEN->Title, 'English home should have translated Title');
         $this->assertEquals('Something', $houseEN->Name, 'English home should have translated Name');
+    }
+
+    public function testMigrationTaskCanRunSafelyASecondTime()
+    {
+        $baseTable = Config::inst()->get(TranslatedDataObject::class, 'table_name');
+        $localisedTable = $baseTable . '_Localised';
+
+        //there should be no localised fields when the test starts
+        $localisedSelect = SQLSelect::create()
+            ->setFrom($localisedTable);
+
+        $this->assertEquals(0, $localisedSelect->count(), 'there should be no localised rows when the test starts');
+
+        $task = FluentMigrationTask::create();
+        $task->run(null);
+
+        $countAfterMigration = $localisedSelect->count();
+        $this->assertGreaterThan(0, $countAfterMigration, 'after task has run there should be localised rows');
+
+        $task->run(null);
+
+        $this->assertEquals($countAfterMigration, $localisedSelect->count(), 'after a second run there should be no new localised rows');
     }
 
     /**
