@@ -5,11 +5,13 @@ namespace TractorCow\Fluent\Tests\Task;
 
 
 use Exception;
+use Page;
 use SilverStripe\Core\Config\Config;
 use SilverStripe\Dev\SapphireTest;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\Queries\SQLSelect;
 use TractorCow\Fluent\Extension\FluentExtension;
+use TractorCow\Fluent\State\FluentState;
 use TractorCow\Fluent\Task\FluentMigrationTask;
 use TractorCow\Fluent\Tests\Task\FluentMigrationTaskTest\TranslatedDataObject;
 
@@ -66,6 +68,24 @@ class FluentMigrationTaskTest extends SapphireTest
         $this->assertTrue($this->hasLocalisedRecord($house, 'de_AT'), 'house should exist in locale de_AT after migration');
         $this->assertTrue($this->hasLocalisedRecord($house, 'en_US'), 'house should exist in locale de_AT after migration');
 
+        //check if all fields have been translated
+        $id = $house->ID;
+        $houseEN = FluentState::singleton()->withState(function ($newState) use ($id) {
+
+            $newState->setLocale('en_US');
+
+            return TranslatedDataObject::get()->byID($id);
+        });
+        $houseDE = FluentState::singleton()->withState(function ($newState) use ($id) {
+
+            $newState->setLocale('de_AT');
+
+            return TranslatedDataObject::get()->byID($id);
+        });
+        $this->assertEquals('Ein Haus', $houseDE->Title, 'German home should have translated Title');
+        $this->assertEquals('Irgendwas', $houseDE->Name, 'German home should have translated Name');
+        $this->assertEquals('A House', $houseEN->Title, 'English home should have translated Title');
+        $this->assertEquals('Something', $houseEN->Name, 'English home should have translated Name');
     }
 
     /**
