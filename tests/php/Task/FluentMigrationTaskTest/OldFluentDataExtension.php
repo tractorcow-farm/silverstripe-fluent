@@ -9,6 +9,7 @@ use SilverStripe\Core\Config\Config;
 use SilverStripe\Core\Extension;
 use SilverStripe\ORM\DB;
 use SilverStripe\ORM\Queries\SQLUpdate;
+use SilverStripe\Versioned\Versioned;
 
 class OldFluentDataExtension extends Extension
 {
@@ -42,8 +43,16 @@ class OldFluentDataExtension extends Extension
         $schemaManager = DB::get_schema();
         $table_name = $this->owner->getSchema()->tableName($this->owner->ClassName);
 
-        foreach ($this->owner->config()->get('old_fluent_fields') as $field) {
+        $oldFields = (array)$this->owner->config()->get('old_fluent_fields', Config::UNINHERITED);
+
+        foreach ($oldFields as $field) {
             $schemaManager->requireField($table_name, $field, 'VARCHAR(255) NULL DEFAULT NULL ');
+
+            if ($this->owner->hasExtension(Versioned::class) &&$this->owner->hasStages()) {
+                $schemaManager->requireField($table_name . '_Live', $field, 'VARCHAR(255) NULL DEFAULT NULL ');
+                $schemaManager->requireField($table_name. '_Versions', $field , 'VARCHAR(255) NULL DEFAULT NULL ');
+            }
+
         }
     }
 }

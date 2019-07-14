@@ -6,3 +6,4 @@ SilverStripe\Core\Injector\Injector:
     properties:
       States:
         fluent: '%$TractorCow\Fluent\Dev\FluentTestState'
+        oldFluentData: '%$TractorCow\Fluent\Dev\OldFluentDataTestState'
