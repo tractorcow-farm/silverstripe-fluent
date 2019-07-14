@@ -5,6 +5,7 @@ namespace TractorCow\Fluent\Tests\Task;
 
 
 use Exception;
+use SilverStripe\CMS\Model\SiteTree;
 use SilverStripe\Core\Config\Config;
 use SilverStripe\Dev\SapphireTest;
 use SilverStripe\ORM\DataObject;
@@ -14,13 +15,14 @@ use TractorCow\Fluent\State\FluentState;
 use TractorCow\Fluent\Task\FluentMigrationTask;
 use TractorCow\Fluent\Tests\Task\FluentMigrationTaskTest\TranslatedDataObject;
 use TractorCow\Fluent\Tests\Task\FluentMigrationTaskTest\TranslatedDataObjectSubclass;
+use TractorCow\Fluent\Tests\Task\FluentMigrationTaskTest\TranslatedPage;
 
 /**
  * @TODO:
  * - test page
  * - test page subclass
  * - test generated queries for versioned dataobjects
- *
+ * - test partly translated dataobjects (e.g. only en_US is translated, but not de_AT)
  *
  * Class FluentMigrationTaskTest
  * @package TractorCow\Fluent\Tests\Task
@@ -31,7 +33,8 @@ class FluentMigrationTaskTest extends SapphireTest
 
     protected static $extra_dataobjects = [
         TranslatedDataObject::class,
-        TranslatedDataObjectSubclass::class
+        TranslatedDataObjectSubclass::class,
+        TranslatedPage::class
     ];
 
     /**
@@ -73,6 +76,46 @@ class FluentMigrationTaskTest extends SapphireTest
         $this->assertEquals('deciduous trees', $record['Category_en_US']);
         $this->assertEquals('Laubbäume', $record['Category_de_AT']);
 
+        //site tree / versioned objects
+        $table = $this->objFromFixture(TranslatedPage::class, 'table');
+        $siteTree = SQLSelect::create()
+            ->setFrom(Config::inst()->get(SiteTree::class, 'table_name'))
+            ->addWhere('ID = ' . $table->ID)
+            ->firstRow()
+            ->execute();
+        $page = SQLSelect::create()
+            ->setFrom(Config::inst()->get(TranslatedPage::class, 'table_name'))
+            ->addWhere('ID = ' . $table->ID)
+            ->firstRow()
+            ->execute();
+
+        $siteTreeFields = $siteTree->record();
+        $pageFields = $page->record();
+
+        $this->assertEquals('A Table', $siteTreeFields['Title_en_US']);
+        $this->assertEquals('Ein Tisch', $siteTreeFields['Title_de_AT']);
+        $this->assertEquals('made from wood', $pageFields['TranslatedValue_en_US']);
+        $this->assertEquals('aus Holz', $pageFields['TranslatedValue_de_AT']);
+
+        $siteTreeVersion = SQLSelect::create()
+            ->setFrom(Config::inst()->get(SiteTree::class, 'table_name') . '_Versions')
+            ->addWhere('RecordID = ' . $table->ID . ' AND Version = ' . $table->Version)
+            ->firstRow()
+            ->execute();
+
+        $pageVersion = SQLSelect::create()
+            ->setFrom(Config::inst()->get(TranslatedPage::class, 'table_name') . '_Versions')
+            ->addWhere('RecordID = ' . $table->ID . ' AND Version = ' . $table->Version)
+            ->firstRow()
+            ->execute();
+
+        $siteTreeVersionFields = $siteTreeVersion->record();
+        $pageVersionFields = $pageVersion->record();
+
+        $this->assertEquals('A Table', $siteTreeVersionFields['Title_en_US']);
+        $this->assertEquals('Ein Tisch', $siteTreeVersionFields['Title_de_AT']);
+        $this->assertEquals('made from wood', $pageVersionFields['TranslatedValue_en_US']);
+        $this->assertEquals('aus Holz', $pageVersionFields['TranslatedValue_de_AT']);
     }
 
     public function testMigrationTaskMigratesDataObjectsWithoutVersioning()
@@ -80,20 +123,25 @@ class FluentMigrationTaskTest extends SapphireTest
         $house = $this->objFromFixture(TranslatedDataObject::class, 'house');
         $tree = $this->objFromFixture(TranslatedDataObjectSubclass::class, 'tree');
 
-        $this->assertFalse($this->hasLocalisedRecord($house, 'de_AT'), 'house should not exist in locale de_AT before migration');
-        $this->assertFalse($this->hasLocalisedRecord($house, 'en_US'), 'house should not exist in locale en_US before migration');
+        $this->assertFalse($this->hasLocalisedRecord($house, 'de_AT'),
+            'house should not exist in locale de_AT before migration');
+        $this->assertFalse($this->hasLocalisedRecord($house, 'en_US'),
+            'house should not exist in locale en_US before migration');
 
-        $this->assertFalse($this->hasLocalisedRecord($tree, 'de_AT'), 'tree should not exist in locale de_AT before migration');
-        $this->assertFalse($this->hasLocalisedRecord($tree, 'en_US'), 'tree should not exist in locale en_US before migration');
-
+        $this->assertFalse($this->hasLocalisedRecord($tree, 'de_AT'),
+            'tree should not exist in locale de_AT before migration');
+        $this->assertFalse($this->hasLocalisedRecord($tree, 'en_US'),
+            'tree should not exist in locale en_US before migration');
 
 
         $task = FluentMigrationTask::create();
         $task->setMigrateSubclassesOf(TranslatedDataObject::class);
         $task->run(null);
 
-        $this->assertTrue($this->hasLocalisedRecord($house, 'de_AT'), 'house should exist in locale de_AT after migration');
-        $this->assertTrue($this->hasLocalisedRecord($house, 'en_US'), 'house should exist in locale de_AT after migration');
+        $this->assertTrue($this->hasLocalisedRecord($house, 'de_AT'),
+            'house should exist in locale de_AT after migration');
+        $this->assertTrue($this->hasLocalisedRecord($house, 'en_US'),
+            'house should exist in locale de_AT after migration');
 
         //check if all fields have been translated
         $id = $house->ID;
@@ -137,81 +185,6 @@ class FluentMigrationTaskTest extends SapphireTest
         $this->assertEquals('deciduous trees', $treeEN->Category, 'English tree should have translated Category');
     }
 
-    public function testMigrationTaskCanRunSafelyASecondTime()
-    {
-        $baseTable = Config::inst()->get(TranslatedDataObject::class, 'table_name');
-        $localisedTable = $baseTable . '_Localised';
-
-        //there should be no localised fields when the test starts
-        $localisedSelect = SQLSelect::create()
-            ->setFrom($localisedTable);
-
-        $this->assertEquals(0, $localisedSelect->count(), 'there should be no localised rows when the test starts');
-
-        $task = FluentMigrationTask::create();
-        $task->setMigrateSubclassesOf(TranslatedDataObject::class);
-        $task->run(null);
-
-        $countAfterMigration = $localisedSelect->count();
-        $this->assertGreaterThan(0, $countAfterMigration, 'after task has run there should be localised rows');
-
-        $task->run(null);
-
-        $this->assertEquals($countAfterMigration, $localisedSelect->count(), 'after a second run there should be no new localised rows');
-    }
-
-    /**
-     * @useDatabase false
-     */
-    public function testMigrationTaskBuildsOnlyQueryForBaseTableForUnverionedObjects()
-    {
-        Config::modify()->set('Fluent', 'locales', ['en_US', 'de_AT']);
-        $tables = TranslatedDataObject::create()->getLocalisedTables();
-
-        $task = FluentMigrationTask::create()
-            ->setMigrateSubclassesOf(TranslatedDataObject::class);
-
-        $queries = self::callMethod($task, 'buildQueries', [$tables]);
-        $this->assertArrayHasKey('de_AT', $queries, 'buildQueries should build queries for de_AT');
-
-        $this->assertArrayHasKey('FluentTestDataObject_Localised', $queries['de_AT'], 'buildQueries should have key for base table');
-        $this->assertArrayNotHasKey('FluentTestDataObject_Localised_Live', $queries['de_AT'], 'buildQueries should not have key for live table');
-        $this->assertArrayNotHasKey('FluentTestDataObject_Localised_Versions', $queries['de_AT'], 'buildQueries should not have key for versions table');
-
-        $this->assertArrayHasKey('FluentTestDataObjectSubclass_Localised', $queries['de_AT'], 'buildQueries should have key for subclass table');
-        $this->assertArrayNotHasKey('FluentTestDataObjectSubclass_Localised_Live', $queries['de_AT'], 'buildQueries should not have key for subclass live table');
-        $this->assertArrayNotHasKey('FluentTestDataObjectSubclass_Localised_Versions', $queries['de_AT'], 'buildQueries should not have key for subclass versions table');
-
-    }
-
-    /**
-     * @useDatabase false
-     */
-    public function testGetLocales()
-    {
-        $locales = [
-            'de_ch', 'en_foo'
-        ];
-        Config::modify()->set('Fluent', 'locales', $locales);
-
-        $task = FluentMigrationTask::create();
-
-        $this->assertEquals($locales, $task->getLocales(), 'getLocales() should get locales from old fluent config');
-
-    }
-
-    /**
-     * @expectedException Exception
-     * @expectedExceptionMessage Fluent.locales is required
-     * @useDatabase false
-     */
-    public function testGetLocalesThrowsExceptionWhenNoConfigIsFound()
-    {
-        Config::modify()->set('Fluent', 'locales', []);
-        $task = FluentMigrationTask::create();
-        $task->getLocales();
-    }
-
     /**
      * Get a Locale field value directly from a record's localised database table, skipping the ORM
      *
@@ -235,6 +208,60 @@ class FluentMigrationTaskTest extends SapphireTest
         return !empty($result);
     }
 
+    public function testMigrationTaskCanRunSafelyASecondTime()
+    {
+        $baseTable = Config::inst()->get(TranslatedDataObject::class, 'table_name');
+        $localisedTable = $baseTable . '_Localised';
+
+        //there should be no localised fields when the test starts
+        $localisedSelect = SQLSelect::create()
+            ->setFrom($localisedTable);
+
+        $this->assertEquals(0, $localisedSelect->count(), 'there should be no localised rows when the test starts');
+
+        $task = FluentMigrationTask::create();
+        $task->setMigrateSubclassesOf(TranslatedDataObject::class);
+        $task->run(null);
+
+        $countAfterMigration = $localisedSelect->count();
+        $this->assertGreaterThan(0, $countAfterMigration, 'after task has run there should be localised rows');
+
+        $task->run(null);
+
+        $this->assertEquals($countAfterMigration, $localisedSelect->count(),
+            'after a second run there should be no new localised rows');
+    }
+
+    /**
+     * @useDatabase false
+     */
+    public function testMigrationTaskBuildsOnlyQueryForBaseTableForUnverionedObjects()
+    {
+        Config::modify()->set('Fluent', 'locales', ['en_US', 'de_AT']);
+        $tables = TranslatedDataObject::create()->getLocalisedTables();
+
+        $task = FluentMigrationTask::create()
+            ->setMigrateSubclassesOf(TranslatedDataObject::class);
+
+        $queries = self::callMethod($task, 'buildQueries', [$tables]);
+        $this->assertArrayHasKey('de_AT', $queries, 'buildQueries should build queries for de_AT');
+
+        $this->assertArrayHasKey('FluentTestDataObject_Localised', $queries['de_AT'],
+            'buildQueries should have key for base table');
+        $this->assertArrayNotHasKey('FluentTestDataObject_Localised_Live', $queries['de_AT'],
+            'buildQueries should not have key for live table');
+        $this->assertArrayNotHasKey('FluentTestDataObject_Localised_Versions', $queries['de_AT'],
+            'buildQueries should not have key for versions table');
+
+        $this->assertArrayHasKey('FluentTestDataObjectSubclass_Localised', $queries['de_AT'],
+            'buildQueries should have key for subclass table');
+        $this->assertArrayNotHasKey('FluentTestDataObjectSubclass_Localised_Live', $queries['de_AT'],
+            'buildQueries should not have key for subclass live table');
+        $this->assertArrayNotHasKey('FluentTestDataObjectSubclass_Localised_Versions', $queries['de_AT'],
+            'buildQueries should not have key for subclass versions table');
+
+    }
+
     /**
      * Helper to test private methods, see https://stackoverflow.com/a/8702347/4137738
      *
@@ -244,10 +271,40 @@ class FluentMigrationTaskTest extends SapphireTest
      * @return mixed
      * @throws \ReflectionException
      */
-    public static function callMethod($obj, $name, array $args = []) {
+    public static function callMethod($obj, $name, array $args = [])
+    {
         $class = new \ReflectionClass($obj);
         $method = $class->getMethod($name);
         $method->setAccessible(true);
         return $method->invokeArgs($obj, $args);
+    }
+
+    /**
+     * @useDatabase false
+     */
+    public function testGetLocales()
+    {
+        $locales = [
+            'de_ch',
+            'en_foo'
+        ];
+        Config::modify()->set('Fluent', 'locales', $locales);
+
+        $task = FluentMigrationTask::create();
+
+        $this->assertEquals($locales, $task->getLocales(), 'getLocales() should get locales from old fluent config');
+
+    }
+
+    /**
+     * @expectedException Exception
+     * @expectedExceptionMessage Fluent.locales is required
+     * @useDatabase false
+     */
+    public function testGetLocalesThrowsExceptionWhenNoConfigIsFound()
+    {
+        Config::modify()->set('Fluent', 'locales', []);
+        $task = FluentMigrationTask::create();
+        $task->getLocales();
     }
 }

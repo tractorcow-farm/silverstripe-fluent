@@ -17,6 +17,11 @@ TractorCow\Fluent\Tests\Task\FluentMigrationTaskTest\TranslatedDataObject:
     Name: 'Something'
     Name_en_US: 'Something'
     Name_de_AT: 'Irgendwas'
+  partiallyTranslated:
+    Title: 'TV'
+    Title_de_AT: 'Fernseher'
+    Name: 'big flatscreen'
+    Name_de_AT: 'Flachbild (groß)'
 
 TractorCow\Fluent\Tests\Task\FluentMigrationTaskTest\TranslatedDataObjectSubclass:
   tree:
@@ -29,3 +34,19 @@ TractorCow\Fluent\Tests\Task\FluentMigrationTaskTest\TranslatedDataObjectSubclas
     Category: 'deciduous trees'
     Category_en_US: 'deciduous trees'
     Category_de_AT: 'Laubbäume'
+
+TractorCow\Fluent\Tests\Task\FluentMigrationTaskTest\TranslatedPage:
+  table:
+    Title: 'A Table'
+    Title_en_US: 'A Table'
+    Title_de_AT: 'Ein Tisch'
+    TranslatedValue: 'made from wood'
+    TranslatedValue_en_US: 'made from wood'
+    TranslatedValue_de_AT: 'aus Holz'
+  chair:
+    Title: 'A Chair'
+    Title_en_US: 'A Chair'
+    Title_de_AT: 'Ein Stuhl'
+    TranslatedValue: 'plastic'
+    TranslatedValue_en_US: 'plastic'
+    TranslatedValue_de_AT: 'aus Kunststoff'

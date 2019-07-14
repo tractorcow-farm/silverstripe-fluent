@@ -13,10 +13,15 @@ use SilverStripe\Versioned\Versioned;
 
 class OldFluentDataExtension extends Extension
 {
+    /**
+     * Write old data to the base table
+     */
     public function onAfterWrite()
     {
         $ancestry = array_reverse(ClassInfo::ancestry($this->owner->ClassName));
         $schema = $this->owner->getSchema();
+
+        $isVersioned = $this->owner->hasExtension(Versioned::class) &&$this->owner->hasStages();
 
         foreach ($ancestry as $class) {
             if (!$schema->classHasTable($class)) {
@@ -27,9 +32,20 @@ class OldFluentDataExtension extends Extension
                 ->setTable($table)
                 ->setWhere('ID = ' . $this->owner->ID);
 
+            if($isVersioned) {
+                $versionUpdate = SQLUpdate::create()
+                    ->setTable($table . '_Versions')
+                    ->setWhere('RecordID = ' . $this->owner->ID . ' AND Version = ' . $this->owner->Version);
+            }
+
             foreach ($class::config()->get('old_fluent_fields', Config::UNINHERITED) as $field) {
                 $update->assign($field, $this->owner->getField($field)); //value is set from fixtures in $this->record
                 $update->execute();
+
+                if ($isVersioned) {
+                    $versionUpdate->assign($field, $this->owner->getField($field));
+                    $versionUpdate->execute();
+                }
             }
         }
     }
