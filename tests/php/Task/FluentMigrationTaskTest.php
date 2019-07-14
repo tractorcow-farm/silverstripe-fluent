@@ -21,7 +21,7 @@ use TractorCow\Fluent\Tests\Task\FluentMigrationTaskTest\TranslatedPage;
  * @TODO:
  * - test page
  * - test page subclass
- * - test generated queries for versioned dataobjects
+ * - published pages
  * - test partly translated dataobjects (e.g. only en_US is translated, but not de_AT)
  *
  * Class FluentMigrationTaskTest
@@ -238,12 +238,11 @@ class FluentMigrationTaskTest extends SapphireTest
     public function testMigrationTaskBuildsOnlyQueryForBaseTableForUnverionedObjects()
     {
         Config::modify()->set('Fluent', 'locales', ['en_US', 'de_AT']);
-        $tables = TranslatedDataObject::create()->getLocalisedTables();
 
         $task = FluentMigrationTask::create()
             ->setMigrateSubclassesOf(TranslatedDataObject::class);
 
-        $queries = self::callMethod($task, 'buildQueries', [$tables]);
+        $queries = self::callMethod($task, 'buildQueries', []);
         $this->assertArrayHasKey('de_AT', $queries, 'buildQueries should build queries for de_AT');
 
         $this->assertArrayHasKey('FluentTestDataObject_Localised', $queries['de_AT'],
@@ -279,6 +278,58 @@ class FluentMigrationTaskTest extends SapphireTest
         return $method->invokeArgs($obj, $args);
     }
 
+    /**
+     * @useDatabase false
+     */
+    public function testMigrationTaskBuildsAllQueriesForVersionedDataObjects()
+    {
+        Config::modify()->set('Fluent', 'locales', ['en_US', 'de_AT']);
+
+        $task = FluentMigrationTask::create()
+            ->setMigrateSubclassesOf(SiteTree::class);
+
+        $queries = self::callMethod($task, 'buildQueries', []);
+
+        $this->assertArrayHasKey('de_AT', $queries, 'buildQueries should build queries for de_AT');
+
+        $this->assertArrayHasKey('SiteTree_Localised', $queries['de_AT'],
+            'buildQueries should have key for base table');
+        $this->assertArrayHasKey('SiteTree_Localised_Live', $queries['de_AT'],
+            'buildQueries should not have key for live table');
+        $this->assertArrayHasKey('SiteTree_Localised_Versions', $queries['de_AT'],
+            'buildQueries should not have key for versions table');
+        $this->assertArrayHasKey('FluentTestPage_Localised', $queries['de_AT'],
+            'buildQueries should have key for base table');
+        $this->assertArrayHasKey('FluentTestPage_Localised_Live', $queries['de_AT'],
+            'buildQueries should not have key for live table');
+        $this->assertArrayHasKey('FluentTestPage_Localised_Versions', $queries['de_AT'],
+            'buildQueries should not have key for versions table');
+    }
+
+    public function testQueryBuilderBuildsQueriesForAllNeededTablesOfADataObject()
+    {
+        Config::modify()->set('Fluent', 'locales', ['en_US', 'de_AT']);
+
+        $task = FluentMigrationTask::create()
+            ->setMigrateSubclassesOf(TranslatedPage::class);
+
+        $queries = self::callMethod($task, 'buildQueries', []);
+
+        $this->assertArrayHasKey('de_AT', $queries, 'buildQueries should build queries for de_AT');
+
+        $this->assertArrayHasKey('SiteTree_Localised', $queries['de_AT'],
+            'buildQueries should have key for base table');
+        $this->assertArrayHasKey('SiteTree_Localised_Live', $queries['de_AT'],
+            'buildQueries should not have key for live table');
+        $this->assertArrayHasKey('SiteTree_Localised_Versions', $queries['de_AT'],
+            'buildQueries should not have key for versions table');
+        $this->assertArrayHasKey('FluentTestPage_Localised', $queries['de_AT'],
+            'buildQueries should have key for base table');
+        $this->assertArrayHasKey('FluentTestPage_Localised_Live', $queries['de_AT'],
+            'buildQueries should not have key for live table');
+        $this->assertArrayHasKey('FluentTestPage_Localised_Versions', $queries['de_AT'],
+            'buildQueries should not have key for versions table');
+    }
     /**
      * @useDatabase false
      */
