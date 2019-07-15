@@ -29,6 +29,13 @@ use TractorCow\Fluent\Extension\FluentVersionedExtension;
 class FluentMigrationTask extends BuildTask
 {
 
+    protected $title = "Convert Fluent/SS3 > Fluent SS4 Task";
+
+    protected $description = "Migrates site DB from SS3 Fluent DB format to SS4 Fluent.";
+
+    private static $segment = 'FluentMigrationTask';
+
+
     /**
      * Parameters in order:
      *    - Localised table name with suffix
