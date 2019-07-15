@@ -19,4 +19,14 @@ class TranslatedPage extends SiteTree implements TestOnly
     ];
 
     private static $table_name = 'FluentTestPage';
+
+    public function canView($member = null)
+    {
+        return true;
+    }
+
+    public function canPublish($member = null)
+    {
+        return true;
+    }
 }

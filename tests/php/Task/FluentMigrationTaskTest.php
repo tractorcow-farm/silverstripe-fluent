@@ -10,6 +10,7 @@ use SilverStripe\Core\Config\Config;
 use SilverStripe\Dev\SapphireTest;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\Queries\SQLSelect;
+use SilverStripe\Versioned\Versioned;
 use TractorCow\Fluent\Extension\FluentExtension;
 use TractorCow\Fluent\State\FluentState;
 use TractorCow\Fluent\Task\FluentMigrationTask;
@@ -116,6 +117,32 @@ class FluentMigrationTaskTest extends SapphireTest
         $this->assertEquals('Ein Tisch', $siteTreeVersionFields['Title_de_AT']);
         $this->assertEquals('made from wood', $pageVersionFields['TranslatedValue_en_US']);
         $this->assertEquals('aus Holz', $pageVersionFields['TranslatedValue_de_AT']);
+
+        $this->assertFalse($table->isPublished(), 'Table should not be published by default');
+
+        //publish page
+
+        $isPublished = $table->copyVersionToStage(Versioned::DRAFT, Versioned::LIVE);
+
+        $this->assertTrue($table->isPublished(), 'Table should now be published');
+
+        $siteTreeLiveFields = SQLSelect::create()
+            ->setFrom(Config::inst()->get(SiteTree::class, 'table_name') . '_Live')
+            ->addWhere('ID = ' . $table->ID)
+            ->firstRow()
+            ->execute()
+            ->record();
+        $pageLiveFields = SQLSelect::create()
+            ->setFrom(Config::inst()->get(TranslatedPage::class, 'table_name') . '_Live')
+            ->addWhere('ID = ' . $table->ID)
+            ->firstRow()
+            ->execute()
+            ->record();
+
+        $this->assertEquals('A Table', $siteTreeLiveFields['Title_en_US']);
+        $this->assertEquals('Ein Tisch', $siteTreeLiveFields['Title_de_AT']);
+        $this->assertEquals('made from wood', $pageLiveFields['TranslatedValue_en_US']);
+        $this->assertEquals('aus Holz', $pageLiveFields['TranslatedValue_de_AT']);
     }
 
     public function testMigrationTaskMigratesDataObjectsWithoutVersioning()

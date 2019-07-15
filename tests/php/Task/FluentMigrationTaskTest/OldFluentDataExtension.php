@@ -50,6 +50,33 @@ class OldFluentDataExtension extends Extension
         }
     }
 
+    public function onAfterVersionedPublish()
+    {
+        if (!$this->owner->hasExtension(Versioned::class) && !$this->owner->hasStages()) {
+            //how did we get here?
+            return;
+        }
+
+        $ancestry = array_reverse(ClassInfo::ancestry($this->owner->ClassName));
+        $schema = $this->owner->getSchema();
+        foreach ($ancestry as $class) {
+            if (!$schema->classHasTable($class)) {
+                continue;
+            }
+            $table = $schema->tableName($class) . '_Live';
+            $update = SQLUpdate::create()
+                ->setTable($table)
+                ->setWhere('ID = ' . $this->owner->ID);
+
+
+            foreach ($class::config()->get('old_fluent_fields', Config::UNINHERITED) as $field) {
+                $update->assign($field, $this->owner->getField($field)); //value is set from fixtures in $this->record
+                $update->execute();
+
+            }
+        }
+    }
+
 
     /**
      * Helper to get the old *_translationgroups table and the Locale field created
