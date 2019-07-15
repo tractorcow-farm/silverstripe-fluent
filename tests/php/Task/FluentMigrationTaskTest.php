@@ -20,10 +20,8 @@ use TractorCow\Fluent\Tests\Task\FluentMigrationTaskTest\TranslatedPage;
 
 /**
  * @TODO:
- * - test page
- * - test page subclass
- * - published pages
  * - test partly translated dataobjects (e.g. only en_US is translated, but not de_AT)
+ * - test versions are translated
  *
  * Class FluentMigrationTaskTest
  * @package TractorCow\Fluent\Tests\Task
@@ -166,7 +164,7 @@ class FluentMigrationTaskTest extends SapphireTest
         $this->assertTrue($this->hasLocalisedRecord($house, 'de_AT'),
             'house should exist in locale de_AT after migration');
         $this->assertTrue($this->hasLocalisedRecord($house, 'en_US'),
-            'house should exist in locale de_AT after migration');
+            'house should exist in locale en_US after migration');
 
         //check if all fields have been translated
         $id = $house->ID;
@@ -225,6 +223,9 @@ class FluentMigrationTaskTest extends SapphireTest
         $this->assertFalse($this->hasLocalisedRecord($chair, 'en_US'),
             'chair should not exist in locale en_US before migration');
 
+        $table->doPublish();
+        $this->assertTrue($table->isPublished(), 'Publishing of Table went wrong');
+        $this->assertFalse($chair->isPublished(), 'Chair should be still unpublished');
 
         $task = FluentMigrationTask::create();
         $task->setMigrateSubclassesOf(SiteTree::class);
@@ -233,7 +234,26 @@ class FluentMigrationTaskTest extends SapphireTest
         $this->assertTrue($this->hasLocalisedRecord($table, 'de_AT'),
             'table should exist in locale de_AT after migration');
         $this->assertTrue($this->hasLocalisedRecord($table, 'en_US'),
+            'table should exist in locale en_US after migration');
+        $this->assertTrue($this->hasLocalisedRecord($table, 'de_AT', 'Live'),
+            'table should exist live in locale de_AT after migration');
+        $this->assertTrue($this->hasLocalisedRecord($table, 'en_US', 'Live'),
+            'table should exist live in locale en_US after migration');
+       $this->assertTrue($this->hasLocalisedRecord($table, 'de_AT', 'Versions'),
+            'table versions should exist in locale de_AT after migration');
+        $this->assertTrue($this->hasLocalisedRecord($table, 'en_US', 'Versions'),
+            'table versions should exist  in locale en_US after migration');
+        $this->assertTrue($this->hasLocalisedRecord($chair, 'de_AT'),
             'table should exist in locale de_AT after migration');
+        $this->assertTrue($this->hasLocalisedRecord($chair, 'en_US'),
+            'table should exist in locale en_US after migration');
+        $this->assertFalse($this->hasLocalisedRecord($chair, 'de_AT', 'Live'),
+            'table should not exist live in locale de_AT after migration');
+        $this->assertFalse($this->hasLocalisedRecord($chair, 'en_US', 'Live'),
+            'table should not exist live in locale en_US after migration');
+
+        $this->assertTrue($table->isPublished(), 'Table should be still published');
+        $this->assertFalse($chair->isPublished(), 'Chair should be still unpublished');
 
         //check if all fields have been translated
         $id = $table->ID;
@@ -276,7 +296,6 @@ class FluentMigrationTaskTest extends SapphireTest
     }
 
 
-
     /**
      * Get a Locale field value directly from a record's localised database table, skipping the ORM
      *
@@ -284,12 +303,19 @@ class FluentMigrationTaskTest extends SapphireTest
      *
      * @param DataObject $record
      * @param string $locale
+     * @param string $suffix (e.g. Live, Versions ...)
      * @return boolean
      */
-    protected function hasLocalisedRecord(DataObject $record, $locale)
+    protected function hasLocalisedRecord(DataObject $record, $locale, $suffix = '')
     {
+        $table = implode('_', array_filter([
+            $record->config()->get('table_name'),
+            'Localised',
+            $suffix
+        ]));
+
         $result = SQLSelect::create()
-            ->setFrom($record->config()->get('table_name') . '_Localised')
+            ->setFrom($table)
             ->setWhere([
                 'RecordID' => $record->ID,
                 'Locale' => $locale,
