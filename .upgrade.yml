@@ -1,0 +1,4 @@
+mappings:
+  FluentExtension: TractorCow\Fluent\Extension\FluentExtension
+  FluentFilteredExtension: TractorCow\Fluent\Extension\FluentFilteredExtension
+  FluentSiteTree: TractorCow\Fluent\Extension\FluentSiteTreeExtension
