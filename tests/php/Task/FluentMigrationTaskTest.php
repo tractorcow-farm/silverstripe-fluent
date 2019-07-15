@@ -143,6 +143,8 @@ class FluentMigrationTaskTest extends SapphireTest
 
     public function testMigrationTaskMigratesDataObjectsWithoutVersioning()
     {
+        Config::modify()->set('Fluent', 'locales', ['en_US', 'de_AT']);
+
         $house = $this->objFromFixture(TranslatedDataObject::class, 'house');
         $tree = $this->objFromFixture(TranslatedDataObjectSubclass::class, 'tree');
 
@@ -210,6 +212,8 @@ class FluentMigrationTaskTest extends SapphireTest
 
     public function testMigrationTaskMigratesDataObjectsWithVersioning()
     {
+        Config::modify()->set('Fluent', 'locales', ['en_US', 'de_AT']);
+
         $table = $this->objFromFixture(TranslatedPage::class, 'table');
         $chair = $this->objFromFixture(TranslatedPage::class, 'chair');
 
@@ -328,6 +332,8 @@ class FluentMigrationTaskTest extends SapphireTest
 
     public function testMigrationTaskCanRunSafelyASecondTime()
     {
+        Config::modify()->set('Fluent', 'locales', ['en_US', 'de_AT']);
+
         $baseTable = Config::inst()->get(TranslatedDataObject::class, 'table_name');
         $localisedTable = $baseTable . '_Localised';
 
