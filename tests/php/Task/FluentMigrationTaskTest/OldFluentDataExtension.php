@@ -56,7 +56,7 @@ class OldFluentDataExtension extends Extension
                 $update->assign($field, $this->getOldDataField($table, $field)); //value is set from fixtures in $this->record
                 $update->execute();
 
-                if ($isVersioned) {
+                if ($isVersioned && $this->owner->Version) {
                     $versionUpdate->assign($field, $this->getOldDataField($table, $field));
                     $versionUpdate->execute();
                 }
