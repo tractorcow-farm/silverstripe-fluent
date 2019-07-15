@@ -40,14 +40,14 @@ class FluentMigrationTask extends BuildTask
      *    - List of fields to update
      */
     const QUERY_TEMPLATE = "
-        INSERT INTO %s
+        INSERT INTO `%s`
         SELECT
             %s
-            NULL AS ID,
-            %s AS RecordID,
-            '%s' AS Locale,
+            NULL AS `ID`,
+            `%s` AS `RecordID`,
+            '%s' AS `Locale`,
             %s
-        FROM %s
+        FROM `%s`
     ON DUPLICATE KEY UPDATE
         %s
     ;
@@ -185,7 +185,7 @@ class FluentMigrationTask extends BuildTask
             ', ',
             array_map(
                 function ($field) use ($locale) {
-                    return sprintf('%s_%s AS %s', $field, $locale, $field);
+                    return sprintf('`%s_%s` AS `%s`', $field, $locale, $field);
                 },
                 $fields
             )
@@ -203,7 +203,7 @@ class FluentMigrationTask extends BuildTask
             ', ',
             array_map(
                 function ($field) use ($locale) {
-                    return sprintf('%s = %s_%s', $field, $field, $locale);
+                    return sprintf('`%s` = `%s_%s`', $field, $field, $locale);
                 },
                 $fields
             )
