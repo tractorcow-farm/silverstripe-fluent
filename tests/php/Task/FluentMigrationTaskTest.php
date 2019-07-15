@@ -210,6 +210,73 @@ class FluentMigrationTaskTest extends SapphireTest
         $this->assertEquals('deciduous trees', $treeEN->Category, 'English tree should have translated Category');
     }
 
+    public function testMigrationTaskMigratesDataObjectsWithVersioning()
+    {
+        $table = $this->objFromFixture(TranslatedPage::class, 'table');
+        $chair = $this->objFromFixture(TranslatedPage::class, 'chair');
+
+        $this->assertFalse($this->hasLocalisedRecord($table, 'de_AT'),
+            'table should not exist in locale de_AT before migration');
+        $this->assertFalse($this->hasLocalisedRecord($table, 'en_US'),
+            'table should not exist in locale en_US before migration');
+
+        $this->assertFalse($this->hasLocalisedRecord($chair, 'de_AT'),
+            'chair should not exist in locale de_AT before migration');
+        $this->assertFalse($this->hasLocalisedRecord($chair, 'en_US'),
+            'chair should not exist in locale en_US before migration');
+
+
+        $task = FluentMigrationTask::create();
+        $task->setMigrateSubclassesOf(SiteTree::class);
+        $task->run(null);
+
+        $this->assertTrue($this->hasLocalisedRecord($table, 'de_AT'),
+            'table should exist in locale de_AT after migration');
+        $this->assertTrue($this->hasLocalisedRecord($table, 'en_US'),
+            'table should exist in locale de_AT after migration');
+
+        //check if all fields have been translated
+        $id = $table->ID;
+        $tableEN = FluentState::singleton()->withState(function ($newState) use ($id) {
+
+            $newState->setLocale('en_US');
+
+            return TranslatedPage::get()->byID($id);
+        });
+        $tableDE = FluentState::singleton()->withState(function ($newState) use ($id) {
+
+            $newState->setLocale('de_AT');
+
+            return TranslatedPage::get()->byID($id);
+        });
+
+        $id = $chair->ID;
+
+        $chairEN = FluentState::singleton()->withState(function ($newState) use ($id) {
+
+            $newState->setLocale('en_US');
+
+            return TranslatedPage::get()->byID($id);
+        });
+        $chairDE = FluentState::singleton()->withState(function ($newState) use ($id) {
+
+            $newState->setLocale('de_AT');
+
+            return TranslatedPage::get()->byID($id);
+        });
+        $this->assertEquals('Ein Tisch', $tableDE->Title, 'German table should have translated Title');
+        $this->assertEquals('aus Holz', $tableDE->TranslatedValue, 'German table should have translated Value');
+        $this->assertEquals('A Table', $tableEN->Title, 'English table should have translated Title');
+        $this->assertEquals('made from wood', $tableEN->TranslatedValue, 'English table should have translated Value');
+
+        $this->assertEquals('Ein Stuhl', $chairDE->Title, 'German chair  should have translated Title');
+        $this->assertEquals('aus Kunststoff', $chairDE->TranslatedValue, 'German chair  should have translated Value');
+        $this->assertEquals('A Chair', $chairEN->Title, 'English chair  should have translated Title');
+        $this->assertEquals('plastic', $chairEN->TranslatedValue, 'English chair  should have translated Value');
+    }
+
+
+
     /**
      * Get a Locale field value directly from a record's localised database table, skipping the ORM
      *

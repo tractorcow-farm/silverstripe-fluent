@@ -13,8 +13,8 @@ use TractorCow\Fluent\Tests\Task\FluentMigrationTaskTest\OldFluentDataExtension;
 class OldFluentDataTestState implements TestState
 {
     protected static $oldSiteTreeFields = [
-        'URL_Segment_en_US',
-        'URL_Segment_de_AT',
+        'URLSegment_en_US',
+        'URLSegment_de_AT',
         'Title_en_US',
         'Title_de_AT',
         'MenuTitle_en_US',
