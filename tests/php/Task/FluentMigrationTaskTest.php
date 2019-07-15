@@ -120,9 +120,7 @@ class FluentMigrationTaskTest extends SapphireTest
 
         $this->assertFalse($table->isPublished(), 'Table should not be published by default');
 
-        //publish page
-
-        $isPublished = $table->copyVersionToStage(Versioned::DRAFT, Versioned::LIVE);
+        $table->copyVersionToStage(Versioned::DRAFT, Versioned::LIVE);
 
         $this->assertTrue($table->isPublished(), 'Table should now be published');
 
