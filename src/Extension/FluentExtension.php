@@ -997,4 +997,14 @@ class FluentExtension extends DataExtension
 
         return [null, null, false];
     }
+
+    /**
+     * Returns the selected language
+     *
+     * @return ArrayData
+     */
+    public function getSelectedLanguage()
+    {
+        return $this->LocaleInformation(FluentState::singleton()->getLocale());
+    }
 }
