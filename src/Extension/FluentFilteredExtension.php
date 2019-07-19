@@ -15,6 +15,7 @@ use SilverStripe\ORM\Queries\SQLSelect;
 use SilverStripe\Versioned\Versioned;
 use TractorCow\Fluent\Model\Locale;
 use TractorCow\Fluent\State\FluentState;
+use SilverStripe\Forms\CheckboxSetField;
 
 /**
  * @property FluentFilteredExtension|DataObject $owner
