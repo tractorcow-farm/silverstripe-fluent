@@ -40,21 +40,19 @@ class FluentFilteredExtension extends DataExtension
             return;
         }
 
-        $fields->insertAfter('Main', new Tab('Locales', _t(__CLASS__.'.TAB_LOCALES', 'Locales')));
-
-        $config = GridFieldConfig_RelationEditor::create();
-        $config->removeComponentsByType(GridFieldAddNewButton::class);
-
         // create a GridField to manage what Locales this Page can be displayed in.
         $fields->addFieldToTab(
-            'Root.Locales',
-            GridField::create(
+            'Root.FilteredLocales',
+            CheckboxSetField::create(
                 'FilteredLocales',
                 _t(__CLASS__.'.FILTERED_LOCALES', 'Display in the following locales'),
-                $this->owner->FilteredLocales(),
-                $config
+                $locales
             )
         );
+
+        $fields
+            ->fieldByName('Root.FilteredLocales')
+            ->setTitle(_t(__CLASS__.'.TAB_LOCALES', 'Locales'));
     }
 
     /**
