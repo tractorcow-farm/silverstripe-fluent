@@ -22,6 +22,11 @@ TractorCow\Fluent\Tests\Task\FluentMigrationTaskTest\TranslatedDataObject:
     Title_de_AT: 'Fernseher'
     Name: 'big flatscreen'
     Name_de_AT: 'Flachbild (groß)'
+  fragmented:
+    Title: 'TV'
+    Title_de_AT: 'Fernseher'
+    Name: 'big flatscreen'
+    Name_en_US: 'idiot box'
 
 TractorCow\Fluent\Tests\Task\FluentMigrationTaskTest\TranslatedDataObjectSubclass:
   tree:

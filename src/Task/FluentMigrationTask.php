@@ -140,8 +140,8 @@ class FluentMigrationTask extends BuildTask
                     foreach ($suffixes as $suffix) {
                         $localisedTable = "{$table}_Localised{$suffix}";
                         $sourceTable = "{$table}{$suffix}";
-                        $selectFields = $this->buildSelectFieldList($fields, $locale);
-                        $updateFields = $this->buildUpdateFieldList($fields, $locale);
+                        $selectFields = $this->buildSelectFieldList($sourceTable, $fields, $locale);
+                        $updateFields = $this->buildUpdateFieldList($sourceTable, $fields, $locale);
                         if ($suffix === '_Versions') {
                             $versionSelector = 'Version,';
                             $idField = 'RecordID';
@@ -188,13 +188,13 @@ class FluentMigrationTask extends BuildTask
      * @param $locale
      * @return string
      */
-    protected function buildSelectFieldList($fields, $locale)
+    protected function buildSelectFieldList($sourceTable, $fields, $locale)
     {
         return implode(
             ', ',
             array_map(
-                function ($field) use ($locale) {
-                    return sprintf('`%s_%s` AS `%s`', $field, $locale, $field);
+                function ($field) use ($locale, $sourceTable) {
+                    return sprintf('COALESCE(`%s_%s`, `%s`.`%s`) AS `%s`', $field, $locale, $sourceTable, $field, $field);
                 },
                 $fields
             )
@@ -206,13 +206,13 @@ class FluentMigrationTask extends BuildTask
      * @param $locale
      * @return string
      */
-    protected function buildUpdateFieldList($fields, $locale)
+    protected function buildUpdateFieldList($sourceTable, $fields, $locale)
     {
         return implode(
             ', ',
             array_map(
-                function ($field) use ($locale) {
-                    return sprintf('`%s` = `%s_%s`', $field, $field, $locale);
+                function ($field) use ($locale, $sourceTable) {
+                    return sprintf('`%s` = COALESCE(`%s_%s`, `%s`.`%s`)', $field, $field, $locale, $sourceTable, $field);
                 },
                 $fields
             )

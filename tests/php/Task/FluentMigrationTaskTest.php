@@ -332,10 +332,28 @@ class FluentMigrationTaskTest extends SapphireTest
             'table should not exist in locale en_US after migration');
     }
 
+    public function testMigrationTaskFallsBackToDefaultsForFragmentedTranslations()
+    {
+        Config::modify()->set('Fluent', 'locales', ['en_US', 'de_AT']);
+
+        $fragmented = $this->objFromFixture(TranslatedDataObject::class, 'fragmented');
+
+        $task = FluentMigrationTask::create();
+        $task->setMigrateSubclassesOf(TranslatedDataObject::class);
+
+        $task->run($this->getRequest());
+
+        $row = $this->localisedRecord($fragmented, 'de_AT');
+        $this->assertEquals('Fernseher', $row['Title']);
+        $this->assertEquals('big flatscreen', $row['Name']);
+
+        $row = $this->localisedRecord($fragmented, 'en_US');
+        $this->assertEquals('TV', $row['Title']);
+        $this->assertEquals('idiot box', $row['Name']);
+    }
+
     /**
-     * Get a Locale field value directly from a record's localised database table, skipping the ORM
-     *
-     * taken from FluentExtensionTest
+     * Check if a localised record exists for the given locale
      *
      * @param DataObject $record
      * @param string $locale
@@ -344,13 +362,27 @@ class FluentMigrationTaskTest extends SapphireTest
      */
     protected function hasLocalisedRecord(DataObject $record, $locale, $suffix = '')
     {
+        $result = $this->localisedRecord($record, $locale, $suffix);
+        return !empty($result);
+    }
+
+    /**
+     * Get the localised record for the given locale if it iexists
+     *
+     * @param DataObject $record
+     * @param string $locale
+     * @param string $suffix (e.g. Live, Versions ...)
+     * @return boolean
+     */
+    protected function localisedRecord(DataObject $record, $locale, $suffix = '')
+    {
         $table = implode('_', array_filter([
             $record->config()->get('table_name'),
             'Localised',
             $suffix
         ]));
 
-        $result = SQLSelect::create()
+        return SQLSelect::create()
             ->setFrom($table)
             ->setWhere([
                 'RecordID' => $record->ID,
@@ -358,8 +390,6 @@ class FluentMigrationTaskTest extends SapphireTest
             ])
             ->execute()
             ->first();
-
-        return !empty($result);
     }
 
     public function testMigrationTaskCanRunSafelyASecondTime()
