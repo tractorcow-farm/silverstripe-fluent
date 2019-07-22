@@ -1,11 +1,10 @@
 <?php
 
-
 namespace TractorCow\Fluent\Tests\Task;
-
 
 use Exception;
 use SilverStripe\CMS\Model\SiteTree;
+use SilverStripe\Control\HTTPRequest;
 use SilverStripe\Core\Config\Config;
 use SilverStripe\Dev\SapphireTest;
 use SilverStripe\ORM\DataObject;
@@ -161,7 +160,8 @@ class FluentMigrationTaskTest extends SapphireTest
 
         $task = FluentMigrationTask::create();
         $task->setMigrateSubclassesOf(TranslatedDataObject::class);
-        $task->run(null);
+
+        $task->run($this->getRequest());
 
         $this->assertTrue($this->hasLocalisedRecord($house, 'de_AT'),
             'house should exist in locale de_AT after migration');
@@ -233,7 +233,7 @@ class FluentMigrationTaskTest extends SapphireTest
 
         $task = FluentMigrationTask::create();
         $task->setMigrateSubclassesOf(SiteTree::class);
-        $task->run(null);
+        $task->run($this->getRequest());
 
         $this->assertTrue($this->hasLocalisedRecord($table, 'de_AT'),
             'table should exist in locale de_AT after migration');
@@ -299,6 +299,38 @@ class FluentMigrationTaskTest extends SapphireTest
         $this->assertEquals('plastic', $chairEN->TranslatedValue, 'English chair  should have translated Value');
     }
 
+    public function testMigrationTaskDoesNotAlterDatabaseWhenWriteFlagUnset()
+    {
+        Config::modify()->set('Fluent', 'locales', ['en_US', 'de_AT']);
+
+        $house = $this->objFromFixture(TranslatedDataObject::class, 'house');
+        $table = $this->objFromFixture(TranslatedPage::class, 'table');
+
+        $this->assertFalse($this->hasLocalisedRecord($house, 'de_AT'),
+            'house should not exist in locale de_AT before migration');
+        $this->assertFalse($this->hasLocalisedRecord($house, 'en_US'),
+            'house should not exist in locale en_US before migration');
+
+        $this->assertFalse($this->hasLocalisedRecord($table, 'de_AT'),
+            'table should not exist in locale de_AT before migration');
+        $this->assertFalse($this->hasLocalisedRecord($table, 'en_US'),
+            'table should not exist in locale en_US before migration');
+
+        $task = FluentMigrationTask::create();
+        $task->setMigrateSubclassesOf(TranslatedDataObject::class);
+
+        $task->run($this->getRequest(false));
+
+        $this->assertFalse($this->hasLocalisedRecord($house, 'de_AT'),
+            'house should not exist in locale de_AT after migration');
+        $this->assertFalse($this->hasLocalisedRecord($house, 'en_US'),
+            'house should not exist in locale en_US after migration');
+
+        $this->assertFalse($this->hasLocalisedRecord($table, 'de_AT'),
+            'table should not exist in locale de_AT after migration');
+        $this->assertFalse($this->hasLocalisedRecord($table, 'en_US'),
+            'table should not exist in locale en_US after migration');
+    }
 
     /**
      * Get a Locale field value directly from a record's localised database table, skipping the ORM
@@ -345,12 +377,12 @@ class FluentMigrationTaskTest extends SapphireTest
 
         $task = FluentMigrationTask::create();
         $task->setMigrateSubclassesOf(TranslatedDataObject::class);
-        $task->run(null);
+        $task->run($this->getRequest());
 
         $countAfterMigration = $localisedSelect->count();
         $this->assertGreaterThan(0, $countAfterMigration, 'after task has run there should be localised rows');
 
-        $task->run(null);
+        $task->run($this->getRequest());
 
         $this->assertEquals($countAfterMigration, $localisedSelect->count(),
             'after a second run there should be no new localised rows');
@@ -481,5 +513,20 @@ class FluentMigrationTaskTest extends SapphireTest
         Config::modify()->set('Fluent', 'locales', []);
         $task = FluentMigrationTask::create();
         $task->getLocales();
+    }
+
+    /**
+     * Get a request object to pass to the `run` method
+     *
+     * @param string $write Value for 'write' getVar
+     * @return HTTPRequest
+     */
+    protected function getRequest($setWrite = true)
+    {
+        $getVars = [];
+        if ($setWrite) {
+            $getVars['write'] = 'true';
+        }
+        return new HTTPRequest('GET', '', $getVars);
     }
 }

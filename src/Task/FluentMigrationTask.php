@@ -73,7 +73,7 @@ class FluentMigrationTask extends BuildTask
         ]
 
     ];
-    protected $dryRun = false;
+    protected $write = false;
     protected $migrate_sublcasses_of = DataObject::class;
 
     /**
@@ -81,6 +81,8 @@ class FluentMigrationTask extends BuildTask
      */
     public function run($request)
     {
+        $this->write = ($request->getVar('write') === 'true');
+
         $queries = $this->buildQueries();
         $this->runQueries($queries);
     }
@@ -227,7 +229,7 @@ class FluentMigrationTask extends BuildTask
 
             foreach ($localeQueries as $table => $query) {
                 echo "Updating table '{$table}'\n";
-                if ($this->dryRun === false) {
+                if ($this->write === true) {
                     try {
                         DB::query($query);
                     } catch (DatabaseException $e) {
