@@ -3,7 +3,6 @@
 
 namespace TractorCow\Fluent\Task;
 
-
 use SilverStripe\Core\ClassInfo;
 use SilverStripe\Core\Config\Config;
 use SilverStripe\Dev\BuildTask;

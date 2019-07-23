@@ -3,7 +3,6 @@
 
 namespace TractorCow\Fluent\Dev;
 
-
 use SilverStripe\CMS\Model\SiteTree;
 use SilverStripe\Core\Config\Config;
 use SilverStripe\Dev\SapphireTest;
@@ -47,7 +46,6 @@ class OldFluentDataTestState implements TestState
      */
     public function tearDown(SapphireTest $test)
     {
-
     }
 
     /**
@@ -68,6 +66,5 @@ class OldFluentDataTestState implements TestState
      */
     public function tearDownOnce($class)
     {
-
     }
 }

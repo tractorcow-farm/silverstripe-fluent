@@ -3,7 +3,6 @@
 
 namespace TractorCow\Fluent\Tests\Task\FluentMigrationTaskTest;
 
-
 use SilverStripe\Core\ClassInfo;
 use SilverStripe\Core\Config\Config;
 use SilverStripe\Core\Extension;
@@ -122,10 +121,11 @@ class OldFluentDataExtension extends Extension
 
 
             foreach ($class::config()->get('old_fluent_fields', Config::UNINHERITED) as $field) {
-                $update->assign($field,
-                    $this->getOldDataField($stageTable, $field)); //value is set from fixtures in $this->record
+                $update->assign(
+                    $field,
+                    $this->getOldDataField($stageTable, $field)
+                ); //value is set from fixtures in $this->record
                 $update->execute();
-
             }
         }
     }
@@ -160,7 +160,6 @@ class OldFluentDataExtension extends Extension
                 $schemaManager->requireField($table_name . '_Live', $field, 'VARCHAR(255) NULL DEFAULT NULL ');
                 $schemaManager->requireField($table_name . '_Versions', $field, 'VARCHAR(255) NULL DEFAULT NULL ');
             }
-
         }
     }
 }

@@ -3,7 +3,6 @@
 
 namespace TractorCow\Fluent\Tests\Task\FluentMigrationTaskTest;
 
-
 use SilverStripe\Dev\TestOnly;
 use SilverStripe\ORM\DataObject;
 use TractorCow\Fluent\Extension\FluentExtension;
@@ -45,5 +44,4 @@ class TranslatedDataObject extends DataObject implements TestOnly
         'Name_en_US',
         'Name_de_AT'
     ];
-
 }

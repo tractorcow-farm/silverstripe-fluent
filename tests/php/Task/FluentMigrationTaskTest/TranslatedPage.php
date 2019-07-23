@@ -3,7 +3,6 @@
 
 namespace TractorCow\Fluent\Tests\Task\FluentMigrationTaskTest;
 
-
 use SilverStripe\CMS\Model\SiteTree;
 use SilverStripe\Dev\TestOnly;
 

@@ -51,7 +51,6 @@ class FluentMigrationTaskTest extends SapphireTest
             $hasExtension = $instance->hasExtension(FluentExtension::class);
             $this->assertTrue($hasExtension, $className . ' should have FluentExtension applied');
         }
-
     }
 
     public function testFixturesAreSetupWithOldData()
@@ -153,15 +152,23 @@ class FluentMigrationTaskTest extends SapphireTest
         $house = $this->objFromFixture(TranslatedDataObject::class, 'house');
         $tree = $this->objFromFixture(TranslatedDataObjectSubclass::class, 'tree');
 
-        $this->assertFalse($this->hasLocalisedRecord($house, 'de_AT'),
-            'house should not exist in locale de_AT before migration');
-        $this->assertFalse($this->hasLocalisedRecord($house, 'en_US'),
-            'house should not exist in locale en_US before migration');
+        $this->assertFalse(
+            $this->hasLocalisedRecord($house, 'de_AT'),
+            'house should not exist in locale de_AT before migration'
+        );
+        $this->assertFalse(
+            $this->hasLocalisedRecord($house, 'en_US'),
+            'house should not exist in locale en_US before migration'
+        );
 
-        $this->assertFalse($this->hasLocalisedRecord($tree, 'de_AT'),
-            'tree should not exist in locale de_AT before migration');
-        $this->assertFalse($this->hasLocalisedRecord($tree, 'en_US'),
-            'tree should not exist in locale en_US before migration');
+        $this->assertFalse(
+            $this->hasLocalisedRecord($tree, 'de_AT'),
+            'tree should not exist in locale de_AT before migration'
+        );
+        $this->assertFalse(
+            $this->hasLocalisedRecord($tree, 'en_US'),
+            'tree should not exist in locale en_US before migration'
+        );
 
 
         $task = FluentMigrationTask::create();
@@ -169,10 +176,14 @@ class FluentMigrationTaskTest extends SapphireTest
 
         $task->run($this->getRequest());
 
-        $this->assertTrue($this->hasLocalisedRecord($house, 'de_AT'),
-            'house should exist in locale de_AT after migration');
-        $this->assertTrue($this->hasLocalisedRecord($house, 'en_US'),
-            'house should exist in locale en_US after migration');
+        $this->assertTrue(
+            $this->hasLocalisedRecord($house, 'de_AT'),
+            'house should exist in locale de_AT after migration'
+        );
+        $this->assertTrue(
+            $this->hasLocalisedRecord($house, 'en_US'),
+            'house should exist in locale en_US after migration'
+        );
 
         //check if all fields have been translated
         $id = $house->ID;
@@ -223,15 +234,23 @@ class FluentMigrationTaskTest extends SapphireTest
         $table = $this->objFromFixture(TranslatedPage::class, 'table');
         $chair = $this->objFromFixture(TranslatedPage::class, 'chair');
 
-        $this->assertFalse($this->hasLocalisedRecord($table, 'de_AT'),
-            'table should not exist in locale de_AT before migration');
-        $this->assertFalse($this->hasLocalisedRecord($table, 'en_US'),
-            'table should not exist in locale en_US before migration');
+        $this->assertFalse(
+            $this->hasLocalisedRecord($table, 'de_AT'),
+            'table should not exist in locale de_AT before migration'
+        );
+        $this->assertFalse(
+            $this->hasLocalisedRecord($table, 'en_US'),
+            'table should not exist in locale en_US before migration'
+        );
 
-        $this->assertFalse($this->hasLocalisedRecord($chair, 'de_AT'),
-            'chair should not exist in locale de_AT before migration');
-        $this->assertFalse($this->hasLocalisedRecord($chair, 'en_US'),
-            'chair should not exist in locale en_US before migration');
+        $this->assertFalse(
+            $this->hasLocalisedRecord($chair, 'de_AT'),
+            'chair should not exist in locale de_AT before migration'
+        );
+        $this->assertFalse(
+            $this->hasLocalisedRecord($chair, 'en_US'),
+            'chair should not exist in locale en_US before migration'
+        );
 
         $table->copyVersionToStage(Versioned::DRAFT, Versioned::LIVE);
         $this->assertTrue($table->isPublished(), 'Publishing of Table went wrong');
@@ -241,26 +260,46 @@ class FluentMigrationTaskTest extends SapphireTest
         $task->setMigrateSubclassesOf(SiteTree::class);
         $task->run($this->getRequest());
 
-        $this->assertTrue($this->hasLocalisedRecord($table, 'de_AT'),
-            'table should exist in locale de_AT after migration');
-        $this->assertTrue($this->hasLocalisedRecord($table, 'en_US'),
-            'table should exist in locale en_US after migration');
-        $this->assertTrue($this->hasLocalisedRecord($table, 'de_AT', 'Live'),
-            'table should exist live in locale de_AT after migration');
-        $this->assertTrue($this->hasLocalisedRecord($table, 'en_US', 'Live'),
-            'table should exist live in locale en_US after migration');
-       $this->assertTrue($this->hasLocalisedRecord($table, 'de_AT', 'Versions'),
-            'table versions should exist in locale de_AT after migration');
-        $this->assertTrue($this->hasLocalisedRecord($table, 'en_US', 'Versions'),
-            'table versions should exist  in locale en_US after migration');
-        $this->assertTrue($this->hasLocalisedRecord($chair, 'de_AT'),
-            'table should exist in locale de_AT after migration');
-        $this->assertTrue($this->hasLocalisedRecord($chair, 'en_US'),
-            'table should exist in locale en_US after migration');
-        $this->assertFalse($this->hasLocalisedRecord($chair, 'de_AT', 'Live'),
-            'table should not exist live in locale de_AT after migration');
-        $this->assertFalse($this->hasLocalisedRecord($chair, 'en_US', 'Live'),
-            'table should not exist live in locale en_US after migration');
+        $this->assertTrue(
+            $this->hasLocalisedRecord($table, 'de_AT'),
+            'table should exist in locale de_AT after migration'
+        );
+        $this->assertTrue(
+            $this->hasLocalisedRecord($table, 'en_US'),
+            'table should exist in locale en_US after migration'
+        );
+        $this->assertTrue(
+            $this->hasLocalisedRecord($table, 'de_AT', 'Live'),
+            'table should exist live in locale de_AT after migration'
+        );
+        $this->assertTrue(
+            $this->hasLocalisedRecord($table, 'en_US', 'Live'),
+            'table should exist live in locale en_US after migration'
+        );
+        $this->assertTrue(
+            $this->hasLocalisedRecord($table, 'de_AT', 'Versions'),
+            'table versions should exist in locale de_AT after migration'
+        );
+        $this->assertTrue(
+            $this->hasLocalisedRecord($table, 'en_US', 'Versions'),
+            'table versions should exist  in locale en_US after migration'
+        );
+        $this->assertTrue(
+            $this->hasLocalisedRecord($chair, 'de_AT'),
+            'table should exist in locale de_AT after migration'
+        );
+        $this->assertTrue(
+            $this->hasLocalisedRecord($chair, 'en_US'),
+            'table should exist in locale en_US after migration'
+        );
+        $this->assertFalse(
+            $this->hasLocalisedRecord($chair, 'de_AT', 'Live'),
+            'table should not exist live in locale de_AT after migration'
+        );
+        $this->assertFalse(
+            $this->hasLocalisedRecord($chair, 'en_US', 'Live'),
+            'table should not exist live in locale en_US after migration'
+        );
 
         $this->assertTrue($table->isPublished(), 'Table should be still published');
         $this->assertFalse($chair->isPublished(), 'Chair should be still unpublished');
@@ -312,30 +351,46 @@ class FluentMigrationTaskTest extends SapphireTest
         $house = $this->objFromFixture(TranslatedDataObject::class, 'house');
         $table = $this->objFromFixture(TranslatedPage::class, 'table');
 
-        $this->assertFalse($this->hasLocalisedRecord($house, 'de_AT'),
-            'house should not exist in locale de_AT before migration');
-        $this->assertFalse($this->hasLocalisedRecord($house, 'en_US'),
-            'house should not exist in locale en_US before migration');
+        $this->assertFalse(
+            $this->hasLocalisedRecord($house, 'de_AT'),
+            'house should not exist in locale de_AT before migration'
+        );
+        $this->assertFalse(
+            $this->hasLocalisedRecord($house, 'en_US'),
+            'house should not exist in locale en_US before migration'
+        );
 
-        $this->assertFalse($this->hasLocalisedRecord($table, 'de_AT'),
-            'table should not exist in locale de_AT before migration');
-        $this->assertFalse($this->hasLocalisedRecord($table, 'en_US'),
-            'table should not exist in locale en_US before migration');
+        $this->assertFalse(
+            $this->hasLocalisedRecord($table, 'de_AT'),
+            'table should not exist in locale de_AT before migration'
+        );
+        $this->assertFalse(
+            $this->hasLocalisedRecord($table, 'en_US'),
+            'table should not exist in locale en_US before migration'
+        );
 
         $task = FluentMigrationTask::create();
         $task->setMigrateSubclassesOf(TranslatedDataObject::class);
 
         $task->run($this->getRequest(false));
 
-        $this->assertFalse($this->hasLocalisedRecord($house, 'de_AT'),
-            'house should not exist in locale de_AT after migration');
-        $this->assertFalse($this->hasLocalisedRecord($house, 'en_US'),
-            'house should not exist in locale en_US after migration');
+        $this->assertFalse(
+            $this->hasLocalisedRecord($house, 'de_AT'),
+            'house should not exist in locale de_AT after migration'
+        );
+        $this->assertFalse(
+            $this->hasLocalisedRecord($house, 'en_US'),
+            'house should not exist in locale en_US after migration'
+        );
 
-        $this->assertFalse($this->hasLocalisedRecord($table, 'de_AT'),
-            'table should not exist in locale de_AT after migration');
-        $this->assertFalse($this->hasLocalisedRecord($table, 'en_US'),
-            'table should not exist in locale en_US after migration');
+        $this->assertFalse(
+            $this->hasLocalisedRecord($table, 'de_AT'),
+            'table should not exist in locale de_AT after migration'
+        );
+        $this->assertFalse(
+            $this->hasLocalisedRecord($table, 'en_US'),
+            'table should not exist in locale en_US after migration'
+        );
     }
 
     public function testMigrationTaskFallsBackToDefaultsForFragmentedTranslations()
@@ -364,20 +419,28 @@ class FluentMigrationTaskTest extends SapphireTest
 
         $partiallyTranslated = $this->objFromFixture(TranslatedDataObject::class, 'partiallyTranslated');
 
-        $this->assertFalse($this->hasLocalisedRecord($partiallyTranslated, 'de_AT'),
-            'partiallyTranslated should not exist in locale de_AT before migration');
-        $this->assertFalse($this->hasLocalisedRecord($partiallyTranslated, 'en_NZ'),
-            'partiallyTranslated should not exist in locale en_NZ before migration');
+        $this->assertFalse(
+            $this->hasLocalisedRecord($partiallyTranslated, 'de_AT'),
+            'partiallyTranslated should not exist in locale de_AT before migration'
+        );
+        $this->assertFalse(
+            $this->hasLocalisedRecord($partiallyTranslated, 'en_NZ'),
+            'partiallyTranslated should not exist in locale en_NZ before migration'
+        );
 
         $task = FluentMigrationTask::create();
         $task->setMigrateSubclassesOf(TranslatedDataObject::class);
 
         $task->run($this->getRequest());
 
-        $this->assertTrue($this->hasLocalisedRecord($partiallyTranslated, 'de_AT'),
-            'partiallyTranslated should exist in locale de_AT after migration');
-        $this->assertFalse($this->hasLocalisedRecord($partiallyTranslated, 'en_NZ'),
-            'partiallyTranslated should not exist in locale en_NZ after migration');
+        $this->assertTrue(
+            $this->hasLocalisedRecord($partiallyTranslated, 'de_AT'),
+            'partiallyTranslated should exist in locale de_AT after migration'
+        );
+        $this->assertFalse(
+            $this->hasLocalisedRecord($partiallyTranslated, 'en_NZ'),
+            'partiallyTranslated should not exist in locale en_NZ after migration'
+        );
     }
 
     public function testMigrationTaskAlwaysCreatesRecordForDefaultLocale()
@@ -386,20 +449,28 @@ class FluentMigrationTaskTest extends SapphireTest
 
         $unTranslated = $this->objFromFixture(TranslatedDataObject::class, 'unTranslated');
 
-        $this->assertFalse($this->hasLocalisedRecord($unTranslated, 'de_AT'),
-            'unTranslated should not exist in locale de_AT before migration');
-        $this->assertFalse($this->hasLocalisedRecord($unTranslated, 'en_US'),
-            'unTranslated should not exist in locale en_US before migration');
+        $this->assertFalse(
+            $this->hasLocalisedRecord($unTranslated, 'de_AT'),
+            'unTranslated should not exist in locale de_AT before migration'
+        );
+        $this->assertFalse(
+            $this->hasLocalisedRecord($unTranslated, 'en_US'),
+            'unTranslated should not exist in locale en_US before migration'
+        );
 
         $task = FluentMigrationTask::create();
         $task->setMigrateSubclassesOf(TranslatedDataObject::class);
 
         $task->run($this->getRequest());
 
-        $this->assertTrue($this->hasLocalisedRecord($unTranslated, 'en_US'),
-            'unTranslated should not exist in locale en_US after migration');
-        $this->assertFalse($this->hasLocalisedRecord($unTranslated, 'de_AT'),
-            'unTranslated should exist in locale de_AT after migration');
+        $this->assertTrue(
+            $this->hasLocalisedRecord($unTranslated, 'en_US'),
+            'unTranslated should not exist in locale en_US after migration'
+        );
+        $this->assertFalse(
+            $this->hasLocalisedRecord($unTranslated, 'de_AT'),
+            'unTranslated should exist in locale de_AT after migration'
+        );
     }
 
     /**
@@ -464,8 +535,11 @@ class FluentMigrationTaskTest extends SapphireTest
 
         $task->run($this->getRequest());
 
-        $this->assertEquals($countAfterMigration, $localisedSelect->count(),
-            'after a second run there should be no new localised rows');
+        $this->assertEquals(
+            $countAfterMigration,
+            $localisedSelect->count(),
+            'after a second run there should be no new localised rows'
+        );
     }
 
     /**
@@ -481,20 +555,37 @@ class FluentMigrationTaskTest extends SapphireTest
         $queries = self::callMethod($task, 'buildQueries', []);
         $this->assertArrayHasKey('de_AT', $queries, 'buildQueries should build queries for de_AT');
 
-        $this->assertArrayHasKey('FluentTestDataObject_Localised', $queries['de_AT'],
-            'buildQueries should have key for base table');
-        $this->assertArrayNotHasKey('FluentTestDataObject_Localised_Live', $queries['de_AT'],
-            'buildQueries should not have key for live table');
-        $this->assertArrayNotHasKey('FluentTestDataObject_Localised_Versions', $queries['de_AT'],
-            'buildQueries should not have key for versions table');
+        $this->assertArrayHasKey(
+            'FluentTestDataObject_Localised',
+            $queries['de_AT'],
+            'buildQueries should have key for base table'
+        );
+        $this->assertArrayNotHasKey(
+            'FluentTestDataObject_Localised_Live',
+            $queries['de_AT'],
+            'buildQueries should not have key for live table'
+        );
+        $this->assertArrayNotHasKey(
+            'FluentTestDataObject_Localised_Versions',
+            $queries['de_AT'],
+            'buildQueries should not have key for versions table'
+        );
 
-        $this->assertArrayHasKey('FluentTestDataObjectSubclass_Localised', $queries['de_AT'],
-            'buildQueries should have key for subclass table');
-        $this->assertArrayNotHasKey('FluentTestDataObjectSubclass_Localised_Live', $queries['de_AT'],
-            'buildQueries should not have key for subclass live table');
-        $this->assertArrayNotHasKey('FluentTestDataObjectSubclass_Localised_Versions', $queries['de_AT'],
-            'buildQueries should not have key for subclass versions table');
-
+        $this->assertArrayHasKey(
+            'FluentTestDataObjectSubclass_Localised',
+            $queries['de_AT'],
+            'buildQueries should have key for subclass table'
+        );
+        $this->assertArrayNotHasKey(
+            'FluentTestDataObjectSubclass_Localised_Live',
+            $queries['de_AT'],
+            'buildQueries should not have key for subclass live table'
+        );
+        $this->assertArrayNotHasKey(
+            'FluentTestDataObjectSubclass_Localised_Versions',
+            $queries['de_AT'],
+            'buildQueries should not have key for subclass versions table'
+        );
     }
 
     /**
@@ -528,18 +619,36 @@ class FluentMigrationTaskTest extends SapphireTest
 
         $this->assertArrayHasKey('de_AT', $queries, 'buildQueries should build queries for de_AT');
 
-        $this->assertArrayHasKey('SiteTree_Localised', $queries['de_AT'],
-            'buildQueries should have key for base table');
-        $this->assertArrayHasKey('SiteTree_Localised_Live', $queries['de_AT'],
-            'buildQueries should not have key for live table');
-        $this->assertArrayHasKey('SiteTree_Localised_Versions', $queries['de_AT'],
-            'buildQueries should not have key for versions table');
-        $this->assertArrayHasKey('FluentTestPage_Localised', $queries['de_AT'],
-            'buildQueries should have key for base table');
-        $this->assertArrayHasKey('FluentTestPage_Localised_Live', $queries['de_AT'],
-            'buildQueries should not have key for live table');
-        $this->assertArrayHasKey('FluentTestPage_Localised_Versions', $queries['de_AT'],
-            'buildQueries should not have key for versions table');
+        $this->assertArrayHasKey(
+            'SiteTree_Localised',
+            $queries['de_AT'],
+            'buildQueries should have key for base table'
+        );
+        $this->assertArrayHasKey(
+            'SiteTree_Localised_Live',
+            $queries['de_AT'],
+            'buildQueries should not have key for live table'
+        );
+        $this->assertArrayHasKey(
+            'SiteTree_Localised_Versions',
+            $queries['de_AT'],
+            'buildQueries should not have key for versions table'
+        );
+        $this->assertArrayHasKey(
+            'FluentTestPage_Localised',
+            $queries['de_AT'],
+            'buildQueries should have key for base table'
+        );
+        $this->assertArrayHasKey(
+            'FluentTestPage_Localised_Live',
+            $queries['de_AT'],
+            'buildQueries should not have key for live table'
+        );
+        $this->assertArrayHasKey(
+            'FluentTestPage_Localised_Versions',
+            $queries['de_AT'],
+            'buildQueries should not have key for versions table'
+        );
     }
 
     public function testQueryBuilderBuildsQueriesForAllNeededTablesOfADataObject()
@@ -553,18 +662,36 @@ class FluentMigrationTaskTest extends SapphireTest
 
         $this->assertArrayHasKey('de_AT', $queries, 'buildQueries should build queries for de_AT');
 
-        $this->assertArrayHasKey('SiteTree_Localised', $queries['de_AT'],
-            'buildQueries should have key for base table');
-        $this->assertArrayHasKey('SiteTree_Localised_Live', $queries['de_AT'],
-            'buildQueries should not have key for live table');
-        $this->assertArrayHasKey('SiteTree_Localised_Versions', $queries['de_AT'],
-            'buildQueries should not have key for versions table');
-        $this->assertArrayHasKey('FluentTestPage_Localised', $queries['de_AT'],
-            'buildQueries should have key for base table');
-        $this->assertArrayHasKey('FluentTestPage_Localised_Live', $queries['de_AT'],
-            'buildQueries should not have key for live table');
-        $this->assertArrayHasKey('FluentTestPage_Localised_Versions', $queries['de_AT'],
-            'buildQueries should not have key for versions table');
+        $this->assertArrayHasKey(
+            'SiteTree_Localised',
+            $queries['de_AT'],
+            'buildQueries should have key for base table'
+        );
+        $this->assertArrayHasKey(
+            'SiteTree_Localised_Live',
+            $queries['de_AT'],
+            'buildQueries should not have key for live table'
+        );
+        $this->assertArrayHasKey(
+            'SiteTree_Localised_Versions',
+            $queries['de_AT'],
+            'buildQueries should not have key for versions table'
+        );
+        $this->assertArrayHasKey(
+            'FluentTestPage_Localised',
+            $queries['de_AT'],
+            'buildQueries should have key for base table'
+        );
+        $this->assertArrayHasKey(
+            'FluentTestPage_Localised_Live',
+            $queries['de_AT'],
+            'buildQueries should not have key for live table'
+        );
+        $this->assertArrayHasKey(
+            'FluentTestPage_Localised_Versions',
+            $queries['de_AT'],
+            'buildQueries should not have key for versions table'
+        );
     }
     /**
      * @useDatabase false
@@ -580,7 +707,6 @@ class FluentMigrationTaskTest extends SapphireTest
         $task = FluentMigrationTask::create();
 
         $this->assertEquals($locales, $task->getLocales(), 'getLocales() should get locales from old fluent config');
-
     }
 
     /**
@@ -603,7 +729,6 @@ class FluentMigrationTaskTest extends SapphireTest
         $task = FluentMigrationTask::create();
 
         $this->assertEquals('en_US', $task->getDefaultLocale(), 'getDefaultLocale() should get default from old fluent config');
-
     }
 
     /**
