@@ -233,7 +233,7 @@ class FluentMigrationTaskTest extends SapphireTest
         $this->assertFalse($this->hasLocalisedRecord($chair, 'en_US'),
             'chair should not exist in locale en_US before migration');
 
-        $table->doPublish();
+        $table->copyVersionToStage(Versioned::DRAFT, Versioned::LIVE);
         $this->assertTrue($table->isPublished(), 'Publishing of Table went wrong');
         $this->assertFalse($chair->isPublished(), 'Chair should be still unpublished');
 
