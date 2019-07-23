@@ -22,6 +22,7 @@ use TractorCow\Fluent\Extension\FluentVersionedExtension;
  *
  * Assumptions:
  * - we still have the locales defined in Fluent.locales yml config, but we also have the locales defined in the db
+ * - the default locale is defined in Fluent.locales yml config and matches that in the DB
  *
  * TODO:
  * - parameter for dry-run
@@ -55,7 +56,7 @@ class FluentMigrationTask extends BuildTask
             '%s' AS `Locale`,
             %s
         FROM `%s`
-        WHERE %s
+        %s
     ON DUPLICATE KEY UPDATE
         %s
     ;
@@ -120,6 +121,23 @@ class FluentMigrationTask extends BuildTask
     }
 
     /**
+     * We assume that the old config is still available to get the default locale
+     *
+     * @return array
+     * @throws \Exception
+     */
+    public function getDefaultLocale()
+    {
+        $defaultLocale = Config::inst()->get('Fluent', 'default_locale');
+
+        if (empty($defaultLocale)) {
+            throw new \Exception('Fluent.default_locale is required');
+        }
+
+        return $defaultLocale;
+    }
+
+    /**
      * @param $tableFields
      * @param $locale
      * @return array
@@ -143,7 +161,9 @@ class FluentMigrationTask extends BuildTask
                         $sourceTable = "{$table}{$suffix}";
                         $selectFields = $this->buildSelectFieldList($sourceTable, $fields, $locale);
                         $updateFields = $this->buildUpdateFieldList($sourceTable, $fields, $locale);
-                        $whereClause = $this->buildWhere($fields, $locale);
+                        $whereClause = ($locale == $this->getDefaultLocale())
+                            ? ''
+                            : $this->buildWhere($fields, $locale);
                         if ($suffix === '_Versions') {
                             $versionSelector = 'Version,';
                             $idField = 'RecordID';
@@ -242,7 +262,7 @@ class FluentMigrationTask extends BuildTask
                 $fields
             )
         );
-        return "({$whereFields})";
+        return "WHERE ({$whereFields})";
     }
 
     /**

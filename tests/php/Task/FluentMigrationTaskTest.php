@@ -35,6 +35,12 @@ class FluentMigrationTaskTest extends SapphireTest
         TranslatedPage::class
     ];
 
+    public function setUp()
+    {
+        parent::setUp();
+        Config::modify()->set('Fluent', 'default_locale', 'en_US');
+    }
+
     /**
      * @useDatabase false
      */
@@ -354,14 +360,14 @@ class FluentMigrationTaskTest extends SapphireTest
 
     public function testMigrationTaskDoesNotCreateRecordIfNoTranslationsExist()
     {
-        Config::modify()->set('Fluent', 'locales', ['en_US', 'de_AT']);
+        Config::modify()->set('Fluent', 'locales', ['en_US', 'de_AT', 'en_NZ']);
 
         $partiallyTranslated = $this->objFromFixture(TranslatedDataObject::class, 'partiallyTranslated');
 
         $this->assertFalse($this->hasLocalisedRecord($partiallyTranslated, 'de_AT'),
             'partiallyTranslated should not exist in locale de_AT before migration');
-        $this->assertFalse($this->hasLocalisedRecord($partiallyTranslated, 'en_US'),
-            'partiallyTranslated should not exist in locale en_US before migration');
+        $this->assertFalse($this->hasLocalisedRecord($partiallyTranslated, 'en_NZ'),
+            'partiallyTranslated should not exist in locale en_NZ before migration');
 
         $task = FluentMigrationTask::create();
         $task->setMigrateSubclassesOf(TranslatedDataObject::class);
@@ -370,8 +376,30 @@ class FluentMigrationTaskTest extends SapphireTest
 
         $this->assertTrue($this->hasLocalisedRecord($partiallyTranslated, 'de_AT'),
             'partiallyTranslated should exist in locale de_AT after migration');
-        $this->assertFalse($this->hasLocalisedRecord($partiallyTranslated, 'en_US'),
-            'partiallyTranslated should not exist in locale en_US after migration');
+        $this->assertFalse($this->hasLocalisedRecord($partiallyTranslated, 'en_NZ'),
+            'partiallyTranslated should not exist in locale en_NZ after migration');
+    }
+
+    public function testMigrationTaskAlwaysCreatesRecordForDefaultLocale()
+    {
+        Config::modify()->set('Fluent', 'locales', ['en_US', 'de_AT']);
+
+        $unTranslated = $this->objFromFixture(TranslatedDataObject::class, 'unTranslated');
+
+        $this->assertFalse($this->hasLocalisedRecord($unTranslated, 'de_AT'),
+            'unTranslated should not exist in locale de_AT before migration');
+        $this->assertFalse($this->hasLocalisedRecord($unTranslated, 'en_US'),
+            'unTranslated should not exist in locale en_US before migration');
+
+        $task = FluentMigrationTask::create();
+        $task->setMigrateSubclassesOf(TranslatedDataObject::class);
+
+        $task->run($this->getRequest());
+
+        $this->assertTrue($this->hasLocalisedRecord($unTranslated, 'en_US'),
+            'unTranslated should not exist in locale en_US after migration');
+        $this->assertFalse($this->hasLocalisedRecord($unTranslated, 'de_AT'),
+            'unTranslated should exist in locale de_AT after migration');
     }
 
     /**
@@ -565,6 +593,29 @@ class FluentMigrationTaskTest extends SapphireTest
         Config::modify()->set('Fluent', 'locales', []);
         $task = FluentMigrationTask::create();
         $task->getLocales();
+    }
+
+    /**
+     * @useDatabase false
+     */
+    public function testGetDefaultLocale()
+    {
+        $task = FluentMigrationTask::create();
+
+        $this->assertEquals('en_US', $task->getDefaultLocale(), 'getDefaultLocale() should get default from old fluent config');
+
+    }
+
+    /**
+     * @expectedException Exception
+     * @expectedExceptionMessage Fluent.default_locale is required
+     * @useDatabase false
+     */
+    public function testGetDefaultLocaleThrowsExceptionWhenNoConfigIsFound()
+    {
+        Config::modify()->set('Fluent', 'default_locale', null);
+        $task = FluentMigrationTask::create();
+        $task->getDefaultLocale();
     }
 
     /**
