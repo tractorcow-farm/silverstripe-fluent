@@ -55,6 +55,7 @@ class FluentMigrationTask extends BuildTask
             '%s' AS `Locale`,
             %s
         FROM `%s`
+        WHERE %s
     ON DUPLICATE KEY UPDATE
         %s
     ;
@@ -142,6 +143,7 @@ class FluentMigrationTask extends BuildTask
                         $sourceTable = "{$table}{$suffix}";
                         $selectFields = $this->buildSelectFieldList($sourceTable, $fields, $locale);
                         $updateFields = $this->buildUpdateFieldList($sourceTable, $fields, $locale);
+                        $whereClause = $this->buildWhere($fields, $locale);
                         if ($suffix === '_Versions') {
                             $versionSelector = 'Version,';
                             $idField = 'RecordID';
@@ -157,6 +159,7 @@ class FluentMigrationTask extends BuildTask
                             $locale,
                             $selectFields,
                             $sourceTable,
+                            $whereClause,
                             $updateFields
                         );
                     }
@@ -217,6 +220,29 @@ class FluentMigrationTask extends BuildTask
                 $fields
             )
         );
+    }
+
+    /**
+     * Build a where clause to ensure we only get locales that have translations
+     * for one or more fields
+     *
+     * @param string $sourceTable
+     * @param array $fields
+     * @param string $locale
+     * @return string
+     */
+    protected function buildWhere($fields, $locale)
+    {
+        $whereFields = implode(
+            ' OR ',
+            array_map(
+                function ($field) use ($locale) {
+                    return sprintf('`%s_%s` IS NOT NULL', $field, $locale);
+                },
+                $fields
+            )
+        );
+        return "({$whereFields})";
     }
 
     /**

@@ -352,6 +352,28 @@ class FluentMigrationTaskTest extends SapphireTest
         $this->assertEquals('idiot box', $row['Name']);
     }
 
+    public function testMigrationTaskDoesNotCreateRecordIfNoTranslationsExist()
+    {
+        Config::modify()->set('Fluent', 'locales', ['en_US', 'de_AT']);
+
+        $partiallyTranslated = $this->objFromFixture(TranslatedDataObject::class, 'partiallyTranslated');
+
+        $this->assertFalse($this->hasLocalisedRecord($partiallyTranslated, 'de_AT'),
+            'partiallyTranslated should not exist in locale de_AT before migration');
+        $this->assertFalse($this->hasLocalisedRecord($partiallyTranslated, 'en_US'),
+            'partiallyTranslated should not exist in locale en_US before migration');
+
+        $task = FluentMigrationTask::create();
+        $task->setMigrateSubclassesOf(TranslatedDataObject::class);
+
+        $task->run($this->getRequest());
+
+        $this->assertTrue($this->hasLocalisedRecord($partiallyTranslated, 'de_AT'),
+            'partiallyTranslated should exist in locale de_AT after migration');
+        $this->assertFalse($this->hasLocalisedRecord($partiallyTranslated, 'en_US'),
+            'partiallyTranslated should not exist in locale en_US after migration');
+    }
+
     /**
      * Check if a localised record exists for the given locale
      *
