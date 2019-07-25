@@ -2,20 +2,17 @@
 
 namespace TractorCow\Fluent\Extension;
 
+use SilverStripe\Forms\CheckboxSetField;
 use SilverStripe\Forms\FieldList;
-use SilverStripe\Forms\GridField\GridField;
-use SilverStripe\Forms\GridField\GridFieldAddNewButton;
-use SilverStripe\Forms\GridField\GridFieldConfig_RelationEditor;
-use SilverStripe\Forms\Tab;
 use SilverStripe\ORM\DataExtension;
 use SilverStripe\ORM\DataList;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\DataQuery;
 use SilverStripe\ORM\Queries\SQLSelect;
 use SilverStripe\Versioned\Versioned;
+use TractorCow\Fluent\Model\Delete\UsesDeletePolicy;
 use TractorCow\Fluent\Model\Locale;
 use TractorCow\Fluent\State\FluentState;
-use SilverStripe\Forms\CheckboxSetField;
 
 /**
  * @property FluentFilteredExtension|DataObject $owner
@@ -23,6 +20,11 @@ use SilverStripe\Forms\CheckboxSetField;
  */
 class FluentFilteredExtension extends DataExtension
 {
+    /**
+     * Deletions are managed via DeletePolicy
+     */
+    use UsesDeletePolicy;
+
     /**
      * The table suffix that will be applied to a DataObject's base table.
      */
@@ -46,14 +48,14 @@ class FluentFilteredExtension extends DataExtension
             'Root.FilteredLocales',
             CheckboxSetField::create(
                 'FilteredLocales',
-                _t(__CLASS__.'.FILTERED_LOCALES', 'Display in the following locales'),
+                _t(__CLASS__ . '.FILTERED_LOCALES', 'Display in the following locales'),
                 $locales
             )
         );
 
         $fields
             ->fieldByName('Root.FilteredLocales')
-            ->setTitle(_t(__CLASS__.'.TAB_LOCALES', 'Locales'));
+            ->setTitle(_t(__CLASS__ . '.TAB_LOCALES', 'Locales'));
     }
 
     /**
@@ -77,7 +79,7 @@ class FluentFilteredExtension extends DataExtension
 
         // Add new status flag for "not visible".
         $flags['fluentfiltered'] = [
-            'text' => null,
+            'text'  => null,
             'title' => _t(__CLASS__ . '.LOCALEFILTEREDHELP', 'This page is not visible in this locale')
         ];
     }
@@ -100,7 +102,7 @@ class FluentFilteredExtension extends DataExtension
     }
 
     /**
-     * @param SQLSelect $query
+     * @param SQLSelect      $query
      * @param DataQuery|null $dataQuery
      */
     public function augmentSQL(SQLSelect $query, DataQuery $dataQuery = null)

@@ -16,9 +16,9 @@ use SilverStripe\ORM\DataQuery;
 use SilverStripe\ORM\DB;
 use SilverStripe\ORM\FieldType\DBField;
 use SilverStripe\ORM\Queries\SQLConditionGroup;
-use SilverStripe\ORM\Queries\SQLDelete;
 use SilverStripe\ORM\Queries\SQLSelect;
 use SilverStripe\View\ArrayData;
+use TractorCow\Fluent\Model\Delete\UsesDeletePolicy;
 use TractorCow\Fluent\Model\Locale;
 use TractorCow\Fluent\State\FluentState;
 
@@ -37,6 +37,11 @@ use TractorCow\Fluent\State\FluentState;
 class FluentExtension extends DataExtension
 {
     /**
+     * Deletions are managed via DeletePolicy
+     */
+    use UsesDeletePolicy;
+
+    /**
      * The table suffix that will be applied to create localisation tables
      */
     const SUFFIX = 'Localised';
@@ -53,9 +58,9 @@ class FluentExtension extends DataExtension
      * @var array
      */
     private static $db_for_localised_table = [
-        'ID' => 'PrimaryKey',
+        'ID'       => 'PrimaryKey',
         'RecordID' => 'Int',
-        'Locale' => 'Varchar(10)',
+        'Locale'   => 'Varchar(10)',
     ];
 
     /**
@@ -66,7 +71,7 @@ class FluentExtension extends DataExtension
      */
     private static $indexes_for_localised_table = [
         'Fluent_Record' => [
-            'type' => 'unique',
+            'type'    => 'unique',
             'columns' => [
                 'RecordID',
                 'Locale',
@@ -173,7 +178,7 @@ class FluentExtension extends DataExtension
      * Check if a field is marked for localisation
      *
      * @param string $field Field name
-     * @param string $type Field type
+     * @param string $type  Field type
      * @param string $class Class this field is defined in
      * @return bool
      */
@@ -244,8 +249,8 @@ class FluentExtension extends DataExtension
      * Helper function to check if the value given is present in any of the patterns.
      * This function is case sensitive by default.
      *
-     * @param string $value A string value to check against, potentially with parameters (E.g. 'Varchar(1023)')
-     * @param array $patterns A list of strings, some of which may be regular expressions
+     * @param string $value    A string value to check against, potentially with parameters (E.g. 'Varchar(1023)')
+     * @param array  $patterns A list of strings, some of which may be regular expressions
      * @return bool True if this $value is present in any of the $patterns
      */
     protected function anyMatch($value, $patterns)
@@ -301,8 +306,8 @@ class FluentExtension extends DataExtension
      * Require the given localisation table
      *
      * @param string $localisedTable
-     * @param array $fields
-     * @param array $indexes
+     * @param array  $fields
+     * @param array  $indexes
      */
     protected function augmentDatabaseRequireTable($localisedTable, $fields, $indexes)
     {
@@ -428,80 +433,6 @@ class FluentExtension extends DataExtension
     }
 
     /**
-     * Override delete behaviour
-     *
-     * @param array $queriedTables
-     */
-    public function updateDeleteTables(&$queriedTables)
-    {
-        // Ensure a locale exists
-        $locale = Locale::getCurrentLocale();
-        if (!$locale) {
-            return;
-        }
-
-        // Fluent takes over deletion of objects
-        $queriedTables = [];
-        $localisedTables = $this->getLocalisedTables();
-        $tableClasses = ClassInfo::ancestry($this->owner, true);
-        foreach ($tableClasses as $class) {
-            // Check main table name
-            $table = DataObject::getSchema()->tableName($class);
-
-            // Create root table delete
-            $rootTable = $this->getDeleteTableTarget($table);
-            $rootDelete = SQLDelete::create("\"{$rootTable}\"")
-                ->addWhere(["\"{$rootTable}\".\"ID\"" => $this->owner->ID]);
-
-            // If table isn't localised, simple delete
-            if (!isset($localisedTables[$table])) {
-                $baseTable = $this->getDeleteTableTarget($this->owner->baseTable());
-
-                // The base table isn't localised? Delete the record then.
-                if ($baseTable === $rootTable) {
-                    $rootDelete->execute();
-                    continue;
-                }
-
-                $rootDelete
-                    ->setDelete("\"{$rootTable}\"")
-                    ->addLeftJoin(
-                        $baseTable,
-                        "\"{$rootTable}\".\"ID\" = \"{$baseTable}\".\"ID\""
-                    )
-                    // Only when join matches no localisations is it safe to delete
-                    ->addWhere("\"{$baseTable}\".\"ID\" IS NULL")
-                    ->execute();
-
-                continue;
-            }
-
-            // Remove _Localised record
-            $localisedTable = $this->getDeleteTableTarget($table, $locale);
-            $localisedDelete = SQLDelete::create(
-                "\"{$localisedTable}\"",
-                [
-                    '"Locale"' => $locale->Locale,
-                    '"RecordID"' => $this->owner->ID,
-                ]
-            );
-            $localisedDelete->execute();
-
-            // Remove orphaned ONLY base table (delete after deleting last localised row)
-            // Note: No "Locale" filter as we are excluding any tables that have any localised records
-            $rootDelete
-                ->setDelete("\"{$rootTable}\"")
-                ->addLeftJoin(
-                    $localisedTable,
-                    "\"{$rootTable}\".\"ID\" = \"{$localisedTable}\".\"RecordID\""
-                )
-                // Only when join matches no localisations is it safe to delete
-                ->addWhere("\"{$localisedTable}\".\"ID\" IS NULL")
-                ->execute();
-        }
-    }
-
-    /**
      * Force all changes, since we may need to cross-publish unchanged records between locales. Without this,
      * loading a page in a different locale and pressing "save" won't actually make the record available in
      * this locale.
@@ -555,10 +486,10 @@ class FluentExtension extends DataExtension
     /**
      * Localise a database manipluation from one table to another
      *
-     * @param array $manipulation
-     * @param string $table Table in manipulation to copy from
-     * @param string $localeTable Table to copy manipulation to
-     * @param array $localisedFields List of fields to filter write to
+     * @param array  $manipulation
+     * @param string $table           Table in manipulation to copy from
+     * @param string $localeTable     Table to copy manipulation to
+     * @param array  $localisedFields List of fields to filter write to
      * @param Locale $locale
      */
     protected function localiseManipulationTable(&$manipulation, $table, $localeTable, $localisedFields, Locale $locale)
@@ -598,7 +529,7 @@ class FluentExtension extends DataExtension
         unset($localisedUpdate['id']);
         $localisedUpdate['where'] = [
             "\"{$localeTable}\".\"RecordID\"" => $id,
-            "\"{$localeTable}\".\"Locale\"" => $locale->getLocale(),
+            "\"{$localeTable}\".\"Locale\""   => $locale->getLocale(),
         ];
 
         // Save back modifications to the manipulation
@@ -642,7 +573,7 @@ class FluentExtension extends DataExtension
      * @param string $locale If passed, this is the locale we wish to delete in. If empty this is the root table
      * @return string
      */
-    protected function getDeleteTableTarget($tableName, $locale = '')
+    public function getDeleteTableTarget($tableName, $locale = '')
     {
         if (!$locale) {
             return $tableName;
@@ -820,15 +751,15 @@ class FluentExtension extends DataExtension
 
         // Store basic locale information
         return ArrayData::create([
-            'Locale' => $locale,
-            'LocaleRFC1766' => i18n::convert_rfc1766($locale),
-            'URLSegment' => $localeObj->getURLSegment(),
-            'Title' => $localeObj->getTitle(),
+            'Locale'         => $locale,
+            'LocaleRFC1766'  => i18n::convert_rfc1766($locale),
+            'URLSegment'     => $localeObj->getURLSegment(),
+            'Title'          => $localeObj->getTitle(),
             'LanguageNative' => $localeObj->getNativeName(),
-            'Language' => i18n::getData()->langFromLocale($locale),
-            'Link' => $link,
-            'AbsoluteLink' => $link ? Director::absoluteURL($link) : null,
-            'LinkingMode' => $linkingMode
+            'Language'       => i18n::getData()->langFromLocale($locale),
+            'Link'           => $link,
+            'AbsoluteLink'   => $link ? Director::absoluteURL($link) : null,
+            'LinkingMode'    => $linkingMode
         ]);
     }
 
@@ -965,8 +896,8 @@ class FluentExtension extends DataExtension
      * If successful, return an array [ thetable, thefield, fqn ]
      * Otherwise [ null, null ]
      *
-     * @param array $tables Map of known table and nested fields to search
-     * @param string $sql The SQL string to inspect
+     * @param array  $tables Map of known table and nested fields to search
+     * @param string $sql    The SQL string to inspect
      * @return array Three item array with table and field and a flag for whether the fragment is fully quolified
      */
     protected function detectLocalisedTableField($tables, $sql)

@@ -2,14 +2,13 @@
 
 namespace TractorCow\Fluent\Tests\Model;
 
+use SilverStripe\Core\Config\Config;
 use SilverStripe\Dev\SapphireTest;
 use SilverStripe\Forms\CheckboxField;
-use TractorCow\Fluent\Extension\FluentExtension;
 use TractorCow\Fluent\Extension\FluentDirectorExtension;
 use TractorCow\Fluent\Model\Domain;
 use TractorCow\Fluent\Model\Locale;
 use TractorCow\Fluent\State\FluentState;
-use SilverStripe\Core\Config\Config;
 
 class LocaleTest extends SapphireTest
 {
@@ -68,7 +67,7 @@ class LocaleTest extends SapphireTest
      * @dataProvider isLocaleProvider
      * @param string $locale
      * @param string $input
-     * @param bool $expected
+     * @param bool   $expected
      */
     public function testIsLocale($locale, $input, $expected)
     {
@@ -143,8 +142,8 @@ class LocaleTest extends SapphireTest
     {
         $esUS = Locale::getByLocale('es_US');
         $this->assertListEquals([
-            [ 'Locale' => 'es_US' ],
-            [ 'Locale' => 'es_ES' ],
+            ['Locale' => 'es_US'],
+            ['Locale' => 'es_ES'],
         ], $esUS->getSiblingLocales());
 
         // Test without domain mode
@@ -152,10 +151,10 @@ class LocaleTest extends SapphireTest
 
         $esUS = Locale::getByLocale('es_US');
         $this->assertListEquals([
-            [ 'Locale' => 'es_US' ],
-            [ 'Locale' => 'es_ES' ],
-            [ 'Locale' => 'en_NZ' ],
-            [ 'Locale' => 'en_AU' ],
+            ['Locale' => 'es_US'],
+            ['Locale' => 'es_ES'],
+            ['Locale' => 'en_NZ'],
+            ['Locale' => 'en_AU'],
         ], $esUS->getSiblingLocales());
     }
 
@@ -211,7 +210,7 @@ class LocaleTest extends SapphireTest
 
         /** @var CheckboxField $checkbox */
         $checkbox = $fields->fieldByName('Root.Main.IsGlobalDefault');
-        $this->assertTrue((bool) $checkbox->Value());
+        $this->assertTrue((bool)$checkbox->Value());
     }
 
     public function testGetLocaleSuffix()

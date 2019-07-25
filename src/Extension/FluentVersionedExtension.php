@@ -254,7 +254,7 @@ class FluentVersionedExtension extends FluentExtension
      * @param string $locale
      * @return string
      */
-    protected function getDeleteTableTarget($tableName, $locale = '')
+    public function getDeleteTableTarget($tableName, $locale = '')
     {
         // Rewrite to _Live when deleting from live / unpublishing
         $table = parent::getDeleteTableTarget($tableName, $locale);
