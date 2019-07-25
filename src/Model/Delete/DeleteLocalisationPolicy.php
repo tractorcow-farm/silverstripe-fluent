@@ -20,7 +20,11 @@ class DeleteLocalisationPolicy implements DeletePolicy
 {
     /**
      * @param DataObject|FluentExtension $record
-     * @return bool
+     * @return bool Determines if any dependent objects block upstream deletion (e.g. db / model constraints)
+     *              If this returns true, then there are additional conditions that must be satisfied before
+     *              upstream relational constraints are safe to delete.
+     *              If this returns true, then all downstream entities are reported purged, and upstream
+     *              relational constraints can be deleted.
      */
     public function delete(DataObject $record)
     {
@@ -46,7 +50,7 @@ class DeleteLocalisationPolicy implements DeletePolicy
             }
 
             // Remove _Localised record
-            $localisedTable = $record->getDeleteTableTarget($table, $locale);
+            $localisedTable = $record->deleteTableTarget($table, $locale);
             $localisedDelete = SQLDelete::create(
                 "\"{$localisedTable}\"",
                 [
@@ -79,7 +83,7 @@ class DeleteLocalisationPolicy implements DeletePolicy
         }
 
         // Check if any localisations yet remain for this record (any locale)
-        $localisedBaseTable = $record->getDeleteTableTarget($record->baseTable(), $locale);
+        $localisedBaseTable = $record->deleteTableTarget($record->baseTable(), $locale);
         $localePlaceholders = DB::placeholders($otherLocales);
         $blockedQuery = SQLSelect::create()
             ->setSelect('COUNT ("ID")')

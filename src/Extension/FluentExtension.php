@@ -565,6 +565,18 @@ class FluentExtension extends DataExtension
         }
         return $localisedTable;
     }
+    
+    /**
+     * Public accessor for getDeleteTableTarget
+     *
+     * @param string $tableName
+     * @param string $locale
+     * @return string
+     */
+    public function deleteTableTarget($tableName, $locale = '')
+    {
+        return $this->getDeleteTableTarget($tableName, $locale);
+    }
 
     /**
      * Get real table name for deleting records (Note: Must have all table replacements applied)
@@ -573,7 +585,7 @@ class FluentExtension extends DataExtension
      * @param string $locale If passed, this is the locale we wish to delete in. If empty this is the root table
      * @return string
      */
-    public function getDeleteTableTarget($tableName, $locale = '')
+    protected function getDeleteTableTarget($tableName, $locale = '')
     {
         if (!$locale) {
             return $tableName;
