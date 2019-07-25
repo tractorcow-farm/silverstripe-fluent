@@ -2,13 +2,14 @@
 
 namespace TractorCow\Fluent\Tests\Model\Delete\Fixtures;
 
+use SilverStripe\Dev\TestOnly;
 use SilverStripe\ORM\DataObject;
 use TractorCow\Fluent\Extension\FluentExtension;
 
 /**
  * @mixin FluentExtension
  */
-class LocalisedRecord extends DataObject
+class LocalisedRecord extends DataObject implements TestOnly
 {
     private static $table_name = 'FluentDeleteTest_LocalisedRecord';
 
