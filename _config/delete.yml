@@ -1,0 +1,6 @@
+---
+Name: fluentdelete
+---
+SilverStripe\Core\Injector\Injector:
+  TractorCow\Fluent\Model\Delete\DeletePolicy:
+    factory: \TractorCow\Fluent\Model\Delete\DeletePolicyFactory
