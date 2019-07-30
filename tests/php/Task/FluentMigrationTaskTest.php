@@ -465,11 +465,11 @@ class FluentMigrationTaskTest extends SapphireTest
 
         $this->assertTrue(
             $this->hasLocalisedRecord($unTranslated, 'en_US'),
-            'unTranslated should not exist in locale en_US after migration'
+            'unTranslated should exist in locale en_US after migration'
         );
         $this->assertFalse(
             $this->hasLocalisedRecord($unTranslated, 'de_AT'),
-            'unTranslated should exist in locale de_AT after migration'
+            'unTranslated should not exist in locale de_AT after migration'
         );
     }
 
