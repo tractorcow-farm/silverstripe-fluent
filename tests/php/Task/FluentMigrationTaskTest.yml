@@ -43,6 +43,19 @@ TractorCow\Fluent\Tests\Task\FluentMigrationTaskTest\TranslatedDataObjectSubclas
     Category_en_US: 'deciduous trees'
     Category_de_AT: 'Laubbäume'
 
+TractorCow\Fluent\Tests\Task\FluentMigrationTaskTest\TranslatedDataObjectPartialSubclass:
+  dog:
+    Title: 'A Dog'
+    Title_en_US: 'A Dog'
+    Title_de_AT: 'Ein Hund'
+    Name: 'Sheepdog'
+    Name_en_US: 'Sheepdog'
+    Name_de_AT: 'Schäferhund'
+    Category: 'working dogs'
+    Category_en_US: 'working dogs'
+    Category_de_AT: 'Arbeitshunde'
+    Colour: 'Brown'
+
 TractorCow\Fluent\Tests\Task\FluentMigrationTaskTest\TranslatedPage:
   table:
     Title: 'A Table'

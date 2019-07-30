@@ -15,6 +15,7 @@ use TractorCow\Fluent\State\FluentState;
 use TractorCow\Fluent\Task\FluentMigrationTask;
 use TractorCow\Fluent\Tests\Task\FluentMigrationTaskTest\TranslatedDataObject;
 use TractorCow\Fluent\Tests\Task\FluentMigrationTaskTest\TranslatedDataObjectSubclass;
+use TractorCow\Fluent\Tests\Task\FluentMigrationTaskTest\TranslatedDataObjectPartialSubclass;
 use TractorCow\Fluent\Tests\Task\FluentMigrationTaskTest\TranslatedPage;
 
 /**
@@ -32,6 +33,7 @@ class FluentMigrationTaskTest extends SapphireTest
     protected static $extra_dataobjects = [
         TranslatedDataObject::class,
         TranslatedDataObjectSubclass::class,
+        TranslatedDataObjectPartialSubclass::class,
         TranslatedPage::class
     ];
 
@@ -471,6 +473,44 @@ class FluentMigrationTaskTest extends SapphireTest
             $this->hasLocalisedRecord($unTranslated, 'de_AT'),
             'unTranslated should not exist in locale de_AT after migration'
         );
+    }
+
+    public function testMigrationTaskWritesNullIfSourceFieldDoesNotExist()
+    {
+        Config::modify()->set('Fluent', 'locales', ['en_US', 'de_AT']);
+
+        $dog = $this->objFromFixture(TranslatedDataObjectPartialSubclass::class, 'dog');
+
+        $this->assertFalse($this->hasLocalisedRecord($dog, 'de_AT'),
+            'dog should not exist in locale de_AT before migration');
+        $this->assertFalse($this->hasLocalisedRecord($dog, 'en_US'),
+            'dog should not exist in locale en_US before migration');
+
+        $task = FluentMigrationTask::create();
+        $task->setMigrateSubclassesOf(TranslatedDataObject::class);
+
+        $task->run($this->getRequest());
+
+        $this->assertTrue($this->hasLocalisedRecord($dog, 'en_US'),
+            'dog should exist in locale en_US after migration');
+        $this->assertTrue($this->hasLocalisedRecord($dog, 'de_AT'),
+            'dog should exist in locale de_AT after migration');
+
+        $id = $dog->ID;
+        $dogDE = FluentState::singleton()->withState(function ($newState) use ($id) {
+
+            $newState->setLocale('de_AT');
+
+            return TranslatedDataObject::get()->byID($id);
+        });
+        $this->assertEquals('Brown', $dogDE->Colour, 'German dog should have default for translated Colour');
+        $dogUS = FluentState::singleton()->withState(function ($newState) use ($id) {
+
+            $newState->setLocale('en_US');
+
+            return TranslatedDataObject::get()->byID($id);
+        });
+        $this->assertEquals('Brown', $dogUS->Colour, 'English dog should have default for translated Colour');
     }
 
     /**
