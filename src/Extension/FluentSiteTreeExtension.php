@@ -254,9 +254,9 @@ class FluentSiteTreeExtension extends FluentVersionedExtension
             return $this;
         }
 
-        // Mock frontend and set link to parent object / page
-        FluentState::singleton()
-            ->withState(function (FluentState $tempState) use ($segmentField) {
+        // Mock frontend and get link to parent object / page
+        $baseURL = FluentState::singleton()
+            ->withState(function (FluentState $tempState) {
                 $tempState->setIsDomainMode(true);
                 $tempState->setIsFrontend(true);
 
@@ -274,14 +274,15 @@ class FluentSiteTreeExtension extends FluentVersionedExtension
                 if ($domain) {
                     $parentBase = Controller::join_links($domain->Link(), Director::baseURL());
                 } else {
-                    // Use any existing pre-configured base URL prefix for the field
-                    $parentBase = $segmentField->getURLPrefix();
+                    $parentBase = Director::absoluteBaseURL();
                 }
 
                 // Join base / relative links
-                $segmentField->setURLPrefix(Controller::join_links($parentBase, $parentRelative));
+                return Controller::join_links($parentBase, $parentRelative);
             });
 
+
+        $segmentField->setURLPrefix($baseURL);
         return $this;
     }
 

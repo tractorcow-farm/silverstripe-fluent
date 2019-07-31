@@ -316,7 +316,7 @@ class FluentSiteTreeExtensionTest extends SapphireTest
                 $fields = $this->objFromFixture(Page::class, $fixture)->getCMSFields();
 
                 /** @var SiteTreeURLSegmentField $segmentField */
-                $segmentField = $fields->dataFieldByName('URLSegment');
+                $segmentField = $fields->fieldByName('Root.Main.URLSegment');
                 $this->assertInstanceOf(SiteTreeURLSegmentField::class, $segmentField);
 
                 $this->assertSame($expected, $segmentField->getURLPrefix());
