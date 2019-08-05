@@ -155,10 +155,10 @@ class FluentMigrationTask extends BuildTask
 
             foreach ($tableFields as $table => $fields) {
                 if (count($fields) > 0) {
-                    $existingFields = $this->getExistingFields($table);
                     foreach ($suffixes as $suffix) {
                         $localisedTable = "{$table}_Localised{$suffix}";
                         $sourceTable = "{$table}{$suffix}";
+                        $existingFields = $this->getExistingFields($sourceTable);
                         $selectFields = $this->buildSelectFieldList($sourceTable, $fields, $locale, $existingFields);
                         $updateFields = $this->buildUpdateFieldList($sourceTable, $fields, $locale, $existingFields);
                         $whereClause = ($locale == $this->getDefaultLocale())
