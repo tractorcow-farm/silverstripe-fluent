@@ -158,11 +158,12 @@ class FluentMigrationTask extends BuildTask
                     foreach ($suffixes as $suffix) {
                         $localisedTable = "{$table}_Localised{$suffix}";
                         $sourceTable = "{$table}{$suffix}";
-                        $selectFields = $this->buildSelectFieldList($sourceTable, $fields, $locale);
-                        $updateFields = $this->buildUpdateFieldList($sourceTable, $fields, $locale);
+                        $existingFields = $this->getExistingFields($sourceTable);
+                        $selectFields = $this->buildSelectFieldList($sourceTable, $fields, $locale, $existingFields);
+                        $updateFields = $this->buildUpdateFieldList($sourceTable, $fields, $locale, $existingFields);
                         $whereClause = ($locale == $this->getDefaultLocale())
                             ? ''
-                            : $this->buildWhere($fields, $locale);
+                            : $this->buildWhere($fields, $locale, $existingFields);
                         if ($suffix === '_Versions') {
                             $versionSelector = 'Version,';
                             $idField = 'RecordID';
@@ -206,17 +207,37 @@ class FluentMigrationTask extends BuildTask
     }
 
     /**
+     * Return the fields that actually exist on a table
+     *
+     * @param string $table
+     * @return array
+     */
+    protected function getExistingFields($table)
+    {
+        $query = sprintf("SHOW COLUMNS from %s", $table);
+        try {
+            return DB::query($query)->column('Field');
+        } catch(\Exception $ex) {
+            return [];
+        }
+    }
+
+    /**
      * @param $fields
      * @param $locale
      * @return string
      */
-    protected function buildSelectFieldList($sourceTable, $fields, $locale)
+    protected function buildSelectFieldList($sourceTable, $fields, $locale, $existingFields)
     {
         return implode(
             ', ',
             array_map(
-                function ($field) use ($locale, $sourceTable) {
-                    return sprintf('COALESCE(`%s_%s`, `%s`.`%s`) AS `%s`', $field, $locale, $sourceTable, $field, $field);
+                function ($field) use ($locale, $sourceTable, $existingFields) {
+                    return sprintf(
+                        '%s AS `%s`',
+                        $this->buildCoalesce($sourceTable, $field, $locale, $existingFields),
+                        $field
+                    );
                 },
                 $fields
             )
@@ -228,39 +249,74 @@ class FluentMigrationTask extends BuildTask
      * @param $locale
      * @return string
      */
-    protected function buildUpdateFieldList($sourceTable, $fields, $locale)
+    protected function buildUpdateFieldList($sourceTable, $fields, $locale, $existingFields)
     {
         return implode(
             ', ',
             array_map(
-                function ($field) use ($locale, $sourceTable) {
-                    return sprintf('`%s` = COALESCE(`%s_%s`, `%s`.`%s`)', $field, $field, $locale, $sourceTable, $field);
+                function ($field) use ($locale, $sourceTable, $existingFields) {
+                    return sprintf(
+                        '`%s` = %s',
+                        $field,
+                        $this->buildCoalesce($sourceTable, $field, $locale, $existingFields)
+                    );
                 },
                 $fields
             )
         );
+    }
+
+    /**
+     * Build a SQL `COALESCE` statement using null if the translated field
+     * doesn't exist
+     *
+     * @param string $sourceTable
+     * @param string $field
+     * @param string $locale
+     * @param array $existingFields
+     * @return string
+     */
+    protected function buildCoalesce($sourceTable, $field, $locale, $existingFields)
+    {
+        $localeField = sprintf('%s_%s', $field, $locale);
+        if (in_array($localeField, $existingFields)) {
+            $localeField = "`$localeField`";
+        } else {
+            $localeField = 'null';
+        }
+        return sprintf('COALESCE(%s, `%s`.`%s`)', $localeField, $sourceTable, $field);
     }
 
     /**
      * Build a where clause to ensure we only get locales that have translations
-     * for one or more fields
+     * for one or more fields. Skip any translated fields that don't exist in the
+     * source table.
      *
      * @param string $sourceTable
      * @param array $fields
      * @param string $locale
      * @return string
      */
-    protected function buildWhere($fields, $locale)
+    protected function buildWhere($fields, $locale, $existingFields)
     {
+        $localeFields = array_map(
+            function($field) use($locale) { return sprintf('%s_%s', $field, $locale); },
+            $fields
+        );
+        $validFields = array_intersect($localeFields, $existingFields);
         $whereFields = implode(
             ' OR ',
             array_map(
                 function ($field) use ($locale) {
-                    return sprintf('`%s_%s` IS NOT NULL', $field, $locale);
+                    return sprintf('`%s` IS NOT NULL', $field, $locale);
                 },
-                $fields
+                $validFields
             )
         );
+        // Skip if no translation fields exist
+        if ($whereFields === '') {
+            $whereFields = 'false';
+        }
         return "WHERE ({$whereFields})";
     }
 
