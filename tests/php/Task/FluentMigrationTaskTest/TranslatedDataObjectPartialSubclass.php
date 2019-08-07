@@ -3,7 +3,6 @@
 
 namespace TractorCow\Fluent\Tests\Task\FluentMigrationTaskTest;
 
-
 class TranslatedDataObjectPartialSubclass extends TranslatedDataObject
 {
     private static $db = [

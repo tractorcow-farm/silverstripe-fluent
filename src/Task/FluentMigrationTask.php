@@ -217,7 +217,7 @@ class FluentMigrationTask extends BuildTask
         $query = sprintf("SHOW COLUMNS from %s", $table);
         try {
             return DB::query($query)->column('Field');
-        } catch(\Exception $ex) {
+        } catch (\Exception $ex) {
             return [];
         }
     }
@@ -300,7 +300,9 @@ class FluentMigrationTask extends BuildTask
     protected function buildWhere($fields, $locale, $existingFields)
     {
         $localeFields = array_map(
-            function($field) use($locale) { return sprintf('%s_%s', $field, $locale); },
+            function ($field) use ($locale) {
+                return sprintf('%s_%s', $field, $locale);
+            },
             $fields
         );
         $validFields = array_intersect($localeFields, $existingFields);

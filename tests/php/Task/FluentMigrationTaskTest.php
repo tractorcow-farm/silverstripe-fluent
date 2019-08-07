@@ -481,20 +481,28 @@ class FluentMigrationTaskTest extends SapphireTest
 
         $dog = $this->objFromFixture(TranslatedDataObjectPartialSubclass::class, 'dog');
 
-        $this->assertFalse($this->hasLocalisedRecord($dog, 'de_AT'),
-            'dog should not exist in locale de_AT before migration');
-        $this->assertFalse($this->hasLocalisedRecord($dog, 'en_US'),
-            'dog should not exist in locale en_US before migration');
+        $this->assertFalse(
+            $this->hasLocalisedRecord($dog, 'de_AT'),
+            'dog should not exist in locale de_AT before migration'
+        );
+        $this->assertFalse(
+            $this->hasLocalisedRecord($dog, 'en_US'),
+            'dog should not exist in locale en_US before migration'
+        );
 
         $task = FluentMigrationTask::create();
         $task->setMigrateSubclassesOf(TranslatedDataObject::class);
 
         $task->run($this->getRequest());
 
-        $this->assertTrue($this->hasLocalisedRecord($dog, 'en_US'),
-            'dog should exist in locale en_US after migration');
-        $this->assertTrue($this->hasLocalisedRecord($dog, 'de_AT'),
-            'dog should exist in locale de_AT after migration');
+        $this->assertTrue(
+            $this->hasLocalisedRecord($dog, 'en_US'),
+            'dog should exist in locale en_US after migration'
+        );
+        $this->assertTrue(
+            $this->hasLocalisedRecord($dog, 'de_AT'),
+            'dog should exist in locale de_AT after migration'
+        );
 
         $id = $dog->ID;
         $dogDE = FluentState::singleton()->withState(function ($newState) use ($id) {
