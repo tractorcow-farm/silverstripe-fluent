@@ -146,6 +146,49 @@ class FluentVersionedExtension extends FluentExtension
     }
 
     /**
+     * Hook into Versioned::prepareMaxVersionSubSelect - ensure that max version returned by the subquery are limited to
+     * the current locale
+     *
+     * @param SQLSelect $subSelect
+     * @param DataQuery $baseQuery
+     * @param $isCondition
+     */
+    public function augmentMaxVersionSubSelect(SQLSelect $subSelect, DataQuery $baseQuery, $isCondition)
+    {
+        if (!$isCondition) {
+            return;
+        }
+
+        $locale = $this->getDataQueryLocale($baseQuery);
+
+        if (!$locale) {
+            return;
+        }
+
+        $fromTables = $subSelect->getFrom();
+        $baseTable = preg_replace('/' . preg_quote(self::SUFFIX_VERSIONS) . '$/', '', trim(reset($fromTables), '"'));
+        $tableAlias = key($fromTables);
+        $localisedTable = $this->getLocalisedTable($baseTable) . self::SUFFIX_VERSIONS;
+
+        $joinCondition = <<<SQL
+"$tableAlias"."RecordID" = "$localisedTable"."RecordID" AND "$tableAlias"."Version" = "$localisedTable"."Version"
+SQL;
+
+        $subSelect->addLeftJoin(
+            $localisedTable,
+            $joinCondition
+        );
+
+        $locales = "'{$locale->getLocale()}'";
+
+        foreach ($locale->FallbackLocales() as $fallbackLocale) {
+            $locales .= ", '{$fallbackLocale->Locale()->getLocale()}'";
+        }
+
+        $subSelect->addWhere("\"$localisedTable\".\"Locale\" in ({$locales})");
+    }
+
+    /**
      * Rewrite all joined tables
      *
      * @param SQLSelect $query
