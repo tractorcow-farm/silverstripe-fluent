@@ -3,11 +3,24 @@
 For websites that used fluent with SilverStripe 3 we provide an automatic migration task that will change the DB structure to be compatible with fluent / SilverStripe 4. This task is backed by a set of unit tests.
 
 ## Running the task
-
-To run the automated BuildTask, run the following from your command line:
+Even though with fluent v4 locales are set via the `/admin/locales` CMS section to the DB. It's required to have the locales defined in Fluent.locales yml config in order to run the BuildTask. For example this could look like:
 
 ```
+Fluent:
+  default_locale: de_CH
+  locales:
+    - de_CH
+    - en_US
+```
+
+As a safety measure the Task doesn’t write the changes to the DB by default, it just outputs the queries it would run. To commit the changes `write=true` as an argument is needed.
+To run the automated BuildTask, run the following from your command line:
+```
 vendor/bin/sake dev/tasks/FluentMigrationTask
+```
+or
+```
+vendor/bin/sake dev/tasks/FluentMigrationTask write=true
 ```
 
 This command will do the following:
