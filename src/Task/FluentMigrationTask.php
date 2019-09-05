@@ -46,20 +46,20 @@ class FluentMigrationTask extends BuildTask
      *    - Source table name
      *    - List of fields to update
      */
-    const QUERY_TEMPLATE = "
-        INSERT INTO `%s`
+    const QUERY_TEMPLATE = '
+        INSERT INTO "%s"
         SELECT
             %s
-            NULL AS `ID`,
-            `%s` AS `RecordID`,
-            '%s' AS `Locale`,
+            NULL AS "ID",
+            "%s" AS "RecordID",
+            \'%s\' AS "Locale",
             %s
-        FROM `%s`
+        FROM "%s"
         %s
     ON DUPLICATE KEY UPDATE
         %s
     ;
-    ";
+    ';
     /**
      * List of suffixes to be applied to the base table names
      */
@@ -214,12 +214,7 @@ class FluentMigrationTask extends BuildTask
      */
     protected function getExistingFields($table)
     {
-        $query = sprintf("SHOW COLUMNS from %s", $table);
-        try {
-            return DB::query($query)->column('Field');
-        } catch (\Exception $ex) {
-            return [];
-        }
+        return array_keys(DB::field_list($table));
     }
 
     /**
@@ -234,7 +229,7 @@ class FluentMigrationTask extends BuildTask
             array_map(
                 function ($field) use ($locale, $sourceTable, $existingFields) {
                     return sprintf(
-                        '%s AS `%s`',
+                        '%s AS "%s"',
                         $this->buildCoalesce($sourceTable, $field, $locale, $existingFields),
                         $field
                     );
@@ -256,7 +251,7 @@ class FluentMigrationTask extends BuildTask
             array_map(
                 function ($field) use ($locale, $sourceTable, $existingFields) {
                     return sprintf(
-                        '`%s` = %s',
+                        '"%s" = %s',
                         $field,
                         $this->buildCoalesce($sourceTable, $field, $locale, $existingFields)
                     );
@@ -280,11 +275,11 @@ class FluentMigrationTask extends BuildTask
     {
         $localeField = sprintf('%s_%s', $field, $locale);
         if (in_array($localeField, $existingFields)) {
-            $localeField = "`$localeField`";
+            $localeField = "\"$localeField\"";
         } else {
             $localeField = 'null';
         }
-        return sprintf('COALESCE(%s, `%s`.`%s`)', $localeField, $sourceTable, $field);
+        return sprintf('COALESCE(%s, "%s"."%s")', $localeField, $sourceTable, $field);
     }
 
     /**
@@ -310,7 +305,7 @@ class FluentMigrationTask extends BuildTask
             ' OR ',
             array_map(
                 function ($field) use ($locale) {
-                    return sprintf('`%s` IS NOT NULL', $field, $locale);
+                    return sprintf('"%s" IS NOT NULL', $field, $locale);
                 },
                 $validFields
             )
