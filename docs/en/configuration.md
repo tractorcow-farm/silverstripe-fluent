@@ -194,6 +194,23 @@ MySite\Model\MyModel:
 The result is that a DataObject that has *not* been Localised, will display on the frontend with content populated by
 it's Fallbacks (the same beheviour as what you see when viewing DataObjects from within the CMS).
 
+## SilverStripe Fluent and search
+
+### SilverStripe Core search
+
+To use SilverStripe Core search with Fluent, add the `FluentSearchFormExtension` to your configuration.
+
+```yaml
+---
+Name: myextensions
+---
+SilverStripe\Core\Injector\Injector:
+  SilverStripe\CMS\Search\SearchForm:
+    class: TractorCow\Fluent\Extension\FluentSearchFormExtension
+``` 
+
+**Note:** If you're using the SilverStripe CMS `$SearchForm` to display the default SilverStripe template on the front-end, this will update form and input id and class selectors from 'SearchForm' to 'FluentSearchFormExtension'. E.g. form element `id='SearchForm_SearchForm'` will become `id='FluentSearchFormExtension_SearchForm'`.
+
 ## Locale based filter configuration
 
 In addition to localising fields within a DataObject, a filter can also be applied
