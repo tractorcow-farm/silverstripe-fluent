@@ -7,6 +7,7 @@ use SilverStripe\Control\Director;
 use SilverStripe\Core\ClassInfo;
 use SilverStripe\Core\Config\Config;
 use SilverStripe\Core\Convert;
+use SilverStripe\Core\Extension;
 use SilverStripe\Forms\FieldList;
 use SilverStripe\i18n\i18n;
 use SilverStripe\ORM\ArrayList;
@@ -280,6 +281,16 @@ class FluentExtension extends DataExtension
         $baseClass = $this->owner->baseClass();
         $schema = DataObject::getSchema();
 
+        // Config check - subclasses should not have this extension applied
+        if ($class !== $baseClass && !$this->validateChildConfig()) {
+            return;
+        }
+
+        // Config check - Class with multiple extensions applied
+        if (!$this->validateBaseConfig()) {
+            return;
+        }
+
         // Don't require table if no fields and not base class
         $localisedFields = $this->getLocalisedFields($class);
         $localisedTable = $this->getLocalisedTable($schema->tableName($class));
@@ -295,6 +306,57 @@ class FluentExtension extends DataExtension
         );
         $indexes = $this->owner->config()->get('indexes_for_localised_table');
         $this->augmentDatabaseRequireTable($localisedTable, $fields, $indexes);
+    }
+
+
+    /**
+     * Ensure only one instance of this extension is applied to this class
+     *
+     * @return bool
+     */
+    protected function validateBaseConfig()
+    {
+        $fluents = 0;
+        $extensions = $this->owner->get_extensions();
+        foreach ($extensions as $extension) {
+            if (is_a($extension, self::class, true)) {
+                $fluents++;
+            }
+        }
+        if ($fluents > 1) {
+            $name = get_class($this->owner);
+            DB::alteration_message("Invalid config: {$name} has multiple FluentExtensions applied", 'error');
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Non-base classes should never have fluent applied; Do this at the root only!
+     *
+     * @return bool
+     */
+    protected function validateChildConfig()
+    {
+        // Get uninherited extensions
+        $extensions = Config::forClass($this->owner)
+            ->get(
+                'extensions',
+                Config::EXCLUDE_EXTRA_SOURCES | Config::UNINHERITED
+            ) ?: [];
+        $extensions = array_filter(array_values($extensions));
+        foreach ($extensions as $extension) {
+            $extensionClass = Extension::get_classname_without_arguments($extension);
+            if (is_a($extensionClass, self::class, true)) {
+                $name = get_class($this->owner);
+                DB::alteration_message(
+                    "Invalid config: {$name} has FluentExtension, but this should be applied only on the base class",
+                    'error'
+                );
+                return false;
+            }
+        }
+        return true;
     }
 
     protected function augmentDatabaseDontRequire($localisedTable)
@@ -565,7 +627,7 @@ class FluentExtension extends DataExtension
         }
         return $localisedTable;
     }
-    
+
     /**
      * Public accessor for getDeleteTableTarget
      *
