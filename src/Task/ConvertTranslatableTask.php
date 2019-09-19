@@ -142,7 +142,7 @@ class ConvertTranslatableTask extends BuildTask
 
                             // Ensure that we got the Locale out of the base table before continuing
                             if (empty($instanceLocale['Locale'])) {
-                                Debug::message("Skipping {$instance->Title} with ID {$instanceID} - couldn't find Locale");
+                                Debug::message("Skipping {$instance->Title} with ID {$instance->ID} - couldn't find Locale");
                                 continue;
                             }
                             $instanceLocale = $instanceLocale['Locale'];
@@ -150,7 +150,7 @@ class ConvertTranslatableTask extends BuildTask
                             // Check for obsolete classes that don't need to be handled any more
                             if ($instance->ObsoleteClassName) {
                                 Debug::message(
-                                    "Skipping {$instance->ClassName} with ID {$instanceID} because it from an obsolete class",
+                                    "Skipping {$instance->ClassName} with ID {$instance->ID} because it from an obsolete class",
                                     false
                                 );
                                 continue;
