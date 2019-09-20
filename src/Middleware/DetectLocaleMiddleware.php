@@ -3,8 +3,10 @@
 namespace TractorCow\Fluent\Middleware;
 
 use SilverStripe\Control\Cookie;
+use SilverStripe\Control\Director;
 use SilverStripe\Control\HTTPRequest;
 use SilverStripe\Control\Middleware\HTTPMiddleware;
+use SilverStripe\Control\Session;
 use SilverStripe\Core\Config\Configurable;
 use SilverStripe\Core\Injector\Injector;
 use SilverStripe\i18n\i18n;
@@ -30,7 +32,6 @@ class DetectLocaleMiddleware implements HTTPMiddleware
      * @config
      * @var string[]
      */
-     #
     private static $persist_ids = [
         'frontend' => 'FluentLocale',
         'cms' => 'FluentLocale_CMS',
@@ -69,6 +70,14 @@ class DetectLocaleMiddleware implements HTTPMiddleware
      * @var string
      */
     private static $persist_cookie_domain = null;
+
+    /**
+     * Use http-only cookies. Set to false if you need js access.
+     *
+     * @config
+     * @var bool
+     */
+    private static $persist_cookie_http_only = true;
 
     /**
      * Whether cookies have already been set during {@link setPersistLocale()}
@@ -199,14 +208,17 @@ class DetectLocaleMiddleware implements HTTPMiddleware
 
         // Don't set cookie if headers already sent
         if (static::config()->get('persist_cookie') && !headers_sent()) {
+            // Use secure cookies if session does
+            $secure = Director::is_https($request)
+                && Session::config()->get('cookie_secure');
             Cookie::set(
                 $key,
                 $locale,
                 static::config()->get('persist_cookie_expiry'),
                 static::config()->get('persist_cookie_path'),
                 static::config()->get('persist_cookie_domain'),
-                false,
-                false
+                $secure,
+                static::config()->get('persist_cookie_http_only')
             );
         }
 
