@@ -13,7 +13,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git://github.com/tractorcow/silverstripe-fluent.git"
+    "url": "git://github.com/tractorcow-farm/silverstripe-fluent.git"
   },
   "keywords": [
     "fluent",
@@ -23,9 +23,9 @@
   "author": "Damian Mooyman",
   "license": "BSD-3-Clause",
   "bugs": {
-    "url": "https://github.com/tractorcow/silverstripe-fluent/issues"
+    "url": "https://github.com/tractorcow-farm/silverstripe-fluent/issues"
   },
-  "homepage": "https://github.com/tractorcow/silverstripe-fluent",
+  "homepage": "https://github.com/tractorcow-farm/silverstripe-fluent",
   "devDependencies": {
     "@silverstripe/webpack-config": "^0.4.1"
   },

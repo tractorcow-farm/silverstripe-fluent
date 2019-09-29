@@ -25,12 +25,12 @@ Back end control is provided by a simple CMS filter.
 
 ![Locale Menu](docs/en/images/menu.png "Locale menu")
 
-Also, please [report any issues](https://github.com/tractorcow/silverstripe-fluent/issues)
+Also, please [report any issues](https://github.com/tractorcow-farm/silverstripe-fluent/issues)
 you may encounter, as it helps us all out!
 
 ## Credits and Authors
 
- * Damian Mooyman - <https://github.com/tractorcow/silverstripe-fluent>
+ * Damian Mooyman - <https://github.com/tractorcow-farm/silverstripe-fluent>
  * Robbie Averill - <https://github.com/robbieaverill> Migrating to SilverStripe 4.0
  * Attribution to Michael (dAKirby309) for his metro translate icon - <http://dakirby309.deviantart.com/>
 
