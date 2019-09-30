@@ -80,7 +80,7 @@ class FluentSiteTreeExtension extends FluentVersionedExtension
 
             // For all pages on a domain where there is only a single locale,
             // then the domain itself is sufficient to distinguish that domain
-            // See https://github.com/tractorcow/silverstripe-fluent/issues/75
+            // See https://github.com/tractorcow-farm/silverstripe-fluent/issues/75
             if ($localeObj->getIsOnlyLocale()) {
                 return;
             }

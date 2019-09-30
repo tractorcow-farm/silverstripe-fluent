@@ -18,7 +18,7 @@
         }
     ],
     "support": {
-        "issues": "http://github.com/tractorcow/silverstripe-fluent/issues"
+        "issues": "http://github.com/tractorcow-farm/silverstripe-fluent/issues"
     },
     "require": {
         "silverstripe/vendor-plugin": "^1",
