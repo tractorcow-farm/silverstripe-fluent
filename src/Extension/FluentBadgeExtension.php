@@ -58,7 +58,7 @@ class FluentBadgeExtension extends Extension
         if (!FluentState::singleton()->getLocale()
             || !$record->has_extension(FluentVersionedExtension::class)
         ) {
-            return null;
+            return $badgeField;
         }
 
         $fluentBadge = $this->getBadge($record);
