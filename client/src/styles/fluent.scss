@@ -103,9 +103,49 @@ $fluent-color-localised: rgb(102, 15, 242);
     background-color: $fluent-color-localised;
   }
 }
+
 .fluent__localised-field .font-icon-translatable {
   color: $fluent-color-localised;
   top: 2px;
   position: relative;
   margin-right: 3px;
+}
+
+// Styles for extra actions menu
+.cms .ss-ui-action-tabset.ss-tabset.fluent-actions-menu {
+  margin-left: 5px;
+
+  .popover-actions-simulate .ui-tabs-anchor {
+    font-size: 1.0em;
+    color: #303b4d;
+
+    &:before {
+      // content: "\E01B"; // language
+      content: "\e01e"; // translatable
+      position: relative;
+      margin-right: 6px;
+      vertical-align: middle;
+      font-size: 1.5rem;
+      font-family: silverstripe, san-serif !important;
+      font-style: normal!important;
+      font-weight: 400!important;
+      font-variant: normal!important;
+      text-transform: none!important;
+      speak: none;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    &,
+    &:hover,
+    &:active {
+      &:after {
+        display: none !important;
+      }
+    }
+  }
+
+  .tab-pane {
+    padding-top: 0;
+  }
 }

@@ -20,6 +20,8 @@ use TractorCow\Fluent\State\FluentState;
  */
 class FluentSiteTreeExtension extends FluentVersionedExtension
 {
+    use FluentAdminTrait;
+
     /**
      * Determine if status messages are enabled
      *
@@ -137,7 +139,7 @@ class FluentSiteTreeExtension extends FluentVersionedExtension
         // If this page does not exist it should be "invisible"
         if (!$this->isDraftedInLocale() && !$this->isPublishedInLocale()) {
             $flags['fluentinvisible'] = [
-                'text' => '',
+                'text'  => '',
                 'title' => '',
             ];
         }
@@ -168,13 +170,17 @@ class FluentSiteTreeExtension extends FluentVersionedExtension
             return;
         }
 
+        // Update specific sitetree publish actions
         $this->updateSavePublishActions($actions);
+
+        // Add extra fluent menu
+        $this->updateFluentActions($actions, $this->owner);
     }
 
     /**
      * Adds a UI message to indicate whether you're editing in the default locale or not
      *
-     * @param  FieldList $fields
+     * @param FieldList $fields
      */
     protected function addLocaleStatusMessage(FieldList $fields)
     {
