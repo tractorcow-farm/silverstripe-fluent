@@ -120,20 +120,8 @@ $fluent-color-localised: rgb(102, 15, 242);
     color: #303b4d;
 
     &:before {
-      // content: "\E01B"; // language
-      content: "\e01e"; // translatable
-      position: relative;
       margin-right: 6px;
-      vertical-align: middle;
       font-size: 1.5rem;
-      font-family: silverstripe, san-serif !important;
-      font-style: normal!important;
-      font-weight: 400!important;
-      font-variant: normal!important;
-      text-transform: none!important;
-      speak: none;
-      -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
     }
 
     &,
@@ -147,5 +135,19 @@ $fluent-color-localised: rgb(102, 15, 242);
 
   .tab-pane {
     padding-top: 0;
+
+    .action-description {
+      font-size: 0.9em;
+      line-height: 1em;
+      display: block !important;
+      margin: 0;
+      padding: 0 11px 8px 11px;
+      border-bottom: 1px solid #ccc;
+      color: #999;
+
+      &:last-child {
+        border-bottom: 0 none;
+      }
+    }
   }
 }

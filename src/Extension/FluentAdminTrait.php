@@ -24,11 +24,12 @@ trait FluentAdminTrait
     protected function updateFluentActions(FieldList $actions, DataObject $record)
     {
         // Build root tabset that makes up the menu
-        $rootTabSet = new TabSet('FluentMenu');
+        $rootTabSet = TabSet::create('FluentMenu')
+            ->setTemplate('FluentAdminTabSet');
         $rootTabSet->addExtraClass('ss-ui-action-tabset action-menus fluent-actions-menu noborder');
 
         // Add menu button
-        $moreOptions = new Tab(
+        $moreOptions = Tab::create(
             'FluentMenuOptions',
             'Localisation'
         );
@@ -37,24 +38,28 @@ trait FluentAdminTrait
 
         // Add menu items
         $moreOptions->push(
-            FormAction::create('unpublishFluent', 'Unpublish all')
-                ->addExtraClass('btn-secondary')
-                ->setDescription('Remove all localisations from live')
+            FormAction::create('clearFluent', 'Clear locales')
+                ->addExtraClass('btn-secondary ')
+                ->setDescription('Clear draft version of each locale')
+                ->setTemplate('FluentAdminAction')
         );
         $moreOptions->push(
-            FormAction::create('publishFluent', 'Publish all')
-                ->addExtraClass('btn-secondary')
-                ->setDescription('Publish each locale live')
+            FormAction::create('copyFluent', 'Copy to locales')
+                ->addExtraClass('btn-secondary ')
+                ->setDescription('Copy this localisation as draft to each other locale')
+                ->setTemplate('FluentAdminAction')
         );
         $moreOptions->push(
-            FormAction::create('clearFluent', 'Clear all')
-                ->addExtraClass('btn-secondary')
-                ->setDescription('Remove all localisations from live / draft')
+            FormAction::create('unpublishFluent', 'Unpublish locales')
+                ->addExtraClass('btn-secondary ')
+                ->setDescription('Unpublish this page in each locale')
+                ->setTemplate('FluentAdminAction')
         );
         $moreOptions->push(
-            FormAction::create('copyFluent', 'Copy all')
-                ->addExtraClass('btn-secondary')
-                ->setDescription('Copy this locale to all other locales')
+            FormAction::create('publishFluent', 'Publish locales')
+                ->addExtraClass('btn-secondary ')
+                ->setDescription('Publish this page in each locale')
+                ->setTemplate('FluentAdminAction')
         );
 
         $actions->push($rootTabSet);
