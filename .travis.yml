@@ -1,6 +1,14 @@
 language: php
 
-dist: trusty
+dist: xenial
+
+services:
+  - mysql
+
+addons:
+  apt:
+    packages:
+      - tidy
 
 matrix:
   include:
