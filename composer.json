@@ -3,8 +3,17 @@
     "description": "Simple localisation for Silverstripe",
     "type": "silverstripe-vendormodule",
     "keywords": [
-        "silverstripe", "localisation", "localization", "translation", "language", "locale", "multilingual",
-        "translatable", "i18n", "internationalisation", "internationalization"
+        "silverstripe",
+        "localisation",
+        "localization",
+        "translation",
+        "language",
+        "locale",
+        "multilingual",
+        "translatable",
+        "i18n",
+        "internationalisation",
+        "internationalization"
     ],
     "license": "BSD-3-Clause",
     "authors": [
@@ -31,6 +40,9 @@
         "squizlabs/php_codesniffer": "^3"
     },
     "extra": {
+        "branch-alias": {
+            "4.x-dev": "4.5.x-dev"
+        },
         "expose": [
             "client/dist"
         ]
