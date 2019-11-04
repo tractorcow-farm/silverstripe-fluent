@@ -90,17 +90,24 @@ class FluentFilteredExtension extends DataExtension
     }
 
     /**
-     * @param Locale|null $locale
+     * @param string|Locale|null $locale
      * @return bool
      */
-    public function isAvailableInLocale(Locale $locale = null)
+    public function isAvailableInLocale($locale = null)
     {
-        if ($locale === null) {
-            $locale = Locale::getCurrentLocale();
+        if ($locale instanceof Locale) {
+            $localeObject = $locale;
+        } elseif ($locale) {
+            $localeObject = Locale::getByLocale($locale);
+        } else {
+            $localeObject = Locale::getCurrentLocale();
+        }
+        if (!$localeObject) {
+            return false;
         }
 
         $locales = $this->owner->FilteredLocales()->filter([
-            $locale->baseTable() . 'ID' => $locale->ID,
+            $localeObject->baseTable() . 'ID' => $localeObject->ID,
         ]);
 
         return $locales->count() === 1;

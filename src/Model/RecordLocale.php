@@ -159,11 +159,13 @@ class RecordLocale extends ViewableData
      */
     public function canViewInLocale()
     {
-        // Permission check to validate per-locale linking
-        if ($this->originalRecord->hasMethod('canViewInLocale')
-            && !$this->originalRecord->canViewInLocale($this->getLocale())
-        ) {
-            return false;
+        $locale = $this->getLocale();
+        $results = $this->originalRecord->invokeWithExtensions('canViewInLocale', $locale);
+        $results = array_filter($results, function ($v) {
+            return !is_null($v);
+        });
+        if ($results) {
+            return min($results);
         }
         return true;
     }
@@ -230,14 +232,13 @@ class RecordLocale extends ViewableData
      */
     public function IsVisible()
     {
-        /** @var DataObject|FluentExtension|FluentVersionedExtension|FluentFilteredExtension $record */
-        $record = $this->getOriginalRecord();
-
-        // If object is filtered, object is not available (regardless of published status)
-        if ($record->hasExtension(FluentFilteredExtension::class)
-            && !$record->isAvailableInLocale($this->getLocaleObject())
-        ) {
-            return false;
+        $locale = $this->getLocale();
+        $results = $this->originalRecord->invokeWithExtensions('isAvailableInLocale', $locale);
+        $results = array_filter($results, function ($v) {
+            return !is_null($v);
+        });
+        if ($results) {
+            return min($results);
         }
         return true;
     }
