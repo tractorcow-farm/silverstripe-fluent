@@ -178,4 +178,18 @@ class FluentFilteredExtension extends DataExtension
 
         return substr_compare($readingMode, $draft, strlen($readingMode) - strlen($draft), strlen($draft)) === 0;
     }
+
+    /**
+     * @see FluentObjectTrait::updateFluentCMSFields()
+     * @param $summaryColumns
+     */
+    public function updateLocalisationTabColumns(&$summaryColumns)
+    {
+        $summaryColumns['IsVisible'] = [
+            'title'    => 'Visible',
+            'callback' => function (Locale $object) {
+                return $object->RecordLocale()->IsVisible() ? 'visible' : 'hidden';
+            }
+        ];
+    }
 }

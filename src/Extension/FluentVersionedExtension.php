@@ -18,6 +18,8 @@ use TractorCow\Fluent\State\FluentState;
  *
  * Important: If adding this to a custom object, this extension must be added AFTER the versioned extension.
  * Use yaml `after` to enforce this
+ *
+ * @property DataObject|FluentVersionedExtension $owner
  */
 class FluentVersionedExtension extends FluentExtension
 {
@@ -411,4 +413,21 @@ class FluentVersionedExtension extends FluentExtension
             self::$idsInLocaleCache[$locale][$table]['_complete'] = true;
         }
     }
+
+    public function updateLocalisationTabColumns(&$summaryColumns)
+    {
+        $summaryColumns['IsDraft'] = [
+            'title'    => 'Saved',
+            'callback' => function (Locale $object) {
+                return $object->RecordLocale()->IsDraft() ? 'Draft' : '';
+            }
+        ];
+        $summaryColumns['IsPublished'] = [
+            'title'    => 'Published',
+            'callback' => function (Locale $object) {
+                return $object->RecordLocale()->IsPublished() ? 'Live' : '';
+            }
+        ];
+    }
+
 }

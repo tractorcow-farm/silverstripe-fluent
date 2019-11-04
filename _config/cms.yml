@@ -13,13 +13,8 @@ SilverStripe\Versioned\ChangeSetItem:
   extensions:
     FluentChangesExtension: TractorCow\Fluent\Extension\FluentChangesExtension
 
-SilverStripe\CMS\Controllers\CMSMain:
-  extensions:
-    FluentBadgeExtension: TractorCow\Fluent\Extension\FluentBadgeExtension
-
 SilverStripe\Versioned\VersionedGridFieldItemRequest:
   extensions:
-    FluentBadgeExtension: TractorCow\Fluent\Extension\FluentBadgeExtension
     FluentGridFieldExtension: TractorCow\Fluent\Extension\FluentGridFieldExtension
 
 SilverStripe\Versioned\GraphQL\Operations\ReadVersions:

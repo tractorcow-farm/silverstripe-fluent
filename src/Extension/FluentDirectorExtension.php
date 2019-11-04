@@ -3,6 +3,7 @@
 namespace TractorCow\Fluent\Extension;
 
 use Exception;
+use SilverStripe\Control\Director;
 use SilverStripe\Control\HTTPRequest;
 use SilverStripe\Core\Config\Configurable;
 use SilverStripe\Core\Extension;
@@ -12,6 +13,8 @@ use TractorCow\Fluent\Model\Locale;
 
 /**
  * Fluent extension for {@link \SilverStripe\Control\Director} to apply routing rules for locales
+ *
+ * @property Director $owner
  */
 class FluentDirectorExtension extends Extension
 {
@@ -64,6 +67,7 @@ class FluentDirectorExtension extends Extension
      * Forces regeneration of all locale routes
      *
      * @param array &$rules
+     * @throws Exception
      */
     public function updateRules(&$rules)
     {
@@ -92,7 +96,7 @@ class FluentDirectorExtension extends Extension
         if (!static::config()->get('detect_locale')) {
             // Respect existing home controller
             $rules[''] = [
-                'Controller' => $this->getRuleController($originalRules[''], $defaultLocale),
+                'Controller'                         => $this->getRuleController($originalRules[''], $defaultLocale),
                 static::config()->get('query_param') => $defaultLocale->Locale,
             ];
         }
@@ -101,7 +105,7 @@ class FluentDirectorExtension extends Extension
         // the default locale for this domain
         if (static::config()->get('disable_default_prefix')) {
             $rules['$URLSegment//$Action/$ID/$OtherID'] = [
-                'Controller' => $this->getRuleController($originalRules['$URLSegment//$Action/$ID/$OtherID'], $defaultLocale),
+                'Controller'                         => $this->getRuleController($originalRules['$URLSegment//$Action/$ID/$OtherID'], $defaultLocale),
                 static::config()->get('query_param') => $defaultLocale->Locale
             ];
         }
@@ -129,14 +133,14 @@ class FluentDirectorExtension extends Extension
             $controller = $this->getRuleController($originalRules['$URLSegment//$Action/$ID/$OtherID'], $localeObj);
             $rules[$url . '/$URLSegment!//$Action/$ID/$OtherID'] = [
                 'Controller' => $controller,
-                $queryParam => $locale,
+                $queryParam  => $locale,
             ];
 
             // Home url for that locale
             $controller = $this->getRuleController($originalRules[''], $localeObj);
             $rules[$url] = [
                 'Controller' => $controller,
-                $queryParam => $locale,
+                $queryParam  => $locale,
             ];
         }
         return $rules;
@@ -145,7 +149,7 @@ class FluentDirectorExtension extends Extension
     /**
      * Get controller that fluent should inject
      * @param array|string $existingRule
-     * @param Locale $localeObj
+     * @param Locale       $localeObj
      * @return string Class name of controller to use
      */
     protected function getRuleController($existingRule, $localeObj)
@@ -158,9 +162,9 @@ class FluentDirectorExtension extends Extension
 
     /**
      * Inserts the given rule(s) before another rule
-     * @param array $rules Array of rules to insert before
-     * @param string $key Rule to insert the new rules before
-     * @param array $rule New Rules to insert
+     * @param array   $rules            Array of rules to insert before
+     * @param string  $key              Rule to insert the new rules before
+     * @param array   $rule             New Rules to insert
      * @param boolean $prependIfMissing Prepend the new rules if the insert before rule cannot be found
      * @return array Resulting array of rules
      */

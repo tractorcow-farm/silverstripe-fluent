@@ -33,7 +33,7 @@ use TractorCow\Fluent\State\FluentState;
  * - data_exclude
  * - data_include
  *
- * @property FluentSiteTreeExtension|DataObject $owner
+ * @property FluentExtension|DataObject $owner
  */
 class FluentExtension extends DataExtension
 {
@@ -1017,5 +1017,20 @@ class FluentExtension extends DataExtension
         ]);
 
         return $query->firstRow()->execute()->value() !== null;
+    }
+
+
+    /**
+     * @see FluentObjectTrait::updateFluentCMSFields()
+     * @param $summaryColumns
+     */
+    public function updateLocalisationTabColumns(&$summaryColumns)
+    {
+        $summaryColumns['IsDraft'] = [
+            'title'    => 'Saved',
+            'callback' => function (Locale $object) {
+                return $object->RecordLocale()->IsDraft() ? 'Saved' : '';
+            }
+        ];
     }
 }

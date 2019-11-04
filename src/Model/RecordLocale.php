@@ -277,11 +277,6 @@ class RecordLocale extends ViewableData
      */
     public function IsDraft()
     {
-        // If object is filtered, object is not available (regardless of published status)
-        if (!$this->IsVisible()) {
-            return false;
-        }
-
         /** @var DataObject|FluentExtension|FluentVersionedExtension|FluentFilteredExtension $record */
         $record = $this->getOriginalRecord();
 

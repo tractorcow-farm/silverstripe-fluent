@@ -8,8 +8,6 @@ use SilverStripe\Forms\GridField\GridFieldConfig_Base;
 use SilverStripe\Forms\GridField\GridFieldDataColumns;
 use SilverStripe\ORM\DataList;
 use SilverStripe\ORM\DataObject;
-use TractorCow\Fluent\Extension\FluentFilteredExtension;
-use TractorCow\Fluent\Extension\FluentVersionedExtension;
 use TractorCow\Fluent\Model\Locale;
 
 /**
@@ -56,7 +54,7 @@ trait FluentObjectTrait
             return;
         }
 
-        // Create gridfield
+        // Create gridfield, and get columns from various other extensions
         $config = GridFieldConfig_Base::create();
         /** @var GridFieldDataColumns $columns */
         $columns = $config->getComponentByType(GridFieldDataColumns::class);
@@ -64,38 +62,11 @@ trait FluentObjectTrait
             'Title'  => 'Title',
             'Locale' => 'Locale'
         ];
-        if ($this->owner->hasExtension(FluentFilteredExtension::class)) {
-            $summaryColumns['IsVisible'] = [
-                'title' => 'Visible',
-                'callback' => function (Locale $object) {
-                    return $object->RecordLocale()->IsVisible() ? 'visible' : 'hidden';
-                }
-            ];
-        }
-        if ($this->owner->hasExtension(FluentVersionedExtension::class)) {
-            $summaryColumns['IsDraft'] = [
-                'title' => 'Saved',
-                'callback' => function (Locale $object) {
-                    return $object->RecordLocale()->IsDraft() ? 'Draft' : '';
-                }
-            ];
-            $summaryColumns['IsPublished'] = [
-                'title' => 'Published',
-                'callback' => function (Locale $object) {
-                    return $object->RecordLocale()->IsDraft() ? 'Live' : '';
-                }
-            ];
-        } else {
-            $summaryColumns['IsDraft'] = [
-                'title' => 'Saved',
-                'callback' => function (Locale $object) {
-                    return $object->RecordLocale()->IsDraft() ? 'Saved' : '';
-                }
-            ];
-        }
+        $this->owner->extend('updateLocalisationTabColumns', $summaryColumns);
         $columns->setDisplayFields($summaryColumns);
 
 
+        // Add gridfield to tab / fields
         $gridField = GridField::create('RecordLocales', 'Locales', $this->LinkedLocales(), $config);
         if ($fields->hasTabSet()) {
             $fields->addFieldToTab('Root.Locales', $gridField);

@@ -7,9 +7,18 @@ use SilverStripe\Versioned\ChangeSetItem;
 
 /**
  * Adds locale-specific extensions to ChangeSet
+ *
+ * @property ChangeSetItem $owner
  */
 class FluentChangesExtension extends DataExtension
 {
+    /**
+     * @see ChangeSetItem::getChangeType()
+     *
+     * @param string $type
+     * @param int    $draftVersion
+     * @param int    $liveVersion
+     */
     public function updateChangeType(&$type, $draftVersion, $liveVersion)
     {
         if ($type !== ChangeSetItem::CHANGE_NONE) {
