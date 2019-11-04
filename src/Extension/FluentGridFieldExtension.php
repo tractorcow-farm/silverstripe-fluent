@@ -5,6 +5,7 @@ namespace TractorCow\Fluent\Extension;
 use SilverStripe\Core\Extension;
 use SilverStripe\Forms\FieldList;
 use SilverStripe\Forms\GridField\GridFieldDetailForm_ItemRequest;
+use TractorCow\Fluent\Extension\Traits\FluentAdminTrait;
 
 /**
  * Supports GridFieldDetailForm_ItemRequest with extra actions

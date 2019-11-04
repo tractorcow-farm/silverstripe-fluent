@@ -25,14 +25,15 @@ use Symbiote\GridFieldExtensions\GridFieldAddNewInlineButton;
 use Symbiote\GridFieldExtensions\GridFieldEditableColumns;
 use Symbiote\GridFieldExtensions\GridFieldOrderableRows;
 use TractorCow\Fluent\Extension\FluentDirectorExtension;
+use TractorCow\Fluent\Extension\Traits\FluentObjectTrait;
 use TractorCow\Fluent\State\FluentState;
 
 /**
  * @property string $Title
  * @property string $Locale
  * @property string $URLSegment
- * @property bool $IsGlobalDefault
- * @property int $DomainID
+ * @property bool   $IsGlobalDefault
+ * @property int    $DomainID
  * @method HasManyList|FallbackLocale[] FallbackLocales()
  * @method ManyManyList|Locale[] Fallbacks()
  * @method Domain Domain() Raw SQL Domain (unfiltered by domain mode)
@@ -48,11 +49,11 @@ class Locale extends DataObject
     private static $plural_name = 'Locales';
 
     private static $summary_fields = [
-        'Title' => 'Title',
-        'Locale' => 'Locale',
-        'URLSegment' => 'URL',
+        'Title'           => 'Title',
+        'Locale'          => 'Locale',
+        'URLSegment'      => 'URL',
         'IsGlobalDefault' => 'Global Default',
-        'Domain.Domain' => 'Domain',
+        'Domain.Domain'   => 'Domain',
     ];
 
     /**
@@ -60,9 +61,9 @@ class Locale extends DataObject
      * @var array
      */
     private static $db = [
-        'Title' => 'Varchar(100)',
-        'Locale' => 'Varchar(10)',
-        'URLSegment' => 'Varchar(100)',
+        'Title'           => 'Varchar(100)',
+        'Locale'          => 'Varchar(10)',
+        'URLSegment'      => 'Varchar(100)',
         'IsGlobalDefault' => 'Boolean',
     ];
 
@@ -83,8 +84,8 @@ class Locale extends DataObject
     private static $many_many = [
         'Fallbacks' => [
             'through' => FallbackLocale::class,
-            'from' => 'Parent',
-            'to' => 'Locale',
+            'from'    => 'Parent',
+            'to'      => 'Locale',
         ],
     ];
 
@@ -175,7 +176,7 @@ class Locale extends DataObject
     {
         $badgeLabel = $this->getURLSegment();
         $this->extend('updateBadgeLabel', $badgeLabel);
-        return (string) $badgeLabel;
+        return (string)$badgeLabel;
     }
 
     /**
@@ -204,32 +205,32 @@ class Locale extends DataObject
             [
                 DropdownField::create(
                     'Locale',
-                    _t(__CLASS__.'.LOCALE', 'Locale'),
+                    _t(__CLASS__ . '.LOCALE', 'Locale'),
                     i18n::getData()->getLocales()
                 ),
                 TextField::create(
                     'Title',
-                    _t(__CLASS__.'.LOCALE_TITLE', 'Title')
+                    _t(__CLASS__ . '.LOCALE_TITLE', 'Title')
                 )->setAttribute('placeholder', $this->getDefaultTitle()),
                 TextField::create(
                     'URLSegment',
-                    _t(__CLASS__.'.LOCALE_URL', 'URL Segment')
+                    _t(__CLASS__ . '.LOCALE_URL', 'URL Segment')
                 )->setAttribute('placeholder', $this->Locale),
                 $globalDefault = CheckboxField::create(
                     'IsGlobalDefault',
-                    _t(__CLASS__.'.IS_DEFAULT', 'This is the global default locale')
+                    _t(__CLASS__ . '.IS_DEFAULT', 'This is the global default locale')
                 )
                     ->setAttribute('data-hides', 'ParentDefaultID')
                     ->setDescription(_t(
-                        __CLASS__.'.IS_DEFAULT_DESCRIPTION',
+                        __CLASS__ . '.IS_DEFAULT_DESCRIPTION',
                         'Note: Per-domain specific locale can be assigned on the Locales tab'
                         . ' and will override this value for specific domains.'
                     )),
                 DropdownField::create(
                     'DomainID',
-                    _t(__CLASS__.'.DOMAIN', 'Domain'),
+                    _t(__CLASS__ . '.DOMAIN', 'Domain'),
                     Domain::get()->map('ID', 'Domain')
-                )->setEmptyString(_t(__CLASS__.'.DEFAULT_NONE', '(none)'))
+                )->setEmptyString(_t(__CLASS__ . '.DEFAULT_NONE', '(none)'))
             ]
         );
 
@@ -247,7 +248,7 @@ class Locale extends DataObject
                 'LocaleID' => function () {
                     return DropdownField::create(
                         'LocaleID',
-                        _t(__CLASS__.'.LOCALE', 'Locale'),
+                        _t(__CLASS__ . '.LOCALE', 'Locale'),
                         Locale::getCached()->exclude('Locale', $this->Locale)->map('ID', 'Title')
                     );
                 }
@@ -256,7 +257,7 @@ class Locale extends DataObject
             // Add default selection
             $defaultField = GridField::create(
                 'FallbackLocales',
-                _t(__CLASS__.'.FALLBACKS', 'Fallback Locales'),
+                _t(__CLASS__ . '.FALLBACKS', 'Fallback Locales'),
                 $this->FallbackLocales(),
                 $config
             );
@@ -284,7 +285,7 @@ class Locale extends DataObject
      * Get default locale
      *
      * @param string|null|true $domain If provided, the default locale for the given domain will be returned.
-     * If true, then the current state domain will be used (if in domain mode).
+     *                                 If true, then the current state domain will be used (if in domain mode).
      * @return Locale
      */
     public static function getDefault($domain = null)
@@ -398,7 +399,7 @@ class Locale extends DataObject
      * Get available locales
      *
      * @param string|null|true $domain If provided, locales for the given domain will be returned.
-     * If true, then the current state domain will be used (if in domain mode).
+     *                                 If true, then the current state domain will be used (if in domain mode).
      * @return ArrayList
      */
     public static function getLocales($domain = null)
@@ -421,7 +422,7 @@ class Locale extends DataObject
             $table = $this->baseTable();
             DB::prepared_query(
                 "UPDATE \"{$table}\" SET \"IsGlobalDefault\" = 0 WHERE \"ID\" != ?",
-                [ $this->ID ]
+                [$this->ID]
             );
         }
     }
@@ -482,7 +483,7 @@ class Locale extends DataObject
         $append = true;
         if ($this->getIsDefault()) {
             // Apply config
-            $append = !(bool) Config::inst()->get(FluentDirectorExtension::class, 'disable_default_prefix');
+            $append = !(bool)Config::inst()->get(FluentDirectorExtension::class, 'disable_default_prefix');
         }
 
         if ($append) {
@@ -505,5 +506,23 @@ class Locale extends DataObject
             ? $domain->getLocales()
             : Locale::getCached();
         return $locales;
+    }
+
+    /**
+     * Get details for the current object in this locale.
+     *
+     * @see FluentObjectTrait::LinkedLocales()
+     * @return null|RecordLocale
+     */
+    public function RecordLocale()
+    {
+        $recordID = $this->getSourceQueryParam('FluentObjectID');
+        $recordClass = $this->getSourceQueryParam('FluentObjectClass');
+        if (!$recordID || !$recordClass) {
+            return null;
+        }
+
+        $record = DataObject::get($recordClass)->byID($recordID);
+        return RecordLocale::create($record, $this);
     }
 }

@@ -10,6 +10,7 @@ use SilverStripe\Control\Director;
 use SilverStripe\Forms\CompositeField;
 use SilverStripe\Forms\FieldList;
 use SilverStripe\Forms\LiteralField;
+use TractorCow\Fluent\Extension\Traits\FluentAdminTrait;
 use TractorCow\Fluent\Model\Locale;
 use TractorCow\Fluent\State\FluentState;
 

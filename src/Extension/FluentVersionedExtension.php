@@ -338,27 +338,6 @@ class FluentVersionedExtension extends FluentExtension
     }
 
     /**
-     * Checks whether the given record ID exists in the given locale, in the given table. Skips using the ORM because
-     * we don't need it for this call.
-     *
-     * @param string $locale
-     * @param string $table
-     * @param int    $id
-     * @return bool
-     */
-    protected function findRecordInLocale($locale, $table, $id)
-    {
-        $query = SQLSelect::create('"ID"');
-        $query->addFrom('"' . $table . '"');
-        $query->addWhere([
-            '"RecordID"' => $id,
-            '"Locale"'   => $locale,
-        ]);
-
-        return $query->firstRow()->execute()->value() !== null;
-    }
-
-    /**
      * Clear internal static property caches
      */
     public function flushCache()

@@ -3,13 +3,12 @@
 namespace TractorCow\Fluent\Extension;
 
 use LogicException;
-use SilverStripe\Control\Director;
 use SilverStripe\Core\ClassInfo;
 use SilverStripe\Core\Config\Config;
 use SilverStripe\Core\Convert;
 use SilverStripe\Core\Extension;
+use SilverStripe\Dev\Deprecation;
 use SilverStripe\Forms\FieldList;
-use SilverStripe\i18n\i18n;
 use SilverStripe\ORM\ArrayList;
 use SilverStripe\ORM\DataExtension;
 use SilverStripe\ORM\DataObject;
@@ -18,9 +17,10 @@ use SilverStripe\ORM\DB;
 use SilverStripe\ORM\FieldType\DBField;
 use SilverStripe\ORM\Queries\SQLConditionGroup;
 use SilverStripe\ORM\Queries\SQLSelect;
-use SilverStripe\View\ArrayData;
+use TractorCow\Fluent\Extension\Traits\FluentObjectTrait;
 use TractorCow\Fluent\Model\Delete\UsesDeletePolicy;
 use TractorCow\Fluent\Model\Locale;
+use TractorCow\Fluent\Model\RecordLocale;
 use TractorCow\Fluent\State\FluentState;
 
 /**
@@ -41,6 +41,7 @@ class FluentExtension extends DataExtension
      * Deletions are managed via DeletePolicy
      */
     use UsesDeletePolicy;
+    use FluentObjectTrait;
 
     /**
      * The table suffix that will be applied to create localisation tables
@@ -787,9 +788,9 @@ class FluentExtension extends DataExtension
     }
 
     /**
-     * Templatable list of all locales
+     * Templatable list of all locale information for this record
      *
-     * @return ArrayList
+     * @return ArrayList|RecordLocale[]
      */
     public function Locales()
     {
@@ -805,7 +806,7 @@ class FluentExtension extends DataExtension
      * Retrieves information about this object in the specified locale
      *
      * @param string $locale The locale (code) information to request, or null to use the default locale
-     * @return ArrayData Mapped list of locale properties
+     * @return RecordLocale
      */
     public function LocaleInformation($locale = null)
     {
@@ -815,45 +816,21 @@ class FluentExtension extends DataExtension
         } else {
             $localeObj = Locale::getDefault();
         }
-        $locale = $localeObj->getLocale();
 
-        // Check linking mode
-        $linkingMode = $this->getLinkingMode($locale);
-
-        // Check link
-        $link = $this->LocaleLink($locale);
-
-        // Store basic locale information
-        return ArrayData::create([
-            'Locale'         => $locale,
-            'LocaleRFC1766'  => i18n::convert_rfc1766($locale),
-            'URLSegment'     => $localeObj->getURLSegment(),
-            'Title'          => $localeObj->getTitle(),
-            'LanguageNative' => $localeObj->getNativeName(),
-            'Language'       => i18n::getData()->langFromLocale($locale),
-            'Link'           => $link,
-            'AbsoluteLink'   => $link ? Director::absoluteURL($link) : null,
-            'LinkingMode'    => $linkingMode
-        ]);
+        return RecordLocale::create($this->owner, $localeObj);
     }
 
     /**
      * Return the linking mode for the current locale and object
      *
+     * @deprecated 5.0 use LocaleInformation() instead
      * @param string $locale
      * @return string
      */
     public function getLinkingMode($locale)
     {
-        if ($this->owner->hasMethod('canViewInLocale') && !$this->owner->canViewInLocale($locale)) {
-            return 'invalid';
-        }
-
-        if ($locale === FluentState::singleton()->getLocale()) {
-            return 'current';
-        }
-
-        return 'link';
+        Deprecation::notice('5.0', 'Use LocaleInformation instead');
+        return $this->LocaleInformation($locale)->getLinkingMode();
     }
 
     /**
@@ -872,38 +849,14 @@ class FluentExtension extends DataExtension
     }
 
     /**
+     * @deprecated Use LocaleInformation instead
      * @param string $locale
      * @return string
      */
     public function LocaleLink($locale)
     {
-        // Skip dataobjects that do not have the Link method
-        if (!$this->owner->hasMethod('Link')) {
-            return null;
-        }
-
-        // Return locale root url if unable to view this item in this locale
-        $defaultLink = $this->owner->BaseURLForLocale($locale);
-        if ($this->owner->hasMethod('canViewInLocale') && !$this->owner->canViewInLocale($locale)) {
-            return $defaultLink;
-        }
-
-        return FluentState::singleton()->withState(function (FluentState $newState) use ($locale, $defaultLink) {
-            $newState->setLocale($locale);
-            // Non-db records fall back to internal behaviour
-            if (!$this->owner->isInDB()) {
-                return $this->owner->Link();
-            }
-
-            // Reload this record in the correct locale
-            $record = DataObject::get($this->owner->ClassName)->byID($this->owner->ID);
-            if ($record) {
-                return $record->Link();
-            } else {
-                // may not be published in this locale
-                return $defaultLink;
-            }
-        });
+        Deprecation::notice('5.0', 'Use LocaleInformation instead');
+        return $this->LocaleInformation($locale)->getLink();
     }
 
     /**
@@ -921,6 +874,11 @@ class FluentExtension extends DataExtension
      */
     public function updateCMSFields(FieldList $fields)
     {
+        // If there is no current FluentState, then we shouldn't update.
+        if (!FluentState::singleton()->getLocale()) {
+            return;
+        }
+
         // get all fields to translate and remove
         $translated = $this->getLocalisedTables();
 
@@ -947,6 +905,9 @@ class FluentExtension extends DataExtension
                 $field->setTitle(DBField::create_field('HTMLFragment', $tooltip . $field->Title()));
             }
         }
+
+        // Update fields shared between fluent / fluentfiltered
+        $this->updateFluentCMSFields($fields);
     }
 
     /**
@@ -1006,10 +967,55 @@ class FluentExtension extends DataExtension
     /**
      * Returns the selected language
      *
-     * @return ArrayData
+     * @return RecordLocale
      */
     public function getSelectedLanguage()
     {
         return $this->LocaleInformation(FluentState::singleton()->getLocale());
+    }
+
+    /**
+     * Check if this record exists (in either state) in this locale
+     *
+     * @param string $locale
+     * @return bool
+     */
+    public function existsInLocale($locale = null)
+    {
+        if (!$this->owner->ID) {
+            return false;
+        }
+
+        // Check locale exists
+        $locale = $locale ?: FluentState::singleton()->getLocale();
+        if (!$locale) {
+            return false;
+        }
+
+        // Get table, check if record is saved in the given locale
+        $baseTable = $this->owner->baseTable();
+        $table = $this->getLocalisedTable($baseTable);
+        return $this->findRecordInLocale($locale, $table, $this->owner->ID);
+    }
+
+    /**
+     * Checks whether the given record ID exists in the given locale, in the given table. Skips using the ORM because
+     * we don't need it for this call.
+     *
+     * @param string $locale
+     * @param string $table
+     * @param int    $id
+     * @return bool
+     */
+    protected function findRecordInLocale($locale, $table, $id)
+    {
+        $query = SQLSelect::create('"ID"');
+        $query->addFrom('"' . $table . '"');
+        $query->addWhere([
+            '"RecordID"' => $id,
+            '"Locale"'   => $locale,
+        ]);
+
+        return $query->firstRow()->execute()->value() !== null;
     }
 }

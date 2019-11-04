@@ -10,6 +10,7 @@ use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\DataQuery;
 use SilverStripe\ORM\Queries\SQLSelect;
 use SilverStripe\Versioned\Versioned;
+use TractorCow\Fluent\Extension\Traits\FluentObjectTrait;
 use TractorCow\Fluent\Model\Delete\UsesDeletePolicy;
 use TractorCow\Fluent\Model\Locale;
 use TractorCow\Fluent\State\FluentState;
@@ -24,6 +25,7 @@ class FluentFilteredExtension extends DataExtension
      * Deletions are managed via DeletePolicy
      */
     use UsesDeletePolicy;
+    use FluentObjectTrait;
 
     /**
      * The table suffix that will be applied to a DataObject's base table.
@@ -55,7 +57,10 @@ class FluentFilteredExtension extends DataExtension
 
         $fields
             ->fieldByName('Root.FilteredLocales')
-            ->setTitle(_t(__CLASS__ . '.TAB_LOCALES', 'Locales'));
+            ->setTitle(_t(__CLASS__ . '.TAB_FILTERED_LOCALES', 'Filtered Locales'));
+
+        // Add other fields
+        $this->updateFluentCMSFields($fields);
     }
 
     /**

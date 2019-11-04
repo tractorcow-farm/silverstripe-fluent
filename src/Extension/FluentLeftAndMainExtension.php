@@ -5,6 +5,7 @@ namespace TractorCow\Fluent\Extension;
 use SilverStripe\Admin\LeftAndMain;
 use SilverStripe\Core\Extension;
 use SilverStripe\View\Requirements;
+use TractorCow\Fluent\Extension\Traits\FluentAdminTrait;
 
 /**
  * @property LeftAndMain $owner

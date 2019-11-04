@@ -1,6 +1,6 @@
 <?php
 
-namespace TractorCow\Fluent\Extension;
+namespace TractorCow\Fluent\Extension\Traits;
 
 use SilverStripe\Forms\FieldList;
 use SilverStripe\Forms\FormAction;
@@ -9,9 +9,7 @@ use SilverStripe\Forms\TabSet;
 use SilverStripe\ORM\DataObject;
 
 /**
- * Decorates admin areas for localised items with extra actions
- *
- * @todo Move out of trait into injectable service
+ * Decorates admin areas for localised items with extra actions.
  */
 trait FluentAdminTrait
 {
@@ -38,28 +36,24 @@ trait FluentAdminTrait
 
         // Add menu items
         $moreOptions->push(
-            FormAction::create('clearFluent', 'Clear locales')
-                ->addExtraClass('btn-secondary ')
-                ->setDescription('Clear draft version of each locale')
-                ->setTemplate('FluentAdminAction')
+            FormAction::create('clearFluent', 'Clear all localisations')
+                ->addExtraClass('btn-secondary')
         );
         $moreOptions->push(
-            FormAction::create('copyFluent', 'Copy to locales')
-                ->addExtraClass('btn-secondary ')
-                ->setDescription('Copy this localisation as draft to each other locale')
-                ->setTemplate('FluentAdminAction')
+            FormAction::create('copyFluent', 'Copy this to other locales')
+                ->addExtraClass('btn-secondary')
         );
         $moreOptions->push(
-            FormAction::create('unpublishFluent', 'Unpublish locales')
-                ->addExtraClass('btn-secondary ')
-                ->setDescription('Unpublish this page in each locale')
-                ->setTemplate('FluentAdminAction')
+            FormAction::create('unpublishFluent', 'Unpublish (all locales)')
+                ->addExtraClass('btn-secondary')
         );
         $moreOptions->push(
-            FormAction::create('publishFluent', 'Publish locales')
-                ->addExtraClass('btn-secondary ')
-                ->setDescription('Publish this page in each locale')
-                ->setTemplate('FluentAdminAction')
+            FormAction::create('unpublishArchive', 'Unpublish and Archive (all locales)')
+                ->addExtraClass('btn-secondary')
+        );
+        $moreOptions->push(
+            FormAction::create('publishFluent', 'Save & Publish (all locales)')
+                ->addExtraClass('btn-secondary')
         );
 
         $actions->push($rootTabSet);
