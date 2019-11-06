@@ -4,10 +4,15 @@ namespace TractorCow\Fluent\Extension\Traits;
 
 use SilverStripe\Forms\FieldList;
 use SilverStripe\Forms\GridField\GridField;
+use SilverStripe\Forms\GridField\GridField_ActionMenuItem;
 use SilverStripe\Forms\GridField\GridFieldConfig_Base;
 use SilverStripe\Forms\GridField\GridFieldDataColumns;
 use SilverStripe\ORM\DataList;
 use SilverStripe\ORM\DataObject;
+use TractorCow\Fluent\Forms\CopyLocaleAction;
+use TractorCow\Fluent\Forms\GroupActionMenu;
+use TractorCow\Fluent\Forms\PublishAction;
+use TractorCow\Fluent\Forms\UnpublishAction;
 use TractorCow\Fluent\Model\Locale;
 
 /**
@@ -64,6 +69,23 @@ trait FluentObjectTrait
         ];
         $this->owner->extend('updateLocalisationTabColumns', $summaryColumns);
         $columns->setDisplayFields($summaryColumns);
+
+        // Add actions to each
+        $config->addComponents([
+            new GroupActionMenu(CopyLocaleAction::COPY_FROM),
+            new GroupActionMenu(CopyLocaleAction::COPY_TO),
+            new GroupActionMenu(GridField_ActionMenuItem::DEFAULT_GROUP),
+            UnpublishAction::create(),
+            PublishAction::create(),
+        ]);
+
+        // Add each copy from / to
+        foreach (Locale::getCached() as $locale) {
+            $config->addComponents([
+                new CopyLocaleAction($locale->Locale, true),
+                new CopyLocaleAction($locale->Locale, false),
+            ]);
+        }
 
 
         // Add gridfield to tab / fields

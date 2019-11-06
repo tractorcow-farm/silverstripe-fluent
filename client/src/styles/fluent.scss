@@ -151,3 +151,22 @@ $fluent-color-localised: rgb(102, 15, 242);
     }
   }
 }
+
+.action-group-COPY_FROM .action-menu__toggle:before,
+.action-group-COPY_TO .action-menu__toggle:before {
+  font-family: inherit !important;
+  line-height: 1em;
+  font-size: 1.0em;
+}
+
+// Gridfield menu items
+.action-group-COPY_FROM .action-menu__toggle:before {
+  // force ... to turn into actual title
+  content: "copy from" !important;
+}
+
+
+.action-group-COPY_TO .action-menu__toggle:before {
+  // force ... to turn into actual title
+  content: "copy to" !important;
+}
