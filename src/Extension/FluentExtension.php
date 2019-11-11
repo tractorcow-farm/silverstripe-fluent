@@ -15,6 +15,10 @@ use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\DataQuery;
 use SilverStripe\ORM\DB;
 use SilverStripe\ORM\FieldType\DBField;
+use SilverStripe\ORM\FieldType\DBHTMLText;
+use SilverStripe\ORM\FieldType\DBHTMLVarchar;
+use SilverStripe\ORM\FieldType\DBText;
+use SilverStripe\ORM\FieldType\DBVarchar;
 use SilverStripe\ORM\Queries\SQLConditionGroup;
 use SilverStripe\ORM\Queries\SQLSelect;
 use TractorCow\Fluent\Extension\Traits\FluentObjectTrait;
@@ -128,6 +132,10 @@ class FluentExtension extends DataExtension
         'Varchar',
         'HTMLText',
         'HTMLVarchar',
+        DBText::class,
+        DBVarchar::class,
+        DBHTMLText::class,
+        DBHTMLVarchar::class,
     ];
 
     /**
