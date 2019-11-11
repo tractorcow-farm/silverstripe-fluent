@@ -337,4 +337,9 @@ class FluentSiteTreeExtension extends FluentVersionedExtension
             }
         }
     }
+
+    public function actionComplete($form, $message)
+    {
+        // noop
+    }
 }

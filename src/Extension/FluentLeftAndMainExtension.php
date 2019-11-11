@@ -41,4 +41,9 @@ class FluentLeftAndMainExtension extends Extension
 
         $lastItem->setField('Extra', $newBadge);
     }
+
+    public function actionComplete($form, $message)
+    {
+        // todo - set message in header and respond to leftandmain request
+    }
 }

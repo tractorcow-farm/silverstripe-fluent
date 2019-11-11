@@ -36,4 +36,9 @@ class FluentGridFieldExtension extends Extension
     {
         $this->updateFluentActions($actions, $this->owner->getRecord());
     }
+
+    public function actionComplete($form, $message)
+    {
+        // todo - Set form message
+    }
 }

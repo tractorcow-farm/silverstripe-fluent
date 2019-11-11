@@ -13,6 +13,9 @@ use SilverStripe\ORM\DataObject;
  */
 trait FluentAdminTrait
 {
+    public abstract function actionComplete($form, $message);
+
+
     /**
      * Decorate actions with fluent-specific details
      *
@@ -39,16 +42,17 @@ trait FluentAdminTrait
             FormAction::create('clearFluent', 'Clear all localisations')
                 ->addExtraClass('btn-secondary')
         );
-        $moreOptions->push(
-            FormAction::create('copyFluent', 'Copy this to other locales')
-                ->addExtraClass('btn-secondary')
-        );
+        // todo
+//        $moreOptions->push(
+//            FormAction::create('copyFluent', 'Copy this to other locales')
+//                ->addExtraClass('btn-secondary')
+//        );
         $moreOptions->push(
             FormAction::create('unpublishFluent', 'Unpublish (all locales)')
                 ->addExtraClass('btn-secondary')
         );
         $moreOptions->push(
-            FormAction::create('unpublishArchive', 'Unpublish and Archive (all locales)')
+            FormAction::create('archiveFluent', 'Unpublish and Archive (all locales)')
                 ->addExtraClass('btn-secondary')
         );
         $moreOptions->push(
@@ -58,4 +62,44 @@ trait FluentAdminTrait
 
         $actions->push($rootTabSet);
     }
+
+    public function clearFluent()
+    {
+        // todo - clear all locales
+
+        // loop over all stages
+        // then loop over all locales, invoke DeleteLocalisationPolicy
+    }
+
+    public function copyFluent()
+    {
+        // todo - not important for this release
+    }
+
+    public function unpublishFluent($data, $form)
+    {
+        // in live mode
+        // loop over all locales
+        // delete locale DeleteLocalisationPolicy
+        // delete live record
+
+        return $this->actionComplete($form, 'Records have been unpublished in all locales');
+    }
+
+    public function archiveFluent()
+    {
+        // loop over all locales
+        // invoke DeleteLocalisationPolicy
+        // archive record
+
+        // after loop, force delete base record with DeleteRecordPolicy
+    }
+
+    public function publishFluent()
+    {
+        // loop over all locales
+        // publish each
+    }
 }
+
+

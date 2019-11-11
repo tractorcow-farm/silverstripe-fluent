@@ -9,7 +9,6 @@ use TractorCow\Fluent\Model\Locale;
 
 trait FluentBadgeTrait
 {
-
     /**
      * Add the Fluent state badge before any existing badges and return the result
      *
