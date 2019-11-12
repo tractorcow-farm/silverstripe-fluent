@@ -3,6 +3,7 @@
 namespace TractorCow\Fluent\Extension\Traits;
 
 use SilverStripe\CMS\Model\SiteTree;
+use SilverStripe\Dev\Debug;
 use SilverStripe\Forms\FieldList;
 use SilverStripe\Forms\Form;
 use SilverStripe\Forms\FormAction;
@@ -14,6 +15,7 @@ use SilverStripe\Versioned\Versioned;
 use TractorCow\Fluent\Extension\FluentFilteredExtension;
 use TractorCow\Fluent\Extension\FluentVersionedExtension;
 use TractorCow\Fluent\Model\Delete\DeleteLocalisationPolicy;
+use TractorCow\Fluent\Model\Delete\DeleteRecordPolicy;
 use TractorCow\Fluent\Model\Locale;
 use TractorCow\Fluent\State\FluentState;
 
@@ -33,47 +35,58 @@ trait FluentAdminTrait
      */
     protected function updateFluentActions(FieldList $actions, DataObject $record)
     {
-        // If the object exists (is not archived)
-        if (!$record->isArchived()) {
-            $locale = Locale::getCurrentLocale();
+        $results = $record->invokeWithExtensions('isArchived');
 
-            // Build root tabset that makes up the menu
-            $rootTabSet = TabSet::create('FluentMenu')
-                ->setTemplate('FluentAdminTabSet');
-            $rootTabSet->addExtraClass('ss-ui-action-tabset action-menus fluent-actions-menu noborder');
+        // filter down and ensure the record exists
+        $results = array_filter($results, function ($v) {
+            return !is_null($v);
+        });
 
-            // Add menu button
-            $moreOptions = Tab::create(
-                'FluentMenuOptions',
-                'Localisation'
-            );
-            $moreOptions->addExtraClass('popover-actions-simulate');
-            $rootTabSet->push($moreOptions);
+        $isArchived = ($results) ? min($results) : false;
 
-            // Add menu items
-            $moreOptions->push(
-                FormAction::create('clearFluent', "Clear from all except '{$locale->getTitle()}'")
-                    ->addExtraClass('btn-secondary')
-            );
-            $moreOptions->push(
-                FormAction::create('copyFluent', 'Copy to all other locales')
-                    ->addExtraClass('btn-secondary')
-            );
-            $moreOptions->push(
-                FormAction::create('unpublishFluent', 'Unpublish (all locales)')
-                    ->addExtraClass('btn-secondary')
-            );
-            $moreOptions->push(
-                FormAction::create('archiveFluent', 'Unpublish and Archive (all locales)')
-                    ->addExtraClass('btn-secondary')
-            );
-            $moreOptions->push(
-                FormAction::create('publishFluent', 'Save & Publish (all locales)')
-                    ->addExtraClass('btn-secondary')
-            );
-
-            $actions->push($rootTabSet);
+        if ($isArchived) {
+            return;
         }
+
+        // If there are no results, this will pass as true
+        $locale = Locale::getCurrentLocale();
+
+        // Build root tabset that makes up the menu
+        $rootTabSet = TabSet::create('FluentMenu')
+            ->setTemplate('FluentAdminTabSet');
+        $rootTabSet->addExtraClass('ss-ui-action-tabset action-menus fluent-actions-menu noborder');
+
+        // Add menu button
+        $moreOptions = Tab::create(
+            'FluentMenuOptions',
+            'Localisation'
+        );
+        $moreOptions->addExtraClass('popover-actions-simulate');
+        $rootTabSet->push($moreOptions);
+
+        // Add menu items
+        $moreOptions->push(
+            FormAction::create('clearFluent', "Clear from all except '{$locale->getTitle()}'")
+                ->addExtraClass('btn-secondary')
+        );
+        $moreOptions->push(
+            FormAction::create('copyFluent', 'Copy to all other locales')
+                ->addExtraClass('btn-secondary')
+        );
+        $moreOptions->push(
+            FormAction::create('unpublishFluent', 'Unpublish (all locales)')
+                ->addExtraClass('btn-secondary')
+        );
+        $moreOptions->push(
+            FormAction::create('archiveFluent', 'Unpublish and Archive (all locales)')
+                ->addExtraClass('btn-secondary')
+        );
+        $moreOptions->push(
+            FormAction::create('publishFluent', 'Save & Publish (all locales)')
+                ->addExtraClass('btn-secondary')
+        );
+
+        $actions->push($rootTabSet);
     }
 
     /**
@@ -88,6 +101,8 @@ trait FluentAdminTrait
 
         $originalLocale = Locale::getCurrentLocale();
 
+        // Get the record
+        /** @var DataObject|SiteTree $record */
         $record = $form->getRecord();
 
         // Loop over Locales
@@ -97,34 +112,25 @@ trait FluentAdminTrait
             if ($locale->ID != $originalLocale->ID)
                 foreach ([Versioned::LIVE, Versioned::DRAFT] as $stage) {
 
-                    /** @var DataObject|FluentVersionedExtension|RecursivePublishable|Versioned|FluentFilteredExtension $record */
-                    $record = Versioned::get_by_stage($record->ClassName, $stage)->byID($record->ID);
+                    Versioned::withVersionedMode(function () use ($record, $locale, $stage) {
 
-                    // Set the current locale
-                    FluentState::singleton()->withState(function (FluentState $newState) use ($record, $locale) {
-                        $newState->setLocale($locale->getLocale());
+                        Versioned::set_stage($stage);
 
-                        // Unpublish in localisation
-                        /** @var DataObject|FluentVersionedExtension|RecursivePublishable|Versioned $fresh */
-                        $fresh = $record->get()->byID($record->ID);
-                        $fresh->doUnpublish();
+                        /** @var DataObject|FluentVersionedExtension|RecursivePublishable|Versioned|FluentFilteredExtension $record */
+                        $versionedRecord = Versioned::get_by_stage($record->ClassName, $stage)->byID($record->ID);
 
+                        // Set the current locale
+                        FluentState::singleton()->withState(function (FluentState $newState) use ($versionedRecord, $locale) {
+                            $newState->setLocale($locale->getLocale());
 
-                        // after loop, force delete base record with DeleteRecordPolicy
-                        $policy = new DeleteLocalisationPolicy();
-                        $policy->delete($record);
+                            // after loop, force delete base record with DeleteRecordPolicy
+                            $policy = new DeleteLocalisationPolicy();
+                            $policy->delete($versionedRecord);
+                        });
                     });
+
                 }
         }
-
-        // Restore original state
-        FluentState::singleton()->withState(function (FluentState $newState) use ($originalLocale) {
-            $newState->setLocale($originalLocale->getLocale());
-        });
-
-        // Get the record
-        /** @var DataObject|SiteTree $record */
-        $record = $form->getRecord();
 
         $message = _t(
             __CLASS__ . '.ClearAllNotice',
@@ -154,16 +160,8 @@ trait FluentAdminTrait
             // Set the current locale
             FluentState::singleton()->withState(function (FluentState $newState) use ($record, $locale) {
                 $newState->setLocale($locale->getLocale());
-                /** @var DataObject|FluentVersionedExtension|RecursivePublishable|Versioned $fresh */
-                $fresh = $record->get()->byID($record->ID);
 
-                $fresh->writeToStage(Versioned::DRAFT);
-
-                // Enable if filterable too
-                /** @var DataObject|FluentFilteredExtension $fresh */
-                if ($fresh->hasExtension(FluentFilteredExtension::class)) {
-                    $fresh->FilteredLocales()->add($locale);
-                }
+                $record->writeToStage(Versioned::DRAFT);
             });
         }
 
@@ -190,11 +188,6 @@ trait FluentAdminTrait
         // delete locale DeleteLocalisationPolicy
         // delete live record
 
-        $originalStage = Versioned::get_reading_mode();
-
-        // Set Live
-        Versioned::set_reading_mode(Versioned::LIVE);
-
         // Get the record
         /** @var DataObject|SiteTree $record */
         $record = $form->getRecord();
@@ -203,18 +196,13 @@ trait FluentAdminTrait
         foreach (Locale::getCached() as $locale) {
             // Set the current locale
             FluentState::singleton()->withState(function (FluentState $newState) use ($record, $locale) {
-
                 // UnPublish the record
                 $newState->setLocale($locale->getLocale());
+
                 /** @var DataObject|FluentVersionedExtension|RecursivePublishable|Versioned $fresh */
                 $fresh = $record->get()->byID($record->ID);
                 $fresh->doUnpublish();
 
-                // Disable from filter as well
-                /** @var DataObject|FluentFilteredExtension $fresh */
-                if ($fresh->hasExtension(FluentFilteredExtension::class)) {
-                    $fresh->FilteredLocales()->remove($locale);
-                }
             });
         }
 
@@ -223,9 +211,6 @@ trait FluentAdminTrait
             "Unpublished '{title}' from all locales.",
             ['title' => $record->Title]
         );
-
-        // Restore original reading mode
-        Versioned::set_reading_mode($originalStage);
 
         return $this->actionComplete($form, $message);
     }
@@ -261,6 +246,11 @@ trait FluentAdminTrait
                 }
 
                 $record->doArchive();
+
+                // Use DeleteLocalisationPolicy to ensure record is properly removed from this
+                // Locale state
+                $policy = new DeleteLocalisationPolicy();
+                $policy->delete($record);
             });
         }
 
@@ -272,7 +262,7 @@ trait FluentAdminTrait
 
 
         // after loop, force delete base record with DeleteRecordPolicy
-        $policy = new DeleteLocalisationPolicy();
+        $policy = new DeleteRecordPolicy();
         $policy->delete($record);
 
         return $this->actionComplete($form, $message);

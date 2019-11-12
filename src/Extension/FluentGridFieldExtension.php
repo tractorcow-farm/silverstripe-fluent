@@ -2,10 +2,13 @@
 
 namespace TractorCow\Fluent\Extension;
 
+use SilverStripe\Control\Controller;
 use SilverStripe\Core\Extension;
 use SilverStripe\Forms\FieldList;
+use SilverStripe\Forms\Form;
 use SilverStripe\Forms\GridField\GridFieldDetailForm_ItemRequest;
 use SilverStripe\ORM\FieldType\DBField;
+use SilverStripe\ORM\ValidationResult;
 use SilverStripe\Versioned\VersionedGridFieldItemRequest;
 use TractorCow\Fluent\Extension\Traits\FluentAdminTrait;
 use TractorCow\Fluent\Extension\Traits\FluentBadgeTrait;
@@ -23,8 +26,8 @@ class FluentGridFieldExtension extends Extension
     /**
      * Push a badge to indicate the language that owns the current item
      *
-     * @see VersionedGridFieldItemRequest::Breadcrumbs()
      * @param DBField|null $badgeField
+     * @see VersionedGridFieldItemRequest::Breadcrumbs()
      */
     public function updateBadge(&$badgeField)
     {
@@ -37,8 +40,17 @@ class FluentGridFieldExtension extends Extension
         $this->updateFluentActions($actions, $this->owner->getRecord());
     }
 
+    /**
+     * @param Form $form
+     * @param string $message
+     * @return mixed
+     */
     public function actionComplete($form, $message)
     {
-        // todo - Set form message
+        $form->sessionMessage($message, 'good', ValidationResult::CAST_HTML);
+
+        $link = $form->getController()->Link();
+
+        return $this->owner->getController()->redirect($link);
     }
 }
