@@ -248,8 +248,8 @@ trait FluentAdminTrait
 
             // Enable if filterable too
             /** @var DataObject|FluentFilteredExtension $fresh */
-            if ($fresh->hasExtension(FluentFilteredExtension::class)) {
-                $fresh->FilteredLocales()->add($locale);
+            if ($record->hasExtension(FluentFilteredExtension::class)) {
+                $record->FilteredLocales()->add($locale);
             }
         });
 
