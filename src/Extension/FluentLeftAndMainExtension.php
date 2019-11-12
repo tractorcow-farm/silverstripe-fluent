@@ -42,8 +42,21 @@ class FluentLeftAndMainExtension extends Extension
         $lastItem->setField('Extra', $newBadge);
     }
 
+    /**
+     * @param $form
+     * @param $message
+     * @return \SilverStripe\Control\HTTPResponse
+     * @throws \SilverStripe\Control\HTTPResponse_Exception
+     */
     public function actionComplete($form, $message)
     {
-        // todo - set message in header and respond to leftandmain request
+        $request = $this->owner->getRequest();
+
+        $response = $this->owner->getResponseNegotiator()->respond($request);
+
+        // Pass on message
+        $response->addHeader('X-Status', rawurlencode($message));
+
+        return $response;
     }
 }

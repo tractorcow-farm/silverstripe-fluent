@@ -523,6 +523,11 @@ class Locale extends DataObject
         }
 
         $record = DataObject::get($recordClass)->byID($recordID);
-        return RecordLocale::create($record, $this);
+
+        if ($record) {
+            return RecordLocale::create($record, $this);
+        }
+
+        return null;
     }
 }

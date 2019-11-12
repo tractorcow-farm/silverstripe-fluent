@@ -195,7 +195,11 @@ class FluentFilteredExtension extends DataExtension
         $summaryColumns['IsVisible'] = [
             'title'    => 'Visible',
             'callback' => function (Locale $object) {
-                return $object->RecordLocale()->IsVisible() ? 'visible' : 'hidden';
+                if ($object && $object->RecordLocale()) {
+                    return $object->RecordLocale()->IsVisible() ? 'visible' : 'hidden';
+                }
+
+                return '';
             }
         ];
     }

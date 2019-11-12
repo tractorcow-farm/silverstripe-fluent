@@ -414,18 +414,29 @@ class FluentVersionedExtension extends FluentExtension
         }
     }
 
+    /**
+     * @param $summaryColumns
+     */
     public function updateLocalisationTabColumns(&$summaryColumns)
     {
         $summaryColumns['IsDraft'] = [
             'title'    => 'Saved',
             'callback' => function (Locale $object) {
-                return $object->RecordLocale()->IsDraft() ? 'Draft' : '';
+                if ($object && $object->RecordLocale()) {
+                    return $object->RecordLocale()->IsDraft() ? 'Draft' : '';
+                }
+
+                return '';
             }
         ];
         $summaryColumns['IsPublished'] = [
             'title'    => 'Published',
             'callback' => function (Locale $object) {
-                return $object->RecordLocale()->IsPublished() ? 'Live' : '';
+                if ($object && $object->RecordLocale()) {
+                    return $object->RecordLocale()->IsPublished() ? 'Live' : '';
+                }
+
+                return '';
             }
         ];
     }
