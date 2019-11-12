@@ -2,7 +2,6 @@
 
 namespace TractorCow\Fluent\Extension;
 
-use SilverStripe\Control\Controller;
 use SilverStripe\Core\Extension;
 use SilverStripe\Forms\FieldList;
 use SilverStripe\Forms\Form;
@@ -51,6 +50,7 @@ class FluentGridFieldExtension extends Extension
 
         $link = $form->getController()->Link();
 
+        // TODO: This redirect doesn't work
         return $this->owner->getController()->redirect($link);
     }
 }

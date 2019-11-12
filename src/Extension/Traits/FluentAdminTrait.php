@@ -73,18 +73,23 @@ trait FluentAdminTrait
             FormAction::create('copyFluent', 'Copy to all other locales')
                 ->addExtraClass('btn-secondary')
         );
-        $moreOptions->push(
-            FormAction::create('unpublishFluent', 'Unpublish (all locales)')
-                ->addExtraClass('btn-secondary')
-        );
-        $moreOptions->push(
-            FormAction::create('archiveFluent', 'Unpublish and Archive (all locales)')
-                ->addExtraClass('btn-secondary')
-        );
-        $moreOptions->push(
-            FormAction::create('publishFluent', 'Save & Publish (all locales)')
-                ->addExtraClass('btn-secondary')
-        );
+
+        if ($record->hasExtension(Versioned::class)) {
+
+            $moreOptions->push(
+                FormAction::create('unpublishFluent', 'Unpublish (all locales)')
+                    ->addExtraClass('btn-secondary')
+            );
+            $moreOptions->push(
+                FormAction::create('archiveFluent', 'Unpublish and Archive (all locales)')
+                    ->addExtraClass('btn-secondary')
+            );
+            $moreOptions->push(
+                FormAction::create('publishFluent', 'Save & Publish (all locales)')
+                    ->addExtraClass('btn-secondary')
+            );
+
+        }
 
         $actions->push($rootTabSet);
     }
@@ -161,7 +166,7 @@ trait FluentAdminTrait
             FluentState::singleton()->withState(function (FluentState $newState) use ($record, $locale) {
                 $newState->setLocale($locale->getLocale());
 
-                $record->writeToStage(Versioned::DRAFT);
+                $record->write();
             });
         }
 
