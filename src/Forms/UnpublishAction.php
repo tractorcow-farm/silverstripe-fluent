@@ -5,9 +5,7 @@ namespace TractorCow\Fluent\Forms;
 use SilverStripe\Forms\GridField\GridField;
 use SilverStripe\Forms\GridField\GridField_FormAction;
 use SilverStripe\ORM\DataObject;
-use SilverStripe\Versioned\RecursivePublishable;
 use SilverStripe\Versioned\Versioned;
-use TractorCow\Fluent\Extension\FluentFilteredExtension;
 use TractorCow\Fluent\Extension\FluentVersionedExtension;
 use TractorCow\Fluent\Model\Locale;
 use TractorCow\Fluent\State\FluentState;
@@ -53,18 +51,12 @@ class UnpublishAction extends BaseAction
             return;
         }
 
-        // Load a fresh record in a new locale, and publish it
+        // Unpublish in locale
         FluentState::singleton()->withState(function (FluentState $newState) use ($record, $locale) {
             $newState->setLocale($locale->getLocale());
-            /** @var DataObject|FluentVersionedExtension|RecursivePublishable|Versioned $fresh */
+            /** @var DataObject|Versioned $fresh */
             $fresh = $record->get()->byID($record->ID);
             $fresh->doUnpublish();
-
-            // Enable if filterable too
-            /** @var DataObject|FluentFilteredExtension $fresh */
-            if ($fresh->hasExtension(FluentFilteredExtension::class)) {
-                $fresh->FilteredLocales()->add($locale);
-            }
         });
     }
 
@@ -100,7 +92,7 @@ class UnpublishAction extends BaseAction
             "fluentunpublish",
             ['RecordID' => $record->ID]
         )
-            ->addExtraClass('action--fluentpublish btn--icon-md font-icon-translatable grid-field__icon-action action-menu--handled')
+            ->addExtraClass('action--fluentunpublish btn--icon-md font-icon-translatable grid-field__icon-action action-menu--handled')
             ->setAttribute('classNames', 'action--fluentpublish font-icon-translatable')
             ->setDescription($title)
             ->setAttribute('aria-label', $title);
