@@ -115,6 +115,7 @@ $fluent-color-localised: rgb(102, 15, 242);
 .cms .ss-ui-action-tabset.ss-tabset.fluent-actions-menu {
   margin-left: 5px;
 
+  // button
   .popover-actions-simulate .ui-tabs-anchor {
     font-size: 1.0em;
     color: #303b4d;
@@ -133,8 +134,10 @@ $fluent-color-localised: rgb(102, 15, 242);
     }
   }
 
+  // Popup menu
   .tab-pane {
     padding-top: 0;
+    max-width: 500px;
 
     .action-description {
       font-size: 0.9em;

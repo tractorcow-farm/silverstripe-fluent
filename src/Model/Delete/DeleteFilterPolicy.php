@@ -3,6 +3,7 @@
 namespace TractorCow\Fluent\Model\Delete;
 
 use InvalidArgumentException;
+use SilverStripe\Core\Injector\Injectable;
 use SilverStripe\ORM\DataObject;
 use TractorCow\Fluent\Extension\FluentFilteredExtension;
 use TractorCow\Fluent\Model\Locale;
@@ -14,6 +15,7 @@ use TractorCow\Fluent\Model\Locale;
  */
 class DeleteFilterPolicy implements DeletePolicy
 {
+    use Injectable;
 
     /**
      * @param DataObject|FluentFilteredExtension $record
