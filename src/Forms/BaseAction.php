@@ -24,7 +24,7 @@ abstract class BaseAction implements GridField_ActionProvider, GridField_ActionM
      * @param string     $columnName
      * @return GridField_FormAction|null
      */
-    protected abstract function getButtonAction($gridField, $record, $columnName);
+    abstract protected function getButtonAction($gridField, $record, $columnName);
 
     /**
      * Check if this item is enabled for the given record in locale
@@ -33,7 +33,7 @@ abstract class BaseAction implements GridField_ActionProvider, GridField_ActionM
      * @param Locale     $locale
      * @return mixed
      */
-    protected abstract function appliesToRecord(DataObject $record, Locale $locale);
+    abstract protected function appliesToRecord(DataObject $record, Locale $locale);
 
     /**
      * @param GridField  $gridField

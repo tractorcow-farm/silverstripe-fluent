@@ -440,5 +440,4 @@ class FluentVersionedExtension extends FluentExtension
             }
         ];
     }
-
 }

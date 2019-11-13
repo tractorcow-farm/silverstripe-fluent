@@ -24,7 +24,7 @@ use TractorCow\Fluent\State\FluentState;
  */
 trait FluentAdminTrait
 {
-    public abstract function actionComplete($form, $message);
+    abstract public function actionComplete($form, $message);
 
 
     /**
@@ -229,7 +229,6 @@ trait FluentAdminTrait
         );
 
         return $this->actionComplete($form, $message);
-
     }
 
     /**
@@ -300,5 +299,3 @@ trait FluentAdminTrait
         }
     }
 }
-
-
