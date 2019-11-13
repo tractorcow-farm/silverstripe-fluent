@@ -152,7 +152,11 @@ trait FluentAdminTrait
         /** @var DataObject|SiteTree $record */
         $record = $form->getRecord();
         $this->inEveryLocale(function () use ($record) {
-            $record->writeToStage(Versioned::DRAFT);
+            if ($record->hasExtension(Versioned::class)) {
+                $record->writeToStage(Versioned::DRAFT);
+            } else {
+                $record->write();
+            }
         });
 
         $message = _t(
@@ -253,7 +257,7 @@ trait FluentAdminTrait
             $record->publishRecursive();
 
             // Enable if filterable too
-            /** @var DataObject|FluentFilteredExtension $fresh */
+            /** @var DataObject|FluentFilteredExtension $record */
             if ($record->hasExtension(FluentFilteredExtension::class)) {
                 $record->FilteredLocales()->add($locale);
             }
