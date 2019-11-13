@@ -9,6 +9,7 @@ use SilverStripe\Forms\FormAction;
 use SilverStripe\Forms\Tab;
 use SilverStripe\Forms\TabSet;
 use SilverStripe\ORM\DataObject;
+use SilverStripe\ORM\ValidationException;
 use SilverStripe\Versioned\Versioned;
 use TractorCow\Fluent\Extension\FluentExtension;
 use TractorCow\Fluent\Extension\FluentFilteredExtension;
@@ -88,11 +89,11 @@ trait FluentAdminTrait
             );
             $moreOptions->push(
                 FormAction::create('archiveFluent', 'Unpublish and Archive (all locales)')
-                    ->addExtraClass('btn-secondary')
+                    ->addExtraClass('btn-outline-danger')
             );
             $moreOptions->push(
                 FormAction::create('publishFluent', 'Save & Publish (all locales)')
-                    ->addExtraClass('btn-secondary')
+                    ->addExtraClass('btn-primary')
             );
         }
 
@@ -235,12 +236,17 @@ trait FluentAdminTrait
      * @param array $data
      * @param Form  $form
      * @return mixed
+     * @throws ValidationException
      */
     public function publishFluent($data, $form)
     {
         // Get the record
         /** @var DataObject|Versioned $record */
         $record = $form->getRecord();
+
+        // save form data into record
+        $form->saveInto($record);
+        $record->write();
 
         $this->inEveryLocale(function (Locale $locale) use ($record) {
             // Publish record
