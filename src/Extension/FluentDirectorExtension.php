@@ -127,7 +127,7 @@ class FluentDirectorExtension extends Extension
             $url = $localeObj->getURLSegment();
 
             // apply encode so we could route urls that contain multi-byte charaters
-            $url = urlencode($url);
+            $url = $this->encodeRoutePrefix($url);
 
             // Apply to nested page url
             $controller = $this->getRuleController($originalRules['$URLSegment//$Action/$ID/$OtherID'], $localeObj);
@@ -178,5 +178,16 @@ class FluentDirectorExtension extends Extension
         }
 
         return $rules;
+    }
+
+    /**
+     * Safely encode urls
+     *
+     * @param string $url
+     * @return string URL encoded url
+     */
+    protected function encodeRoutePrefix($url)
+    {
+        return implode('/', array_map('urlencode', explode('/', $url)));
     }
 }
