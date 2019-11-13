@@ -7,18 +7,17 @@ use SilverStripe\CMS\Forms\SiteTreeURLSegmentField;
 use SilverStripe\CMS\Model\SiteTree;
 use SilverStripe\Control\Director;
 use SilverStripe\Core\Config\Config;
-use SilverStripe\Dev\Debug;
 use SilverStripe\Dev\SapphireTest;
 use SilverStripe\Forms\FieldList;
 use SilverStripe\Forms\LiteralField;
 use SilverStripe\ORM\ArrayList;
 use SilverStripe\ORM\DataObject;
-use SilverStripe\View\ArrayData;
 use TractorCow\Fluent\Extension\FluentDirectorExtension;
 use TractorCow\Fluent\Extension\FluentSiteTreeExtension;
 use TractorCow\Fluent\Extension\FluentVersionedExtension;
 use TractorCow\Fluent\Model\Domain;
 use TractorCow\Fluent\Model\Locale;
+use TractorCow\Fluent\Model\RecordLocale;
 use TractorCow\Fluent\State\FluentState;
 
 class FluentSiteTreeExtensionTest extends SapphireTest
@@ -59,18 +58,16 @@ class FluentSiteTreeExtensionTest extends SapphireTest
             $page = $this->objFromFixture(Page::class, 'nz-page');
             $result = $page->LocaleInformation('en_NZ');
 
-            $this->assertInstanceOf(ArrayData::class, $result);
-            $this->assertEquals([
-                'Locale' => 'en_NZ',
-                'LocaleRFC1766' => 'en-NZ',
-                'Title' => 'English (New Zealand)',
-                'LanguageNative' => 'English',
-                'Language' => 'en',
-                'Link' => '/newzealand/a-page/',
-                'AbsoluteLink' => 'http://mocked/newzealand/a-page/',
-                'LinkingMode' => 'link',
-                'URLSegment' => 'newzealand'
-            ], $result->toMap());
+            $this->assertInstanceOf(RecordLocale::class, $result);
+            $this->assertEquals('en_NZ', $result->getLocale());
+            $this->assertEquals('en-NZ', $result->getLocaleRFC1766());
+            $this->assertEquals('English (New Zealand)', $result->getTitle());
+            $this->assertEquals('English', $result->getLanguageNative());
+            $this->assertEquals('en', $result->getLanguage());
+            $this->assertEquals('/newzealand/a-page/', $result->getLink());
+            $this->assertEquals('http://mocked/newzealand/a-page/', $result->getAbsoluteLink());
+            $this->assertEquals('link', $result->getLinkingMode());
+            $this->assertEquals('newzealand', $result->getURLSegment());
         });
     }
 
@@ -152,7 +149,7 @@ class FluentSiteTreeExtensionTest extends SapphireTest
      * @dataProvider provideURLTests
      * @param string $domain
      * @param string $locale
-     * @param bool $prefixDisabled
+     * @param bool   $prefixDisabled
      * @param string $pageName
      * @param string $url
      */
@@ -466,8 +463,8 @@ class FluentSiteTreeExtensionTest extends SapphireTest
     public function localePrefixUrlProvider()
     {
         return [
-            'locale_with_domain' => ['en_US', 'about', 'http://www.example.com/usa/'],
-            'locale_without_domain' => ['zh_CN', 'about', 'http://mocked/zh_CN/'],
+            'locale_with_domain'            => ['en_US', 'about', 'http://www.example.com/usa/'],
+            'locale_without_domain'         => ['zh_CN', 'about', 'http://mocked/zh_CN/'],
             'locale_alone_on_domain_nested' => ['de_DE', 'staff', 'http://www.example.de/about-us/'],
         ];
     }
