@@ -61,6 +61,7 @@ trait FluentAdminTrait
         // Build root tabset that makes up the menu
         $rootTabSet = TabSet::create('FluentMenu')
             ->setTemplate('FluentAdminTabSet');
+
         $rootTabSet->addExtraClass('ss-ui-action-tabset action-menus fluent-actions-menu noborder');
 
         // Add menu button
@@ -97,7 +98,8 @@ trait FluentAdminTrait
             );
         }
 
-        $actions->push($rootTabSet);
+        // Make sure the menu isn't going to get cut off
+        $actions->insertBefore('RightGroup', $rootTabSet);
     }
 
     /**
