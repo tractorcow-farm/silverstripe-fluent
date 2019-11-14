@@ -16,6 +16,7 @@ use TractorCow\Fluent\Extension\FluentFilteredExtension;
 use TractorCow\Fluent\Model\Delete\ArchiveRecordPolicy;
 use TractorCow\Fluent\Model\Delete\DeleteFilterPolicy;
 use TractorCow\Fluent\Model\Delete\DeleteLocalisationPolicy;
+use TractorCow\Fluent\Model\Delete\DeleteRecordPolicy;
 use TractorCow\Fluent\Model\Locale;
 use TractorCow\Fluent\State\FluentState;
 
@@ -61,6 +62,7 @@ trait FluentAdminTrait
         // Build root tabset that makes up the menu
         $rootTabSet = TabSet::create('FluentMenu')
             ->setTemplate('FluentAdminTabSet');
+
         $rootTabSet->addExtraClass('ss-ui-action-tabset action-menus fluent-actions-menu noborder');
 
         // Add menu button
@@ -95,9 +97,15 @@ trait FluentAdminTrait
                 FormAction::create('publishFluent', 'Save & Publish (all locales)')
                     ->addExtraClass('btn-primary')
             );
+        } else {
+            $moreOptions->push(
+                FormAction::create('deleteFluent', 'Delete (all locales)')
+                    ->addExtraClass('btn-outline-danger')
+            );
         }
 
-        $actions->push($rootTabSet);
+        // Make sure the menu isn't going to get cut off
+        $actions->insertBefore('RightGroup', $rootTabSet);
     }
 
     /**
@@ -152,7 +160,12 @@ trait FluentAdminTrait
         /** @var DataObject|SiteTree $record */
         $record = $form->getRecord();
         $this->inEveryLocale(function () use ($record) {
-            $record->writeToStage(Versioned::DRAFT);
+            if ($record->hasExtension(Versioned::class)) {
+                $record->writeToStage(Versioned::DRAFT);
+            } else {
+                $record->forceChange();
+                $record->write();
+            }
         });
 
         $message = _t(
@@ -190,7 +203,7 @@ trait FluentAdminTrait
     }
 
     /**
-     * Archives the current object from all locales
+     * Archives the current object from all locales (versioned)
      *
      * @param array $data
      * @param Form  $form
@@ -209,7 +222,7 @@ trait FluentAdminTrait
                 $policy->delete($record);
             }
 
-            // Delete all localisations
+            // Delete all localisations in all locales
             if ($record->hasExtension(FluentExtension::class)) {
                 $this->inEveryStage(function () use ($record) {
                     $policy = DeleteLocalisationPolicy::create();
@@ -224,12 +237,53 @@ trait FluentAdminTrait
 
         $message = _t(
             __CLASS__ . '.ArchiveNotice',
+            "Archived '{title}' and all of its localisations.",
+            ['title' => $record->Title]
+        );
+
+        return $this->actionComplete($form, $message);
+    }
+
+    /**
+     * Delete the current object from all locales (non-versioned)
+     *
+     * @param array $data
+     * @param Form  $form
+     * @return mixed
+     */
+    public function deleteFluent($data, $form)
+    {
+        // Get the record
+        /** @var DataObject|Versioned $record */
+        $record = $form->getRecord();
+
+        $this->inEveryLocale(function () use ($record) {
+            // Delete filtered policy for this locale
+            if ($record->hasExtension(FluentFilteredExtension::class)) {
+                $policy = DeleteFilterPolicy::create();
+                $policy->delete($record);
+            }
+
+            // Delete all localisations
+            if ($record->hasExtension(FluentExtension::class)) {
+                $policy = DeleteLocalisationPolicy::create();
+                $policy->delete($record);
+            }
+        });
+
+        // Delete base record
+        $policy = DeleteRecordPolicy::create();
+        $policy->delete($record);
+
+        $message = _t(
+            __CLASS__ . '.DeleteNotice',
             "Deleted '{title}' and all of its localisations.",
             ['title' => $record->Title]
         );
 
         return $this->actionComplete($form, $message);
     }
+
 
     /**
      * @param array $data
@@ -252,7 +306,7 @@ trait FluentAdminTrait
             $record->publishRecursive();
 
             // Enable if filterable too
-            /** @var DataObject|FluentFilteredExtension $fresh */
+            /** @var DataObject|FluentFilteredExtension $record */
             if ($record->hasExtension(FluentFilteredExtension::class)) {
                 $record->FilteredLocales()->add($locale);
             }
