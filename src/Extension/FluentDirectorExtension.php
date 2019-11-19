@@ -95,20 +95,29 @@ class FluentDirectorExtension extends Extension
         // to the default locale for this domain.
         if (!static::config()->get('detect_locale')) {
             // Respect existing home controller
-            $rules[''] = [
-                'Controller'                         => $this->getRuleController($originalRules[''], $defaultLocale),
-                static::config()->get('query_param') => $defaultLocale->Locale,
-            ];
+            $originalHomeRole = $originalRules[''] ?? null;
+            if ($originalHomeRole) {
+                $rules[''] = [
+                    'Controller'                         => $this->getRuleController($originalHomeRole, $defaultLocale),
+                    static::config()->get('query_param') => $defaultLocale->Locale,
+                ];
+            }
         }
 
         // If default locale doesn't have prefix, replace default route with
         // the default locale for this domain
         if (static::config()->get('disable_default_prefix')) {
-            $rules['$URLSegment//$Action/$ID/$OtherID'] = [
-                'Controller'                         => $this->getRuleController($originalRules['$URLSegment//$Action/$ID/$OtherID'], $defaultLocale),
-                static::config()->get('query_param') => $defaultLocale->Locale
-            ];
+            $originalURLSegmentRule = $originalRules['$URLSegment//$Action/$ID/$OtherID'] ?? null;
+            if ($originalURLSegmentRule) {
+                $rules['$URLSegment//$Action/$ID/$OtherID'] = [
+                    'Controller'                         => $this->getRuleController($originalURLSegmentRule, $defaultLocale),
+                    static::config()->get('query_param') => $defaultLocale->Locale
+                ];
+            }
         }
+
+        // Hook for appending / adjusting any additional rules
+        $this->owner->extend('updateFluentRoutes', $rules);
     }
 
     /**
@@ -130,18 +139,27 @@ class FluentDirectorExtension extends Extension
             $url = $this->encodeRoutePrefix($url);
 
             // Apply to nested page url
-            $controller = $this->getRuleController($originalRules['$URLSegment//$Action/$ID/$OtherID'], $localeObj);
-            $rules[$url . '/$URLSegment!//$Action/$ID/$OtherID'] = [
-                'Controller' => $controller,
-                $queryParam  => $locale,
-            ];
+            $originalURLSegmentRule = $originalRules['$URLSegment//$Action/$ID/$OtherID'] ?? null;
+            if ($originalURLSegmentRule) {
+                $controller = $this->getRuleController($originalURLSegmentRule, $localeObj);
+                $rules[$url . '/$URLSegment!//$Action/$ID/$OtherID'] = [
+                    'Controller' => $controller,
+                    $queryParam  => $locale,
+                ];
+            }
 
             // Home url for that locale
-            $controller = $this->getRuleController($originalRules[''], $localeObj);
-            $rules[$url] = [
-                'Controller' => $controller,
-                $queryParam  => $locale,
-            ];
+            $originalHomeRole = $originalRules[''] ?? null;
+            if ($originalHomeRole) {
+                $controller = $this->getRuleController($originalHomeRole, $localeObj);
+                $rules[$url] = [
+                    'Controller' => $controller,
+                    $queryParam  => $locale,
+                ];
+            }
+
+            // Hook for adding additional explicit routes
+            $this->owner->extend('updateFluentRoutesForLocale', $rules, $locale, $url);
         }
         return $rules;
     }
