@@ -14,6 +14,11 @@ use TractorCow\Fluent\Extension\Traits\FluentAdminTrait;
 use TractorCow\Fluent\Model\Locale;
 use TractorCow\Fluent\State\FluentState;
 
+// Soft dependency on CMS module
+if (!class_exists(SiteTree::class)) {
+    return;
+}
+
 /**
  * Fluent extension for SiteTree
  *

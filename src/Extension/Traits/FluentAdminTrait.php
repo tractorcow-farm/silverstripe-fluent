@@ -2,7 +2,6 @@
 
 namespace TractorCow\Fluent\Extension\Traits;
 
-use SilverStripe\CMS\Model\SiteTree;
 use SilverStripe\Forms\FieldList;
 use SilverStripe\Forms\Form;
 use SilverStripe\Forms\FormAction;
@@ -121,7 +120,7 @@ trait FluentAdminTrait
         $originalLocale = Locale::getCurrentLocale();
 
         // Get the record
-        /** @var DataObject|SiteTree $record */
+        /** @var DataObject $record */
         $record = $form->getRecord();
 
         // Loop over other Locales
@@ -157,7 +156,7 @@ trait FluentAdminTrait
     public function copyFluent($data, $form)
     {
         // Write current record to every other stage
-        /** @var DataObject|SiteTree $record */
+        /** @var DataObject|Versioned $record */
         $record = $form->getRecord();
         $this->inEveryLocale(function () use ($record) {
             if ($record->hasExtension(Versioned::class)) {
