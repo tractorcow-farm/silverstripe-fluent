@@ -43,10 +43,10 @@ class UnpublishAction extends BaseAction
         }
 
         // Get parent record and locale
+        $rowRecord = DataObject::get($arguments['RecordClass'])->byID($arguments['RecordID']);
         /** @var DataObject $record */
-        $record = $gridField->getForm()->getRecord();
         /** @var Locale $locale */
-        $locale = Locale::getCached()->byID($arguments['RecordID']);
+        list ($record, $locale) = $this->getRecordAndLocale($gridField, $rowRecord);
         if (!$locale || !$record || !$record->isInDB()) {
             return;
         }
@@ -90,7 +90,10 @@ class UnpublishAction extends BaseAction
             'FluentUnpublish' . $record->ID,
             $title,
             "fluentunpublish",
-            ['RecordID' => $record->ID]
+            [
+                'RecordID'    => $record->ID,
+                'RecordClass' => get_class($record),
+            ]
         )
             ->addExtraClass('action--fluentunpublish btn--icon-md font-icon-translatable grid-field__icon-action action-menu--handled')
             ->setAttribute('classNames', 'action--fluentpublish font-icon-translatable')

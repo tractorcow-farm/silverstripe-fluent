@@ -7,14 +7,16 @@ use SilverStripe\Forms\GridField\GridField_ColumnProvider;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\FieldType\DBField;
 use TractorCow\Fluent\Extension\FluentExtension;
+use TractorCow\Fluent\Extension\Traits\FluentBadgeTrait;
 use TractorCow\Fluent\Model\Locale;
-use TractorCow\Fluent\Model\RecordLocale;
 
 /**
  * Adds a "visible in locales" column to a gridfield
  */
 class VisibleLocalesColumn implements GridField_ColumnProvider
 {
+    use FluentBadgeTrait;
+
     /**
      * Modify the list of columns displayed in the table.
      *
@@ -60,39 +62,13 @@ class VisibleLocalesColumn implements GridField_ColumnProvider
     public function getColumnContent($gridField, $record, $columnName)
     {
         if ($columnName !== 'Locales') {
-
             return null;
         }
 
         $label = '';
-
         /** @var Locale $locale */
         foreach (Locale::getLocales() as $locale) {
-            $recordLocale = RecordLocale::create($record, $locale);
-            $badgeClasses = [
-                'badge fluent-badge'
-            ];
-
-            if ($recordLocale->IsPublished()) {
-                // If the object has been localised in the current locale, show a "localised" state
-                $badgeClasses[] = 'fluent-badge--default';
-                $tooltip = _t(__CLASS__ . '.BadgeInvisible', 'Localised in {locale}', [
-                    'locale' => $locale->getTitle(),
-                ]);
-            } else {
-                // Otherwise the state is that it hasn't yet been localised in the current locale, so is "invisible"
-                $badgeClasses[] = 'fluent-badge--invisible';
-                $tooltip = _t(__CLASS__ . '.BadgeLocalised', '{type} is not visible in this locale', [
-                    'type' => $record->i18n_singular_name(),
-                ]);
-            }
-
-            $label .= sprintf(
-                '<span class="%s" title="%s" style="font-size:.8em;padding:3px 5px;">%s</span>&nbsp;',
-                implode(' ', $badgeClasses),
-                $tooltip,
-                strtoupper($locale->getBadgeLabel())
-            );
+            $label .= $this->generateBadgeHTML($record, $locale);
         }
 
         return DBField::create_field('HTMLFragment', $label);
@@ -108,7 +84,9 @@ class VisibleLocalesColumn implements GridField_ColumnProvider
      */
     public function getColumnAttributes($gridField, $record, $columnName)
     {
-        return [];
+        return [
+            'class' => 'fluent-visible-column',
+        ];
     }
 
     /**

@@ -5,7 +5,7 @@
 $fluent-color-base: rgb(0, 138, 0);
 
 // $fluent-color-invisible: #566b8d
-$fluent-color-invisible: rgb(86, 107, 141);
+$fluent-color-invisible: rgb(155, 40, 40);
 
 // $fluent-color-invisible-text
 $fluent-color-invisible-text: $text-muted;
@@ -168,8 +168,13 @@ $fluent-color-localised: rgb(102, 15, 242);
   content: "copy from" !important;
 }
 
-
 .action-group-COPY_TO .action-menu__toggle:before {
   // force ... to turn into actual title
   content: "copy to" !important;
+}
+
+// gridfield "visible locales" column
+.fluent-visible-column .badge {
+  font-size: 0.8em;
+  padding: 3px 5px;
 }

@@ -5,25 +5,26 @@ namespace TractorCow\Fluent\Forms;
 use SilverStripe\Forms\GridField\GridField;
 use SilverStripe\Forms\GridField\GridField_FormAction;
 use SilverStripe\ORM\DataObject;
-use SilverStripe\Versioned\RecursivePublishable;
+use TractorCow\Fluent\Extension\FluentExtension;
 use TractorCow\Fluent\Extension\FluentFilteredExtension;
-use TractorCow\Fluent\Extension\FluentVersionedExtension;
+use TractorCow\Fluent\Model\Delete\DeleteFilterPolicy;
+use TractorCow\Fluent\Model\Delete\DeleteLocalisationPolicy;
 use TractorCow\Fluent\Model\Locale;
 use TractorCow\Fluent\State\FluentState;
 
 /**
- * Provides the "publish this locale" action
+ * Provides the "delete this locale" action
  */
-class PublishAction extends BaseAction
+class DeleteLocaleAction extends BaseAction
 {
     public function getTitle($gridField, $record, $columnName)
     {
-        return _t(__CLASS__ . '.PUBLISH', 'Publish in this locale');
+        return _t(__CLASS__ . '.DELETE', 'Delete in this locale');
     }
 
     public function getActions($gridField)
     {
-        return ['fluentpublish'];
+        return ['fluentdelete'];
     }
 
     /**
@@ -39,7 +40,7 @@ class PublishAction extends BaseAction
      */
     public function handleAction(GridField $gridField, $actionName, $arguments, $data)
     {
-        if ($actionName !== 'fluentpublish') {
+        if ($actionName !== 'fluentdelete') {
             return;
         }
 
@@ -52,23 +53,26 @@ class PublishAction extends BaseAction
             return;
         }
 
-        // Load a fresh record in a new locale, and publish it
+        // Unpublish in locale
         FluentState::singleton()->withState(function (FluentState $newState) use ($record, $locale) {
             $newState->setLocale($locale->getLocale());
-            /** @var DataObject|FluentVersionedExtension|RecursivePublishable $fresh */
-            $fresh = $record->get()->byID($record->ID);
-            $fresh->publishRecursive();
 
-            // Enable if filterable too
-            /** @var DataObject|FluentFilteredExtension $fresh */
-            if ($fresh->hasExtension(FluentFilteredExtension::class)) {
-                $fresh->FilteredLocales()->add($locale);
+            // Delete filtered policy for this locale
+            if ($record->hasExtension(FluentFilteredExtension::class)) {
+                $policy = DeleteFilterPolicy::create();
+                $policy->delete($record);
+            }
+
+            // Delete all localisations
+            if ($record->hasExtension(FluentExtension::class)) {
+                $policy = DeleteLocalisationPolicy::create();
+                $policy->delete($record);
             }
         });
     }
 
     /**
-     * Item needs to be translated before it can be published
+     * Record must be published before it can be unpublished
      *
      * @param DataObject $record
      * @param Locale     $locale
@@ -76,12 +80,9 @@ class PublishAction extends BaseAction
      */
     protected function appliesToRecord(DataObject $record, Locale $locale)
     {
-        /** @var DataObject|FluentVersionedExtension $record */
-        return $record
-            && $record->hasExtension(FluentVersionedExtension::class)
-            && $record->isDraftedInLocale($locale->Locale);
+        return $record->hasExtension(FluentExtension::class)
+            || $record->hasExtension(FluentFilteredExtension::class);
     }
-
 
     /**
      *
@@ -95,16 +96,16 @@ class PublishAction extends BaseAction
         $title = $this->getTitle($gridField, $record, $columnName);
         $field = GridField_FormAction::create(
             $gridField,
-            'FluentPublish' . $record->ID,
+            'FluentDelete' . $record->ID,
             $title,
-            "fluentpublish",
+            "fluentdelete",
             [
                 'RecordID'    => $record->ID,
                 'RecordClass' => get_class($record),
             ]
         )
-            ->addExtraClass('action--fluentpublish btn--icon-md font-icon-translatable grid-field__icon-action action-menu--handled')
-            ->setAttribute('classNames', 'action--fluentpublish font-icon-translatable')
+            ->addExtraClass('action--fluentdelete btn--icon-md font-icon-translatable grid-field__icon-action action-menu--handled')
+            ->setAttribute('classNames', 'action--fluentdelete font-icon-translatable')
             ->setDescription($title)
             ->setAttribute('aria-label', $title);
 

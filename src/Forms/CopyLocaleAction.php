@@ -33,7 +33,7 @@ class CopyLocaleAction extends BaseAction
      * CopyLocaleAction constructor.
      *
      * @param string $otherLocale Other locale to interact with
-     * @param bool $isTo Is this copying to the given locale? Otherwise, assume copy from
+     * @param bool   $isTo        Is this copying to the given locale? Otherwise, assume copy from
      */
     public function __construct($otherLocale, $isTo)
     {
@@ -119,10 +119,10 @@ class CopyLocaleAction extends BaseAction
 
     public function getGroup($gridField, $record, $columnName)
     {
-        if ($record instanceof Locale
-            && $this->appliesToRecord($gridField->getForm()->getRecord(), $record)
-        ) {
+        $hasGroup = parent::getGroup($gridField, $record, $columnName);
+        if ($hasGroup) {
             return $this->isTo ? self::COPY_TO : self::COPY_FROM;
         }
+        return null;
     }
 }

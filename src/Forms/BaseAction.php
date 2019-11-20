@@ -36,6 +36,28 @@ abstract class BaseAction implements GridField_ActionProvider, GridField_ActionM
     abstract protected function appliesToRecord(DataObject $record, Locale $locale);
 
     /**
+     * Given a gridfield, and either an ID or record, return a list with
+     * both the record  being localised, and the locale object
+     *
+     * @param GridField  $gridField Gridfield
+     * @param DataObject $rowRecord Record in row
+     * @return array 2 length array with localised record, and locale as adjacent items
+     */
+    protected function getRecordAndLocale(GridField $gridField, DataObject $rowRecord)
+    {
+        $baseRecord = $gridField->getForm()->getRecord();
+
+        // Gridfield is list of locales for a single localised object
+        if ($rowRecord instanceof Locale) {
+            return [$baseRecord, $rowRecord];
+        }
+
+        // Gridfield is list of localised object in current locale
+        $locale = Locale::getCurrentLocale();
+        return [$rowRecord, $locale];
+    }
+
+    /**
      * @param GridField  $gridField
      * @param DataObject $record
      * @param string     $columnName
@@ -60,9 +82,8 @@ abstract class BaseAction implements GridField_ActionProvider, GridField_ActionM
      */
     public function getGroup($gridField, $record, $columnName)
     {
-        if ($record instanceof Locale
-            && $this->appliesToRecord($gridField->getForm()->getRecord(), $record)
-        ) {
+        list($record, $locale) = $this->getRecordAndLocale($gridField, $record);
+        if ($locale instanceof $locale && $this->appliesToRecord($record, $locale)) {
             return GridField_ActionMenuItem::DEFAULT_GROUP;
         }
         return null;

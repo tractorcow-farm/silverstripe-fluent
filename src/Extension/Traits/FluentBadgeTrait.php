@@ -4,8 +4,10 @@ namespace TractorCow\Fluent\Extension\Traits;
 
 use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\FieldType\DBField;
+use SilverStripe\View\HTML;
 use TractorCow\Fluent\Extension\FluentExtension;
 use TractorCow\Fluent\Model\Locale;
+use TractorCow\Fluent\Model\RecordLocale;
 
 trait FluentBadgeTrait
 {
@@ -41,35 +43,52 @@ trait FluentBadgeTrait
         if (!$currentLocale || !$record->has_extension(FluentExtension::class)) {
             return null;
         }
+        $badge = $this->generateBadgeHTML($record, $currentLocale);
+        return DBField::create_field(
+            'HTMLFragment',
+            $badge
+        );
+    }
 
-        // Bulid new badge
+    /**
+     * @param DataObject $record
+     * @param Locale     $locale
+     * @param array      $extraProperties
+     * @return string
+     */
+    protected function generateBadgeHTML(DataObject $record, $locale, $extraProperties = [])
+    {
+        $info = new RecordLocale($record, $locale);
+
+        // Build new badge
         $badgeClasses = ['badge', 'fluent-badge'];
-        if ($currentLocale->getIsDefault()) {
-            // Current locale should always show a "default" or green state badge
-            $badgeClasses[] = 'fluent-badge--default';
-            $tooltip = _t(__CLASS__ . '.BadgeDefault', 'Default locale');
-        } elseif ($record->existsInLocale($currentLocale->Locale)) {
+        if ($info->IsPublished()) {
             // If the object has been localised in the current locale, show a "localised" state
+            $badgeClasses[] = 'fluent-badge--default';
+            $tooltip = _t(__CLASS__ . '.BadgePublished', 'Published in {locale}', [
+                'locale' => $locale->getTitle(),
+            ]);
+        } elseif ($info->IsDraft()) {
+            // Otherwise the state is that it hasn't yet been localised in the current locale, so is "invisible"
             $badgeClasses[] = 'fluent-badge--localised';
-            $tooltip = _t(__CLASS__ . '.BadgeInvisible', 'Localised in {locale}', [
-                'locale' => $currentLocale->getTitle(),
+            $tooltip = _t(__CLASS__ . '.BadgeDraft', 'Saved but not visible in {locale}', [
+                'locale' => $locale->getTitle(),
             ]);
         } else {
             // Otherwise the state is that it hasn't yet been localised in the current locale, so is "invisible"
             $badgeClasses[] = 'fluent-badge--invisible';
-            $tooltip = _t(__CLASS__ . '.BadgeLocalised', '{type} is not visible in this locale', [
+            $tooltip = _t(__CLASS__ . '.BaggeInvisible', '{type} is not visible in this locale', [
                 'type' => $record->i18n_singular_name(),
             ]);
         }
 
-        return DBField::create_field(
-            'HTMLFragment',
-            sprintf(
-                '<span class="%s" title="%s">%s</span>',
-                implode(' ', $badgeClasses),
-                $tooltip,
-                $record->getSourceLocale()->getBadgeLabel()
-            )
+        $attributes = array_merge(
+            [
+                'class' => implode(' ', $badgeClasses),
+                'title' => $tooltip,
+            ],
+            $extraProperties
         );
+        return HTML::createTag('span', $attributes, $locale->getBadgeLabel());
     }
 }

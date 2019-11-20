@@ -5,25 +5,24 @@ namespace TractorCow\Fluent\Forms;
 use SilverStripe\Forms\GridField\GridField;
 use SilverStripe\Forms\GridField\GridField_FormAction;
 use SilverStripe\ORM\DataObject;
-use SilverStripe\Versioned\RecursivePublishable;
+use TractorCow\Fluent\Extension\FluentExtension;
 use TractorCow\Fluent\Extension\FluentFilteredExtension;
-use TractorCow\Fluent\Extension\FluentVersionedExtension;
 use TractorCow\Fluent\Model\Locale;
 use TractorCow\Fluent\State\FluentState;
 
 /**
- * Provides the "publish this locale" action
+ * Provides the "Save in this locale" action
  */
-class PublishAction extends BaseAction
+class SaveLocaleAction extends BaseAction
 {
     public function getTitle($gridField, $record, $columnName)
     {
-        return _t(__CLASS__ . '.PUBLISH', 'Publish in this locale');
+        return _t(__CLASS__ . '.SAVE', 'Save in this locale');
     }
 
     public function getActions($gridField)
     {
-        return ['fluentpublish'];
+        return ['fluentsave'];
     }
 
     /**
@@ -39,7 +38,7 @@ class PublishAction extends BaseAction
      */
     public function handleAction(GridField $gridField, $actionName, $arguments, $data)
     {
-        if ($actionName !== 'fluentpublish') {
+        if ($actionName !== 'fluentsave') {
             return;
         }
 
@@ -55,9 +54,10 @@ class PublishAction extends BaseAction
         // Load a fresh record in a new locale, and publish it
         FluentState::singleton()->withState(function (FluentState $newState) use ($record, $locale) {
             $newState->setLocale($locale->getLocale());
-            /** @var DataObject|FluentVersionedExtension|RecursivePublishable $fresh */
+            /** @var DataObject $fresh */
             $fresh = $record->get()->byID($record->ID);
-            $fresh->publishRecursive();
+            $fresh->forceChange();
+            $fresh->write();
 
             // Enable if filterable too
             /** @var DataObject|FluentFilteredExtension $fresh */
@@ -68,7 +68,7 @@ class PublishAction extends BaseAction
     }
 
     /**
-     * Item needs to be translated before it can be published
+     * Item must either be localised, or filtered
      *
      * @param DataObject $record
      * @param Locale     $locale
@@ -76,10 +76,8 @@ class PublishAction extends BaseAction
      */
     protected function appliesToRecord(DataObject $record, Locale $locale)
     {
-        /** @var DataObject|FluentVersionedExtension $record */
-        return $record
-            && $record->hasExtension(FluentVersionedExtension::class)
-            && $record->isDraftedInLocale($locale->Locale);
+        return $record->hasExtension(FluentExtension::class)
+            || $record->hasExtension(FluentFilteredExtension::class);
     }
 
 
@@ -95,16 +93,16 @@ class PublishAction extends BaseAction
         $title = $this->getTitle($gridField, $record, $columnName);
         $field = GridField_FormAction::create(
             $gridField,
-            'FluentPublish' . $record->ID,
+            'FluentSave' . $record->ID,
             $title,
-            "fluentpublish",
+            "fluentsave",
             [
                 'RecordID'    => $record->ID,
                 'RecordClass' => get_class($record),
             ]
         )
-            ->addExtraClass('action--fluentpublish btn--icon-md font-icon-translatable grid-field__icon-action action-menu--handled')
-            ->setAttribute('classNames', 'action--fluentpublish font-icon-translatable')
+            ->addExtraClass('action--fluentsave btn--icon-md font-icon-translatable grid-field__icon-action action-menu--handled')
+            ->setAttribute('classNames', 'action--fluentsave font-icon-translatable')
             ->setDescription($title)
             ->setAttribute('aria-label', $title);
 
