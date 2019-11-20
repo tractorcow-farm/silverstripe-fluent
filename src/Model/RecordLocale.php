@@ -5,6 +5,7 @@ namespace TractorCow\Fluent\Model;
 use SilverStripe\Control\Director;
 use SilverStripe\i18n\i18n;
 use SilverStripe\ORM\DataObject;
+use SilverStripe\Versioned\Versioned;
 use SilverStripe\View\ViewableData;
 use TractorCow\Fluent\Extension\FluentExtension;
 use TractorCow\Fluent\Extension\FluentFilteredExtension;
@@ -255,8 +256,18 @@ class RecordLocale extends ViewableData
             return false;
         }
 
-        /** @var DataObject|FluentExtension|FluentVersionedExtension|FluentFilteredExtension $record */
+        /** @var DataObject|FluentExtension|FluentVersionedExtension|FluentFilteredExtension|Versioned $record */
         $record = $this->getOriginalRecord();
+
+        // If versioned, record must be published
+        if ($record->hasExtension(Versioned::class) && !$record->isPublished()) {
+            return false;
+        }
+
+        // If frontend publishing is not required for localisation, no further checks required
+        if (!$record->config()->get('frontend_publish_required')) {
+            return true;
+        }
 
         // Check if versioned item is published
         if ($record->hasExtension(FluentVersionedExtension::class)) {
