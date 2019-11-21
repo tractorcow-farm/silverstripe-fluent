@@ -2,6 +2,7 @@
 
 namespace TractorCow\Fluent\Extension;
 
+use SilverStripe\Control\Controller;
 use SilverStripe\Core\Extension;
 use SilverStripe\Forms\FieldList;
 use SilverStripe\Forms\Form;
@@ -40,7 +41,7 @@ class FluentGridFieldExtension extends Extension
     }
 
     /**
-     * @param Form $form
+     * @param Form   $form
      * @param string $message
      * @return mixed
      */
@@ -48,9 +49,35 @@ class FluentGridFieldExtension extends Extension
     {
         $form->sessionMessage($message, 'good', ValidationResult::CAST_HTML);
 
-        $link = $form->getController()->Link();
+        // Copied fcrom GridFieldDetailForm_ItemRequest::redirectAfterSave
+        $controller = $this->getToplevelController();
+        $gridField = $this->owner->getGridField();
+        $record = $this->owner->getRecord();
+        $request = $controller->getRequest();
 
-        // TODO: This redirect doesn't work
-        return $this->owner->getController()->redirect($link);
+        // Return new view, as we can't do a "virtual redirect" via the CMS Ajax
+        // to the same URL (it assumes that its content is already current, and doesn't reload)
+        if ($gridField->getList()->byID($record->ID)) {
+            return $this->owner->edit($request);
+        }
+
+        // Changes to the record properties might've excluded the record from
+        // a filtered list, so return back to the main view if it can't be found
+        $url = $request->getURL();
+        $noActionURL = $controller->removeAction($url);
+        $request->addHeader('X-Pjax', 'Content');
+        return $controller->redirect($noActionURL, 302);
+    }
+
+    /**
+     * @return Controller
+     */
+    private function getToplevelController()
+    {
+        $next = $this->owner;
+        while ($next && $next instanceof GridFieldDetailForm_ItemRequest) {
+            $next = $next->getController();
+        }
+        return $next;
     }
 }
