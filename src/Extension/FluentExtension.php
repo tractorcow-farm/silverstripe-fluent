@@ -9,6 +9,7 @@ use SilverStripe\Core\Convert;
 use SilverStripe\Core\Extension;
 use SilverStripe\Dev\Deprecation;
 use SilverStripe\Forms\FieldList;
+use SilverStripe\Forms\FormField;
 use SilverStripe\ORM\ArrayList;
 use SilverStripe\ORM\DataExtension;
 use SilverStripe\ORM\DataObject;
@@ -21,6 +22,7 @@ use SilverStripe\ORM\FieldType\DBText;
 use SilverStripe\ORM\FieldType\DBVarchar;
 use SilverStripe\ORM\Queries\SQLConditionGroup;
 use SilverStripe\ORM\Queries\SQLSelect;
+use SilverStripe\View\HTML;
 use TractorCow\Fluent\Extension\Traits\FluentObjectTrait;
 use TractorCow\Fluent\Model\Delete\UsesDeletePolicy;
 use TractorCow\Fluent\Model\Locale;
@@ -899,23 +901,39 @@ class FluentExtension extends DataExtension
                 if (!$field && preg_match('/^(?<field>\w+)ID$/', $translatedField, $matches)) {
                     $field = $fields->dataFieldByName($matches['field']);
                 }
-                if (!$field || $field->hasClass('fluent__localised-field')) {
-                    continue;
+                if ($field) {
+                    $this->updateFluentCMSField($field);
                 }
-
-                $translatedTooltipTitle = _t(__CLASS__ . ".FLUENT_ICON_TOOLTIP", 'Translatable field');
-                $tooltip = DBField::create_field(
-                    'HTMLFragment',
-                    "<span class='font-icon-translatable' title='$translatedTooltipTitle'></span>"
-                );
-
-                $field->addExtraClass('fluent__localised-field');
-                $field->setTitle(DBField::create_field('HTMLFragment', $tooltip . $field->Title()));
             }
         }
 
         // Update fields shared between fluent / fluentfiltered
         $this->updateFluentCMSFields($fields);
+    }
+
+    /**
+     * Add fluent tooltip to given field.
+     * You can use this to add fluent tag to custom fields.
+     *
+     * @param FormField $field
+     */
+    public function updateFluentCMSField(FormField $field)
+    {
+        if ($field->hasClass('fluent__localised-field')) {
+            return;
+        }
+
+        $tooltip = _t(__CLASS__ . ".FLUENT_ICON_TOOLTIP", 'Translatable field');
+        $title = $field->Title();
+        $titleXML = $title instanceof DBField ? $title->forTemplate() : Convert::raw2xml($title);
+        $tooltip = DBField::create_field(
+            'HTMLFragment',
+            HTML::createTag('span', ['class' => 'font-icon-translatable', 'title' => $tooltip])
+            . $titleXML
+        );
+
+        $field->addExtraClass('fluent__localised-field');
+        $field->setTitle($tooltip);
     }
 
     /**
