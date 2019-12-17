@@ -109,7 +109,11 @@ If you don't want to use the Filtered Locales Extension, then we can instead add
 
 namespace MySite\Extension\SiteTree;
 
-// use statements removed.
+use SilverStripe\CMS\Model\SiteTreeExtension;
+use SilverStripe\ORM\DataQuery;
+use SilverStripe\ORM\Queries\SQLSelect;
+use TractorCow\Fluent\State\FluentState;
+use TractorCow\Fluent\Model\Locale;
 
 /**
  * Class SiteTreeFluentExtension
@@ -132,7 +136,7 @@ class SiteTreeFluentExtension extends SiteTreeExtension
         }
 
         // Get the Locale out of the data query.
-        $locale = Locale::getByLocale(FluentHelper::getDataQueryLocale($dataQuery));
+        $locale = Locale::getByLocale($this->getDataQueryLocale($dataQuery));
         if ($locale === null) {
             return;
         }
@@ -151,6 +155,26 @@ class SiteTreeFluentExtension extends SiteTreeExtension
 
         // Make sure one or more of our requirements match.
         $query->addWhereAny($fallbackRequirements);
+    }
+
+    /**
+     * Get current locale from given dataquery
+     *
+     * @param DataQuery $dataQuery
+     * @return Locale|null
+     */
+    protected function getDataQueryLocale(DataQuery $dataQuery = null)
+    {
+        if (!$dataQuery) {
+            return null;
+        }
+
+        $localeCode = $dataQuery->getQueryParam('Fluent.Locale') ?: FluentState::singleton()->getLocale();
+        if ($localeCode) {
+            return Locale::getByLocale($localeCode);
+        }
+
+        return null;
     }
 }
 ```
