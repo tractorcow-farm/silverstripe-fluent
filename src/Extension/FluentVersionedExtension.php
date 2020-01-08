@@ -298,6 +298,17 @@ class FluentVersionedExtension extends FluentExtension
     }
 
     /**
+     * Check if this record exists (in current stage) in this locale
+     *
+     * @param string $locale
+     * @return bool
+     */
+    public function isLocalisedInCurrentStage($locale = null)
+    {
+        return $this->isLocalisedInStage(Versioned::get_stage(), $locale);
+    }
+
+    /**
      * Check to see whether or not a record exists for a specific Locale in a specific stage.
      *
      * @param string $stage  Version stage

@@ -853,7 +853,7 @@ class FluentExtension extends DataExtension
      */
     public function getLinkingMode($locale)
     {
-        if ($this->owner->hasMethod('canViewInLocale') && !$this->owner->canViewInLocale($locale)) {
+        if ($this->owner->hasMethod('isLocalisedInCurrentStage') && !$this->owner->isLocalisedInCurrentStage($locale)) {
             return 'invalid';
         }
 
