@@ -305,6 +305,9 @@ class FluentVersionedExtension extends FluentExtension
      */
     public function isLocalisedInCurrentStage($locale = null)
     {
+        if (!$this->owner->config()->get('frontend_publish_required')) {
+            return true;
+        }
         return $this->isLocalisedInStage(Versioned::get_stage(), $locale);
     }
 
