@@ -45,22 +45,21 @@ class FluentFilteredExtension extends DataExtension
             return;
         }
 
-        // create a GridField to manage what Locales this Page can be displayed in.
-        $fields->addFieldToTab(
-            'Root.FilteredLocales',
-            CheckboxSetField::create(
-                'FilteredLocales',
-                _t(__CLASS__ . '.FILTERED_LOCALES', 'Display in the following locales'),
-                $locales
-            )
-        );
-
-        $fields
-            ->fieldByName('Root.FilteredLocales')
-            ->setTitle(_t(__CLASS__ . '.TAB_FILTERED_LOCALES', 'Filtered Locales'));
-
         // Add other fields
         $this->updateFluentCMSFields($fields);
+
+        // Checklist list of visible locales
+        $checkboxSetField = CheckboxSetField::create(
+            'FilteredLocales',
+            _t(__CLASS__ . '.FILTERED_LOCALES', 'Display in the following locales'),
+            $locales
+        );
+
+        if ($fields->hasTabSet()) {
+            $fields->addFieldToTab('Root.Locales', $checkboxSetField);
+        } else {
+            $fields->push($checkboxSetField);
+        }
     }
 
     /**
@@ -187,8 +186,8 @@ class FluentFilteredExtension extends DataExtension
     }
 
     /**
-     * @see FluentObjectTrait::updateFluentCMSFields()
      * @param $summaryColumns
+     * @see FluentObjectTrait::updateFluentCMSFields()
      */
     public function updateLocalisationTabColumns(&$summaryColumns)
     {
