@@ -34,6 +34,8 @@ class FluentTestState implements TestState
      */
     public function setUpOnce($class)
     {
+        // Clear locale static caching between tests.
+        Locale::clearCached();
     }
 
     /**
