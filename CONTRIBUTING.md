@@ -12,10 +12,10 @@ Keep in mind that support for this module is a best effort, and sometimes life h
 feel like you are being ignored if you do not get a prompt response to any questions!
 
 
-# Becoming a member of the contributing team
+# Becoming a maintainer
 
 If you are someone who has a history of good contributing to Fluent (or really any module
-in the tractorcow vendor), we'd probably love to have you as a part of the team. This would give
+in the tractorcow vendor), we'd probably love to have you as a maintainer. This would give
 you write access, the ability to review the work of others' in the community, and get more of
 a say in the general development of the module.
 
