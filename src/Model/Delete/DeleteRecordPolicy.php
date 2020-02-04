@@ -5,6 +5,7 @@ namespace TractorCow\Fluent\Model\Delete;
 use SilverStripe\ORM\DataList;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\Queries\SQLDelete;
+use TractorCow\Fluent\State\FluentState;
 
 /**
  * A policy that deletes the root record
@@ -68,15 +69,35 @@ class DeleteRecordPolicy implements DeletePolicy
      */
     protected function deleteBaseRecord(DataObject $record)
     {
-        // Copy DataObject::delete() here for now
-        $srcQuery = DataList::create(get_class($record))
-            ->filter('ID', $record->ID)
-            ->dataQuery()
-            ->query();
-        $queriedTables = $srcQuery->queriedTables();
+        $queriedTables = $this->getTargetTables($record);
         foreach ($queriedTables as $table) {
             $delete = SQLDelete::create("\"{$table}\"", array('"ID"' => $record->ID));
             $delete->execute();
         }
+    }
+
+    /**
+     * Generate table list to delete base record
+     *
+     * @param DataObject $record
+     * @return mixed
+     */
+    protected function getTargetTables(DataObject $record)
+    {
+        return FluentState::singleton()
+            ->withState(
+                function (FluentState $state) use ($record) {
+                    // Disable fluent and delete unlocalised record only
+                    $state->setLocale(null);
+
+                    // Copy DataObject::delete() here for now
+                    $srcQuery = DataList::create(get_class($record))
+                        ->filter('ID', $record->ID)
+                        ->dataQuery()
+                        ->query();
+
+                    return $srcQuery->queriedTables();
+                }
+            );
     }
 }

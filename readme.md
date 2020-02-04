@@ -28,6 +28,12 @@ Back end control is provided by a simple CMS filter.
 Also, please [report any issues](https://github.com/tractorcow-farm/silverstripe-fluent/issues)
 you may encounter, as it helps us all out!
 
+## Contributing
+
+If you would like to contribute to Fluent, either via pull requests,
+localisations, or being a part of the contributing team, please see
+[the contributing guidelines](CONTRIBUTING.md)
+
 ## Credits and Authors
 
  * Damian Mooyman - <https://github.com/tractorcow-farm/silverstripe-fluent>
