@@ -3,13 +3,14 @@
 namespace TractorCow\Fluent\Control;
 
 use SilverStripe\Admin\ModelAdmin;
+use SilverStripe\Security\PermissionProvider;
 use SilverStripe\View\Requirements;
 use TractorCow\Fluent\Extension\FluentDirectorExtension;
 use TractorCow\Fluent\Model\Domain;
 use TractorCow\Fluent\Model\Locale;
 use TractorCow\Fluent\State\FluentState;
 
-class LocaleAdmin extends ModelAdmin
+class LocaleAdmin extends ModelAdmin implements PermissionProvider
 {
     private static $url_segment = 'locales';
 
@@ -41,12 +42,12 @@ class LocaleAdmin extends ModelAdmin
                 'fluent' => [
                     'locales' => array_map(function (Locale $locale) {
                         return [
-                            'code' => $locale->getLocale(),
+                            'code'  => $locale->getLocale(),
                             'title' => $locale->getTitle(),
                         ];
                     }, Locale::getCached()->toArray()),
-                    'locale' => FluentState::singleton()->getLocale(),
-                    'param' => FluentDirectorExtension::config()->get('query_param'),
+                    'locale'  => FluentState::singleton()->getLocale(),
+                    'param'   => FluentDirectorExtension::config()->get('query_param'),
                 ]
             ]
         );

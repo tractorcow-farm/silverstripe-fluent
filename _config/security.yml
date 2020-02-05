@@ -4,6 +4,3 @@ Name: fluentsecurity
 SilverStripe\Security\Member:
   extensions:
     fluentmember: TractorCow\Fluent\Extension\FluentMemberExtension
-SilverStripe\Security\Group:
-  extensions:
-    fluentgroup: TractorCow\Fluent\Extension\FluentGroupExtension

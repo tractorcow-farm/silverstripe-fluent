@@ -21,6 +21,7 @@ use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\DB;
 use SilverStripe\ORM\HasManyList;
 use SilverStripe\ORM\ManyManyList;
+use SilverStripe\Security\PermissionProvider;
 use Symbiote\GridFieldExtensions\GridFieldAddNewInlineButton;
 use Symbiote\GridFieldExtensions\GridFieldEditableColumns;
 use Symbiote\GridFieldExtensions\GridFieldOrderableRows;
@@ -32,15 +33,25 @@ use TractorCow\Fluent\State\FluentState;
  * @property string $Title
  * @property string $Locale
  * @property string $URLSegment
- * @property bool   $IsGlobalDefault
- * @property int    $DomainID
+ * @property bool $IsGlobalDefault
+ * @property int $DomainID
  * @method HasManyList|FallbackLocale[] FallbackLocales()
  * @method ManyManyList|Locale[] Fallbacks()
  * @method Domain Domain() Raw SQL Domain (unfiltered by domain mode)
  */
-class Locale extends DataObject
+class Locale extends DataObject implements PermissionProvider
 {
     use CachableModel;
+
+    /**
+     * Code for accessing cross-locale actions
+     */
+    const CMS_ACCESS_MULTI_LOCALE = 'CMS_ACCESS_Fluent_Actions_MultiLocale';
+
+    /**
+     * Prefix for per-locale permission code
+     */
+    const CMS_ACCESS_FLUENT_LOCALE = "CMS_ACCESS_Fluent_Locale_";
 
     private static $table_name = 'Fluent_Locale';
 
@@ -346,7 +357,7 @@ class Locale extends DataObject
     /**
      * Returns whether the given locale matches the current Locale object
      *
-     * @param  string $locale E.g. en_NZ, en-NZ, en-nz-1990
+     * @param string $locale E.g. en_NZ, en-NZ, en-nz-1990
      * @return bool
      */
     public function isLocale($locale)
@@ -511,8 +522,8 @@ class Locale extends DataObject
     /**
      * Get details for the current object in this locale.
      *
-     * @see FluentObjectTrait::LinkedLocales()
      * @return null|RecordLocale
+     * @see FluentObjectTrait::LinkedLocales()
      */
     public function RecordLocale()
     {
@@ -529,5 +540,46 @@ class Locale extends DataObject
         }
 
         return null;
+    }
+
+    /**
+     * Get permission code to enable access in this locale
+     *
+     * @return string
+     */
+    public function getLocaleEditPermission()
+    {
+        $prefix = self::CMS_ACCESS_FLUENT_LOCALE;
+        return "{$prefix}{$this->Locale}";
+    }
+
+
+    public function providePermissions()
+    {
+        $category = _t(__CLASS__ . '.PERMISSION', 'Localisation');
+        $permissions = [
+            // @todo - Actually implement this check on those actions
+            self::CMS_ACCESS_MULTI_LOCALE => [
+                'name'     => _t(
+                    __CLASS__ . '.MULTI_LOCALE',
+                    'Access to multi-locale actions (E.g. save in all locales)'
+                ),
+                'category' => $category,
+            ],
+        ];
+        foreach (Locale::getCached() as $locale) {
+            $permissions[$locale->getLocaleEditPermission()] = [
+                'name'     => _t(
+                    __CLASS__ . '.EDIT_LOCALE',
+                    'Access "{title}" ({locale})',
+                    [
+                        'title'  => $locale->Title,
+                        'locale' => $locale->Locale,
+                    ]
+                ),
+                'category' => $category,
+            ];
+        }
+        return $permissions;
     }
 }
