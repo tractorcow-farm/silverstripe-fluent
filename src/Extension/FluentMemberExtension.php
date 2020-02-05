@@ -30,13 +30,8 @@ class FluentMemberExtension extends DataExtension
                 return true;
             }
 
-            // Enabled if the current locale is selected
-            if (in_array($locale->getLocaleEditPermission(), $localePermissions)) {
-                return true;
-            }
-
-            // Group disabled
-            return false;
+            // Enabled if the current locale is selected, or disabled
+            return in_array($locale->getLocaleEditPermission(), $localePermissions);
         });
 
         // Adjust group filter
