@@ -334,6 +334,11 @@ class DetectLocaleMiddleware implements HTTPMiddleware
         return null;
     }
 
+    /**
+     * Check if the current user is allowed to access the curernt locale
+     *
+     * @param FluentState $state
+     */
     protected function validateAllowedLocale(FluentState $state)
     {
         if ($state->getIsFrontend()) {
@@ -342,10 +347,13 @@ class DetectLocaleMiddleware implements HTTPMiddleware
 
         /** @var Member|FluentMemberExtension $member */
         $member = Security::getCurrentUser();
-        $allowedLocales = $member->getCMSAccessLocales();
+        if (!$member) {
+            return;
+        }
 
         // If limited to one or more locales, check that the current locale is in
         // this list
+        $allowedLocales = $member->getCMSAccessLocales();
         /** @var Locale $firstAllowedLocale */
         $firstAllowedLocale = $allowedLocales->first();
         if ($firstAllowedLocale && !$allowedLocales->find('Locale', $state->getLocale())) {
