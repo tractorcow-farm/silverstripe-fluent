@@ -165,12 +165,14 @@ $fluent-color-localised: rgb(102, 15, 242);
 // Gridfield menu items
 .action-group-COPY_FROM .action-menu__toggle:before {
   // force ... to turn into actual title
-  content: "copy from" !important;
+  // @todo i18n this
+  content: "Copy from" !important;
 }
 
 .action-group-COPY_TO .action-menu__toggle:before {
   // force ... to turn into actual title
-  content: "copy to" !important;
+  // @todo i18n this
+  content: "Copy to" !important;
 }
 
 // gridfield "visible locales" column

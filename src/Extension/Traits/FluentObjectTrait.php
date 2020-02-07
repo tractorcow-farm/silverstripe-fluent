@@ -4,14 +4,11 @@ namespace TractorCow\Fluent\Extension\Traits;
 
 use SilverStripe\Forms\FieldList;
 use SilverStripe\Forms\GridField\GridField;
-use SilverStripe\Forms\GridField\GridField_ActionMenuItem;
+use SilverStripe\Forms\GridField\GridFieldConfig;
 use SilverStripe\Forms\GridField\GridFieldConfig_Base;
 use SilverStripe\Forms\GridField\GridFieldDataColumns;
 use SilverStripe\ORM\DataList;
 use SilverStripe\ORM\DataObject;
-use TractorCow\Fluent\Forms\GroupActionMenu;
-use TractorCow\Fluent\Forms\PublishAction;
-use TractorCow\Fluent\Forms\UnpublishAction;
 use TractorCow\Fluent\Model\Locale;
 
 /**
@@ -22,10 +19,25 @@ use TractorCow\Fluent\Model\Locale;
 trait FluentObjectTrait
 {
     /**
+     * Add additional columns to localisation table
+     *
+     * @param $summaryColumns
+     * @see FluentObjectTrait::updateFluentCMSFields()
+     */
+    abstract public function updateLocalisationTabColumns(&$summaryColumns);
+
+    /**
+     * Add additional configs to localisation table
+     *
+     * @param GridFieldConfig $config
+     */
+    abstract public function updateLocalisationTabConfig(GridFieldConfig $config);
+
+    /**
      * Gets list of all Locale dataobjects, linked to this record
      *
-     * @see Locale::getRecordLocale()
      * @return DataList|Locale[]
+     * @see Locale::getRecordLocale()
      */
     public function LinkedLocales()
     {
@@ -58,36 +70,22 @@ trait FluentObjectTrait
             return;
         }
 
-        // Create gridfield, and get columns from various other extensions
+        // Generate gridfield for handling localisations
         $config = GridFieldConfig_Base::create();
+
         /** @var GridFieldDataColumns $columns */
         $columns = $config->getComponentByType(GridFieldDataColumns::class);
         $summaryColumns = [
             'Title'  => 'Title',
-            'Locale' => 'Locale'
+            'Locale' => 'Locale',
         ];
+
+        // Let extensions override columns
         $this->owner->extend('updateLocalisationTabColumns', $summaryColumns);
         $columns->setDisplayFields($summaryColumns);
 
-        // Add actions to each
-        $config->addComponents([
-            // todo new GroupActionMenu(CopyLocaleAction::COPY_FROM),
-            // todo new GroupActionMenu(CopyLocaleAction::COPY_TO),
-            new GroupActionMenu(GridField_ActionMenuItem::DEFAULT_GROUP),
-            UnpublishAction::create(),
-            PublishAction::create(),
-        ]);
-
-        /* todo
-        // Add each copy from / to
-        foreach (Locale::getCached() as $locale) {
-            $config->addComponents([
-                new CopyLocaleAction($locale->Locale, true),
-                new CopyLocaleAction($locale->Locale, false),
-            ]);
-        }
-        */
-
+        // Let extensions override components
+        $this->owner->extend('updateLocalisationTabConfig', $config);
 
         // Add gridfield to tab / fields
         $gridField = GridField::create('RecordLocales', 'Locales', $this->LinkedLocales(), $config);

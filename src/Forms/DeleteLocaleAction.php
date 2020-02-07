@@ -34,9 +34,9 @@ class DeleteLocaleAction extends BaseAction
      * to ensure it only accepts actions it is actually supposed to handle.
      *
      * @param GridField $gridField
-     * @param string    $actionName Action identifier, see {@link getActions()}.
-     * @param array     $arguments  Arguments relevant for this
-     * @param array     $data       All form data
+     * @param string $actionName Action identifier, see {@link getActions()}.
+     * @param array $arguments Arguments relevant for this
+     * @param array $data All form data
      */
     public function handleAction(GridField $gridField, $actionName, $arguments, $data)
     {
@@ -45,10 +45,8 @@ class DeleteLocaleAction extends BaseAction
         }
 
         // Get parent record and locale
-        $rowRecord = DataObject::get($arguments['RecordClass'])->byID($arguments['RecordID']);
-        /** @var DataObject $record */
-        /** @var Locale $locale */
-        list ($record, $locale) = $this->getRecordAndLocale($gridField, $rowRecord);
+        $record = DataObject::get($arguments['RecordClass'])->byID($arguments['RecordID']);
+        $locale = Locale::getByLocale($arguments['Locale']);
         if (!$locale || !$record || !$record->isInDB()) {
             return;
         }
@@ -75,7 +73,7 @@ class DeleteLocaleAction extends BaseAction
      * Record must be published before it can be unpublished
      *
      * @param DataObject $record
-     * @param Locale     $locale
+     * @param Locale $locale
      * @return mixed
      */
     protected function appliesToRecord(DataObject $record, Locale $locale)
@@ -86,22 +84,24 @@ class DeleteLocaleAction extends BaseAction
 
     /**
      *
-     * @param GridField  $gridField
+     * @param GridField $gridField
      * @param DataObject $record
-     * @param string     $columnName
+     * @param Locale $locale
+     * @param string $columnName
      * @return GridField_FormAction|null
      */
-    protected function getButtonAction($gridField, $record, $columnName)
+    protected function getButtonAction($gridField, DataObject $record, Locale $locale, $columnName)
     {
         $title = $this->getTitle($gridField, $record, $columnName);
         $field = GridField_FormAction::create(
             $gridField,
-            'FluentDelete' . $record->ID,
+            "FluentDelete_{$locale->Locale}_{$record->ID}",
             $title,
             "fluentdelete",
             [
                 'RecordID'    => $record->ID,
                 'RecordClass' => get_class($record),
+                'Locale'      => $locale->Locale,
             ]
         )
             ->addExtraClass('action--fluentdelete btn--icon-md font-icon-translatable grid-field__icon-action action-menu--handled')

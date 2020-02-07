@@ -128,6 +128,16 @@ class Locale extends DataObject implements PermissionProvider
     }
 
     /**
+     * Long title (including locale code)
+     *
+     * @return string
+     */
+    public function getLongTitle()
+    {
+        return "{$this->Title} ({$this->Locale})";
+    }
+
+    /**
      * @return string
      */
     protected function getDefaultTitle()

@@ -2,11 +2,14 @@
 
 namespace TractorCow\Fluent\Forms;
 
+use SilverStripe\Forms\GridField\GridField;
 use SilverStripe\Forms\GridField\GridField_ActionMenu;
 use SilverStripe\Forms\GridField\GridField_ActionMenuItem;
 use SilverStripe\Forms\GridField\GridField_ActionMenuLink;
+use SilverStripe\ORM\FieldType\DBHTMLText;
 use SilverStripe\View\ArrayData;
 use SilverStripe\View\SSViewer;
+use TractorCow\Fluent\Model\Locale;
 
 /**
  * Menu grouped by item group
@@ -15,11 +18,27 @@ class GroupActionMenu extends GridField_ActionMenu
 {
     protected $group = null;
 
-    public function __construct($group = GridField_ActionMenuItem::DEFAULT_GROUP)
+    /**
+     * If set, show a custom header title
+     *
+     * @var ?string
+     */
+    protected $customTitle = null;
+
+    public function __construct($group = GridField_ActionMenuItem::DEFAULT_GROUP, $customTitle = null)
     {
         $this->group = $group;
+        $this->customTitle = $customTitle;
     }
 
+    /**
+     * Get details for this locale against the parent record
+     *
+     * @param GridField $gridField
+     * @param Locale $record Record this group applies to
+     * @param string $columnName
+     * @return DBHTMLText
+     */
     public function getColumnContent($gridField, $record, $columnName)
     {
         $items = $this->getItems($gridField);
@@ -29,6 +48,7 @@ class GroupActionMenu extends GridField_ActionMenu
         }
 
         $schema = [];
+
         /* @var GridField_ActionMenuItem $item */
         foreach ($items as $item) {
             // Get items filtered by group
@@ -39,10 +59,25 @@ class GroupActionMenu extends GridField_ActionMenu
             $schema[] = [
                 'type'  => $item instanceof GridField_ActionMenuLink ? 'link' : 'submit',
                 'title' => $item->getTitle($gridField, $record, $columnName),
-                'url'   => $item instanceof GridField_ActionMenuLink ? $item->getUrl($gridField, $record, $columnName) : null,
-                'group' => $group,
+                'url'   => $item instanceof GridField_ActionMenuLink
+                    ? $item->getUrl($gridField, $record, $columnName)
+                    : null,
+                'group' => $this->group,
                 'data'  => $item->getExtraData($gridField, $record, $columnName),
             ];
+        }
+
+        // Show title, but only if we have at least one item
+        if ($schema && $this->customTitle) {
+            array_unshift($schema, [
+                'type'  => 'link',
+                'title' => str_replace('{locale}', $record->getLongTitle(), $this->customTitle),
+                'url'   => '#',
+                'group' => $this->group,
+                'data'  => [
+                    'classNames" => "no-js',
+                ],
+            ]);
         }
 
         $templateData = ArrayData::create([
