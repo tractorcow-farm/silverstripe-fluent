@@ -10,7 +10,10 @@ use SilverStripe\Control\Session;
 use SilverStripe\Core\Config\Configurable;
 use SilverStripe\Core\Injector\Injector;
 use SilverStripe\i18n\i18n;
+use SilverStripe\Security\Member;
+use SilverStripe\Security\Security;
 use TractorCow\Fluent\Extension\FluentDirectorExtension;
+use TractorCow\Fluent\Extension\FluentMemberExtension;
 use TractorCow\Fluent\Model\Domain;
 use TractorCow\Fluent\Model\Locale;
 use TractorCow\Fluent\State\FluentState;
@@ -34,7 +37,7 @@ class DetectLocaleMiddleware implements HTTPMiddleware
      */
     private static $persist_ids = [
         'frontend' => 'FluentLocale',
-        'cms' => 'FluentLocale_CMS',
+        'cms'      => 'FluentLocale_CMS',
     ];
 
     /**
@@ -101,6 +104,9 @@ class DetectLocaleMiddleware implements HTTPMiddleware
             $state->setLocale($locale);
         }
 
+        // Validate the user is allowed to access this locale
+        $this->validateAllowedLocale($state);
+
         if ($locale && $state->getIsFrontend()) {
             i18n::set_locale($state->getLocale());
         }
@@ -118,7 +124,7 @@ class DetectLocaleMiddleware implements HTTPMiddleware
     /**
      * Get the current locale from routing parameters, persistence, browser locale, etc
      *
-     * @param  HTTPRequest $request
+     * @param HTTPRequest $request
      * @return string
      */
     protected function getLocale(HTTPRequest $request)
@@ -146,7 +152,7 @@ class DetectLocaleMiddleware implements HTTPMiddleware
             $locale = $this->getDefaultLocale();
         }
 
-        return (string) $locale;
+        return (string)$locale;
     }
 
     /**
@@ -181,11 +187,11 @@ class DetectLocaleMiddleware implements HTTPMiddleware
      * Specify the locale to persist between sessions, or to use for the locale outside of locale-routed pages
      * (such as in unit tests, custom controllers, etc).
      *
-     * Not to be confused with the temporary locale assigned with {@link withLocale()}. @todo implement this.
-     *
-     * @param  HTTPRequest $request
-     * @param  string      $locale  Locale to assign
+     * Not to be confused with the temporary locale assigned with {@link withLocale()}. @param HTTPRequest $request
+     * @param string $locale Locale to assign
      * @return $this
+     * @todo implement this.
+     *
      */
     protected function setPersistLocale(HTTPRequest $request, $locale)
     {
@@ -326,5 +332,25 @@ class DetectLocaleMiddleware implements HTTPMiddleware
         }
 
         return null;
+    }
+
+    protected function validateAllowedLocale(FluentState $state)
+    {
+        if ($state->getIsFrontend()) {
+            return;
+        }
+
+        /** @var Member|FluentMemberExtension $member */
+        $member = Security::getCurrentUser();
+        $allowedLocales = $member->getCMSAccessLocales();
+
+        // If limited to one or more locales, check that the current locale is in
+        // this list
+        /** @var Locale $firstAllowedLocale */
+        $firstAllowedLocale = $allowedLocales->first();
+        if ($firstAllowedLocale && !$allowedLocales->find('Locale', $state->getLocale())) {
+            // Force state to the first allowed locale
+            $state->setLocale($firstAllowedLocale->Locale);
+        }
     }
 }

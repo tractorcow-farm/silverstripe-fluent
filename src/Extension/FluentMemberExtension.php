@@ -49,8 +49,8 @@ class FluentMemberExtension extends DataExtension
         try {
             return Locale::getCached()->filterByCallback(function (Locale $locale) {
                 // Check if the user has CMS access in this locale
-                FluentState::singleton()->withState(function (FluentState $state) use ($locale) {
-                    $state->setLocale($state);
+                return FluentState::singleton()->withState(function (FluentState $state) use ($locale) {
+                    $state->setLocale($locale->Locale);
                     Permission::reset();
                     return Permission::checkMember($this->owner, 'CMS_ACCESS');
                 });
