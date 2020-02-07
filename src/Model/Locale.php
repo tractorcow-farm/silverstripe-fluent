@@ -49,7 +49,10 @@ class Locale extends DataObject implements PermissionProvider
     const CMS_ACCESS_MULTI_LOCALE = 'CMS_ACCESS_Fluent_Actions_MultiLocale';
 
     /**
-     * Prefix for per-locale permission code
+     * Prefix for per-locale permission code.
+     *
+     * Note that this is not a permission code in itself, and must always be
+     * joined with a locale.
      */
     const CMS_ACCESS_FLUENT_LOCALE = "CMS_ACCESS_Fluent_Locale_";
 

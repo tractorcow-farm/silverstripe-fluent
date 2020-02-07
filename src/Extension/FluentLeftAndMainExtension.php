@@ -3,6 +3,8 @@
 namespace TractorCow\Fluent\Extension;
 
 use SilverStripe\Admin\LeftAndMain;
+use SilverStripe\Control\HTTPResponse;
+use SilverStripe\Control\HTTPResponse_Exception;
 use SilverStripe\Core\Extension;
 use SilverStripe\ORM\ArrayList;
 use SilverStripe\View\Requirements;
@@ -24,8 +26,8 @@ class FluentLeftAndMainExtension extends Extension
     }
 
     /**
-     * @see CMSMain::Breadcrumbs()
      * @param ArrayList $breadcrumbs
+     * @see CMSMain::Breadcrumbs()
      */
     public function updateBreadcrumbs(ArrayList $breadcrumbs)
     {
@@ -45,13 +47,12 @@ class FluentLeftAndMainExtension extends Extension
     /**
      * @param $form
      * @param $message
-     * @return \SilverStripe\Control\HTTPResponse
-     * @throws \SilverStripe\Control\HTTPResponse_Exception
+     * @return HTTPResponse
+     * @throws HTTPResponse_Exception
      */
     public function actionComplete($form, $message)
     {
         $request = $this->owner->getRequest();
-
         $response = $this->owner->getResponseNegotiator()->respond($request);
 
         // Pass on message

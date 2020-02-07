@@ -2,6 +2,7 @@
 
 namespace TractorCow\Fluent\Extension\Traits;
 
+use SilverStripe\Control\HTTPResponse_Exception;
 use SilverStripe\Forms\FieldList;
 use SilverStripe\Forms\Form;
 use SilverStripe\Forms\FormAction;
@@ -9,6 +10,7 @@ use SilverStripe\Forms\Tab;
 use SilverStripe\Forms\TabSet;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\ValidationException;
+use SilverStripe\Security\Permission;
 use SilverStripe\Versioned\Versioned;
 use TractorCow\Fluent\Extension\FluentExtension;
 use TractorCow\Fluent\Extension\FluentFilteredExtension;
@@ -26,15 +28,19 @@ trait FluentAdminTrait
 {
     abstract public function actionComplete($form, $message);
 
-
     /**
      * Decorate actions with fluent-specific details
      *
-     * @param FieldList            $actions
+     * @param FieldList $actions
      * @param DataObject|Versioned $record
      */
     protected function updateFluentActions(FieldList $actions, DataObject $record)
     {
+        // Check permissions for adding global actions
+        if (!Permission::check(Locale::CMS_ACCESS_MULTI_LOCALE)) {
+            return;
+        }
+
         // Skip if object isn't localised
         if (!$record->hasExtension(FluentExtension::class)) {
             return;
@@ -109,11 +115,17 @@ trait FluentAdminTrait
 
     /**
      * @param array $data
-     * @param Form  $form
+     * @param Form $form
      * @return mixed
+     * @throws HTTPResponse_Exception
      */
     public function clearFluent($data, $form)
     {
+        // Check permissions for adding global actions
+        if (!Permission::check(Locale::CMS_ACCESS_MULTI_LOCALE)) {
+            throw new HTTPResponse_Exception("Action not allowed", 403);
+        }
+
         // loop over all stages
         // then loop over all locales, invoke DeleteLocalisationPolicy
 
@@ -150,11 +162,17 @@ trait FluentAdminTrait
      * Copy this record to other localisations (not published)
      *
      * @param array $data
-     * @param Form  $form
+     * @param Form $form
      * @return mixed
+     * @throws HTTPResponse_Exception
      */
     public function copyFluent($data, $form)
     {
+        // Check permissions for adding global actions
+        if (!Permission::check(Locale::CMS_ACCESS_MULTI_LOCALE)) {
+            throw new HTTPResponse_Exception("Action not allowed", 403);
+        }
+
         // Write current record to every other stage
         /** @var DataObject|Versioned $record */
         $record = $form->getRecord();
@@ -180,11 +198,17 @@ trait FluentAdminTrait
      * Unpublishes the current object from all locales
      *
      * @param array $data
-     * @param Form  $form
+     * @param Form $form
      * @return mixed
+     * @throws HTTPResponse_Exception
      */
     public function unpublishFluent($data, $form)
     {
+        // Check permissions for adding global actions
+        if (!Permission::check(Locale::CMS_ACCESS_MULTI_LOCALE)) {
+            throw new HTTPResponse_Exception("Action not allowed", 403);
+        }
+
         // Get the record
         /** @var DataObject|Versioned $record */
         $record = $form->getRecord();
@@ -205,11 +229,17 @@ trait FluentAdminTrait
      * Archives the current object from all locales (versioned)
      *
      * @param array $data
-     * @param Form  $form
+     * @param Form $form
      * @return mixed
+     * @throws HTTPResponse_Exception
      */
     public function archiveFluent($data, $form)
     {
+        // Check permissions for adding global actions
+        if (!Permission::check(Locale::CMS_ACCESS_MULTI_LOCALE)) {
+            throw new HTTPResponse_Exception("Action not allowed", 403);
+        }
+
         // Get the record
         /** @var DataObject|Versioned $record */
         $record = $form->getRecord();
@@ -247,11 +277,17 @@ trait FluentAdminTrait
      * Delete the current object from all locales (non-versioned)
      *
      * @param array $data
-     * @param Form  $form
+     * @param Form $form
      * @return mixed
+     * @throws HTTPResponse_Exception
      */
     public function deleteFluent($data, $form)
     {
+        // Check permissions for adding global actions
+        if (!Permission::check(Locale::CMS_ACCESS_MULTI_LOCALE)) {
+            throw new HTTPResponse_Exception("Action not allowed", 403);
+        }
+
         // Get the record
         /** @var DataObject|Versioned $record */
         $record = $form->getRecord();
@@ -286,12 +322,18 @@ trait FluentAdminTrait
 
     /**
      * @param array $data
-     * @param Form  $form
+     * @param Form $form
      * @return mixed
      * @throws ValidationException
+     * @throws HTTPResponse_Exception
      */
     public function publishFluent($data, $form)
     {
+        // Check permissions for adding global actions
+        if (!Permission::check(Locale::CMS_ACCESS_MULTI_LOCALE)) {
+            throw new HTTPResponse_Exception("Action not allowed", 403);
+        }
+
         // Get the record
         /** @var DataObject|Versioned $record */
         $record = $form->getRecord();
