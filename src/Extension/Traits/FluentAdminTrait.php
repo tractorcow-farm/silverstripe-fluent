@@ -2,12 +2,14 @@
 
 namespace TractorCow\Fluent\Extension\Traits;
 
+use SilverStripe\Control\HTTPResponse;
 use SilverStripe\Forms\FieldList;
 use SilverStripe\Forms\Form;
 use SilverStripe\Forms\FormAction;
 use SilverStripe\Forms\Tab;
 use SilverStripe\Forms\TabSet;
 use SilverStripe\ORM\DataObject;
+use SilverStripe\ORM\FieldType\DBHTMLText;
 use SilverStripe\ORM\ValidationException;
 use SilverStripe\Versioned\Versioned;
 use TractorCow\Fluent\Extension\FluentExtension;
@@ -24,6 +26,11 @@ use TractorCow\Fluent\State\FluentState;
  */
 trait FluentAdminTrait
 {
+    /**
+     * @param Form   $form
+     * @param string $message
+     * @return HTTPResponse|string|DBHTMLText
+     */
     abstract public function actionComplete($form, $message);
 
 

@@ -6,7 +6,6 @@ use SilverStripe\CMS\Model\SiteTree;
 use SilverStripe\Control\Controller;
 use SilverStripe\Dev\SapphireTest;
 use SilverStripe\ORM\FieldType\DBHTMLText;
-use TractorCow\Fluent\Extension\FluentBadgeExtension;
 use TractorCow\Fluent\Extension\FluentLeftAndMainExtension;
 use TractorCow\Fluent\Extension\FluentSiteTreeExtension;
 use TractorCow\Fluent\Model\Locale;
@@ -65,7 +64,7 @@ class FluentBadgeExtensionTest extends SapphireTest
             $result = $this->extension->getBadge($this->mockPage);
             $this->assertInstanceOf(DBHTMLText::class, $result);
             $this->assertContains('fluent-badge--default', $result->getValue());
-            $this->assertContains('Default locale', $result->getValue());
+            $this->assertContains('Published in', $result->getValue());
             $this->assertContains('NZ', $result->getValue(), 'Badge shows owner locale');
         });
     }
@@ -80,7 +79,7 @@ class FluentBadgeExtensionTest extends SapphireTest
             $this->assertInstanceOf(DBHTMLText::class, $result);
             $this->assertContains('fluent-badge--invisible', $result->getValue());
             $this->assertContains('is not visible in this locale', $result->getValue());
-            $this->assertContains('NZ', $result->getValue(), 'Badge shows owner locale');
+            $this->assertContains('de_DE', $result->getValue(), 'Badge shows owner locale');
         });
     }
 }

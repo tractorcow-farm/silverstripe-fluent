@@ -3,11 +3,13 @@
 namespace TractorCow\Fluent\Extension;
 
 use SilverStripe\Control\Controller;
+use SilverStripe\Control\HTTPResponse;
 use SilverStripe\Core\Extension;
 use SilverStripe\Forms\FieldList;
 use SilverStripe\Forms\Form;
 use SilverStripe\Forms\GridField\GridFieldDetailForm_ItemRequest;
 use SilverStripe\ORM\FieldType\DBField;
+use SilverStripe\ORM\FieldType\DBHTMLText;
 use SilverStripe\ORM\ValidationResult;
 use SilverStripe\Versioned\VersionedGridFieldItemRequest;
 use TractorCow\Fluent\Extension\Traits\FluentAdminTrait;
@@ -43,7 +45,7 @@ class FluentGridFieldExtension extends Extension
     /**
      * @param Form   $form
      * @param string $message
-     * @return mixed
+     * @return HTTPResponse|string|DBHTMLText
      */
     public function actionComplete($form, $message)
     {
