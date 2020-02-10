@@ -129,20 +129,92 @@ SQL
 
     public function testArchiveFluent()
     {
-        $this->assertTrue(true);
+        FluentState::singleton()->withState(function (FluentState $state) {
+            $state->setLocale('en_US');
+            /** @var GridObjectVersioned $object */
+            $object = $this->objFromFixture(GridObjectVersioned::class, 'record_a');
+
+            /** @var Form $form */
+            $form = Form::create();
+            $form->loadDataFrom($object);
+            $message = AdminHandler::singleton()->archiveFluent([], $form);
+            $this->assertEquals("Archived 'A record' and all of its localisations.", $message);
+
+            // Empty tables
+            $localisations = DB::prepared_query(
+                'SELECT COUNT(*) FROM "FluentTest_GridObjectVersioned_Localised" WHERE "RecordID" = ?',
+                [$object->ID]
+            )->value();
+            $this->assertEquals(0, $localisations);
+            $liveLocalisations = DB::prepared_query(
+                'SELECT COUNT(*) FROM "FluentTest_GridObjectVersioned_Localised_Live" WHERE "RecordID" = ?',
+                [$object->ID]
+            )->value();
+            $this->assertEquals(0, $liveLocalisations);
+            $published = DB::prepared_query(
+                'SELECT COUNT(*) FROM "FluentTest_GridObjectVersioned_Live" WHERE "ID" = ?',
+                [$object->ID]
+            )->value();
+            $this->assertEquals(0, $published);
+            $records = DB::prepared_query(
+                'SELECT COUNT(*) FROM "FluentTest_GridObjectVersioned" WHERE "ID" = ?',
+                [$object->ID]
+            )->value();
+            $this->assertEquals(0, $records);
+        });
     }
 
     public function testPublishFluent()
     {
-        $this->assertTrue(true);
+        FluentState::singleton()->withState(function (FluentState $state) {
+            $state->setLocale('en_US');
+            /** @var GridObjectVersioned $object */
+            $object = $this->objFromFixture(GridObjectVersioned::class, 'record_a');
+
+            $this->assertTrue($object->isPublished());
+            $this->assertTrue($object->isPublishedInLocale('de_DE'));
+            $this->assertFalse($object->isPublishedInLocale('en_US'));
+            $this->assertFalse($object->isPublishedInLocale('es_ES'));
+
+            /** @var Form $form */
+            $form = Form::create();
+            $form->loadDataFrom($object);
+            $message = AdminHandler::singleton()->publishFluent([], $form);
+            $this->assertEquals("Published 'A record' across all locales.", $message);
+
+            $this->assertTrue($object->isPublished());
+            $this->assertTrue($object->isPublishedInLocale('de_DE'));
+            $this->assertTrue($object->isPublishedInLocale('en_US'));
+            $this->assertTrue($object->isPublishedInLocale('es_ES'));
+        });
     }
 
     // Unversioned tests
 
     public function testDeleteFluent()
     {
-        $this->assertTrue(true);
+        FluentState::singleton()->withState(function (FluentState $state) {
+            $state->setLocale('en_US');
+            /** @var LocalisedParent $object */
+            $object = $this->objFromFixture(LocalisedParent::class, 'record_a');
+
+            /** @var Form $form */
+            $form = Form::create();
+            $form->loadDataFrom($object);
+            $message = AdminHandler::singleton()->deleteFluent([], $form);
+            $this->assertEquals("Deleted 'A record' and all of its localisations.", $message);
+
+            // Empty tables
+            $localisations = DB::prepared_query(
+                'SELECT COUNT(*) FROM "FluentExtensionTest_LocalisedParent_Localised" WHERE "RecordID" = ?',
+                [$object->ID]
+            )->value();
+            $this->assertEquals(0, $localisations);
+            $records = DB::prepared_query(
+                'SELECT COUNT(*) FROM "FluentExtensionTest_LocalisedParent" WHERE "ID" = ?',
+                [$object->ID]
+            )->value();
+            $this->assertEquals(0, $records);
+        });
     }
-
-
 }
