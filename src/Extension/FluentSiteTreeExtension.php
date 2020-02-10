@@ -353,7 +353,6 @@ class FluentSiteTreeExtension extends FluentVersionedExtension
      */
     public function actionComplete($form, $message)
     {
-        $this->owner->flushCache(true);
         return null;
     }
 }

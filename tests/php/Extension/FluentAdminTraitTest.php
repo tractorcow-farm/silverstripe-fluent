@@ -38,9 +38,21 @@ class FluentAdminTraitTest extends SapphireTest
     protected function setUp()
     {
         parent::setUp();
+        $this->reset();
+    }
+
+    protected function tearDown()
+    {
+        parent::tearDown();
+        $this->reset();
+    }
+
+    protected function reset()
+    {
         Locale::clearCached();
         Versioned::set_stage(Versioned::DRAFT);
         FluentVersionedExtension::reset();
+        Versioned::reset();
     }
 
     // Versioned tests
@@ -108,11 +120,7 @@ SQL
             $state->setLocale('en_US');
             /** @var GridObjectVersioned $object */
             $object = $this->objFromFixture(GridObjectVersioned::class, 'record_a');
-
             $this->assertTrue($object->isPublished());
-            $this->assertTrue($object->isPublishedInLocale('de_DE'));
-            $this->assertFalse($object->isPublishedInLocale('en_US'));
-            $this->assertFalse($object->isPublishedInLocale('es_ES'));
 
             /** @var Form $form */
             $form = Form::create();
@@ -133,6 +141,7 @@ SQL
             $state->setLocale('en_US');
             /** @var GridObjectVersioned $object */
             $object = $this->objFromFixture(GridObjectVersioned::class, 'record_a');
+            $objectID = $object->ID;
 
             /** @var Form $form */
             $form = Form::create();
@@ -143,22 +152,22 @@ SQL
             // Empty tables
             $localisations = DB::prepared_query(
                 'SELECT COUNT(*) FROM "FluentTest_GridObjectVersioned_Localised" WHERE "RecordID" = ?',
-                [$object->ID]
+                [$objectID]
             )->value();
             $this->assertEquals(0, $localisations);
             $liveLocalisations = DB::prepared_query(
                 'SELECT COUNT(*) FROM "FluentTest_GridObjectVersioned_Localised_Live" WHERE "RecordID" = ?',
-                [$object->ID]
+                [$objectID]
             )->value();
             $this->assertEquals(0, $liveLocalisations);
             $published = DB::prepared_query(
                 'SELECT COUNT(*) FROM "FluentTest_GridObjectVersioned_Live" WHERE "ID" = ?',
-                [$object->ID]
+                [$objectID]
             )->value();
             $this->assertEquals(0, $published);
             $records = DB::prepared_query(
                 'SELECT COUNT(*) FROM "FluentTest_GridObjectVersioned" WHERE "ID" = ?',
-                [$object->ID]
+                [$objectID]
             )->value();
             $this->assertEquals(0, $records);
         });
@@ -171,7 +180,6 @@ SQL
             /** @var GridObjectVersioned $object */
             $object = $this->objFromFixture(GridObjectVersioned::class, 'record_a');
 
-            $this->assertTrue($object->isPublished());
             $this->assertTrue($object->isPublishedInLocale('de_DE'));
             $this->assertFalse($object->isPublishedInLocale('en_US'));
             $this->assertFalse($object->isPublishedInLocale('es_ES'));

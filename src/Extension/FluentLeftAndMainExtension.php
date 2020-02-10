@@ -54,9 +54,6 @@ class FluentLeftAndMainExtension extends Extension
      */
     public function actionComplete($form, $message)
     {
-        $record = $form->getRecord();
-        $record->flushCache(true); // Note: Flushes caches E.g. FluentVersionedExtension
-
         $request = $this->owner->getRequest();
         $response = $this->owner->getResponseNegotiator()->respond($request);
 

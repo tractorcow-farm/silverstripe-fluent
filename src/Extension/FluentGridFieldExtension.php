@@ -55,7 +55,6 @@ class FluentGridFieldExtension extends Extension
         $controller = $this->getToplevelController();
         $gridField = $this->owner->getGridField();
         $record = $this->owner->getRecord();
-        $record->flushCache(true); // Note: Flushes caches E.g. FluentVersionedExtension
         $request = $controller->getRequest();
 
         // Return new view, as we can't do a "virtual redirect" via the CMS Ajax
