@@ -33,7 +33,6 @@ trait FluentAdminTrait
      */
     abstract public function actionComplete($form, $message);
 
-
     /**
      * Decorate actions with fluent-specific details
      *

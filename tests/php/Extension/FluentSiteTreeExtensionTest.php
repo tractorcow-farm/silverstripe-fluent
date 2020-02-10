@@ -20,6 +20,11 @@ use TractorCow\Fluent\Model\Locale;
 use TractorCow\Fluent\Model\RecordLocale;
 use TractorCow\Fluent\State\FluentState;
 
+// Skip if pages module not installed
+if (!class_exists(SiteTree::class)) {
+    return;
+}
+
 class FluentSiteTreeExtensionTest extends SapphireTest
 {
     protected static $fixture_file = 'FluentSiteTreeExtensionTest.yml';

@@ -833,9 +833,9 @@ class FluentExtension extends DataExtension
     /**
      * Return the linking mode for the current locale and object
      *
-     * @deprecated 5.0 use LocaleInformation() instead
      * @param string $locale
      * @return string
+     * @deprecated 5.0 use LocaleInformation() instead
      */
     public function getLinkingMode($locale)
     {
@@ -859,9 +859,9 @@ class FluentExtension extends DataExtension
     }
 
     /**
-     * @deprecated Use LocaleInformation instead
      * @param string $locale
      * @return string
+     * @deprecated Use LocaleInformation instead
      */
     public function LocaleLink($locale)
     {
@@ -1047,8 +1047,8 @@ class FluentExtension extends DataExtension
 
 
     /**
-     * @see FluentObjectTrait::updateFluentCMSFields()
      * @param $summaryColumns
+     * @see FluentObjectTrait::updateFluentCMSFields()
      */
     public function updateLocalisationTabColumns(&$summaryColumns)
     {

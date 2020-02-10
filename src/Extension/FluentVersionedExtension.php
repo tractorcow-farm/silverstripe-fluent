@@ -3,7 +3,9 @@
 namespace TractorCow\Fluent\Extension;
 
 use InvalidArgumentException;
+use LogicException;
 use SilverStripe\Core\Config\Config;
+use SilverStripe\Core\Resettable;
 use SilverStripe\ORM\DataList;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\DataQuery;
@@ -21,7 +23,7 @@ use TractorCow\Fluent\State\FluentState;
  *
  * @property DataObject|FluentVersionedExtension $owner
  */
-class FluentVersionedExtension extends FluentExtension
+class FluentVersionedExtension extends FluentExtension implements Resettable
 {
     /**
      * Live table suffix
@@ -79,6 +81,27 @@ class FluentVersionedExtension extends FluentExtension
      * @var boolean
      */
     private static $prepopulate_localecontent_cache = true;
+
+    public function augmentDatabase()
+    {
+        // Safety check: This extension is added AFTER versioned
+        $seenVersioned = false;
+        foreach ($this->owner->getExtensionInstances() as $extension) {
+            // Must see versioned
+            if ($extension instanceof Versioned) {
+                $seenVersioned = true;
+            } elseif ($extension instanceof self) {
+                if (!$seenVersioned) {
+                    throw new LogicException(
+                        "FluentVersionedExtension must be added AFTER Versioned extension. Check "
+                        . get_class($this->owner)
+                    );
+                }
+            }
+        }
+
+        parent::augmentDatabase();
+    }
 
     protected function augmentDatabaseDontRequire($localisedTable)
     {
@@ -343,6 +366,11 @@ class FluentVersionedExtension extends FluentExtension
      * Clear internal static property caches
      */
     public function flushCache()
+    {
+        static::reset();
+    }
+
+    public static function reset()
     {
         static::$idsInLocaleCache = [];
     }

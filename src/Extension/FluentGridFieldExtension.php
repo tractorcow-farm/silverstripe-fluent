@@ -51,10 +51,11 @@ class FluentGridFieldExtension extends Extension
     {
         $form->sessionMessage($message, 'good', ValidationResult::CAST_HTML);
 
-        // Copied fcrom GridFieldDetailForm_ItemRequest::redirectAfterSave
+        // Copied from GridFieldDetailForm_ItemRequest::redirectAfterSave
         $controller = $this->getToplevelController();
         $gridField = $this->owner->getGridField();
         $record = $this->owner->getRecord();
+        $record->flushCache(true); // Note: Flushes caches E.g. FluentVersionedExtension
         $request = $controller->getRequest();
 
         // Return new view, as we can't do a "virtual redirect" via the CMS Ajax
