@@ -7,9 +7,12 @@ use SilverStripe\CMS\Forms\SiteTreeURLSegmentField;
 use SilverStripe\CMS\Model\SiteTree;
 use SilverStripe\Control\Controller;
 use SilverStripe\Control\Director;
+use SilverStripe\Control\HTTPResponse;
 use SilverStripe\Forms\CompositeField;
 use SilverStripe\Forms\FieldList;
+use SilverStripe\Forms\Form;
 use SilverStripe\Forms\LiteralField;
+use SilverStripe\ORM\FieldType\DBHTMLText;
 use TractorCow\Fluent\Extension\Traits\FluentAdminTrait;
 use TractorCow\Fluent\Model\Locale;
 use TractorCow\Fluent\State\FluentState;
@@ -343,8 +346,13 @@ class FluentSiteTreeExtension extends FluentVersionedExtension
         }
     }
 
+    /**
+     * @param Form   $form
+     * @param string $message
+     * @return HTTPResponse|string|DBHTMLText
+     */
     public function actionComplete($form, $message)
     {
-        // noop
+        return null;
     }
 }

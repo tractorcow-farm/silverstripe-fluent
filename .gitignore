@@ -1,1 +1,13 @@
 node_modules/
+vendor/
+resources/
+public/
+app/
+index.php
+install*
+web.config
+assets
+.env
+.htaccess
+composer.lock
+

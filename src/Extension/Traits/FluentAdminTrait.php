@@ -2,6 +2,7 @@
 
 namespace TractorCow\Fluent\Extension\Traits;
 
+use SilverStripe\Control\HTTPResponse;
 use SilverStripe\Control\HTTPResponse_Exception;
 use SilverStripe\Forms\FieldList;
 use SilverStripe\Forms\Form;
@@ -9,6 +10,7 @@ use SilverStripe\Forms\FormAction;
 use SilverStripe\Forms\Tab;
 use SilverStripe\Forms\TabSet;
 use SilverStripe\ORM\DataObject;
+use SilverStripe\ORM\FieldType\DBHTMLText;
 use SilverStripe\ORM\ValidationException;
 use SilverStripe\Security\Permission;
 use SilverStripe\Versioned\Versioned;
@@ -26,6 +28,11 @@ use TractorCow\Fluent\State\FluentState;
  */
 trait FluentAdminTrait
 {
+    /**
+     * @param Form   $form
+     * @param string $message
+     * @return HTTPResponse|string|DBHTMLText
+     */
     abstract public function actionComplete($form, $message);
 
     /**
@@ -50,6 +57,9 @@ trait FluentAdminTrait
         if (!$record->isInDB()) {
             return;
         }
+
+        // Flush data before checking actions
+        $record->flushCache(true);
 
         // Skip if record is archived
         $results = $record->invokeWithExtensions('isArchived');
@@ -134,6 +144,7 @@ trait FluentAdminTrait
         // Get the record
         /** @var DataObject $record */
         $record = $form->getRecord();
+        $record->flushCache(true);
 
         // Loop over other Locales
         $this->inEveryLocale(function (Locale $locale) use ($record, $originalLocale) {
@@ -155,6 +166,7 @@ trait FluentAdminTrait
             ['title' => $record->Title]
         );
 
+        $record->flushCache(true);
         return $this->actionComplete($form, $message);
     }
 
@@ -176,6 +188,8 @@ trait FluentAdminTrait
         // Write current record to every other stage
         /** @var DataObject|Versioned $record */
         $record = $form->getRecord();
+        $record->flushCache(true);
+
         $this->inEveryLocale(function () use ($record) {
             if ($record->hasExtension(Versioned::class)) {
                 $record->writeToStage(Versioned::DRAFT);
@@ -191,6 +205,7 @@ trait FluentAdminTrait
             ['title' => $record->Title]
         );
 
+        $record->flushCache(true);
         return $this->actionComplete($form, $message);
     }
 
@@ -212,6 +227,8 @@ trait FluentAdminTrait
         // Get the record
         /** @var DataObject|Versioned $record */
         $record = $form->getRecord();
+        $record->flushCache(true);
+
         $this->inEveryLocale(function () use ($record) {
             $record->doUnpublish();
         });
@@ -222,6 +239,7 @@ trait FluentAdminTrait
             ['title' => $record->Title]
         );
 
+        $record->flushCache(true);
         return $this->actionComplete($form, $message);
     }
 
@@ -243,6 +261,7 @@ trait FluentAdminTrait
         // Get the record
         /** @var DataObject|Versioned $record */
         $record = $form->getRecord();
+        $record->flushCache(true);
 
         $this->inEveryLocale(function () use ($record) {
             // Delete filtered policy for this locale
@@ -270,6 +289,7 @@ trait FluentAdminTrait
             ['title' => $record->Title]
         );
 
+        $record->flushCache(true);
         return $this->actionComplete($form, $message);
     }
 
@@ -291,6 +311,7 @@ trait FluentAdminTrait
         // Get the record
         /** @var DataObject|Versioned $record */
         $record = $form->getRecord();
+        $record->flushCache(true);
 
         $this->inEveryLocale(function () use ($record) {
             // Delete filtered policy for this locale
@@ -316,6 +337,7 @@ trait FluentAdminTrait
             ['title' => $record->Title]
         );
 
+        $record->flushCache(true);
         return $this->actionComplete($form, $message);
     }
 
@@ -337,6 +359,7 @@ trait FluentAdminTrait
         // Get the record
         /** @var DataObject|Versioned $record */
         $record = $form->getRecord();
+        $record->flushCache(true);
 
         // save form data into record
         $form->saveInto($record);
@@ -359,6 +382,7 @@ trait FluentAdminTrait
             ['title' => $record->Title]
         );
 
+        $record->flushCache(true);
         return $this->actionComplete($form, $message);
     }
 

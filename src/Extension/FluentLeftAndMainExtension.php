@@ -6,7 +6,9 @@ use SilverStripe\Admin\LeftAndMain;
 use SilverStripe\Control\HTTPResponse;
 use SilverStripe\Control\HTTPResponse_Exception;
 use SilverStripe\Core\Extension;
+use SilverStripe\Forms\Form;
 use SilverStripe\ORM\ArrayList;
+use SilverStripe\ORM\FieldType\DBHTMLText;
 use SilverStripe\View\Requirements;
 use TractorCow\Fluent\Extension\Traits\FluentAdminTrait;
 use TractorCow\Fluent\Extension\Traits\FluentBadgeTrait;
@@ -45,9 +47,9 @@ class FluentLeftAndMainExtension extends Extension
     }
 
     /**
-     * @param $form
-     * @param $message
-     * @return HTTPResponse
+     * @param Form   $form
+     * @param string $message
+     * @return HTTPResponse|string|DBHTMLText
      * @throws HTTPResponse_Exception
      */
     public function actionComplete($form, $message)

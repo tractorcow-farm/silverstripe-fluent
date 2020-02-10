@@ -3,7 +3,9 @@
 namespace TractorCow\Fluent\Extension;
 
 use InvalidArgumentException;
+use LogicException;
 use SilverStripe\Core\Config\Config;
+use SilverStripe\Core\Resettable;
 use SilverStripe\Forms\GridField\GridFieldConfig;
 use SilverStripe\ORM\DataList;
 use SilverStripe\ORM\DataObject;
@@ -24,7 +26,7 @@ use TractorCow\Fluent\State\FluentState;
  *
  * @property DataObject|FluentVersionedExtension $owner
  */
-class FluentVersionedExtension extends FluentExtension
+class FluentVersionedExtension extends FluentExtension implements Resettable
 {
     /**
      * Live table suffix
@@ -82,6 +84,27 @@ class FluentVersionedExtension extends FluentExtension
      * @var boolean
      */
     private static $prepopulate_localecontent_cache = true;
+
+    public function augmentDatabase()
+    {
+        // Safety check: This extension is added AFTER versioned
+        $seenVersioned = false;
+        foreach ($this->owner->getExtensionInstances() as $extension) {
+            // Must see versioned
+            if ($extension instanceof Versioned) {
+                $seenVersioned = true;
+            } elseif ($extension instanceof self) {
+                if (!$seenVersioned) {
+                    throw new LogicException(
+                        "FluentVersionedExtension must be added AFTER Versioned extension. Check "
+                        . get_class($this->owner)
+                    );
+                }
+            }
+        }
+
+        parent::augmentDatabase();
+    }
 
     protected function augmentDatabaseDontRequire($localisedTable)
     {
@@ -154,8 +177,8 @@ class FluentVersionedExtension extends FluentExtension
      * Rewrite all joined tables
      *
      * @param SQLSelect $query
-     * @param array $tables
-     * @param Locale $locale
+     * @param array     $tables
+     * @param Locale    $locale
      */
     protected function rewriteVersionedTables(SQLSelect $query, array $tables, Locale $locale)
     {
@@ -173,8 +196,8 @@ class FluentVersionedExtension extends FluentExtension
      * Update all joins to include Version as well as Locale / Record
      *
      * @param SQLSelect $query
-     * @param string $tableName
-     * @param Locale $locale
+     * @param string    $tableName
+     * @param Locale    $locale
      */
     protected function addLocaleFallbackChain(SQLSelect $query, $tableName, Locale $locale)
     {
@@ -198,7 +221,7 @@ class FluentVersionedExtension extends FluentExtension
      * Rename all localised tables to the "live" equivalent name (note: alias remains unchanged)
      *
      * @param SQLSelect $query
-     * @param array $tables
+     * @param array     $tables
      */
     protected function renameLocalisedTables(SQLSelect $query, array $tables)
     {
@@ -305,7 +328,7 @@ class FluentVersionedExtension extends FluentExtension
     /**
      * Check to see whether or not a record exists for a specific Locale in a specific stage.
      *
-     * @param string $stage Version stage
+     * @param string $stage  Version stage
      * @param string $locale Locale to check. Defaults to current locale.
      * @return bool
      */
@@ -347,6 +370,11 @@ class FluentVersionedExtension extends FluentExtension
      */
     public function flushCache()
     {
+        static::reset();
+    }
+
+    public static function reset()
+    {
         static::$idsInLocaleCache = [];
     }
 
@@ -354,7 +382,7 @@ class FluentVersionedExtension extends FluentExtension
      * Hook into {@link Hierarchy::prepopulateTreeDataCache}.
      *
      * @param DataList|array $recordList The list of records to prepopulate caches for. Null for all records.
-     * @param array $options A map of hints about what should be cached. "numChildrenMethod" and
+     * @param array          $options    A map of hints about what should be cached. "numChildrenMethod" and
      *                                   "childrenMethod" are allowed keys.
      */
     public function onPrepopulateTreeDataCache($recordList = null, array $options = [])
@@ -377,8 +405,8 @@ class FluentVersionedExtension extends FluentExtension
      *
      * @param string $locale
      * @param string $dataObjectClass
-     * @param bool $populateLive
-     * @param bool $populateDraft
+     * @param bool   $populateLive
+     * @param bool   $populateDraft
      */
     public static function prepoulateIdsInLocale($locale, $dataObjectClass, $populateLive = true, $populateDraft = true)
     {
