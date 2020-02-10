@@ -6,10 +6,12 @@ use Page;
 use SilverStripe\CMS\Model\SiteTree;
 use SilverStripe\Core\Config\Config;
 use SilverStripe\Dev\SapphireTest;
+use SilverStripe\Forms\GridField\GridField;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\Versioned\Versioned;
 use TractorCow\Fluent\Extension\FluentFilteredExtension;
 use TractorCow\Fluent\Extension\FluentSiteTreeExtension;
+use TractorCow\Fluent\Forms\LocaleToggleColumn;
 use TractorCow\Fluent\Model\Domain;
 use TractorCow\Fluent\Model\Locale;
 use TractorCow\Fluent\State\FluentState;
@@ -140,7 +142,15 @@ class FluentFilteredExtensionTest extends SapphireTest
             $page = SiteTree::get()->filter('URLSegment', 'home')->first();
             $fields = $page->getCMSFields();
 
-            $this->assertNotNull($fields->dataFieldByName('FilteredLocales'));
+            /** @var GridField $localesField */
+            $localesField = $fields->dataFieldByName('RecordLocales');
+            $this->assertInstanceOf(GridField::class, $localesField);
+
+            $config = $localesField->getConfig();
+            $this->assertInstanceOf(
+                LocaleToggleColumn::class,
+                $config->getComponentByType(LocaleToggleColumn::class)
+            );
         });
     }
 
