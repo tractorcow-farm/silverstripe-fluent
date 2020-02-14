@@ -35,6 +35,7 @@ use TractorCow\Fluent\State\FluentState;
  * @property string $URLSegment
  * @property bool $IsGlobalDefault
  * @property int $DomainID
+ * @property bool $UseDefaultCode
  * @method HasManyList|FallbackLocale[] FallbackLocales()
  * @method ManyManyList|Locale[] Fallbacks()
  * @method Domain Domain() Raw SQL Domain (unfiltered by domain mode)
@@ -62,6 +63,13 @@ class Locale extends DataObject implements PermissionProvider
 
     private static $plural_name = 'Locales';
 
+    /**
+     * hreflang for default landing pages.
+     * Note: PHP's ext-intl doesn't support this code, so only use it
+     * in templates.
+     */
+    const X_DEFAULT = 'x-default';
+
     private static $summary_fields = [
         'Title'           => 'Title',
         'Locale'          => 'Locale',
@@ -79,9 +87,11 @@ class Locale extends DataObject implements PermissionProvider
         'Locale'          => 'Varchar(10)',
         'URLSegment'      => 'Varchar(100)',
         'IsGlobalDefault' => 'Boolean',
+        'UseDefaultCode'  => 'Boolean',
+        'Sort'            => 'Int',
     ];
 
-    private static $default_sort = '"Fluent_Locale"."Locale" ASC';
+    private static $default_sort = '"Fluent_Locale"."Sort" ASC, "Fluent_Locale"."Locale" ASC';
 
     /**
      * @config
@@ -204,6 +214,19 @@ class Locale extends DataObject implements PermissionProvider
     }
 
     /**
+     * RFC 1766 hreflang
+     *
+     * @return string
+     */
+    public function getHrefLang()
+    {
+        if ($this->UseDefaultCode) {
+            return self::X_DEFAULT;
+        }
+        return i18n::convert_rfc1766($this->Locale);
+    }
+
+    /**
      * Get URLSegment for this locale
      *
      * @return string
@@ -249,6 +272,14 @@ class Locale extends DataObject implements PermissionProvider
                         __CLASS__ . '.IS_DEFAULT_DESCRIPTION',
                         'Note: Per-domain specific locale can be assigned on the Locales tab'
                         . ' and will override this value for specific domains.'
+                    )),
+                CheckboxField::create(
+                    'UseDefaultCode',
+                    _t(__CLASS__ . '.USE_X_DEFAULT', 'Use {code} as hreflang', ['code' => self::X_DEFAULT])
+                )
+                    ->setDescription(_t(
+                        __CLASS__ . '.USE_X_DEFAULT_DESCRIPTION',
+                        'Use of this code indicates to search engine that this is a non-localised global landing page'
                     )),
                 DropdownField::create(
                     'DomainID',

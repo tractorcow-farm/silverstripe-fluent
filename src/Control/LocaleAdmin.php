@@ -3,9 +3,11 @@
 namespace TractorCow\Fluent\Control;
 
 use SilverStripe\Admin\ModelAdmin;
+use SilverStripe\Forms\GridField\GridField;
 use SilverStripe\Security\Member;
 use SilverStripe\Security\Security;
 use SilverStripe\View\Requirements;
+use Symbiote\GridFieldExtensions\GridFieldOrderableRows;
 use TractorCow\Fluent\Extension\FluentDirectorExtension;
 use TractorCow\Fluent\Extension\FluentMemberExtension;
 use TractorCow\Fluent\Model\Domain;
@@ -34,6 +36,21 @@ class LocaleAdmin extends ModelAdmin
         parent::init();
         Requirements::javascript('tractorcow/silverstripe-fluent:client/dist/js/fluent.js');
         Requirements::css("tractorcow/silverstripe-fluent:client/dist/styles/fluent.css");
+    }
+
+    public function getEditForm($id = null, $fields = null)
+    {
+        $form = parent::getEditForm($id, $fields);
+
+        // Add sortable field to locales
+        if ($this->modelClass === Locale::class) {
+            /** @var GridField $listField */
+            $listField = $form->Fields()->dataFieldByName($this->sanitiseClassName($this->modelClass));
+            $config = $listField->getConfig();
+            $config->addComponent(new GridFieldOrderableRows('Sort'));
+        }
+
+        return $form;
     }
 
     public function getClientConfig()
