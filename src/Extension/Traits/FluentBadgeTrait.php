@@ -6,6 +6,7 @@ use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\FieldType\DBField;
 use SilverStripe\View\HTML;
 use TractorCow\Fluent\Extension\FluentExtension;
+use TractorCow\Fluent\Extension\FluentFilteredExtension;
 use TractorCow\Fluent\Model\Locale;
 use TractorCow\Fluent\Model\RecordLocale;
 
@@ -15,7 +16,7 @@ trait FluentBadgeTrait
      * Add the Fluent state badge before any existing badges and return the result
      *
      * @param DBField|null $badgeField Existing badge to merge with
-     * @param DataObject   $record
+     * @param DataObject $record
      * @return DBField|null
      */
     protected function addFluentBadge($badgeField, DataObject $record)
@@ -40,7 +41,13 @@ trait FluentBadgeTrait
     {
         /** @var Locale $currentLocale */
         $currentLocale = Locale::getCurrentLocale();
-        if (!$currentLocale || !$record->has_extension(FluentExtension::class)) {
+        if (!$currentLocale) {
+            return null;
+        }
+        // Must have at least one fluent extension
+        if (!$record->has_extension(FluentExtension::class)
+            && !$record->has_extension(FluentFilteredExtension::class)
+        ) {
             return null;
         }
         $badge = $this->generateBadgeHTML($record, $currentLocale);
@@ -52,8 +59,8 @@ trait FluentBadgeTrait
 
     /**
      * @param DataObject $record
-     * @param Locale     $locale
-     * @param array      $extraProperties
+     * @param Locale $locale
+     * @param array $extraProperties
      * @return string
      */
     protected function generateBadgeHTML(DataObject $record, $locale, $extraProperties = [])
