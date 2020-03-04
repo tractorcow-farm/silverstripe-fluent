@@ -445,20 +445,12 @@ class FluentVersionedExtension extends FluentExtension
         //fetch alias from subselect
         $newFrom = $subSelect->getFrom();
         $alias = trim(key($newFrom), '"');
-        //join versioned and localised table
-        $onPredicate = [
-            //first connect to the correct record
-            "\"{$alias}\".\"RecordID\" = \"{$versionedTable}\".\"RecordID\"",
-            //and then connect version with localised
-            "\"{$alias}\".\"Version\" = \"{$versionedTable}\".\"Version\""
-        ];
-        $subSelect->addInnerJoin($versionedTable, join(" AND ", $onPredicate));
+        //add inner join to localised table
+        $subSelect->addInnerJoin($versionedTable, "\"{$alias}\".\"RecordID\" = \"{$versionedTable}\".\"RecordID\" AND \"{$alias}\".\"Version\" = \"{$versionedTable}\".\"Version\"");
 
         //get current locale
         $locale = FluentState::singleton()->getLocale();
         //finally, update subselect to include requested locale
         $subSelect->addWhere("\"{$versionedTable}\".\"Locale\" = '{$locale}'");
-        //@todo: test if following line is needed
-        // $subSelect->addGroupBy("\"{$alias}\".RecordID");
     }
 }
