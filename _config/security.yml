@@ -1,0 +1,6 @@
+---
+Name: fluentsecurity
+---
+SilverStripe\Security\Member:
+  extensions:
+    fluentmember: TractorCow\Fluent\Extension\FluentMemberExtension

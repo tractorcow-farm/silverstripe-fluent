@@ -32,9 +32,9 @@ class UnpublishAction extends BaseAction
      * to ensure it only accepts actions it is actually supposed to handle.
      *
      * @param GridField $gridField
-     * @param string    $actionName Action identifier, see {@link getActions()}.
-     * @param array     $arguments  Arguments relevant for this
-     * @param array     $data       All form data
+     * @param string $actionName Action identifier, see {@link getActions()}.
+     * @param array $arguments Arguments relevant for this
+     * @param array $data All form data
      */
     public function handleAction(GridField $gridField, $actionName, $arguments, $data)
     {
@@ -64,7 +64,7 @@ class UnpublishAction extends BaseAction
      * Record must be published before it can be unpublished
      *
      * @param DataObject $record
-     * @param Locale     $locale
+     * @param Locale $locale
      * @return mixed
      */
     protected function appliesToRecord(DataObject $record, Locale $locale)
@@ -77,29 +77,29 @@ class UnpublishAction extends BaseAction
 
     /**
      *
-     * @param GridField  $gridField
+     * @param GridField $gridField
      * @param DataObject $record
-     * @param string     $columnName
+     * @param Locale $locale
+     * @param string $columnName
      * @return GridField_FormAction|null
      */
-    protected function getButtonAction($gridField, $record, $columnName)
+    protected function getButtonAction($gridField, \SilverStripe\ORM\DataObject $record, Locale $locale, $columnName)
     {
         $title = $this->getTitle($gridField, $record, $columnName);
-        $field = GridField_FormAction::create(
+        return GridField_FormAction::create(
             $gridField,
-            'FluentUnpublish' . $record->ID,
+            "FluentUnpublish_{$locale->Locale}_{$record->ID}",
             $title,
             "fluentunpublish",
             [
                 'RecordID'    => $record->ID,
                 'RecordClass' => get_class($record),
+                'Locale'      => $locale->Locale,
             ]
         )
             ->addExtraClass('action--fluentunpublish btn--icon-md font-icon-translatable grid-field__icon-action action-menu--handled')
             ->setAttribute('classNames', 'action--fluentpublish font-icon-translatable')
             ->setDescription($title)
             ->setAttribute('aria-label', $title);
-
-        return $field;
     }
 }

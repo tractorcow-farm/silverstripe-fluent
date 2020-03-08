@@ -2,8 +2,8 @@
 
 namespace TractorCow\Fluent\Extension;
 
-use SilverStripe\Forms\CheckboxSetField;
 use SilverStripe\Forms\FieldList;
+use SilverStripe\Forms\GridField\GridFieldConfig;
 use SilverStripe\ORM\DataExtension;
 use SilverStripe\ORM\DataList;
 use SilverStripe\ORM\DataObject;
@@ -11,6 +11,7 @@ use SilverStripe\ORM\DataQuery;
 use SilverStripe\ORM\Queries\SQLSelect;
 use SilverStripe\Versioned\Versioned;
 use TractorCow\Fluent\Extension\Traits\FluentObjectTrait;
+use TractorCow\Fluent\Forms\LocaleToggleColumn;
 use TractorCow\Fluent\Model\Delete\UsesDeletePolicy;
 use TractorCow\Fluent\Model\Locale;
 use TractorCow\Fluent\State\FluentState;
@@ -47,19 +48,6 @@ class FluentFilteredExtension extends DataExtension
 
         // Add other fields
         $this->updateFluentCMSFields($fields);
-
-        // Checklist list of visible locales
-        $checkboxSetField = CheckboxSetField::create(
-            'FilteredLocales',
-            _t(__CLASS__ . '.FILTERED_LOCALES', 'Display in the following locales'),
-            $locales
-        );
-
-        if ($fields->hasTabSet()) {
-            $fields->addFieldToTab('Root.Locales', $checkboxSetField);
-        } else {
-            $fields->push($checkboxSetField);
-        }
     }
 
     /**
@@ -113,7 +101,7 @@ class FluentFilteredExtension extends DataExtension
     }
 
     /**
-     * @param SQLSelect      $query
+     * @param SQLSelect $query
      * @param DataQuery|null $dataQuery
      */
     public function augmentSQL(SQLSelect $query, DataQuery $dataQuery = null)
@@ -185,21 +173,14 @@ class FluentFilteredExtension extends DataExtension
         return substr_compare($readingMode, $draft, strlen($readingMode) - strlen($draft), strlen($draft)) === 0;
     }
 
-    /**
-     * @param $summaryColumns
-     * @see FluentObjectTrait::updateFluentCMSFields()
-     */
+    public function updateLocalisationTabConfig(GridFieldConfig $config)
+    {
+        // Add inline toggle on/off to gridfield
+        $config->addComponent(LocaleToggleColumn::create());
+    }
+
     public function updateLocalisationTabColumns(&$summaryColumns)
     {
-        $summaryColumns['IsVisible'] = [
-            'title'    => 'Visible',
-            'callback' => function (Locale $object) {
-                if ($object && $object->RecordLocale()) {
-                    return $object->RecordLocale()->IsVisible() ? 'visible' : 'hidden';
-                }
-
-                return '';
-            }
-        ];
+        // no-op
     }
 }

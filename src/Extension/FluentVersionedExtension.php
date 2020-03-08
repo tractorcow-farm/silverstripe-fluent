@@ -6,12 +6,15 @@ use InvalidArgumentException;
 use LogicException;
 use SilverStripe\Core\Config\Config;
 use SilverStripe\Core\Resettable;
+use SilverStripe\Forms\GridField\GridFieldConfig;
 use SilverStripe\ORM\DataList;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\DataQuery;
 use SilverStripe\ORM\DB;
 use SilverStripe\ORM\Queries\SQLSelect;
 use SilverStripe\Versioned\Versioned;
+use TractorCow\Fluent\Forms\PublishAction;
+use TractorCow\Fluent\Forms\UnpublishAction;
 use TractorCow\Fluent\Model\Locale;
 use TractorCow\Fluent\State\FluentState;
 
@@ -442,9 +445,6 @@ class FluentVersionedExtension extends FluentExtension implements Resettable
         }
     }
 
-    /**
-     * @param $summaryColumns
-     */
     public function updateLocalisationTabColumns(&$summaryColumns)
     {
         $summaryColumns['IsDraft'] = [
@@ -467,5 +467,21 @@ class FluentVersionedExtension extends FluentExtension implements Resettable
                 return '';
             }
         ];
+    }
+
+    /**
+     * Add versioning extensions for gridfield
+     *
+     * @param GridFieldConfig $config
+     */
+    public function updateLocalisationTabConfig(GridFieldConfig $config)
+    {
+        parent::updateLocalisationTabConfig($config);
+
+        // Add actions for publishing / unpublishing in locale
+        $config->addComponents([
+            UnpublishAction::create(),
+            PublishAction::create(),
+        ]);
     }
 }

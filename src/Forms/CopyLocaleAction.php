@@ -2,12 +2,16 @@
 
 namespace TractorCow\Fluent\Forms;
 
+use LogicException;
+use SilverStripe\Control\HTTPResponse_Exception;
 use SilverStripe\Forms\GridField\GridField;
 use SilverStripe\Forms\GridField\GridField_FormAction;
 use SilverStripe\ORM\DataObject;
-use TractorCow\Fluent\Extension\FluentExtension;
-use TractorCow\Fluent\Extension\FluentVersionedExtension;
+use SilverStripe\Security\Permission;
+use SilverStripe\Versioned\Versioned;
 use TractorCow\Fluent\Model\Locale;
+use TractorCow\Fluent\Model\RecordLocale;
+use TractorCow\Fluent\State\FluentState;
 
 class CopyLocaleAction extends BaseAction
 {
@@ -33,7 +37,7 @@ class CopyLocaleAction extends BaseAction
      * CopyLocaleAction constructor.
      *
      * @param string $otherLocale Other locale to interact with
-     * @param bool   $isTo        Is this copying to the given locale? Otherwise, assume copy from
+     * @param bool $isTo Is this copying to the given locale? Otherwise, assume copy from
      */
     public function __construct($otherLocale, $isTo)
     {
@@ -43,14 +47,18 @@ class CopyLocaleAction extends BaseAction
 
     public function getTitle($gridField, $record, $columnName)
     {
-        return $this->isTo
-            ? _t(__CLASS__ . '.TO', 'Copy to {locale}', ['locale' => $this->otherLocale])
-            : _t(__CLASS__ . '.FROM', 'Copy from {locale}', ['locale' => $this->otherLocale]);
+        $otherLocaleObject = Locale::getByLocale($this->otherLocale);
+        if ($otherLocaleObject) {
+            return $otherLocaleObject->getLongTitle();
+        }
+        return null;
     }
 
     public function getActions($gridField)
     {
-        return ['fluentpublish'];
+        return $this->isTo
+            ? ['fluentcopyto']
+            : ['fluentcopyfrom'];
     }
 
     /**
@@ -60,20 +68,61 @@ class CopyLocaleAction extends BaseAction
      * to ensure it only accepts actions it is actually supposed to handle.
      *
      * @param GridField $gridField
-     * @param string    $actionName Action identifier, see {@link getActions()}.
-     * @param array     $arguments  Arguments relevant for this
-     * @param array     $data       All form data
+     * @param string $actionName Action identifier, see {@link getActions()}.
+     * @param array $arguments Arguments relevant for this
+     * @param array $data All form data
+     * @throws HTTPResponse_Exception
      */
     public function handleAction(GridField $gridField, $actionName, $arguments, $data)
     {
-        // @todo
+        if (!in_array($actionName, ['fluentcopyto', 'fluentcopyfrom'])) {
+            return;
+        }
+
+        // Check permissions for adding global actions
+        if (!Permission::check(Locale::CMS_ACCESS_MULTI_LOCALE)) {
+            throw new HTTPResponse_Exception("Action not allowed", 403);
+        }
+
+        // Load record in base locale
+        FluentState::singleton()->withState(function (FluentState $sourceState) use ($arguments) {
+            $fromLocale = Locale::getByLocale($arguments['FromLocale']);
+            if (!$fromLocale) {
+                return;
+            }
+            $sourceState->setLocale($fromLocale->getLocale());
+
+            // Load record in source locale
+            $record = DataObject::get($arguments['RecordClass'])->byID($arguments['RecordID']);
+            if (!$record) {
+                return;
+            }
+
+            // Save record to other locale
+            $sourceState->withState(function (FluentState $destinationState) use ($record, $arguments) {
+                $toLocale = Locale::getByLocale($arguments['ToLocale']);
+                if (!$toLocale) {
+                    return;
+                }
+                $destinationState->setLocale($toLocale->getLocale());
+
+                // Write
+                /** @var DataObject|Versioned $record */
+                if ($record->hasExtension(Versioned::class)) {
+                    $record->writeToStage(Versioned::DRAFT);
+                } else {
+                    $record->forceChange();
+                    $record->write();
+                }
+            });
+        });
     }
 
     /**
      * Item needs to be translated before it can be published
      *
      * @param DataObject $record
-     * @param Locale     $locale
+     * @param Locale $locale
      * @return mixed
      */
     protected function appliesToRecord(DataObject $record, Locale $locale)
@@ -82,39 +131,51 @@ class CopyLocaleAction extends BaseAction
             return false;
         }
 
-        $fromLocale = $this->isTo ? $locale->Locale : $this->otherLocale;
+        // Check information of record in source locale
+        $fromLocale = $this->isTo
+            ? $locale
+            : Locale::getByLocale($this->otherLocale);
+        if (empty($fromLocale)) {
+            throw new LogicException("Error loading locale");
+        }
 
-        /** @var DataObject|FluentVersionedExtension $record */
-        return $record
-            && $record->hasExtension(FluentExtension::class)
-            && $record->isDraftedInLocale($fromLocale);
+        /** @var RecordLocale $fromRecordLocale */
+        $fromRecordLocale = RecordLocale::create($record, $fromLocale);
+        return $fromRecordLocale->IsDraft();
     }
-
 
     /**
      *
-     * @param GridField  $gridField
+     * @param GridField $gridField
      * @param DataObject $record
-     * @param string     $columnName
-     * @return GridField_FormAction|null
+     * @param Locale $locale
+     * @param string $columnName
+     * @return GridField_FormAction
      */
-    protected function getButtonAction($gridField, $record, $columnName)
+    protected function getButtonAction($gridField, DataObject $record, Locale $locale, $columnName)
     {
-        $name = ($this->isTo ? 'fluentcopyto' : 'fluentcopyfrom') . $record->ID;
+        $action = $this->isTo ? 'fluentcopyto' : 'fluentcopyfrom';
+        $name = "{$action}_{$locale->Locale}_{$this->otherLocale}_{$record->ID}";
+
         $title = $this->getTitle($gridField, $record, $columnName);
-        $field = GridField_FormAction::create(
+        return GridField_FormAction::create(
             $gridField,
             $name,
             $title,
-            $name,
-            ['RecordID' => $record->ID]
+            $action,
+            [
+                'RecordID'    => $record->ID,
+                'RecordClass' => get_class($record),
+                'FromLocale'  => $this->isTo ? $locale->Locale : $this->otherLocale,
+                'ToLocale'    => $this->isTo ? $this->otherLocale : $locale->Locale,
+            ]
         )
-            ->addExtraClass('action--fluentpublish btn--icon-md font-icon-translatable grid-field__icon-action action-menu--handled')
+            ->addExtraClass(
+                'action--fluentpublish btn--icon-md font-icon-translatable grid-field__icon-action action-menu--handled'
+            )
             ->setAttribute('classNames', 'action--fluentpublish font-icon-translatable')
             ->setDescription($title)
             ->setAttribute('aria-label', $title);
-
-        return $field;
     }
 
     public function getGroup($gridField, $record, $columnName)

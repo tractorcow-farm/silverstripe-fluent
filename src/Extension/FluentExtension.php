@@ -10,6 +10,8 @@ use SilverStripe\Core\Extension;
 use SilverStripe\Dev\Deprecation;
 use SilverStripe\Forms\FieldList;
 use SilverStripe\Forms\FormField;
+use SilverStripe\Forms\GridField\GridField_ActionMenuItem;
+use SilverStripe\Forms\GridField\GridFieldConfig;
 use SilverStripe\ORM\ArrayList;
 use SilverStripe\ORM\DataExtension;
 use SilverStripe\ORM\DataObject;
@@ -22,8 +24,11 @@ use SilverStripe\ORM\FieldType\DBText;
 use SilverStripe\ORM\FieldType\DBVarchar;
 use SilverStripe\ORM\Queries\SQLConditionGroup;
 use SilverStripe\ORM\Queries\SQLSelect;
+use SilverStripe\Security\Permission;
 use SilverStripe\View\HTML;
 use TractorCow\Fluent\Extension\Traits\FluentObjectTrait;
+use TractorCow\Fluent\Forms\CopyLocaleAction;
+use TractorCow\Fluent\Forms\GroupActionMenu;
 use TractorCow\Fluent\Model\Delete\UsesDeletePolicy;
 use TractorCow\Fluent\Model\Locale;
 use TractorCow\Fluent\Model\RecordLocale;
@@ -190,7 +195,7 @@ class FluentExtension extends DataExtension
      * Check if a field is marked for localisation
      *
      * @param string $field Field name
-     * @param string $type  Field type
+     * @param string $type Field type
      * @param string $class Class this field is defined in
      * @return bool
      */
@@ -261,8 +266,8 @@ class FluentExtension extends DataExtension
      * Helper function to check if the value given is present in any of the patterns.
      * This function is case sensitive by default.
      *
-     * @param string $value    A string value to check against, potentially with parameters (E.g. 'Varchar(1023)')
-     * @param array  $patterns A list of strings, some of which may be regular expressions
+     * @param string $value A string value to check against, potentially with parameters (E.g. 'Varchar(1023)')
+     * @param array $patterns A list of strings, some of which may be regular expressions
      * @return bool True if this $value is present in any of the $patterns
      */
     protected function anyMatch($value, $patterns)
@@ -379,8 +384,8 @@ class FluentExtension extends DataExtension
      * Require the given localisation table
      *
      * @param string $localisedTable
-     * @param array  $fields
-     * @param array  $indexes
+     * @param array $fields
+     * @param array $indexes
      */
     protected function augmentDatabaseRequireTable($localisedTable, $fields, $indexes)
     {
@@ -559,10 +564,10 @@ class FluentExtension extends DataExtension
     /**
      * Localise a database manipluation from one table to another
      *
-     * @param array  $manipulation
-     * @param string $table           Table in manipulation to copy from
-     * @param string $localeTable     Table to copy manipulation to
-     * @param array  $localisedFields List of fields to filter write to
+     * @param array $manipulation
+     * @param string $table Table in manipulation to copy from
+     * @param string $localeTable Table to copy manipulation to
+     * @param array $localisedFields List of fields to filter write to
      * @param Locale $locale
      */
     protected function localiseManipulationTable(&$manipulation, $table, $localeTable, $localisedFields, Locale $locale)
@@ -957,8 +962,8 @@ class FluentExtension extends DataExtension
      * If successful, return an array [ thetable, thefield, fqn ]
      * Otherwise [ null, null ]
      *
-     * @param array  $tables Map of known table and nested fields to search
-     * @param string $sql    The SQL string to inspect
+     * @param array $tables Map of known table and nested fields to search
+     * @param string $sql The SQL string to inspect
      * @return array Three item array with table and field and a flag for whether the fragment is fully quolified
      */
     protected function detectLocalisedTableField($tables, $sql)
@@ -1030,7 +1035,7 @@ class FluentExtension extends DataExtension
      *
      * @param string $locale
      * @param string $table
-     * @param int    $id
+     * @param int $id
      * @return bool
      */
     protected function findRecordInLocale($locale, $table, $id)
@@ -1045,7 +1050,6 @@ class FluentExtension extends DataExtension
         return $query->firstRow()->execute()->value() !== null;
     }
 
-
     /**
      * @param $summaryColumns
      * @see FluentObjectTrait::updateFluentCMSFields()
@@ -1058,5 +1062,40 @@ class FluentExtension extends DataExtension
                 return $object->RecordLocale()->IsDraft() ? 'Saved' : '';
             }
         ];
+    }
+
+    /**
+     * Add copy actions to each locale
+     *
+     * @param GridFieldConfig $config
+     */
+    public function updateLocalisationTabConfig(GridFieldConfig $config)
+    {
+        // Add cross-locale actions (if allowed)
+        if (!Permission::check(Locale::CMS_ACCESS_MULTI_LOCALE)) {
+            return;
+        }
+
+        // Add locale copy actions
+        $config->addComponents([
+            new GroupActionMenu(
+                CopyLocaleAction::COPY_FROM,
+                _t(__CLASS__ . '.COPY_FROM', 'Copy to {locale} from:')
+            ),
+            new GroupActionMenu(
+                CopyLocaleAction::COPY_TO,
+                _t(__CLASS__ . '.COPY_TO', 'Copy from {locale} to:')
+            ),
+            // Force other items into a separate group :)
+            new GroupActionMenu(GridField_ActionMenuItem::DEFAULT_GROUP)
+        ]);
+
+        // Add each copy from / to
+        foreach (Locale::getCached() as $locale) {
+            $config->addComponents([
+                new CopyLocaleAction($locale->Locale, true),
+                new CopyLocaleAction($locale->Locale, false),
+            ]);
+        }
     }
 }

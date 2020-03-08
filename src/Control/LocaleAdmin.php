@@ -3,8 +3,11 @@
 namespace TractorCow\Fluent\Control;
 
 use SilverStripe\Admin\ModelAdmin;
+use SilverStripe\Security\Member;
+use SilverStripe\Security\Security;
 use SilverStripe\View\Requirements;
 use TractorCow\Fluent\Extension\FluentDirectorExtension;
+use TractorCow\Fluent\Extension\FluentMemberExtension;
 use TractorCow\Fluent\Model\Domain;
 use TractorCow\Fluent\Model\Locale;
 use TractorCow\Fluent\State\FluentState;
@@ -35,18 +38,23 @@ class LocaleAdmin extends ModelAdmin
 
     public function getClientConfig()
     {
+        /** @var Member|FluentMemberExtension $member */
+        $member = Security::getCurrentUser();
+        $locales = $member
+            ? $member->getCMSAccessLocales()->toArray()
+            : Locale::getCached()->toArray();
         return array_merge(
             parent::getClientConfig(),
             [
                 'fluent' => [
                     'locales' => array_map(function (Locale $locale) {
                         return [
-                            'code' => $locale->getLocale(),
+                            'code'  => $locale->getLocale(),
                             'title' => $locale->getTitle(),
                         ];
-                    }, Locale::getCached()->toArray()),
-                    'locale' => FluentState::singleton()->getLocale(),
-                    'param' => FluentDirectorExtension::config()->get('query_param'),
+                    }, $locales),
+                    'locale'  => FluentState::singleton()->getLocale(),
+                    'param'   => FluentDirectorExtension::config()->get('query_param'),
                 ]
             ]
         );
