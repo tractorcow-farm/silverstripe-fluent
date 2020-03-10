@@ -594,10 +594,8 @@ class FluentExtension extends DataExtension
         );
         unset($localisedUpdate['fields']['id']);
 
-        // Skip if no fields are being saved after filtering
-        if (empty($localisedUpdate['fields'])) {
-            return;
-        }
+        // Note: Even if no localised fields are modified, update base row anyway
+        // to ensure correct localisation state can be determined
 
         // Populate Locale / RecordID fields
         $localisedUpdate['fields']['RecordID'] = $id;
