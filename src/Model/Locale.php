@@ -279,7 +279,7 @@ class Locale extends DataObject implements PermissionProvider
                 )
                     ->setDescription(_t(
                         __CLASS__ . '.USE_X_DEFAULT_DESCRIPTION',
-                        'Use of this code indicates to search engine that this is a non-localised global landing page'
+                        'Use of this code indicates to search engines that this is a non-localised global landing page'
                     )),
                 DropdownField::create(
                     'DomainID',
