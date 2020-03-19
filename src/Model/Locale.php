@@ -275,7 +275,7 @@ class Locale extends DataObject implements PermissionProvider
                     )),
                 CheckboxField::create(
                     'UseDefaultCode',
-                    _t(__CLASS__ . '.USE_X_DEFAULT', 'Use {code} as hreflang', ['code' => self::X_DEFAULT])
+                    _t(__CLASS__ . '.USE_X_DEFAULT', 'Use {code} as SEO language code (treat as global)', ['code' => self::X_DEFAULT])
                 )
                     ->setDescription(_t(
                         __CLASS__ . '.USE_X_DEFAULT_DESCRIPTION',
