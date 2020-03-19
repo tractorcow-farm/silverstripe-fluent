@@ -613,20 +613,6 @@ class FluentExtension extends DataExtension
     }
 
     /**
-     * Amend freshly created DataQuery objects with the current locale and frontend status
-     *
-     * @param SQLSelect $query
-     * @param DataQuery $dataQuery
-     */
-    public function augmentDataQueryCreation(SQLSelect $query, DataQuery $dataQuery)
-    {
-        $state = FluentState::singleton();
-        $dataQuery
-            ->setQueryParam('Fluent.Locale', $state->getLocale())
-            ->setQueryParam('Fluent.IsFrontend', $state->getIsFrontend());
-    }
-
-    /**
      * Get the localised table name with the localised suffix and optionally with a locale suffix for aliases
      *
      * @param string $tableName
