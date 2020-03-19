@@ -260,6 +260,20 @@ visible locales for this object.
 Note: Although these objects will be filtered in the front end, this filter is disabled
 in the CMS in order to allow access by site administrators in all locales.
 
+## Single locale (isolated) filter
+
+Sometimes it may be necessary to filter a record to the locale it was created in. A simple filter extension
+`FluentIsolatedExtension` can be added to any object. This behaviour differs from `FluentFilteredExtension` in these ways:
+
+ - Filtering is only applied to a single locale
+ - The locale cannot be changed
+ - The filter is applied to the CMS view by default (you need to change locale to see it)
+ - There is no configuration / UX considerations. Deleting the record works like traditional silverstripe
+   objects, as it's not complicated by the locale assignment logic of the other extensions. There are also
+   no CMS fields related to the filtering.
+ - You cannot use this extension on an object with `FluentExtension` or `FluentFilteredExtension`.
+   They are mutually exclusive and will throw an exception if you try to use them together. 
+
 ## Routing and Locale Detection
 
 The `DetectLocaleMiddleware` will detect if a locale has been requested (or is default) and is not the current

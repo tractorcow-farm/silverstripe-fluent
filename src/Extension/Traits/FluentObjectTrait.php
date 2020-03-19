@@ -9,7 +9,10 @@ use SilverStripe\Forms\GridField\GridFieldConfig_Base;
 use SilverStripe\Forms\GridField\GridFieldDataColumns;
 use SilverStripe\ORM\DataList;
 use SilverStripe\ORM\DataObject;
+use SilverStripe\ORM\DataQuery;
+use SilverStripe\ORM\Queries\SQLSelect;
 use TractorCow\Fluent\Model\Locale;
+use TractorCow\Fluent\State\FluentState;
 
 /**
  * Shared functionality between both FluentExtension and FluentFilteredExtension
@@ -52,6 +55,19 @@ trait FluentObjectTrait
             ]);
     }
 
+    /**
+     * Amend freshly created DataQuery objects with the current locale and frontend status
+     *
+     * @param SQLSelect $query
+     * @param DataQuery $dataQuery
+     */
+    public function augmentDataQueryCreation(SQLSelect $query, DataQuery $dataQuery)
+    {
+        $state = FluentState::singleton();
+        $dataQuery
+            ->setQueryParam('Fluent.Locale', $state->getLocale())
+            ->setQueryParam('Fluent.IsFrontend', $state->getIsFrontend());
+    }
 
     /**
      * Update CMS fields for fluent objects.

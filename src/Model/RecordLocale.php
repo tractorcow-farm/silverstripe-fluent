@@ -40,7 +40,7 @@ class RecordLocale extends ViewableData
      * FluentLocale constructor.
      *
      * @param DataObject $record
-     * @param Locale     $locale
+     * @param Locale $locale
      */
     public function __construct(DataObject $record, Locale $locale)
     {
@@ -114,7 +114,18 @@ class RecordLocale extends ViewableData
      */
     public function getLocaleRFC1766()
     {
-        return i18n::convert_rfc1766($this->getLocale());
+        return $this->getHrefLang();
+    }
+
+    /**
+     * Get hreflang field
+     *
+     * @return string
+     */
+    public function getHrefLang()
+    {
+        $locale = $this->getLocaleObject();
+        return $locale->getHrefLang();
     }
 
     /**
