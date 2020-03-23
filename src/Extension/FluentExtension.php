@@ -735,6 +735,32 @@ class FluentExtension extends DataExtension
     }
 
     /**
+     * Add / refresh fluent badges to all localised fields.
+     * Note: Idempotent and safe to call multiple times
+     *
+     * @param FieldList $fields
+     */
+    public function updateFluentLocalisedFields(FieldList $fields)
+    {
+        // get all fields to translate and remove
+        $translated = $this->getLocalisedTables();
+        foreach ($translated as $table => $translatedFields) {
+            foreach ($translatedFields as $translatedField) {
+                // Find field matching this translated field
+                // If the translated field has an ID suffix also check for the non-suffixed version
+                // E.g. UploadField()
+                $field = $fields->dataFieldByName($translatedField);
+                if (!$field && preg_match('/^(?<field>\w+)ID$/', $translatedField, $matches)) {
+                    $field = $fields->dataFieldByName($matches['field']);
+                }
+                if ($field) {
+                    $this->updateFluentCMSField($field);
+                }
+            }
+        }
+    }
+
+    /**
      * Get locale this record was originally queried from, or belongs to
      *
      * @return Locale|null
@@ -878,25 +904,10 @@ class FluentExtension extends DataExtension
             return;
         }
 
-        // get all fields to translate and remove
-        $translated = $this->getLocalisedTables();
+        // Add all fluent tags for localised fields
+        $this->updateFluentLocalisedFields($fields);
 
-        foreach ($translated as $table => $translatedFields) {
-            foreach ($translatedFields as $translatedField) {
-                // Find field matching this translated field
-                // If the translated field has an ID suffix also check for the non-suffixed version
-                // E.g. UploadField()
-                $field = $fields->dataFieldByName($translatedField);
-                if (!$field && preg_match('/^(?<field>\w+)ID$/', $translatedField, $matches)) {
-                    $field = $fields->dataFieldByName($matches['field']);
-                }
-                if ($field) {
-                    $this->updateFluentCMSField($field);
-                }
-            }
-        }
-
-        // Update fields shared between fluent / fluentfiltered
+        // Update all core fluent fields
         $this->updateFluentCMSFields($fields);
     }
 
