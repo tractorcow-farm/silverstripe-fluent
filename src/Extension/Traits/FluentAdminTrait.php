@@ -38,7 +38,7 @@ trait FluentAdminTrait
     /**
      * Decorate actions with fluent-specific details
      *
-     * @param FieldList $actions
+     * @param FieldList            $actions
      * @param DataObject|Versioned $record
      */
     protected function updateFluentActions(FieldList $actions, DataObject $record)
@@ -119,13 +119,29 @@ trait FluentAdminTrait
             );
         }
 
+        // Filtered specific actions
+        /** @var DataObject|FluentFilteredExtension $record */
+        if ($record->hasExtension(FluentFilteredExtension::class)) {
+            if ($record->isAvailableInLocale($locale)) {
+                $moreOptions->push(
+                    FormAction::create('hideFluent', "Hide from '{$locale->getTitle()}'")
+                        ->addExtraClass('btn-outline-danger')
+                );
+            } else {
+                $moreOptions->push(
+                    FormAction::create('showFluent', "Show in '{$locale->getTitle()}'")
+                        ->addExtraClass('btn-outline-primary')
+                );
+            }
+        }
+
         // Make sure the menu isn't going to get cut off
         $actions->insertBefore('RightGroup', $rootTabSet);
     }
 
     /**
      * @param array $data
-     * @param Form $form
+     * @param Form  $form
      * @return mixed
      * @throws HTTPResponse_Exception
      */
@@ -174,7 +190,7 @@ trait FluentAdminTrait
      * Copy this record to other localisations (not published)
      *
      * @param array $data
-     * @param Form $form
+     * @param Form  $form
      * @return mixed
      * @throws HTTPResponse_Exception
      */
@@ -213,7 +229,7 @@ trait FluentAdminTrait
      * Unpublishes the current object from all locales
      *
      * @param array $data
-     * @param Form $form
+     * @param Form  $form
      * @return mixed
      * @throws HTTPResponse_Exception
      */
@@ -247,7 +263,7 @@ trait FluentAdminTrait
      * Archives the current object from all locales (versioned)
      *
      * @param array $data
-     * @param Form $form
+     * @param Form  $form
      * @return mixed
      * @throws HTTPResponse_Exception
      */
@@ -297,7 +313,7 @@ trait FluentAdminTrait
      * Delete the current object from all locales (non-versioned)
      *
      * @param array $data
-     * @param Form $form
+     * @param Form  $form
      * @return mixed
      * @throws HTTPResponse_Exception
      */
@@ -344,7 +360,7 @@ trait FluentAdminTrait
 
     /**
      * @param array $data
-     * @param Form $form
+     * @param Form  $form
      * @return mixed
      * @throws ValidationException
      * @throws HTTPResponse_Exception
@@ -380,6 +396,72 @@ trait FluentAdminTrait
             __CLASS__ . '.PublishNotice',
             "Published '{title}' across all locales.",
             ['title' => $record->Title]
+        );
+
+        $record->flushCache(true);
+        return $this->actionComplete($form, $message);
+    }
+
+    /**
+     * @param array $data
+     * @param Form  $form
+     * @return mixed
+     * @throws HTTPResponse_Exception
+     */
+    public function showFluent($data, $form)
+    {
+        // Check permissions for adding global actions
+        if (!Permission::check(Locale::CMS_ACCESS_MULTI_LOCALE)) {
+            throw new HTTPResponse_Exception("Action not allowed", 403);
+        }
+
+        // Show record
+        /** @var DataObject|FluentFilteredExtension $record */
+        $record = $form->getRecord();
+        $record->flushCache(true);
+        $locale = Locale::getCurrentLocale();
+        $record->FilteredLocales()->add($locale);
+
+        $message = _t(
+            __CLASS__ . '.ShowNotice',
+            "Record '{title}' is now visible in {locale}",
+            [
+                'title'  => $record->Title,
+                'locale' => $locale->Title,
+            ]
+        );
+
+        $record->flushCache(true);
+        return $this->actionComplete($form, $message);
+    }
+
+    /**
+     * @param array $data
+     * @param Form  $form
+     * @return mixed
+     * @throws HTTPResponse_Exception
+     */
+    public function hideFluent($data, $form)
+    {
+        // Check permissions for adding global actions
+        if (!Permission::check(Locale::CMS_ACCESS_MULTI_LOCALE)) {
+            throw new HTTPResponse_Exception("Action not allowed", 403);
+        }
+
+        // Show record
+        /** @var DataObject|FluentFilteredExtension $record */
+        $record = $form->getRecord();
+        $record->flushCache(true);
+        $locale = Locale::getCurrentLocale();
+        $record->FilteredLocales()->remove($locale);
+
+        $message = _t(
+            __CLASS__ . '.HideNotice',
+            "Record '{title}' is now hidden in {locale}",
+            [
+                'title'  => $record->Title,
+                'locale' => $locale->Title,
+            ]
         );
 
         $record->flushCache(true);

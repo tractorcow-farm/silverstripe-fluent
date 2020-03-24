@@ -93,15 +93,11 @@ class FluentFilteredExtension extends DataExtension
             return false;
         }
 
-        $locales = $this->owner->FilteredLocales()->filter([
-            $localeObject->baseTable() . 'ID' => $localeObject->ID,
-        ]);
-
-        return $locales->count() === 1;
+        return $this->owner->FilteredLocales()->filter('ID', $localeObject->ID)->exists();
     }
 
     /**
-     * @param SQLSelect $query
+     * @param SQLSelect      $query
      * @param DataQuery|null $dataQuery
      */
     public function augmentSQL(SQLSelect $query, DataQuery $dataQuery = null)
