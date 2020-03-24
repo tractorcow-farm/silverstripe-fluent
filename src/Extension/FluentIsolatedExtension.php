@@ -6,6 +6,7 @@ use LogicException;
 use SilverStripe\ORM\DataExtension;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\DataQuery;
+use SilverStripe\ORM\DB;
 use SilverStripe\ORM\Queries\SQLSelect;
 use TractorCow\Fluent\Model\Locale;
 use TractorCow\Fluent\State\FluentState;
@@ -65,6 +66,7 @@ class FluentIsolatedExtension extends DataExtension
                 . get_class($this->owner)
             );
         }
+        $this->migrateFromFilteredExtension();
     }
 
     /**
@@ -110,5 +112,60 @@ class FluentIsolatedExtension extends DataExtension
         }
 
         return Locale::getCurrentLocale();
+    }
+
+    /**
+     * Soft-migration for records that used to be FluentFilteredExtension
+     * Set the locale for records with missing LocaleID to the first
+     * locale they had selected
+     */
+    protected function migrateFromFilteredExtension(): void
+    {
+        // Soft-migration for records that used to be FluentFilteredExtension
+        // Set the locale for records with missing LocaleID to the first
+        // locale they had selected
+        $baseClass = $this->owner->baseClass();
+        if ($baseClass !== get_class($this->owner)) {
+            return;
+        }
+
+        // Check if this record used to have the filtered extension
+        $table = $this->owner->baseTable();
+        $filteredTable = "{$table}_FilteredLocales";
+        $tables = DB::table_list();
+        if (!array_key_exists(strtolower($filteredTable), $tables)) {
+            return;
+        }
+
+        // Check if the LocaleID field exists
+        if (!DB::get_schema()->hasField($table, 'LocaleID')) {
+            return;
+        }
+
+        // To prevent cross-sql errors, this code is a bit inefficient
+        $sql = <<<SQL
+SELECT "{$table}"."ID" AS "ID", "{$filteredTable}"."Fluent_LocaleID" AS "LocaleID"
+FROM "{$table}"
+INNER JOIN "{$filteredTable}"
+ON "{$table}"."ID" = "{$filteredTable}"."{$table}ID"
+WHERE "{$table}"."LocaleID" = 0
+SQL;
+        $records = DB::query($sql);
+        $count = $records->numRecords();
+        if (!$count) {
+            return;
+        }
+
+        foreach ($records as $row) {
+            DB::prepared_query(
+                "UPDATE \"{$table}\" SET \"LocaleID\" = ? WHERE \"ID\" = ?",
+                [
+                    $row['LocaleID'],
+                    $row['ID'],
+                ]
+            );
+        }
+
+        DB::alteration_message("Migrated {$count} records to FluentIsolatedExtension", 'repaired');
     }
 }
