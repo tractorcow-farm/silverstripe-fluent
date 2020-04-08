@@ -5,3 +5,7 @@ SilverStripe\ORM\DataObject:
   cms_publish_required: false
   frontend_publish_required: true
   apply_filtered_locales_to_stage: true
+
+# Prevent duplicate siteconfigs when localised
+SilverStripe\SiteConfig\SiteConfig:
+  frontend_publish_required: false
