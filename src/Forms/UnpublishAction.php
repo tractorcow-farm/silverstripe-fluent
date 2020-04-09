@@ -32,9 +32,9 @@ class UnpublishAction extends BaseAction
      * to ensure it only accepts actions it is actually supposed to handle.
      *
      * @param GridField $gridField
-     * @param string $actionName Action identifier, see {@link getActions()}.
-     * @param array $arguments Arguments relevant for this
-     * @param array $data All form data
+     * @param string    $actionName Action identifier, see {@link getActions()}.
+     * @param array     $arguments  Arguments relevant for this
+     * @param array     $data       All form data
      */
     public function handleAction(GridField $gridField, $actionName, $arguments, $data)
     {
@@ -43,10 +43,8 @@ class UnpublishAction extends BaseAction
         }
 
         // Get parent record and locale
-        $rowRecord = DataObject::get($arguments['RecordClass'])->byID($arguments['RecordID']);
-        /** @var DataObject $record */
-        /** @var Locale $locale */
-        list ($record, $locale) = $this->getRecordAndLocale($gridField, $rowRecord);
+        $record = DataObject::get($arguments['RecordClass'])->byID($arguments['RecordID']);
+        $locale = Locale::getByLocale($arguments['Locale']);
         if (!$locale || !$record || !$record->isInDB()) {
             return;
         }
@@ -64,7 +62,7 @@ class UnpublishAction extends BaseAction
      * Record must be published before it can be unpublished
      *
      * @param DataObject $record
-     * @param Locale $locale
+     * @param Locale     $locale
      * @return mixed
      */
     protected function appliesToRecord(DataObject $record, Locale $locale)
@@ -77,13 +75,13 @@ class UnpublishAction extends BaseAction
 
     /**
      *
-     * @param GridField $gridField
+     * @param GridField  $gridField
      * @param DataObject $record
-     * @param Locale $locale
-     * @param string $columnName
+     * @param Locale     $locale
+     * @param string     $columnName
      * @return GridField_FormAction|null
      */
-    protected function getButtonAction($gridField, \SilverStripe\ORM\DataObject $record, Locale $locale, $columnName)
+    protected function getButtonAction($gridField, DataObject $record, Locale $locale, $columnName)
     {
         $title = $this->getTitle($gridField, $record, $columnName);
         return GridField_FormAction::create(

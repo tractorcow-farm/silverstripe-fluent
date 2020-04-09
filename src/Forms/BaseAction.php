@@ -21,10 +21,10 @@ abstract class BaseAction implements GridField_ActionProvider, GridField_ActionM
     use Injectable;
 
     /**
-     * @param GridField $gridField
+     * @param GridField  $gridField
      * @param DataObject $record
-     * @param Locale $locale
-     * @param string $columnName
+     * @param Locale     $locale
+     * @param string     $columnName
      * @return GridField_FormAction|null
      */
     abstract protected function getButtonAction($gridField, DataObject $record, Locale $locale, $columnName);
@@ -33,21 +33,21 @@ abstract class BaseAction implements GridField_ActionProvider, GridField_ActionM
      * Check if this item is enabled for the given record in locale
      *
      * @param DataObject $record
-     * @param Locale $locale
+     * @param Locale     $locale
      * @return mixed
      */
     abstract protected function appliesToRecord(DataObject $record, Locale $locale);
 
     /**
-     * @param GridField $gridField
-     * @param DataObject $record
-     * @param string $columnName
+     * @param GridField  $gridField
+     * @param DataObject $record Row record
+     * @param string     $columnName
      * @return array|null the attributes for the action
      */
     public function getExtraData($gridField, $record, $columnName)
     {
-        list($record, $locale) = $this->getRecordAndLocale($gridField, $record);
-        $field = $this->getButtonAction($gridField, $record, $locale, $columnName);
+        list($localisedRecord, $locale) = $this->getRecordAndLocale($gridField, $record);
+        $field = $this->getButtonAction($gridField, $localisedRecord, $locale, $columnName);
         if ($field) {
             return $field->getAttributes();
         }
@@ -56,15 +56,15 @@ abstract class BaseAction implements GridField_ActionProvider, GridField_ActionM
     }
 
     /**
-     * @param GridField $gridField
-     * @param DataObject $record
-     * @param string $columnName
+     * @param GridField  $gridField
+     * @param DataObject $record Row record
+     * @param string     $columnName
      * @return null|string
      */
     public function getGroup($gridField, $record, $columnName)
     {
-        list($record, $locale) = $this->getRecordAndLocale($gridField, $record);
-        if ($locale instanceof Locale && $this->appliesToRecord($record, $locale)) {
+        list($localisedRecord, $locale) = $this->getRecordAndLocale($gridField, $record);
+        if ($locale instanceof Locale && $this->appliesToRecord($localisedRecord, $locale)) {
             return GridField_ActionMenuItem::DEFAULT_GROUP;
         }
         return null;
@@ -75,7 +75,7 @@ abstract class BaseAction implements GridField_ActionProvider, GridField_ActionM
      * Given a gridfield, and either an ID or record, return a list with
      * both the record  being localised, and the locale object
      *
-     * @param GridField $gridField Gridfield
+     * @param GridField  $gridField Gridfield
      * @param DataObject $rowRecord Record in row
      * @return array 2 length array with localised record, and locale as adjacent items
      */
