@@ -432,25 +432,4 @@ class FluentVersionedExtension extends FluentExtension
             self::$idsInLocaleCache[$locale][$table]['_complete'] = true;
         }
     }
-
-    public function augmentMaxVersionSubSelect(SQLSelect $subSelect, DataQuery $dataQuery, $shouldApplySubSelectAsCondition)
-    {
-        //gets "real" table name as it's required for getting localised
-        $table = $this->owner->baseTable();
-        //gets localised table name for given data record
-        $localisedTable = $this->owner->getLocalisedTable($table);
-        //generate localised && versioned table name
-        $versionedTable = $localisedTable . "_Versions";
-        
-        //fetch alias from subselect
-        $newFrom = $subSelect->getFrom();
-        $alias = trim(key($newFrom), '"');
-        //add inner join to localised table
-        $subSelect->addInnerJoin($versionedTable, "\"{$alias}\".\"RecordID\" = \"{$versionedTable}\".\"RecordID\" AND \"{$alias}\".\"Version\" = \"{$versionedTable}\".\"Version\"");
-
-        //get current locale
-        $locale = FluentState::singleton()->getLocale();
-        //finally, update subselect to include requested locale
-        $subSelect->addWhere("\"{$versionedTable}\".\"Locale\" = '{$locale}'");
-    }
 }
