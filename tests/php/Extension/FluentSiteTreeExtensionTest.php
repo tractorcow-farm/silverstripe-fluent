@@ -65,8 +65,8 @@ class FluentSiteTreeExtensionTest extends SapphireTest
 
             $this->assertInstanceOf(RecordLocale::class, $result);
             $this->assertEquals('en_NZ', $result->getLocale());
-            $this->assertEquals('en-NZ', $result->getLocaleRFC1766());
-            $this->assertEquals('en-NZ', $result->getHrefLang());
+            $this->assertEquals('en-nz', $result->getLocaleRFC1766());
+            $this->assertEquals('en-nz', $result->getHrefLang());
             $this->assertEquals('English (New Zealand)', $result->getTitle());
             $this->assertEquals('English', $result->getLanguageNative());
             $this->assertEquals('en', $result->getLanguage());
