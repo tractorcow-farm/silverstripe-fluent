@@ -223,7 +223,7 @@ class Locale extends DataObject implements PermissionProvider
         if ($this->UseDefaultCode) {
             return self::X_DEFAULT;
         }
-        return i18n::convert_rfc1766($this->Locale);
+        return strtolower(i18n::convert_rfc1766($this->Locale));
     }
 
     /**
