@@ -43,7 +43,7 @@ localisations, or being a part of the contributing team, please see
 ## Requirements
 
  * SilverStripe 4.0.0 or above
- * PHP 5.6 or above
+ * PHP 7.1 or above
 
 ## Documentation
 
