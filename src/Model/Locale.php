@@ -21,10 +21,12 @@ use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\DB;
 use SilverStripe\ORM\HasManyList;
 use SilverStripe\ORM\ManyManyList;
+use SilverStripe\Security\PermissionProvider;
 use Symbiote\GridFieldExtensions\GridFieldAddNewInlineButton;
 use Symbiote\GridFieldExtensions\GridFieldEditableColumns;
 use Symbiote\GridFieldExtensions\GridFieldOrderableRows;
 use TractorCow\Fluent\Extension\FluentDirectorExtension;
+use TractorCow\Fluent\Extension\Traits\FluentObjectTrait;
 use TractorCow\Fluent\State\FluentState;
 
 /**
@@ -33,13 +35,27 @@ use TractorCow\Fluent\State\FluentState;
  * @property string $URLSegment
  * @property bool $IsGlobalDefault
  * @property int $DomainID
+ * @property bool $UseDefaultCode
  * @method HasManyList|FallbackLocale[] FallbackLocales()
  * @method ManyManyList|Locale[] Fallbacks()
  * @method Domain Domain() Raw SQL Domain (unfiltered by domain mode)
  */
-class Locale extends DataObject
+class Locale extends DataObject implements PermissionProvider
 {
     use CachableModel;
+
+    /**
+     * Code for accessing cross-locale actions
+     */
+    const CMS_ACCESS_MULTI_LOCALE = 'CMS_ACCESS_Fluent_Actions_MultiLocale';
+
+    /**
+     * Prefix for per-locale permission code.
+     *
+     * Note that this is not a permission code in itself, and must always be
+     * joined with a locale.
+     */
+    const CMS_ACCESS_FLUENT_LOCALE = "CMS_ACCESS_Fluent_Locale_";
 
     private static $table_name = 'Fluent_Locale';
 
@@ -47,12 +63,19 @@ class Locale extends DataObject
 
     private static $plural_name = 'Locales';
 
+    /**
+     * hreflang for default landing pages.
+     * Note: PHP's ext-intl doesn't support this code, so only use it
+     * in templates.
+     */
+    const X_DEFAULT = 'x-default';
+
     private static $summary_fields = [
-        'Title' => 'Title',
-        'Locale' => 'Locale',
-        'URLSegment' => 'URL',
+        'Title'           => 'Title',
+        'Locale'          => 'Locale',
+        'URLSegment'      => 'URL',
         'IsGlobalDefault' => 'Global Default',
-        'Domain.Domain' => 'Domain',
+        'Domain.Domain'   => 'Domain',
     ];
 
     /**
@@ -60,13 +83,15 @@ class Locale extends DataObject
      * @var array
      */
     private static $db = [
-        'Title' => 'Varchar(100)',
-        'Locale' => 'Varchar(10)',
-        'URLSegment' => 'Varchar(100)',
+        'Title'           => 'Varchar(100)',
+        'Locale'          => 'Varchar(10)',
+        'URLSegment'      => 'Varchar(100)',
         'IsGlobalDefault' => 'Boolean',
+        'UseDefaultCode'  => 'Boolean',
+        'Sort'            => 'Int',
     ];
 
-    private static $default_sort = '"Fluent_Locale"."Locale" ASC';
+    private static $default_sort = '"Fluent_Locale"."Sort" ASC, "Fluent_Locale"."Locale" ASC';
 
     /**
      * @config
@@ -83,8 +108,8 @@ class Locale extends DataObject
     private static $many_many = [
         'Fallbacks' => [
             'through' => FallbackLocale::class,
-            'from' => 'Parent',
-            'to' => 'Locale',
+            'from'    => 'Parent',
+            'to'      => 'Locale',
         ],
     ];
 
@@ -110,6 +135,16 @@ class Locale extends DataObject
             return $title;
         }
         return $this->getDefaultTitle();
+    }
+
+    /**
+     * Long title (including locale code)
+     *
+     * @return string
+     */
+    public function getLongTitle()
+    {
+        return "{$this->Title} ({$this->Locale})";
     }
 
     /**
@@ -175,7 +210,20 @@ class Locale extends DataObject
     {
         $badgeLabel = $this->getURLSegment();
         $this->extend('updateBadgeLabel', $badgeLabel);
-        return (string) $badgeLabel;
+        return (string)$badgeLabel;
+    }
+
+    /**
+     * RFC 1766 hreflang
+     *
+     * @return string
+     */
+    public function getHrefLang()
+    {
+        if ($this->UseDefaultCode) {
+            return self::X_DEFAULT;
+        }
+        return strtolower(i18n::convert_rfc1766($this->Locale));
     }
 
     /**
@@ -204,32 +252,40 @@ class Locale extends DataObject
             [
                 DropdownField::create(
                     'Locale',
-                    _t(__CLASS__.'.LOCALE', 'Locale'),
+                    _t(__CLASS__ . '.LOCALE', 'Locale'),
                     i18n::getData()->getLocales()
                 ),
                 TextField::create(
                     'Title',
-                    _t(__CLASS__.'.LOCALE_TITLE', 'Title')
+                    _t(__CLASS__ . '.LOCALE_TITLE', 'Title')
                 )->setAttribute('placeholder', $this->getDefaultTitle()),
                 TextField::create(
                     'URLSegment',
-                    _t(__CLASS__.'.LOCALE_URL', 'URL Segment')
+                    _t(__CLASS__ . '.LOCALE_URL', 'URL Segment')
                 )->setAttribute('placeholder', $this->Locale),
                 $globalDefault = CheckboxField::create(
                     'IsGlobalDefault',
-                    _t(__CLASS__.'.IS_DEFAULT', 'This is the global default locale')
+                    _t(__CLASS__ . '.IS_DEFAULT', 'This is the global default locale')
                 )
                     ->setAttribute('data-hides', 'ParentDefaultID')
                     ->setDescription(_t(
-                        __CLASS__.'.IS_DEFAULT_DESCRIPTION',
+                        __CLASS__ . '.IS_DEFAULT_DESCRIPTION',
                         'Note: Per-domain specific locale can be assigned on the Locales tab'
                         . ' and will override this value for specific domains.'
                     )),
+                CheckboxField::create(
+                    'UseDefaultCode',
+                    _t(__CLASS__ . '.USE_X_DEFAULT', 'Use {code} as SEO language code (treat as global)', ['code' => self::X_DEFAULT])
+                )
+                    ->setDescription(_t(
+                        __CLASS__ . '.USE_X_DEFAULT_DESCRIPTION',
+                        'Use of this code indicates to search engines that this is a non-localised global landing page'
+                    )),
                 DropdownField::create(
                     'DomainID',
-                    _t(__CLASS__.'.DOMAIN', 'Domain'),
+                    _t(__CLASS__ . '.DOMAIN', 'Domain'),
                     Domain::get()->map('ID', 'Domain')
-                )->setEmptyString(_t(__CLASS__.'.DEFAULT_NONE', '(none)'))
+                )->setEmptyString(_t(__CLASS__ . '.DEFAULT_NONE', '(none)'))
             ]
         );
 
@@ -247,7 +303,7 @@ class Locale extends DataObject
                 'LocaleID' => function () {
                     return DropdownField::create(
                         'LocaleID',
-                        _t(__CLASS__.'.LOCALE', 'Locale'),
+                        _t(__CLASS__ . '.LOCALE', 'Locale'),
                         Locale::getCached()->exclude('Locale', $this->Locale)->map('ID', 'Title')
                     );
                 }
@@ -256,7 +312,7 @@ class Locale extends DataObject
             // Add default selection
             $defaultField = GridField::create(
                 'FallbackLocales',
-                _t(__CLASS__.'.FALLBACKS', 'Fallback Locales'),
+                _t(__CLASS__ . '.FALLBACKS', 'Fallback Locales'),
                 $this->FallbackLocales(),
                 $config
             );
@@ -284,7 +340,7 @@ class Locale extends DataObject
      * Get default locale
      *
      * @param string|null|true $domain If provided, the default locale for the given domain will be returned.
-     * If true, then the current state domain will be used (if in domain mode).
+     *                                 If true, then the current state domain will be used (if in domain mode).
      * @return Locale
      */
     public static function getDefault($domain = null)
@@ -345,7 +401,7 @@ class Locale extends DataObject
     /**
      * Returns whether the given locale matches the current Locale object
      *
-     * @param  string $locale E.g. en_NZ, en-NZ, en-nz-1990
+     * @param string $locale E.g. en_NZ, en-NZ, en-nz-1990
      * @return bool
      */
     public function isLocale($locale)
@@ -398,7 +454,7 @@ class Locale extends DataObject
      * Get available locales
      *
      * @param string|null|true $domain If provided, locales for the given domain will be returned.
-     * If true, then the current state domain will be used (if in domain mode).
+     *                                 If true, then the current state domain will be used (if in domain mode).
      * @return ArrayList
      */
     public static function getLocales($domain = null)
@@ -421,7 +477,7 @@ class Locale extends DataObject
             $table = $this->baseTable();
             DB::prepared_query(
                 "UPDATE \"{$table}\" SET \"IsGlobalDefault\" = 0 WHERE \"ID\" != ?",
-                [ $this->ID ]
+                [$this->ID]
             );
         }
     }
@@ -482,7 +538,7 @@ class Locale extends DataObject
         $append = true;
         if ($this->getIsDefault()) {
             // Apply config
-            $append = !(bool) Config::inst()->get(FluentDirectorExtension::class, 'disable_default_prefix');
+            $append = !(bool)Config::inst()->get(FluentDirectorExtension::class, 'disable_default_prefix');
         }
 
         if ($append) {
@@ -505,5 +561,69 @@ class Locale extends DataObject
             ? $domain->getLocales()
             : Locale::getCached();
         return $locales;
+    }
+
+    /**
+     * Get details for the current object in this locale.
+     *
+     * @return null|RecordLocale
+     * @see FluentObjectTrait::LinkedLocales()
+     */
+    public function RecordLocale()
+    {
+        $recordID = $this->getSourceQueryParam('FluentObjectID');
+        $recordClass = $this->getSourceQueryParam('FluentObjectClass');
+        if (!$recordID || !$recordClass) {
+            return null;
+        }
+
+        $record = DataObject::get($recordClass)->byID($recordID);
+
+        if ($record) {
+            return RecordLocale::create($record, $this);
+        }
+
+        return null;
+    }
+
+    /**
+     * Get permission code to enable access in this locale
+     *
+     * @return string
+     */
+    public function getLocaleEditPermission()
+    {
+        $prefix = self::CMS_ACCESS_FLUENT_LOCALE;
+        return "{$prefix}{$this->Locale}";
+    }
+
+
+    public function providePermissions()
+    {
+        $category = _t(__CLASS__ . '.PERMISSION', 'Localisation');
+        $permissions = [
+            // @todo - Actually implement this check on those actions
+            self::CMS_ACCESS_MULTI_LOCALE => [
+                'name'     => _t(
+                    __CLASS__ . '.MULTI_LOCALE',
+                    'Access to multi-locale actions (E.g. save in all locales)'
+                ),
+                'category' => $category,
+            ],
+        ];
+        foreach (Locale::getCached() as $locale) {
+            $permissions[$locale->getLocaleEditPermission()] = [
+                'name'     => _t(
+                    __CLASS__ . '.EDIT_LOCALE',
+                    'Access "{title}" ({locale})',
+                    [
+                        'title'  => $locale->Title,
+                        'locale' => $locale->Locale,
+                    ]
+                ),
+                'category' => $category,
+            ];
+        }
+        return $permissions;
     }
 }

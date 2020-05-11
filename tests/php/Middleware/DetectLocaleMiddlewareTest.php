@@ -44,6 +44,7 @@ class DetectLocaleMiddlewareTest extends SapphireTest
         Domain::clearCached();
 
         // Get defaults from fixture
+        // Note: es_ES
         $this->globalDefaultLocale = Locale::get()->find('IsGlobalDefault', 1)->Locale;
     }
 
@@ -61,9 +62,9 @@ class DetectLocaleMiddlewareTest extends SapphireTest
     /**
      * @dataProvider localePriorityProvider
      * @param string $url
-     * @param array $routeParams
-     * @param array $queryParams
-     * @param bool $persisted
+     * @param array  $routeParams
+     * @param array  $queryParams
+     * @param bool   $persisted
      * @param string $header
      * @param string $expected
      */
@@ -107,7 +108,8 @@ class DetectLocaleMiddlewareTest extends SapphireTest
     {
         FluentState::singleton()->withState(function (FluentState $newState) {
             $request = new HTTPRequest('GET', '/');
-            $newState->setLocale('dummy');
+            $newState->setIsFrontend(true);
+            $newState->setLocale('en_AU');
 
             /** @var DetectLocaleMiddleware|PHPUnit_Framework_MockObject_MockObject $middleware */
             $middleware = $this->getMockBuilder(DetectLocaleMiddleware::class)
@@ -115,7 +117,7 @@ class DetectLocaleMiddlewareTest extends SapphireTest
                 ->getMock();
 
             $middleware->expects($this->never())->method('getLocale');
-            $middleware->expects($this->once())->method('setPersistLocale')->with($request, 'dummy');
+            $middleware->expects($this->once())->method('setPersistLocale')->with($request, 'en_AU');
 
             $middleware->process($request, function () {
                 // no-op
@@ -126,13 +128,16 @@ class DetectLocaleMiddlewareTest extends SapphireTest
     public function testLocaleIsOnlyPersistedWhenSet()
     {
         $request = new HTTPRequest('GET', '/');
-        FluentState::singleton()->setLocale(null);
+        FluentState::singleton()
+            ->setLocale(null)
+            ->setIsFrontend(true);
 
         /** @var DetectLocaleMiddleware|PHPUnit_Framework_MockObject_MockObject $middleware */
         $middleware = $this->getMockBuilder(DetectLocaleMiddleware::class)
             ->setMethods(['getLocale', 'setPersistLocale'])
             ->getMock();
 
+        $middleware->expects($this->once())->method('getLocale')->willReturn(null);
         $middleware->expects($this->never())->method('setPersistLocale');
 
         $middleware->process($request, function () {

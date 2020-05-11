@@ -3,13 +3,18 @@
 namespace TractorCow\Fluent\Extension;
 
 use InvalidArgumentException;
+use LogicException;
 use SilverStripe\Core\Config\Config;
+use SilverStripe\Core\Resettable;
+use SilverStripe\Forms\GridField\GridFieldConfig;
 use SilverStripe\ORM\DataList;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\DataQuery;
 use SilverStripe\ORM\DB;
 use SilverStripe\ORM\Queries\SQLSelect;
 use SilverStripe\Versioned\Versioned;
+use TractorCow\Fluent\Forms\PublishAction;
+use TractorCow\Fluent\Forms\UnpublishAction;
 use TractorCow\Fluent\Model\Locale;
 use TractorCow\Fluent\State\FluentState;
 
@@ -18,8 +23,10 @@ use TractorCow\Fluent\State\FluentState;
  *
  * Important: If adding this to a custom object, this extension must be added AFTER the versioned extension.
  * Use yaml `after` to enforce this
+ *
+ * @property DataObject|FluentVersionedExtension $owner
  */
-class FluentVersionedExtension extends FluentExtension
+class FluentVersionedExtension extends FluentExtension implements Resettable
 {
     /**
      * Live table suffix
@@ -77,6 +84,27 @@ class FluentVersionedExtension extends FluentExtension
      * @var boolean
      */
     private static $prepopulate_localecontent_cache = true;
+
+    public function augmentDatabase()
+    {
+        // Safety check: This extension is added AFTER versioned
+        $seenVersioned = false;
+        foreach ($this->owner->getExtensionInstances() as $extension) {
+            // Must see versioned
+            if ($extension instanceof Versioned) {
+                $seenVersioned = true;
+            } elseif ($extension instanceof self) {
+                if (!$seenVersioned) {
+                    throw new LogicException(
+                        "FluentVersionedExtension must be added AFTER Versioned extension. Check "
+                        . get_class($this->owner)
+                    );
+                }
+            }
+        }
+
+        parent::augmentDatabase();
+    }
 
     protected function augmentDatabaseDontRequire($localisedTable)
     {
@@ -338,30 +366,14 @@ class FluentVersionedExtension extends FluentExtension
     }
 
     /**
-     * Checks whether the given record ID exists in the given locale, in the given table. Skips using the ORM because
-     * we don't need it for this call.
-     *
-     * @param string $locale
-     * @param string $table
-     * @param int    $id
-     * @return bool
-     */
-    protected function findRecordInLocale($locale, $table, $id)
-    {
-        $query = SQLSelect::create('"ID"');
-        $query->addFrom('"' . $table . '"');
-        $query->addWhere([
-            '"RecordID"' => $id,
-            '"Locale"'   => $locale,
-        ]);
-
-        return $query->firstRow()->execute()->value() !== null;
-    }
-
-    /**
      * Clear internal static property caches
      */
     public function flushCache()
+    {
+        static::reset();
+    }
+
+    public static function reset()
     {
         static::$idsInLocaleCache = [];
     }
@@ -431,5 +443,45 @@ class FluentVersionedExtension extends FluentExtension
             self::$idsInLocaleCache[$locale][$table] = array_combine($ids, $ids);
             self::$idsInLocaleCache[$locale][$table]['_complete'] = true;
         }
+    }
+
+    public function updateLocalisationTabColumns(&$summaryColumns)
+    {
+        $summaryColumns['IsDraft'] = [
+            'title'    => 'Saved',
+            'callback' => function (Locale $object) {
+                if ($object && $object->RecordLocale()) {
+                    return $object->RecordLocale()->IsDraft() ? 'Draft' : '';
+                }
+
+                return '';
+            }
+        ];
+        $summaryColumns['IsPublished'] = [
+            'title'    => 'Published',
+            'callback' => function (Locale $object) {
+                if ($object && $object->RecordLocale()) {
+                    return $object->RecordLocale()->IsPublished() ? 'Live' : '';
+                }
+
+                return '';
+            }
+        ];
+    }
+
+    /**
+     * Add versioning extensions for gridfield
+     *
+     * @param GridFieldConfig $config
+     */
+    public function updateLocalisationTabConfig(GridFieldConfig $config)
+    {
+        parent::updateLocalisationTabConfig($config);
+
+        // Add actions for publishing / unpublishing in locale
+        $config->addComponents([
+            UnpublishAction::create(),
+            PublishAction::create(),
+        ]);
     }
 }

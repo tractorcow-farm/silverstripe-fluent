@@ -13,6 +13,11 @@ use SilverStripe\ORM\ArrayList;
 use SilverStripe\ORM\PaginatedList;
 use TractorCow\Fluent\State\FluentState;
 
+// Soft dependency on CMS module
+if (!class_exists(SiteTree::class)) {
+    return;
+}
+
 /**
  * Simple extension to enable SS Core search to work with SS Fluent
  */

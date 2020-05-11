@@ -2,14 +2,16 @@
 
 namespace TractorCow\Fluent\Extension;
 
-use SilverStripe\Forms\CheckboxSetField;
 use SilverStripe\Forms\FieldList;
+use SilverStripe\Forms\GridField\GridFieldConfig;
 use SilverStripe\ORM\DataExtension;
 use SilverStripe\ORM\DataList;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\DataQuery;
 use SilverStripe\ORM\Queries\SQLSelect;
 use SilverStripe\Versioned\Versioned;
+use TractorCow\Fluent\Extension\Traits\FluentObjectTrait;
+use TractorCow\Fluent\Forms\LocaleToggleColumn;
 use TractorCow\Fluent\Model\Delete\UsesDeletePolicy;
 use TractorCow\Fluent\Model\Locale;
 use TractorCow\Fluent\State\FluentState;
@@ -24,6 +26,7 @@ class FluentFilteredExtension extends DataExtension
      * Deletions are managed via DeletePolicy
      */
     use UsesDeletePolicy;
+    use FluentObjectTrait;
 
     /**
      * The table suffix that will be applied to a DataObject's base table.
@@ -43,19 +46,8 @@ class FluentFilteredExtension extends DataExtension
             return;
         }
 
-        // create a GridField to manage what Locales this Page can be displayed in.
-        $fields->addFieldToTab(
-            'Root.FilteredLocales',
-            CheckboxSetField::create(
-                'FilteredLocales',
-                _t(__CLASS__ . '.FILTERED_LOCALES', 'Display in the following locales'),
-                $locales
-            )
-        );
-
-        $fields
-            ->fieldByName('Root.FilteredLocales')
-            ->setTitle(_t(__CLASS__ . '.TAB_LOCALES', 'Locales'));
+        // Add other fields
+        $this->updateFluentCMSFields($fields);
     }
 
     /**
@@ -85,20 +77,23 @@ class FluentFilteredExtension extends DataExtension
     }
 
     /**
-     * @param Locale|null $locale
+     * @param string|Locale|null $locale
      * @return bool
      */
-    public function isAvailableInLocale(Locale $locale = null)
+    public function isAvailableInLocale($locale = null)
     {
-        if ($locale === null) {
-            $locale = Locale::getCurrentLocale();
+        if ($locale instanceof Locale) {
+            $localeObject = $locale;
+        } elseif ($locale) {
+            $localeObject = Locale::getByLocale($locale);
+        } else {
+            $localeObject = Locale::getCurrentLocale();
+        }
+        if (!$localeObject) {
+            return false;
         }
 
-        $locales = $this->owner->FilteredLocales()->filter([
-            $locale->baseTable() . 'ID' => $locale->ID,
-        ]);
-
-        return $locales->count() === 1;
+        return $this->owner->FilteredLocales()->filter('ID', $localeObject->ID)->exists();
     }
 
     /**
@@ -172,5 +167,16 @@ class FluentFilteredExtension extends DataExtension
         }
 
         return substr_compare($readingMode, $draft, strlen($readingMode) - strlen($draft), strlen($draft)) === 0;
+    }
+
+    public function updateLocalisationTabConfig(GridFieldConfig $config)
+    {
+        // Add inline toggle on/off to gridfield
+        $config->addComponent(LocaleToggleColumn::create());
+    }
+
+    public function updateLocalisationTabColumns(&$summaryColumns)
+    {
+        // no-op
     }
 }

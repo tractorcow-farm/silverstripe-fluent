@@ -4,6 +4,7 @@ namespace TractorCow\Fluent\Model\Delete;
 
 use InvalidArgumentException;
 use SilverStripe\Core\ClassInfo;
+use SilverStripe\Core\Injector\Injectable;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\DB;
 use SilverStripe\ORM\Queries\SQLDelete;
@@ -18,6 +19,8 @@ use TractorCow\Fluent\Model\Locale;
  */
 class DeleteLocalisationPolicy implements DeletePolicy
 {
+    use Injectable;
+
     /**
      * @param DataObject|FluentExtension $record
      * @return bool Determines if any dependent objects block upstream deletion (e.g. db / model constraints)

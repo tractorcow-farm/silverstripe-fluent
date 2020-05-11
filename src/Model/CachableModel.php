@@ -17,7 +17,7 @@ trait CachableModel
 {
 
     /**
-     * @return ArrayList
+     * @return ArrayList|static[]
      */
     public static function getCached()
     {

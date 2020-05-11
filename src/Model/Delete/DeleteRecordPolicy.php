@@ -2,6 +2,7 @@
 
 namespace TractorCow\Fluent\Model\Delete;
 
+use SilverStripe\Core\Injector\Injectable;
 use SilverStripe\ORM\DataList;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\Queries\SQLDelete;
@@ -12,6 +13,8 @@ use TractorCow\Fluent\State\FluentState;
  */
 class DeleteRecordPolicy implements DeletePolicy
 {
+    use Injectable;
+
     /**
      * List of dependant policies
      *

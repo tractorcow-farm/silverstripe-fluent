@@ -5,7 +5,7 @@
 $fluent-color-base: rgb(0, 138, 0);
 
 // $fluent-color-invisible: #566b8d
-$fluent-color-invisible: rgb(86, 107, 141);
+$fluent-color-invisible: rgb(155, 40, 40);
 
 // $fluent-color-invisible-text
 $fluent-color-invisible-text: $text-muted;
@@ -103,9 +103,80 @@ $fluent-color-localised: rgb(102, 15, 242);
     background-color: $fluent-color-localised;
   }
 }
+
 .fluent__localised-field .font-icon-translatable {
   color: $fluent-color-localised;
   top: 2px;
   position: relative;
   margin-right: 3px;
+}
+
+// Styles for extra actions menu
+.cms .ss-ui-action-tabset.ss-tabset.fluent-actions-menu {
+  margin-left: 5px;
+
+  // button
+  .popover-actions-simulate .ui-tabs-anchor {
+    font-size: 1.0em;
+    color: #303b4d;
+
+    &:before {
+      margin-right: 6px;
+      font-size: 1.5rem;
+    }
+
+    &,
+    &:hover,
+    &:active {
+      &:after {
+        display: none !important;
+      }
+    }
+  }
+
+  // Popup menu
+  .tab-pane {
+    padding-top: 0;
+    max-width: 500px;
+
+    .action-description {
+      font-size: 0.9em;
+      line-height: 1em;
+      display: block !important;
+      margin: 0;
+      padding: 0 11px 8px 11px;
+      border-bottom: 1px solid #ccc;
+      color: #999;
+
+      &:last-child {
+        border-bottom: 0 none;
+      }
+    }
+  }
+}
+
+.action-group-COPY_FROM .action-menu__toggle:before,
+.action-group-COPY_TO .action-menu__toggle:before {
+  font-family: inherit !important;
+  line-height: 1em;
+  font-size: 1.0em;
+}
+
+// Gridfield menu items
+.action-group-COPY_FROM .action-menu__toggle:before {
+  // force ... to turn into actual title
+  // @todo i18n this
+  content: "Copy from" !important;
+}
+
+.action-group-COPY_TO .action-menu__toggle:before {
+  // force ... to turn into actual title
+  // @todo i18n this
+  content: "Copy to" !important;
+}
+
+// gridfield "visible locales" column
+.fluent-visible-column .badge {
+  font-size: 0.8em;
+  padding: 3px 5px;
 }

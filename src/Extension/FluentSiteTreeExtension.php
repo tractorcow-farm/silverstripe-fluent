@@ -7,11 +7,20 @@ use SilverStripe\CMS\Forms\SiteTreeURLSegmentField;
 use SilverStripe\CMS\Model\SiteTree;
 use SilverStripe\Control\Controller;
 use SilverStripe\Control\Director;
+use SilverStripe\Control\HTTPResponse;
 use SilverStripe\Forms\CompositeField;
 use SilverStripe\Forms\FieldList;
+use SilverStripe\Forms\Form;
 use SilverStripe\Forms\LiteralField;
+use SilverStripe\ORM\FieldType\DBHTMLText;
+use TractorCow\Fluent\Extension\Traits\FluentAdminTrait;
 use TractorCow\Fluent\Model\Locale;
 use TractorCow\Fluent\State\FluentState;
+
+// Soft dependency on CMS module
+if (!class_exists(SiteTree::class)) {
+    return;
+}
 
 /**
  * Fluent extension for SiteTree
@@ -20,6 +29,8 @@ use TractorCow\Fluent\State\FluentState;
  */
 class FluentSiteTreeExtension extends FluentVersionedExtension
 {
+    use FluentAdminTrait;
+
     /**
      * Determine if status messages are enabled
      *
@@ -137,7 +148,7 @@ class FluentSiteTreeExtension extends FluentVersionedExtension
         // If this page does not exist it should be "invisible"
         if (!$this->isDraftedInLocale() && !$this->isPublishedInLocale()) {
             $flags['fluentinvisible'] = [
-                'text' => '',
+                'text'  => '',
                 'title' => '',
             ];
         }
@@ -168,13 +179,17 @@ class FluentSiteTreeExtension extends FluentVersionedExtension
             return;
         }
 
+        // Update specific sitetree publish actions
         $this->updateSavePublishActions($actions);
+
+        // Add extra fluent menu
+        $this->updateFluentActions($actions, $this->owner);
     }
 
     /**
      * Adds a UI message to indicate whether you're editing in the default locale or not
      *
-     * @param  FieldList $fields
+     * @param FieldList $fields
      */
     protected function addLocaleStatusMessage(FieldList $fields)
     {
@@ -329,5 +344,15 @@ class FluentSiteTreeExtension extends FluentVersionedExtension
                 $actionPublish->setTitle(_t(__CLASS__ . '.LOCALECOPYANDPUBLISH', 'Copy & publish'));
             }
         }
+    }
+
+    /**
+     * @param Form   $form
+     * @param string $message
+     * @return HTTPResponse|string|DBHTMLText
+     */
+    public function actionComplete($form, $message)
+    {
+        return null;
     }
 }

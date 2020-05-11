@@ -6,10 +6,13 @@ use SilverStripe\Core\Extension;
 use SilverStripe\Core\Injector\Injector;
 use SilverStripe\ORM\DataList;
 use SilverStripe\ORM\DataObject;
+use SilverStripe\Versioned\GraphQL\Operations\ReadVersions;
 use TractorCow\Fluent\State\FluentState;
 
 /**
  * Available since SilverStripe 4.3.x
+ *
+ * @property ReadVersions $owner
  */
 class FluentReadVersionsExtension extends Extension
 {

@@ -2,9 +2,13 @@
 Name: fluentmodel
 ---
 SilverStripe\ORM\DataObject:
+  # See FluentExtension
   cms_publish_required: false
   frontend_publish_required: true
+  # See FluentFilteredExtension
   apply_filtered_locales_to_stage: true
+  # See FluentIsolatedExtension
+  apply_isolated_locales_to_admin: true
 
 # Prevent duplicate siteconfigs when localised
 SilverStripe\SiteConfig\SiteConfig:

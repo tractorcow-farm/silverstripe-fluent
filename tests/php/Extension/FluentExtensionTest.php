@@ -69,14 +69,15 @@ class FluentExtensionTest extends SapphireTest
     public function testGetLinkingMode()
     {
         // Does not have a canViewInLocale method, locale is not current
-        $stub = new FluentStubObject();
-        $this->assertSame('link', $stub->getLinkingMode('foo'));
+        FluentState::singleton()->withState(function (FluentState $newState) {
+            $newState->setLocale('en_US');
+            $stub = new FluentStubObject();
+            $this->assertSame('current', $stub->LocaleInformation('en_US')->getLinkingMode());
+            $this->assertSame('link', $stub->LocaleInformation('de_DE')->getLinkingMode());
 
-        // Does not have a canViewInLocale method, locale is current
-        FluentState::singleton()->withState(function (FluentState $newState) use ($stub) {
-            $newState->setLocale('foo');
-
-            $this->assertSame('current', $stub->getLinkingMode('foo'));
+            $newState->setLocale('de_DE');
+            $this->assertSame('link', $stub->LocaleInformation('en_US')->getLinkingMode());
+            $this->assertSame('current', $stub->LocaleInformation('de_DE')->getLinkingMode());
         });
     }
 
