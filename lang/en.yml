@@ -51,8 +51,9 @@ en:
     SINGULARNAME: Locale
     UnsavedNotice: 'You can add fallbacks once you''ve saved the locale.'
   TractorCow\Fluent\Extension\Traits\FluentAdminTrait:
-    ClearAllNotice: 'All localisations have been cleared'
+    ClearAllNotice: 'All localisations have been cleared for ''{title}''.'
     CopyNotice: 'Copied ''{title}'' to all other locales.'
+    DeleteNotice: 'Deleted ''{title}'' and all of its localisations.'
     UnpublishNotice: 'Unpublished ''{title}'' from all locales.'
-    ArchiveNotice: 'Deleted ''{title}'' and all of its localisations.'
+    ArchiveNotice: 'Archived ''{title}'' and all of its localisations.'
     PublishNotice: 'Published ''{title}'' across all locales.'
