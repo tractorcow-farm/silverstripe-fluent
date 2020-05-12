@@ -485,7 +485,7 @@ trait FluentAdminTrait
             __TRAIT__ . '.ShowNotice',
             "Record '{title}' is now visible in {locale}",
             [
-                'title' => $record->Title,
+                'title'  => $record->Title,
                 'locale' => $locale->Title
             ]
         );
@@ -518,7 +518,7 @@ trait FluentAdminTrait
             __TRAIT__ . '.HideNotice',
             "Record '{title}' is now hidden in {locale}",
             [
-                'title' => $record->Title,
+                'title'  => $record->Title,
                 'locale' => $locale->Title
             ]
         );
@@ -537,7 +537,10 @@ trait FluentAdminTrait
         foreach (Locale::getCached() as $locale) {
             FluentState::singleton()->withState(function (
                 FluentState $newState
-            ) use ($doSomething, $locale) {
+            ) use (
+                $doSomething,
+                $locale
+            ) {
                 $newState->setLocale($locale->getLocale());
                 $doSomething($locale);
             });

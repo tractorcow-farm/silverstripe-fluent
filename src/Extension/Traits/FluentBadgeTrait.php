@@ -48,8 +48,7 @@ trait FluentBadgeTrait
             return null;
         }
         // Must have at least one fluent extension
-        if (
-            !$record->has_extension(FluentExtension::class) &&
+        if (!$record->has_extension(FluentExtension::class) &&
             !$record->has_extension(FluentFilteredExtension::class)
         ) {
             return null;
