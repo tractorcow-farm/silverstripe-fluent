@@ -28,16 +28,18 @@ class VisibleLocalesColumn implements GridField_ColumnProvider
      */
     public function augmentColumns($gridField, &$columns)
     {
-        // Ensure Actions always appears as the last column.
         $key = array_search('Actions', $columns);
         if ($key !== false) {
+            // Ensure Actions always appears as the last column.
             unset($columns[$key]);
+            $columns = array_merge($columns, [
+                'Locales',
+                'Actions',
+            ]);
+        } else {
+            // Append to end if no Actions column
+            $columns[] = 'Locales';
         }
-
-        $columns = array_merge($columns, [
-            'Locales',
-            'Actions',
-        ]);
     }
 
     /**
