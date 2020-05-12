@@ -34,7 +34,9 @@ trait FluentObjectTrait
      *
      * @param GridFieldConfig $config
      */
-    abstract public function updateLocalisationTabConfig(GridFieldConfig $config);
+    abstract public function updateLocalisationTabConfig(
+        GridFieldConfig $config
+    );
 
     /**
      * Gets list of all Locale dataobjects, linked to this record
@@ -48,11 +50,10 @@ trait FluentObjectTrait
             return null;
         }
 
-        return Locale::get()
-            ->setDataQueryParam([
-                'FluentObjectID'    => $this->owner->ID,
-                'FluentObjectClass' => get_class($this->owner),
-            ]);
+        return Locale::get()->setDataQueryParam([
+            'FluentObjectID' => $this->owner->ID,
+            'FluentObjectClass' => get_class($this->owner)
+        ]);
     }
 
     /**
@@ -61,8 +62,10 @@ trait FluentObjectTrait
      * @param SQLSelect $query
      * @param DataQuery $dataQuery
      */
-    public function augmentDataQueryCreation(SQLSelect $query, DataQuery $dataQuery)
-    {
+    public function augmentDataQueryCreation(
+        SQLSelect $query,
+        DataQuery $dataQuery
+    ) {
         $state = FluentState::singleton();
         $dataQuery
             ->setQueryParam('Fluent.Locale', $state->getLocale())
@@ -92,8 +95,8 @@ trait FluentObjectTrait
         /** @var GridFieldDataColumns $columns */
         $columns = $config->getComponentByType(GridFieldDataColumns::class);
         $summaryColumns = [
-            'Title'  => 'Title',
-            'Locale' => 'Locale',
+            'Title' => 'Title',
+            'Locale' => 'Locale'
         ];
 
         // Let extensions override columns
@@ -104,13 +107,18 @@ trait FluentObjectTrait
         $this->owner->extend('updateLocalisationTabConfig', $config);
 
         // Add gridfield to tab / fields
-        $gridField = GridField::create('RecordLocales', 'Locales', $this->LinkedLocales(), $config);
+        $gridField = GridField::create(
+            'RecordLocales',
+            'Locales',
+            $this->LinkedLocales(),
+            $config
+        );
         if ($fields->hasTabSet()) {
             $fields->addFieldToTab('Root.Locales', $gridField);
 
             $fields
                 ->fieldByName('Root.Locales')
-                ->setTitle(_t(__CLASS__ . '.TAB_LOCALISATION', 'Localisation'));
+                ->setTitle(_t(__TRAIT__ . '.TAB_LOCALISATION', 'Localisation'));
         } else {
             $fields->push($gridField);
         }
