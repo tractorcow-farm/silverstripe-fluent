@@ -41,8 +41,10 @@ trait FluentAdminTrait
      * @param FieldList            $actions
      * @param DataObject|Versioned $record
      */
-    protected function updateFluentActions(FieldList $actions, DataObject $record)
-    {
+    protected function updateFluentActions(
+        FieldList $actions,
+        DataObject $record
+    ) {
         // Check permissions for adding global actions
         if (!Permission::check(Locale::CMS_ACCESS_MULTI_LOCALE)) {
             return;
@@ -66,7 +68,7 @@ trait FluentAdminTrait
         $results = array_filter($results, function ($v) {
             return !is_null($v);
         });
-        $isArchived = ($results) ? min($results) : false;
+        $isArchived = $results ? min($results) : false;
         if ($isArchived) {
             return;
         }
@@ -75,47 +77,86 @@ trait FluentAdminTrait
         $locale = Locale::getCurrentLocale();
 
         // Build root tabset that makes up the menu
-        $rootTabSet = TabSet::create('FluentMenu')
-            ->setTemplate('FluentAdminTabSet');
+        $rootTabSet = TabSet::create('FluentMenu')->setTemplate(
+            'FluentAdminTabSet'
+        );
 
-        $rootTabSet->addExtraClass('ss-ui-action-tabset action-menus fluent-actions-menu noborder');
+        $rootTabSet->addExtraClass(
+            'ss-ui-action-tabset action-menus fluent-actions-menu noborder'
+        );
 
         // Add menu button
         $moreOptions = Tab::create(
             'FluentMenuOptions',
-            'Localisation'
+            _t(__TRAIT__ . '.Localisation', 'Localisation')
         );
         $moreOptions->addExtraClass('popover-actions-simulate');
         $rootTabSet->push($moreOptions);
 
         // Add menu items
         $moreOptions->push(
-            FormAction::create('clearFluent', "Clear from all except '{$locale->getTitle()}'")
-                ->addExtraClass('btn-secondary')
+            FormAction::create(
+                'clearFluent',
+                _t(
+                    __TRAIT__ . '.Label_clearFluent',
+                    "Clear from all except '{title}'",
+                    [
+                        'title' => $locale->getTitle()
+                    ]
+                )
+            )->addExtraClass('btn-secondary')
         );
         $moreOptions->push(
-            FormAction::create('copyFluent', "Copy '{$locale->getTitle()}' to other locales")
-                ->addExtraClass('btn-secondary')
+            FormAction::create(
+                'copyFluent',
+                _t(
+                    __TRAIT__ . '.Label_copyFluent',
+                    "Copy '{title}' to other locales",
+                    [
+                        'title' => $locale->getTitle()
+                    ]
+                )
+            )->addExtraClass('btn-secondary')
         );
 
         // Versioned specific items
         if ($record->hasExtension(Versioned::class)) {
             $moreOptions->push(
-                FormAction::create('unpublishFluent', 'Unpublish (all locales)')
-                    ->addExtraClass('btn-secondary')
+                FormAction::create(
+                    'unpublishFluent',
+                    _t(
+                        __TRAIT__ . '.Label_unpublishFluent',
+                        'Unpublish (all locales)'
+                    )
+                )->addExtraClass('btn-secondary')
             );
             $moreOptions->push(
-                FormAction::create('archiveFluent', 'Unpublish and Archive (all locales)')
-                    ->addExtraClass('btn-outline-danger')
+                FormAction::create(
+                    'archiveFluent',
+                    _t(
+                        __TRAIT__ . '.Label_archiveFluent',
+                        'Unpublish and Archive (all locales)'
+                    )
+                )->addExtraClass('btn-outline-danger')
             );
             $moreOptions->push(
-                FormAction::create('publishFluent', 'Save & Publish (all locales)')
-                    ->addExtraClass('btn-primary')
+                FormAction::create(
+                    'publishFluent',
+                    _t(
+                        __TRAIT__ . '.Label_publishFluent',
+                        'Save & Publish (all locales)'
+                    )
+                )->addExtraClass('btn-primary')
             );
         } else {
             $moreOptions->push(
-                FormAction::create('deleteFluent', 'Delete (all locales)')
-                    ->addExtraClass('btn-outline-danger')
+                FormAction::create(
+                    'deleteFluent',
+                    _t(
+                        __TRAIT__ . '.Label_deleteFluent',
+                        'Delete (all locales)'
+                    )
+                )->addExtraClass('btn-outline-danger')
             );
         }
 
@@ -124,13 +165,29 @@ trait FluentAdminTrait
         if ($record->hasExtension(FluentFilteredExtension::class)) {
             if ($record->isAvailableInLocale($locale)) {
                 $moreOptions->push(
-                    FormAction::create('hideFluent', "Hide from '{$locale->getTitle()}'")
-                        ->addExtraClass('btn-outline-danger')
+                    FormAction::create(
+                        'hideFluent',
+                        _t(
+                            __TRAIT__ . '.Label_hideFluent',
+                            "Hide from '{title}'",
+                            [
+                                'title' => $locale->getTitle()
+                            ]
+                        )
+                    )->addExtraClass('btn-outline-danger')
                 );
             } else {
                 $moreOptions->push(
-                    FormAction::create('showFluent', "Show in '{$locale->getTitle()}'")
-                        ->addExtraClass('btn-outline-primary')
+                    FormAction::create(
+                        'showFluent',
+                        _t(
+                            __TRAIT__ . '.Label_showFluent',
+                            "Show in '{title}'",
+                            [
+                                'title' => $locale->getTitle()
+                            ]
+                        )
+                    )->addExtraClass('btn-outline-primary')
                 );
             }
         }
@@ -149,7 +206,7 @@ trait FluentAdminTrait
     {
         // Check permissions for adding global actions
         if (!Permission::check(Locale::CMS_ACCESS_MULTI_LOCALE)) {
-            throw new HTTPResponse_Exception("Action not allowed", 403);
+            throw new HTTPResponse_Exception('Action not allowed', 403);
         }
 
         // loop over all stages
@@ -163,7 +220,10 @@ trait FluentAdminTrait
         $record->flushCache(true);
 
         // Loop over other Locales
-        $this->inEveryLocale(function (Locale $locale) use ($record, $originalLocale) {
+        $this->inEveryLocale(function (Locale $locale) use (
+            $record,
+            $originalLocale
+        ) {
             // Skip original locale
             if ($locale->ID == $originalLocale->ID) {
                 return;
@@ -177,7 +237,7 @@ trait FluentAdminTrait
         });
 
         $message = _t(
-            __CLASS__ . '.ClearAllNotice',
+            __TRAIT__ . '.ClearAllNotice',
             "All localisations have been cleared for '{title}'.",
             ['title' => $record->Title]
         );
@@ -198,7 +258,7 @@ trait FluentAdminTrait
     {
         // Check permissions for adding global actions
         if (!Permission::check(Locale::CMS_ACCESS_MULTI_LOCALE)) {
-            throw new HTTPResponse_Exception("Action not allowed", 403);
+            throw new HTTPResponse_Exception('Action not allowed', 403);
         }
 
         // Write current record to every other stage
@@ -216,7 +276,7 @@ trait FluentAdminTrait
         });
 
         $message = _t(
-            __CLASS__ . '.CopyNotice',
+            __TRAIT__ . '.CopyNotice',
             "Copied '{title}' to all other locales.",
             ['title' => $record->Title]
         );
@@ -237,7 +297,7 @@ trait FluentAdminTrait
     {
         // Check permissions for adding global actions
         if (!Permission::check(Locale::CMS_ACCESS_MULTI_LOCALE)) {
-            throw new HTTPResponse_Exception("Action not allowed", 403);
+            throw new HTTPResponse_Exception('Action not allowed', 403);
         }
 
         // Get the record
@@ -250,7 +310,7 @@ trait FluentAdminTrait
         });
 
         $message = _t(
-            __CLASS__ . '.UnpublishNotice',
+            __TRAIT__ . '.UnpublishNotice',
             "Unpublished '{title}' from all locales.",
             ['title' => $record->Title]
         );
@@ -271,7 +331,7 @@ trait FluentAdminTrait
     {
         // Check permissions for adding global actions
         if (!Permission::check(Locale::CMS_ACCESS_MULTI_LOCALE)) {
-            throw new HTTPResponse_Exception("Action not allowed", 403);
+            throw new HTTPResponse_Exception('Action not allowed', 403);
         }
 
         // Get the record
@@ -300,7 +360,7 @@ trait FluentAdminTrait
         $policy->delete($record);
 
         $message = _t(
-            __CLASS__ . '.ArchiveNotice',
+            __TRAIT__ . '.ArchiveNotice',
             "Archived '{title}' and all of its localisations.",
             ['title' => $record->Title]
         );
@@ -321,7 +381,7 @@ trait FluentAdminTrait
     {
         // Check permissions for adding global actions
         if (!Permission::check(Locale::CMS_ACCESS_MULTI_LOCALE)) {
-            throw new HTTPResponse_Exception("Action not allowed", 403);
+            throw new HTTPResponse_Exception('Action not allowed', 403);
         }
 
         // Get the record
@@ -348,7 +408,7 @@ trait FluentAdminTrait
         $policy->delete($record);
 
         $message = _t(
-            __CLASS__ . '.DeleteNotice',
+            __TRAIT__ . '.DeleteNotice',
             "Deleted '{title}' and all of its localisations.",
             ['title' => $record->Title]
         );
@@ -356,7 +416,6 @@ trait FluentAdminTrait
         $record->flushCache(true);
         return $this->actionComplete($form, $message);
     }
-
 
     /**
      * @param array $data
@@ -369,7 +428,7 @@ trait FluentAdminTrait
     {
         // Check permissions for adding global actions
         if (!Permission::check(Locale::CMS_ACCESS_MULTI_LOCALE)) {
-            throw new HTTPResponse_Exception("Action not allowed", 403);
+            throw new HTTPResponse_Exception('Action not allowed', 403);
         }
 
         // Get the record
@@ -393,7 +452,7 @@ trait FluentAdminTrait
         });
 
         $message = _t(
-            __CLASS__ . '.PublishNotice',
+            __TRAIT__ . '.PublishNotice',
             "Published '{title}' across all locales.",
             ['title' => $record->Title]
         );
@@ -412,7 +471,7 @@ trait FluentAdminTrait
     {
         // Check permissions for adding global actions
         if (!Permission::check(Locale::CMS_ACCESS_MULTI_LOCALE)) {
-            throw new HTTPResponse_Exception("Action not allowed", 403);
+            throw new HTTPResponse_Exception('Action not allowed', 403);
         }
 
         // Show record
@@ -423,11 +482,11 @@ trait FluentAdminTrait
         $record->FilteredLocales()->add($locale);
 
         $message = _t(
-            __CLASS__ . '.ShowNotice',
+            __TRAIT__ . '.ShowNotice',
             "Record '{title}' is now visible in {locale}",
             [
-                'title'  => $record->Title,
-                'locale' => $locale->Title,
+                'title' => $record->Title,
+                'locale' => $locale->Title
             ]
         );
 
@@ -445,7 +504,7 @@ trait FluentAdminTrait
     {
         // Check permissions for adding global actions
         if (!Permission::check(Locale::CMS_ACCESS_MULTI_LOCALE)) {
-            throw new HTTPResponse_Exception("Action not allowed", 403);
+            throw new HTTPResponse_Exception('Action not allowed', 403);
         }
 
         // Show record
@@ -456,11 +515,11 @@ trait FluentAdminTrait
         $record->FilteredLocales()->remove($locale);
 
         $message = _t(
-            __CLASS__ . '.HideNotice',
+            __TRAIT__ . '.HideNotice',
             "Record '{title}' is now hidden in {locale}",
             [
-                'title'  => $record->Title,
-                'locale' => $locale->Title,
+                'title' => $record->Title,
+                'locale' => $locale->Title
             ]
         );
 
@@ -476,7 +535,9 @@ trait FluentAdminTrait
     protected function inEveryLocale($doSomething)
     {
         foreach (Locale::getCached() as $locale) {
-            FluentState::singleton()->withState(function (FluentState $newState) use ($doSomething, $locale) {
+            FluentState::singleton()->withState(function (
+                FluentState $newState
+            ) use ($doSomething, $locale) {
                 $newState->setLocale($locale->getLocale());
                 $doSomething($locale);
             });
@@ -492,7 +553,10 @@ trait FluentAdminTrait
     {
         // For each locale / stage, delete content
         foreach ([Versioned::LIVE, Versioned::DRAFT] as $stage) {
-            Versioned::withVersionedMode(function () use ($doSomething, $stage) {
+            Versioned::withVersionedMode(function () use (
+                $doSomething,
+                $stage
+            ) {
                 Versioned::set_stage($stage);
                 // Set current locale
                 $doSomething($stage);
