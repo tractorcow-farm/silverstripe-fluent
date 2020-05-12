@@ -27,7 +27,10 @@ trait FluentBadgeTrait
         }
 
         // Add fluent badge before any existing badges
-        $newBadge = DBField::create_field('HTMLFragment', $fluentBadge . $badgeField);
+        $newBadge = DBField::create_field(
+            'HTMLFragment',
+            $fluentBadge . $badgeField
+        );
         return $newBadge;
     }
 
@@ -45,16 +48,14 @@ trait FluentBadgeTrait
             return null;
         }
         // Must have at least one fluent extension
-        if (!$record->has_extension(FluentExtension::class)
-            && !$record->has_extension(FluentFilteredExtension::class)
+        if (
+            !$record->has_extension(FluentExtension::class) &&
+            !$record->has_extension(FluentFilteredExtension::class)
         ) {
             return null;
         }
         $badge = $this->generateBadgeHTML($record, $currentLocale);
-        return DBField::create_field(
-            'HTMLFragment',
-            $badge
-        );
+        return DBField::create_field('HTMLFragment', $badge);
     }
 
     /**
@@ -63,8 +64,11 @@ trait FluentBadgeTrait
      * @param array $extraProperties
      * @return string
      */
-    protected function generateBadgeHTML(DataObject $record, $locale, $extraProperties = [])
-    {
+    protected function generateBadgeHTML(
+        DataObject $record,
+        $locale,
+        $extraProperties = []
+    ) {
         $info = new RecordLocale($record, $locale);
 
         // Build new badge
@@ -72,27 +76,39 @@ trait FluentBadgeTrait
         if ($info->IsPublished()) {
             // If the object has been localised in the current locale, show a "localised" state
             $badgeClasses[] = 'fluent-badge--default';
-            $tooltip = _t(__CLASS__ . '.BadgePublished', 'Published in {locale}', [
-                'locale' => $locale->getTitle(),
-            ]);
+            $tooltip = _t(
+                __TRAIT__ . '.BadgePublished',
+                'Published in {locale}',
+                [
+                    'locale' => $locale->getTitle()
+                ]
+            );
         } elseif ($info->IsDraft()) {
             // Otherwise the state is that it hasn't yet been localised in the current locale, so is "invisible"
             $badgeClasses[] = 'fluent-badge--localised';
-            $tooltip = _t(__CLASS__ . '.BadgeDraft', 'Saved but not visible in {locale}', [
-                'locale' => $locale->getTitle(),
-            ]);
+            $tooltip = _t(
+                __TRAIT__ . '.BadgeDraft',
+                'Saved but not visible in {locale}',
+                [
+                    'locale' => $locale->getTitle()
+                ]
+            );
         } else {
             // Otherwise the state is that it hasn't yet been localised in the current locale, so is "invisible"
             $badgeClasses[] = 'fluent-badge--invisible';
-            $tooltip = _t(__CLASS__ . '.BaggeInvisible', '{type} is not visible in this locale', [
-                'type' => $record->i18n_singular_name(),
-            ]);
+            $tooltip = _t(
+                __TRAIT__ . '.BaggeInvisible',
+                '{type} is not visible in this locale',
+                [
+                    'type' => $record->i18n_singular_name()
+                ]
+            );
         }
 
         $attributes = array_merge(
             [
                 'class' => implode(' ', $badgeClasses),
-                'title' => $tooltip,
+                'title' => $tooltip
             ],
             $extraProperties
         );

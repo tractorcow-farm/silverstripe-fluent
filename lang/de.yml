@@ -7,6 +7,8 @@ de:
     BadgeLocalised: '{type} ist nicht sichtbar in diesem Gebietsschema'
   TractorCow\Fluent\Extension\FluentExtension:
     FLUENT_ICON_TOOLTIP: 'Übersetzbares Feld'
+    COPY_FROM: 'In {locale} von kopieren:'
+    COPY_TO: 'Von {locale} in kopieren:'
   TractorCow\Fluent\Extension\FluentFilteredExtension:
     FILTERED_LOCALES: 'Wird in folgenden Gebietsschemata angezeigt'
     LOCALEFILTEREDHELP: 'Diese Seite ist nicht sichbar in diesem Gebietsschema'
@@ -67,3 +69,11 @@ de:
     Label_deleteFluent: 'Löschen (alle Sprachen)'
     Label_hideFluent: "In '{title}' verstecken"
     Label_showFluent: "In '{title}' anzeigen"
+
+  TractorCow\Fluent\Extension\Traits\FluentBadgeTrait:
+    BadgePublished: 'In {locale} veröffentlicht'
+    BadgeDraft: 'Als Entwurf in {locale} gespeichert'
+    BaggeInvisible: '{type} ist in dieser Sprache nicht sichtbar'
+
+  TractorCow\Fluent\Extension\Traits\FluentObjectTrait:
+    TAB_LOCALISATION: 'Übersetzungen'
