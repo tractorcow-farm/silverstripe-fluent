@@ -455,7 +455,7 @@ class Locale extends DataObject implements PermissionProvider
      *
      * @param string|null|true $domain If provided, locales for the given domain will be returned.
      *                                 If true, then the current state domain will be used (if in domain mode).
-     * @return ArrayList
+     * @return ArrayList|Locale[]
      */
     public static function getLocales($domain = null)
     {

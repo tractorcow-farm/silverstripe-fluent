@@ -184,7 +184,7 @@ class Domain extends DataObject
     /**
      * Get locales for this domain
      *
-     * @return ArrayList
+     * @return ArrayList|Locale[]
      */
     public function getLocales()
     {

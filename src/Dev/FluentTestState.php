@@ -1,8 +1,10 @@
 <?php
+
 namespace TractorCow\Fluent\Dev;
 
 use SilverStripe\Dev\SapphireTest;
 use SilverStripe\Dev\State\TestState;
+use TractorCow\Fluent\Model\Domain;
 use TractorCow\Fluent\Model\Locale;
 
 class FluentTestState implements TestState
@@ -15,7 +17,7 @@ class FluentTestState implements TestState
     public function setUp(SapphireTest $test)
     {
         // Clear locale static caching between tests.
-        Locale::clearCached();
+        $this->flushCaches();
     }
 
     /**
@@ -25,6 +27,7 @@ class FluentTestState implements TestState
      */
     public function tearDown(SapphireTest $test)
     {
+        $this->flushCaches();
     }
 
     /**
@@ -35,7 +38,7 @@ class FluentTestState implements TestState
     public function setUpOnce($class)
     {
         // Clear locale static caching between tests.
-        Locale::clearCached();
+        $this->flushCaches();
     }
 
     /**
@@ -45,5 +48,15 @@ class FluentTestState implements TestState
      */
     public function tearDownOnce($class)
     {
+        $this->flushCaches();
+    }
+
+    /**
+     * Flush all caches
+     */
+    protected function flushCaches(): void
+    {
+        Locale::clearCached();
+        Domain::clearCached();
     }
 }

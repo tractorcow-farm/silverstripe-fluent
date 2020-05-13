@@ -302,14 +302,3 @@ on the session in the active HTTPRequest via a \_config.php file, or add a highe
 middleware that always starts the session ensuring it runs before `DetectLocaleMiddleware`.
 Be aware that prematurely starting sessions may complicate HTTP caching in your website.
 
-When a visitor lands on the home page for the first time,
-Fluent can also attempt to detect that user's locale based
-on the `Accept-Language` http headers sent.
-
-This functionality can interfere with certain applications, such as Facebook Open Graph tools, so it
-is turned off by default. To turn it on set the below setting:
-
-```yaml
-TractorCow\Fluent\Extension\FluentDirectorExtension:
-  detect_locale: true
-```

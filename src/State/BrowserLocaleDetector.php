@@ -15,11 +15,6 @@ class BrowserLocaleDetector implements LocaleDetector
     use Extensible;
     use Injectable;
 
-    public function __construct()
-    {
-        $this->constructExtensions();
-    }
-
     /**
      * Determines the locale best matching the given list of browser locales
      *

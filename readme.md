@@ -48,6 +48,7 @@ localisations, or being a part of the contributing team, please see
 ## Documentation
 
  * [Configuration](docs/en/configuration.md)
+ * [Locale Detection](docs/en/locale-detection.md)
  * [Installation](docs/en/installation.md)
  * [Working with DataObjects](docs/en/dataobjects.md)
  * [Deployment under multiple domains](docs/en/domain-configuration.md)
