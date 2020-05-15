@@ -283,10 +283,12 @@ class DetectLocaleMiddleware implements HTTPMiddleware
 
         // If the current domain has exactly one locale, the locale is non-ambiguous
         $locales = Locale::getCached()->filter('DomainID', $domainObj->ID);
-        /** @var Locale $localeObject */
-        $localeObject = $locales->first();
-        if ($localeObject) {
-            return $localeObject->getLocale();
+        if ($locales->count() == 1) {
+            /** @var Locale $localeObject */
+            $localeObject = $locales->first();
+            if ($localeObject) {
+                return $localeObject->getLocale();
+            }
         }
 
         return null;
