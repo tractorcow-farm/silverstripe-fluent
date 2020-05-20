@@ -13,6 +13,13 @@
                 <changefreq>$ChangeFrequency</changefreq><% end_if %>
             <% if $GooglePriority %>
                 <priority>$GooglePriority</priority><% end_if %>
+            <% if $LinkToXDefault %>
+                <xhtml:link
+                        rel="alternate"
+                        hreflang="x-default"
+                        href="{$absoluteBaseURL.ATT}"
+                />
+            <% end_if %>
             <% if $Locales %><% loop $Locales %><% if $LinkingMode != 'invalid' %>
                 <xhtml:link
                         rel="alternate"
