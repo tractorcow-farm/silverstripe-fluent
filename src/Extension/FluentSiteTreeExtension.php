@@ -50,6 +50,31 @@ class FluentSiteTreeExtension extends FluentVersionedExtension
     }
 
     /**
+     * If this is the site home page, but still has it's own non-root url,
+     * make sure we treat the root as x-default.
+     *
+     * @link https://github.com/tractorcow-farm/silverstripe-fluent/blob/master/docs/en/configuration.md#default-locale-options
+     *
+     * @return bool
+     */
+    public function getLinkToXDefault()
+    {
+        // If we disable the prefix for the default locale, this will be the default instead
+        if (FluentDirectorExtension::config()->get('disable_default_prefix')) {
+            return false;
+        }
+
+        // If the current domain only has one locale, there is no x-default
+        $localeObj = $this->getRecordLocale();
+        if ($localeObj && $localeObj->getIsOnlyLocale()) {
+            return false;
+        }
+
+        // Only link to x-default on home page
+        return $this->owner->URLSegment === RootURLController::get_homepage_link();
+    }
+
+    /**
      * Add the current locale's URL segment to the start of the URL
      *
      * @param string &$base
@@ -79,11 +104,6 @@ class FluentSiteTreeExtension extends FluentVersionedExtension
 
         // Check if this locale is the default for its own domain
         if ($localeObj->getIsDefault()) {
-            // For home page in the default locale, do not alter home URL
-            if ($base === null || $base === RootURLController::get_homepage_link()) {
-                return;
-            }
-
             // If default locale shouldn't have prefix, then don't add prefix
             if (FluentDirectorExtension::config()->get('disable_default_prefix')) {
                 return;

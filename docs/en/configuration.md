@@ -38,6 +38,31 @@ displayed in the default locale.
 
 `TractorCow\Fluent\Extension\FluentDirectorExtension.disable_default_prefix` (default: `false`)
 
+This option will allow users to exclude the default locale urlsegment from pages in the default locale.
+
+*Default behaviour (disabled)*
+
+If this is left at the default, false, then the default locale will always be prefixed with the
+urlsegment of that locale.
+
+In addition to this, another hreflang will be generated for the root url `/` with the hreflange="x-default".
+
+E.g.
+
+```html
+<link rel="alternate" hreflang="x-default" href="https://mysite.com/" />
+<link rel="alternate" hreflang="en-nz" href="https://mysite.com/nz/" />
+<link rel="alternate" hreflang="en-au" href="https://mysite.com/au/" />
+```
+
+It is recommended to leave this setting at the default false in order to ensure the correct
+locale is set for every page, but in some cases (especially when upgrading websites) it
+may be better to keep existing urls for the default locale intact.
+
+Note: x-default is only added for the home pages. Other pages won't have x-default.
+
+*Enabled behaviour*
+
 If you prefer to keep the prefix off from all links in the default locale, you can set this option via
 YML config. When this is enabled, the prefix will only be used (prepended) in links to non-default locales.
 
@@ -51,12 +76,16 @@ TractorCow\Fluent\Extension\FluentDirectorExtension:
   disable_default_prefix: true
 ```
 
-If this is left at the default, false, then the prefix will only be omitted for the
-home page for the default locale, instead of all pages.
+E.g.
 
-It is recommended to leave this on in order to ensure the correct locale is set for every page,
-but in some cases (especially when upgrading websites) it may be better to keep existing urls
-for the default locale intact.
+```html
+<link rel="alternate" hreflang="en-nz" href="https://mysite.com/" />
+<link rel="alternate" hreflang="en-au" href="https://mysite.com/au/" />
+```
+
+Note: If you still wish to use x-default for the global locale, you can assign x-default
+to the global locale via the CMS. However, this affects all pages, not just the home page.
+
 
 ## Field localisation configuration
 

@@ -48,7 +48,12 @@ class FluentDirectorExtension extends Extension
     private static $query_param = 'l';
 
     /**
-     * Allow the prefix for the default {@link Locale} (IsDefault = 1) to be disabled
+     * Allow the prefix for the default {@link Locale} (IsDefault = 1) to be disabled.
+     *
+     * If this is true, the `/' url will be the default locale. Note: You can also set this locale to use x-default
+     * via the CMS admin.
+     *
+     * If this is false, the `/` url will be 'x-default', and the default locale home page will be /urlsegment/.
      *
      * @config
      * @var bool
@@ -91,9 +96,11 @@ class FluentDirectorExtension extends Extension
             return;
         }
 
-        // If we do not wish to detect the locale automatically, fix the home page route
-        // to the default locale for this domain.
-        if (!static::config()->get('detect_locale')) {
+        // If we don't want to detect home page locale, or the home page only has one candidate locale anyway,
+        if (!static::config()->get('detect_locale')
+            || $defaultLocale->getIsOnlyLocale()
+            || FluentDirectorExtension::config()->get('disable_default_prefix')
+        ) {
             // Respect existing home controller
             $originalHomeRole = $originalRules[''] ?? null;
             if ($originalHomeRole) {
