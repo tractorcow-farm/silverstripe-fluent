@@ -114,7 +114,7 @@ class FluentSiteTreeExtensionTest extends SapphireTest
     {
         return [
             // Non-domain tests
-            [null, 'de_DE', false, 'home', '/'],
+            [null, 'de_DE', false, 'home', '/german/'],
             [null, 'de_DE', false, 'about', '/german/about-us/'],
             [null, 'de_DE', false, 'staff', '/german/about-us/my-staff/'],
             // Since de_DE is the only locale on the www.example.de domain, ensure that the locale
@@ -131,7 +131,7 @@ class FluentSiteTreeExtensionTest extends SapphireTest
             ['www.example.com', 'es_ES', false, 'about', '/es_ES/about-us/'],
             ['www.example.com', 'es_ES', false, 'staff', '/es_ES/about-us/my-staff/'],
             //  - en_US default locale
-            ['www.example.com', 'en_US', false, 'home', '/'],
+            ['www.example.com', 'en_US', false, 'home', '/usa/'],
             ['www.example.com', 'en_US', false, 'about', '/usa/about-us/'],
             ['www.example.com', 'en_US', false, 'staff', '/usa/about-us/my-staff/'],
             //  - en_US default locale, but with disable_default_prefix on
