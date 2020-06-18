@@ -75,7 +75,7 @@ class CopyLocaleAction extends BaseAction
      */
     public function handleAction(GridField $gridField, $actionName, $arguments, $data)
     {
-        if (!in_array($actionName, ['fluentcopyto', 'fluentcopyfrom'])) {
+        if (!$this->validateAction($actionName, $arguments['FromLocale'], $arguments['ToLocale'])) {
             return;
         }
 
@@ -185,5 +185,26 @@ class CopyLocaleAction extends BaseAction
             return $this->isTo ? self::COPY_TO : self::COPY_FROM;
         }
         return null;
+    }
+
+    /**
+     * Ensures that action is executed only once and not once per per locale
+     *
+     * @param string $actionName
+     * @param string $fromLocale
+     * @param string $toLocale
+     * @return bool
+     */
+    private function validateAction($actionName, $fromLocale, $toLocale)
+    {
+        if ($actionName === 'fluentcopyto' && $this->otherLocale === $fromLocale) {
+            return true;
+        }
+
+        if ($actionName === 'fluentcopyfrom' && $this->otherLocale === $toLocale) {
+            return true;
+        }
+
+        return false;
     }
 }
