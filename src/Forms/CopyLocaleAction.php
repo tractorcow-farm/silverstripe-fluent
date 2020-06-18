@@ -197,11 +197,11 @@ class CopyLocaleAction extends BaseAction
      */
     private function validateAction($actionName, $fromLocale, $toLocale)
     {
-        if ($actionName === 'fluentcopyto' && $this->otherLocale === $fromLocale) {
+        if ($actionName === 'fluentcopyto' && $this->otherLocale === $toLocale) {
             return true;
         }
 
-        if ($actionName === 'fluentcopyfrom' && $this->otherLocale === $toLocale) {
+        if ($actionName === 'fluentcopyfrom' && $this->otherLocale === $fromLocale) {
             return true;
         }
 
