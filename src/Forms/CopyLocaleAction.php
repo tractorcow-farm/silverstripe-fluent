@@ -106,6 +106,10 @@ class CopyLocaleAction extends BaseAction
                 }
                 $destinationState->setLocale($toLocale->getLocale());
 
+                $fromLocale = $arguments['FromLocale'];
+                $toLocale = $arguments['ToLocale'];
+                $record->invokeWithExtensions('onBeforeCopyLocale', $fromLocale, $toLocale);
+
                 // Write
                 /** @var DataObject|Versioned $record */
                 if ($record->hasExtension(Versioned::class)) {
@@ -114,6 +118,8 @@ class CopyLocaleAction extends BaseAction
                     $record->forceChange();
                     $record->write();
                 }
+
+                $record->invokeWithExtensions('onAfterCopyLocale', $fromLocale, $toLocale);
             });
         });
     }
