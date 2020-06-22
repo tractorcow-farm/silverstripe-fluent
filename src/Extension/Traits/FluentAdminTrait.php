@@ -55,6 +55,10 @@ trait FluentAdminTrait
             return;
         }
 
+        if (!$record->config()->get('batch_actions_enabled')) {
+            return;
+        }
+
         // Skip if record isn't saved
         if (!$record->isInDB()) {
             return;

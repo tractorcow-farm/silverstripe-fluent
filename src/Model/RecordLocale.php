@@ -260,7 +260,7 @@ class RecordLocale extends ViewableData
      *
      * @return bool
      */
-    public function IsPublished()
+    public function IsLive()
     {
         // If object is filtered, object is not available (regardless of published status)
         if (!$this->IsVisible()) {
@@ -278,6 +278,35 @@ class RecordLocale extends ViewableData
         // If frontend publishing is not required for localisation, no further checks required
         if (!$record->config()->get('frontend_publish_required')) {
             return true;
+        }
+
+        // Check if versioned item is published
+        if ($record->hasExtension(FluentVersionedExtension::class)) {
+            return $record->isPublishedInLocale($this->getLocale());
+        }
+
+        // Check if un-versioned item is saved
+        if ($record->hasExtension(FluentExtension::class)) {
+            return $record->existsInLocale($this->getLocale());
+        }
+
+        return true;
+    }
+
+    /**
+     * Check for published and localised record
+     * useful when determining what data is available in which locale
+     *
+     * @return bool
+     */
+    public function IsPublished()
+    {
+        /** @var DataObject|FluentExtension|FluentVersionedExtension|Versioned $record */
+        $record = $this->getOriginalRecord();
+
+        // If versioned, record must be published
+        if ($record->hasExtension(Versioned::class) && !$record->isPublished()) {
+            return false;
         }
 
         // Check if versioned item is published
@@ -314,5 +343,49 @@ class RecordLocale extends ViewableData
         }
 
         return true;
+    }
+
+    /**
+     * Check if a record is modified
+     * useful to indicate that record has changes that need publishing
+     *
+     * @return bool
+     */
+    public function IsModified()
+    {
+        if (!$this->IsPublished()) {
+            return false;
+        }
+
+        /** @var DataObject|FluentVersionedExtension $record */
+        $record = $this->getOriginalRecord();
+
+        return $record->stagesDifferInLocale($this->getLocale());
+    }
+
+    /**
+     * Get the locale which is the source of content for this record
+     *
+     * @return Locale|null
+     */
+    public function SourceLocale()
+    {
+        /** @var DataObject|FluentExtension $record */
+        $record = $this->getOriginalRecord();
+
+        if ($record->existsInLocale($this->getLocale())) {
+            return $this->getLocaleObject();
+        }
+
+        /** @var Locale $fallback */
+        foreach ($this->getLocaleObject()->Fallbacks() as $fallback) {
+            if (!$record->existsInLocale($fallback->Locale)) {
+                continue;
+            }
+
+            return $fallback;
+        }
+
+        return null;
     }
 }

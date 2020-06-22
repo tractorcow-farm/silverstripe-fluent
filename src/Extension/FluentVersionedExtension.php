@@ -326,6 +326,83 @@ class FluentVersionedExtension extends FluentExtension implements Resettable
     }
 
     /**
+     * Check if this record has modifications in this locale
+     * Fluent friendly version of @see Versioned::stagesDiffer()
+     *
+     * @param string|null $locale
+     * @return bool
+     */
+    public function stagesDifferInLocale($locale = null)
+    {
+        $record = $this->owner;
+        $id = $record->ID ?: $record->OldID;
+        $class = get_class($record);
+
+        // Need to check if it's versioned
+        if (!$record->hasExtension(Versioned::class)) {
+            return false;
+        }
+
+        // Need to check that it has stages and is not new
+        if (!$id || !$record->hasStages()) {
+            return false;
+        }
+
+        // Need to check that it is actually localised
+        if (!$record->hasExtension(FluentExtension::class)) {
+            return false;
+        }
+
+        // Need to check that the localised version is versioned
+        if (!$record->hasExtension(FluentVersionedExtension::class)) {
+            return false;
+        }
+
+        $locale = $locale ?: FluentState::singleton()->getLocale();
+
+        // Potentially no Locales have been created in the system yet.
+        if (!$locale) {
+            return false;
+        }
+
+        $versionSuffix = FluentVersionedExtension::SUFFIX_VERSIONS;
+        $baseClass = DataObject::getSchema()->baseDataClass($class);
+        $stageTable = DataObject::getSchema()->tableName($baseClass);
+        $liveTable = $stageTable . $versionSuffix;
+        $stagedTable = $record->getLocalisedTable($stageTable) . $versionSuffix;
+
+        $query = <<<SQL
+SELECT SLV.Version
+FROM $stagedTable SLV
+INNER JOIN $liveTable STV
+    ON SLV.RecordID = STV.RecordID
+    AND SLV.Version = STV.Version
+WHERE SLV.RecordID = ?
+AND SLV.Locale = ?
+AND STV.WasPublished = ?
+ORDER BY SLV.Version DESC
+LIMIT 1
+SQL;
+
+        $draftVersion = DB::prepared_query($query, [
+            $id,
+            $locale,
+            0,
+        ])->value();
+
+        $liveVersion = DB::prepared_query($query, [
+            $id,
+            $locale,
+            1,
+        ])->value();
+
+        // When a object is published a draft version is also written
+        // The same is not true for drafts so we know a draft version that's
+        // higher than the live version means we have a true stage differs
+        return $draftVersion > $liveVersion;
+    }
+
+    /**
      * Check to see whether or not a record exists for a specific Locale in a specific stage.
      *
      * @param string $stage  Version stage
@@ -447,21 +524,53 @@ class FluentVersionedExtension extends FluentExtension implements Resettable
 
     public function updateLocalisationTabColumns(&$summaryColumns)
     {
-        $summaryColumns['IsDraft'] = [
-            'title'    => 'Saved',
+        $summaryColumns['Status'] = [
+            'title' => 'Status',
             'callback' => function (Locale $object) {
-                if ($object && $object->RecordLocale()) {
-                    return $object->RecordLocale()->IsDraft() ? 'Draft' : '';
+                if ($object->RecordLocale()) {
+                    $recordLocale = $object->RecordLocale();
+
+                    if ($recordLocale->IsModified()) {
+                        return 'Modified';
+                    }
+
+                    if ($recordLocale->IsPublished()) {
+                        return 'Published';
+                    }
+
+                    if ($recordLocale->IsDraft()) {
+                        return 'Draft';
+                    }
+
+                    return 'Not localised';
                 }
 
                 return '';
             }
         ];
-        $summaryColumns['IsPublished'] = [
-            'title'    => 'Published',
+
+        $summaryColumns['Source'] = [
+            'title' => 'Source',
+            'callback' => function (Locale $object) {
+                if ($object->RecordLocale()) {
+                    $sourceLocale = $object->RecordLocale()->SourceLocale();
+
+                    if ($sourceLocale) {
+                        return $sourceLocale->getLongTitle();
+                    }
+
+                    return 'No source';
+                }
+
+                return '';
+            }
+        ];
+
+        $summaryColumns['Live'] = [
+            'title' => 'Live',
             'callback' => function (Locale $object) {
                 if ($object && $object->RecordLocale()) {
-                    return $object->RecordLocale()->IsPublished() ? 'Live' : '';
+                    return $object->RecordLocale()->IsLive() ? 'Yes' : 'No';
                 }
 
                 return '';
