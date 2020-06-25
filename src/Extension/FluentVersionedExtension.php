@@ -348,7 +348,7 @@ class FluentVersionedExtension extends FluentExtension implements Resettable
             return false;
         }
 
-        $locale = $locale ?: FluentState::singleton()->getLocale();
+        $locale = $locale ?: $this->getRecordLocale()->Locale;
 
         // Potentially no Locales have been created in the system yet.
         if (!$locale) {
