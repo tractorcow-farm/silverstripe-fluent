@@ -1080,10 +1080,10 @@ class FluentExtension extends DataExtension
             'callback' => function (Locale $object) {
                 if ($object->RecordLocale()) {
                     if ($object->RecordLocale()->IsDraft()) {
-                        return 'Localised';
+                        return _t(self::class . '.LOCALISED', 'Localised');
                     }
 
-                    return 'Not localised';
+                    return _t(self::class . '.NOTLOCALISED', 'Not localised');
                 }
 
                 return '';
@@ -1100,7 +1100,7 @@ class FluentExtension extends DataExtension
                         return $sourceLocale->getLongTitle();
                     }
 
-                    return 'No source';
+                    return _t(self::class . '.NOSOURCE', 'No source');
                 }
 
                 return '';

@@ -257,13 +257,16 @@ class RecordLocale extends ViewableData
 
     /**
      * Check if record is visible on live
+     * Set $inLocale to true if this record must be published in the specified locale.
+     * If frontend_publish_required is false (and $inLocale is false) then this page is considered live.
      *
+     * @param bool $inLocale
      * @return bool
      */
-    public function IsLive()
+    public function IsPublished($inLocale = false)
     {
         // If object is filtered, object is not available (regardless of published status)
-        if (!$this->IsVisible()) {
+        if (!$inLocale && !$this->IsVisible()) {
             return false;
         }
 
@@ -276,37 +279,8 @@ class RecordLocale extends ViewableData
         }
 
         // If frontend publishing is not required for localisation, no further checks required
-        if (!$record->config()->get('frontend_publish_required')) {
+        if (!$inLocale && !$record->config()->get('frontend_publish_required')) {
             return true;
-        }
-
-        // Check if versioned item is published
-        if ($record->hasExtension(FluentVersionedExtension::class)) {
-            return $record->isPublishedInLocale($this->getLocale());
-        }
-
-        // Check if un-versioned item is saved
-        if ($record->hasExtension(FluentExtension::class)) {
-            return $record->existsInLocale($this->getLocale());
-        }
-
-        return true;
-    }
-
-    /**
-     * Check for published and localised record
-     * useful when determining what data is available in which locale
-     *
-     * @return bool
-     */
-    public function IsPublished()
-    {
-        /** @var DataObject|FluentExtension|FluentVersionedExtension|Versioned $record */
-        $record = $this->getOriginalRecord();
-
-        // If versioned, record must be published
-        if ($record->hasExtension(Versioned::class) && !$record->isPublished()) {
-            return false;
         }
 
         // Check if versioned item is published
@@ -346,19 +320,24 @@ class RecordLocale extends ViewableData
     }
 
     /**
-     * Check if a record is modified
+     * Check if a record is published, but modified on draft
      * useful to indicate that record has changes that need publishing
      *
      * @return bool
      */
-    public function IsModified()
+    public function StagesDiffer()
     {
-        if (!$this->IsPublished()) {
+        if (!$this->IsPublished(true)) {
             return false;
         }
 
         /** @var DataObject|FluentVersionedExtension $record */
         $record = $this->getOriginalRecord();
+
+        // Check if item is versioned
+        if (!$record->hasExtension(FluentVersionedExtension::class)) {
+            return false;
+        }
 
         return $record->stagesDifferInLocale($this->getLocale());
     }

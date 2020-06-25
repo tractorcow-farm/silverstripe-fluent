@@ -348,16 +348,6 @@ class FluentVersionedExtension extends FluentExtension implements Resettable
             return false;
         }
 
-        // Need to check that it is actually localised
-        if (!$record->hasExtension(FluentExtension::class)) {
-            return false;
-        }
-
-        // Need to check that the localised version is versioned
-        if (!$record->hasExtension(FluentVersionedExtension::class)) {
-            return false;
-        }
-
         $locale = $locale ?: FluentState::singleton()->getLocale();
 
         // Potentially no Locales have been created in the system yet.
@@ -371,16 +361,19 @@ class FluentVersionedExtension extends FluentExtension implements Resettable
         $liveTable = $stageTable . $versionSuffix;
         $stagedTable = $record->getLocalisedTable($stageTable) . $versionSuffix;
 
+        // notes:
+        // VL - Versions localised table
+        // V - Versions table
         $query = <<<SQL
-SELECT SLV.Version
-FROM $stagedTable SLV
-INNER JOIN $liveTable STV
-    ON SLV.RecordID = STV.RecordID
-    AND SLV.Version = STV.Version
-WHERE SLV.RecordID = ?
-AND SLV.Locale = ?
-AND STV.WasPublished = ?
-ORDER BY SLV.Version DESC
+SELECT "VL"."Version"
+FROM "$stagedTable" as "VL"
+INNER JOIN "$liveTable" as "V"
+    ON "VL"."RecordID" = "V"."RecordID"
+    AND "VL"."Version" = "V"."Version"
+WHERE "VL"."RecordID" = ?
+AND "VL"."Locale" = ?
+AND "V"."WasPublished" = ?
+ORDER BY "VL"."Version" DESC
 LIMIT 1
 SQL;
 
@@ -530,19 +523,19 @@ SQL;
                 if ($object->RecordLocale()) {
                     $recordLocale = $object->RecordLocale();
 
-                    if ($recordLocale->IsModified()) {
-                        return 'Modified';
+                    if ($recordLocale->StagesDiffer()) {
+                        return _t(self::class . '.MODIFIED', 'Modified');
                     }
 
-                    if ($recordLocale->IsPublished()) {
-                        return 'Published';
+                    if ($recordLocale->IsPublished(true)) {
+                        return _t(self::class . '.PUBLISHED', 'Published');
                     }
 
                     if ($recordLocale->IsDraft()) {
-                        return 'Draft';
+                        return _t(self::class . '.DRAFT', 'Draft');
                     }
 
-                    return 'Not localised';
+                    return _t(self::class . '.NOTLOCALISED', 'Not localised');
                 }
 
                 return '';
@@ -559,7 +552,7 @@ SQL;
                         return $sourceLocale->getLongTitle();
                     }
 
-                    return 'No source';
+                    return _t(self::class . '.NOSOURCE', 'No source');
                 }
 
                 return '';
@@ -570,7 +563,7 @@ SQL;
             'title' => 'Live',
             'callback' => function (Locale $object) {
                 if ($object && $object->RecordLocale()) {
-                    return $object->RecordLocale()->IsLive() ? 'Yes' : 'No';
+                    return $object->RecordLocale()->IsPublished() ? 'Yes' : 'No';
                 }
 
                 return '';

@@ -72,7 +72,7 @@ trait FluentBadgeTrait
 
         // Build new badge
         $badgeClasses = ['badge', 'fluent-badge'];
-        if ($info->IsLive()) {
+        if ($info->IsPublished()) {
             // If the object has been localised in the current locale, show a "localised" state
             $badgeClasses[] = 'fluent-badge--default';
             $tooltip = _t(
