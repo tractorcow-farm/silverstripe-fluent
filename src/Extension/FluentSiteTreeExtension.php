@@ -15,6 +15,7 @@ use SilverStripe\Forms\LiteralField;
 use SilverStripe\ORM\FieldType\DBHTMLText;
 use TractorCow\Fluent\Extension\Traits\FluentAdminTrait;
 use TractorCow\Fluent\Model\Locale;
+use TractorCow\Fluent\Model\RecordLocale;
 use TractorCow\Fluent\State\FluentState;
 
 // Soft dependency on CMS module
@@ -239,15 +240,25 @@ class FluentSiteTreeExtension extends FluentVersionedExtension
                 );
             }
         } else {
-            // If frontend publishing is *not* required, then we have two possibilities.
+            // If frontend publishing is *not* required, then we have multiple possibilities.
             if (!$this->isDraftedInLocale()) {
-                // Our content hasn't been drafted or published. If this Locale has a Fallback, then content might be
-                // getting inherited from that Fallback.
-                $message = _t(
-                    __CLASS__ . '.LOCALESTATUSFLUENTINHERITED',
-                    'Content for this page may be inherited from another locale. If you wish you make an ' .
-                    'independent copy of this page, please use one of the "Copy" actions provided.'
-                );
+                $info = RecordLocale::create($this->owner, Locale::getCurrentLocale());
+
+                // Our content hasn't been drafted or published.
+                if ($info->SourceLocale()) {
+                    // If this Locale has a Fallback, then content might be getting inherited from that Fallback.
+                    $message = _t(
+                        __CLASS__ . '.LOCALESTATUSFLUENTINHERITED',
+                        'Content for this page may be inherited from another locale. If you wish you make an ' .
+                        'independent copy of this page, please use one of the "Copy" actions provided.'
+                    );
+                } else {
+                    // This locale doesn't have any content source
+                    $message = _t(
+                        __CLASS__ . '.LOCALESTATUSFLUENTUNKNOWN',
+                        'No content is available for this page. Please localise this page or provide a locale fallback.'
+                    );
+                }
             } elseif (!$this->isPublishedInLocale()) {
                 // Our content has been saved to draft, but hasn't yet been published. That published content may be
                 // coming from a Fallback.

@@ -211,7 +211,7 @@ class FluentSiteTreeExtensionTest extends SapphireTest
         });
     }
 
-    public function testStatusMessageInherited()
+    public function testStatusMessageUnknown()
     {
         FluentState::singleton()->withState(function (FluentState $newState) {
             $newState
@@ -230,7 +230,7 @@ class FluentSiteTreeExtensionTest extends SapphireTest
             $statusMessage = $fields->fieldByName('LocaleStatusMessage');
 
             $this->assertNotNull($fields->fieldByName('LocaleStatusMessage'));
-            $this->assertContains('Content for this page may be inherited', $statusMessage->getContent());
+            $this->assertContains('No content is available for this page', $statusMessage->getContent());
         });
     }
 

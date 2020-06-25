@@ -68,38 +68,40 @@ trait FluentBadgeTrait
         $locale,
         $extraProperties = []
     ) {
-        $info = new RecordLocale($record, $locale);
+        $info = RecordLocale::create($record, $locale);
 
         // Build new badge
         $badgeClasses = ['badge', 'fluent-badge'];
-        if ($info->IsPublished()) {
+        if ($info->IsDraft()) {
             // If the object has been localised in the current locale, show a "localised" state
             $badgeClasses[] = 'fluent-badge--default';
             $tooltip = _t(
-                __TRAIT__ . '.BadgePublished',
-                'Published in {locale}',
+                __TRAIT__ . '.BadgeLocalised',
+                'Localised in {locale}',
                 [
                     'locale' => $locale->getTitle()
                 ]
             );
-        } elseif ($info->IsDraft()) {
-            // Otherwise the state is that it hasn't yet been localised in the current locale, so is "invisible"
+        } elseif ($info->SourceLocale()) {
+            // If object is inheriting content from another locale show the source
             $badgeClasses[] = 'fluent-badge--localised';
             $tooltip = _t(
-                __TRAIT__ . '.BadgeDraft',
-                'Saved but not visible in {locale}',
+                __TRAIT__ . '.BadgeInherited',
+                'Inherited from {locale}',
                 [
-                    'locale' => $locale->getTitle()
+                    'locale' => $info->SourceLocale()->getTitle()
                 ]
             );
         } else {
-            // Otherwise the state is that it hasn't yet been localised in the current locale, so is "invisible"
+            // Otherwise the object is missing a content source and needs to be remedied
+            // by either localising or seting up a locale fallback
             $badgeClasses[] = 'fluent-badge--invisible';
             $tooltip = _t(
                 __TRAIT__ . '.BaggeInvisible',
-                '{type} is not visible in this locale',
+                '{type} has no available content in {locale}, localise the {type} or provide a locale fallback',
                 [
-                    'type' => $record->i18n_singular_name()
+                    'type' => $record->i18n_singular_name(),
+                    'locale' => $locale->getTitle(),
                 ]
             );
         }
