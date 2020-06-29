@@ -870,6 +870,30 @@ class FluentExtension extends DataExtension
     }
 
     /**
+     * Get list of locales where record is localised in
+     *
+     * @return array
+     */
+    public function LocaleInstances()
+    {
+        $locales = [];
+
+        foreach (Locale::getCached() as $locale) {
+            /** @var Locale $locale */
+            $info = $this->owner->LocaleInformation($locale->getLocale());
+            $source = $info->SourceLocale();
+
+            if ($source->Locale !== $locale->Locale) {
+                continue;
+            }
+
+            $locales[] = $locale;
+        }
+
+        return $locales;
+    }
+
+    /**
      * Return the linking mode for the current locale and object
      *
      * @param string $locale
