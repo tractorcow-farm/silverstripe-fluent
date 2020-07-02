@@ -651,6 +651,16 @@ trait FluentAdminTrait
         $deleteAction
             ->setTitle(_t(FluentExtension::class . '.Unlocalise', 'Unlocalise'))
             ->removeExtraClass('font-icon-trash-bin')
-            ->addExtraClass('font-icon-translatable');
+            ->addExtraClass('font-icon-translatable')
+            ->setAttribute(
+                'title',
+                _t(
+                    FluentExtension::class . '.UnlocaliseTooltip',
+                    'Remove {name} from current locale',
+                    [
+                        'name' => $record->i18n_singular_name()
+                    ]
+                )
+            );
     }
 }
