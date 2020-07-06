@@ -36,7 +36,7 @@ class FluentTemplateGlobalProvider implements TemplateGlobalProvider
      *
      * @return Locale|null
      */
-    public static function getCurrentLocaleObject()
+    public static function getCurrentLocaleObject(): ?Locale
     {
         return Locale::getCurrentLocale();
     }

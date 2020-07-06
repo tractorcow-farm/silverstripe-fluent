@@ -2,7 +2,6 @@
 
 namespace TractorCow\Fluent\Extension;
 
-use SilverStripe\CMS\Controllers\CMSMain;
 use SilverStripe\CMS\Controllers\RootURLController;
 use SilverStripe\CMS\Forms\SiteTreeURLSegmentField;
 use SilverStripe\CMS\Model\SiteTree;
@@ -225,7 +224,7 @@ class FluentSiteTreeExtension extends FluentVersionedExtension
         // Update the state of publish action (if needed)
         $this->updatePublishState($actions);
 
-        // Updat unpublish and archive actions
+        // Update unpublish and archive actions
         $this->updateMoreOptionsActions($actions);
 
         // Add extra fluent menu
@@ -270,7 +269,7 @@ class FluentSiteTreeExtension extends FluentVersionedExtension
                 $info = RecordLocale::create($this->owner, Locale::getCurrentLocale());
 
                 // Our content hasn't been drafted or published.
-                if ($info->SourceLocale()) {
+                if ($info->getSourceLocale()) {
                     // If this Locale has a Fallback, then content might be getting inherited from that Fallback.
                     $message = _t(
                         __CLASS__ . '.LOCALESTATUSFLUENTINHERITED',
@@ -439,7 +438,7 @@ class FluentSiteTreeExtension extends FluentVersionedExtension
         // this is needed because the default interface looks
         // at the base record instead of the localised page
         $publishAction
-            ->setTitle(_t(SiteTree::class . '.BUTTONPUBLISHED', 'Published'))
+            ->setTitle(_t('SilverStripe\\CMS\\Model\\SiteTree.BUTTONPUBLISHED', 'Published'))
             ->removeExtraClass(
                 'btn-primary font-icon-rocket btn-outline-primary font-icon-tick'
             )
@@ -452,7 +451,7 @@ class FluentSiteTreeExtension extends FluentVersionedExtension
         // If staged and live is different we change the button to "Publish"
         // as the page hasn't been published
         $publishAction
-            ->setTitle(_t(SiteTree::class . '.BUTTONSAVEPUBLISH', 'Publish'))
+            ->setTitle(_t('SilverStripe\\CMS\\Model\\SiteTree.BUTTONSAVEPUBLISH', 'Publish'))
             ->addExtraClass('btn-primary font-icon-rocket')
             ->removeExtraClass('btn-outline-primary font-icon-tick');
     }
@@ -485,7 +484,7 @@ class FluentSiteTreeExtension extends FluentVersionedExtension
             return;
         }
 
-        $archiveAction->setTitle(_t(CMSMain::class . '.ARCHIVE', 'Archive'));
+        $archiveAction->setTitle(_t('SilverStripe\\CMS\\Controllers\\CMSMain.ARCHIVE', 'Archive'));
     }
 
     /**
@@ -493,7 +492,7 @@ class FluentSiteTreeExtension extends FluentVersionedExtension
      *
      * @param FieldList $actions
      */
-    protected function updateLocaliseActions(FieldList $actions)
+    protected function updateLocaliseActions(FieldList $actions): void
     {
         $owner = $this->owner;
 
@@ -517,7 +516,7 @@ class FluentSiteTreeExtension extends FluentVersionedExtension
      *
      * @param FieldList $actions
      */
-    protected function updateInformationPanel(FieldList $actions)
+    protected function updateInformationPanel(FieldList $actions): void
     {
         $owner = $this->owner;
 

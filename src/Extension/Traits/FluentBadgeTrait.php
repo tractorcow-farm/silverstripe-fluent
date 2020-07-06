@@ -82,14 +82,14 @@ trait FluentBadgeTrait
                     'locale' => $locale->getTitle()
                 ]
             );
-        } elseif ($info->SourceLocale()) {
+        } elseif ($info->getSourceLocale()) {
             // If object is inheriting content from another locale show the source
             $badgeClasses[] = 'fluent-badge--localised';
             $tooltip = _t(
                 __TRAIT__ . '.BadgeInherited',
                 'Inherited from {locale}',
                 [
-                    'locale' => $info->SourceLocale()->getTitle()
+                    'locale' => $info->getSourceLocale()->getTitle()
                 ]
             );
         } else {

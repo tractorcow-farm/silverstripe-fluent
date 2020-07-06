@@ -585,9 +585,9 @@ trait FluentAdminTrait
      * - not localised (save label)
      *
      * @param FieldList $actions
-     * @param DataObject $record
+     * @param DataObject|FluentExtension $record
      */
-    protected function updateSaveAction(FieldList $actions, DataObject $record)
+    protected function updateSaveAction(FieldList $actions, DataObject $record): void
     {
         if ($record->hasExtension(Versioned::class)) {
             return;
@@ -606,7 +606,7 @@ trait FluentAdminTrait
 
         // update save action label to localise in case record is not localised yet
         $saveAction
-            ->setTitle(_t(FluentExtension::class . '.Localise', 'Localise'))
+            ->setTitle(_t('TractorCow\\Fluent\\Extension\\FluentExtension.Localise', 'Localise'))
             ->removeExtraClass('font-icon-save')
             ->addExtraClass('font-icon-translatable');
     }
@@ -621,7 +621,7 @@ trait FluentAdminTrait
      * @param FieldList $actions
      * @param DataObject|FluentExtension $record
      */
-    protected function updateDeleteAction(FieldList $actions, DataObject $record)
+    protected function updateDeleteAction(FieldList $actions, DataObject $record): void
     {
         if ($record->hasExtension(Versioned::class)) {
             return;
@@ -634,7 +634,7 @@ trait FluentAdminTrait
             return;
         }
 
-        $locales = $record->LocaleInstances();
+        $locales = $record->getLocaleInstances();
 
         if (count($locales) <= 1) {
             // keep the action unchanged as this is the last locale
@@ -649,13 +649,13 @@ trait FluentAdminTrait
 
         // update delete action label to unlocalise in case there are still more localised instances of the record left
         $deleteAction
-            ->setTitle(_t(FluentExtension::class . '.Unlocalise', 'Unlocalise'))
+            ->setTitle(_t('TractorCow\\Fluent\\Extension\\FluentExtension.Unlocalise', 'Unlocalise'))
             ->removeExtraClass('font-icon-trash-bin')
             ->addExtraClass('font-icon-translatable')
             ->setAttribute(
                 'title',
                 _t(
-                    FluentExtension::class . '.UnlocaliseTooltip',
+                    'TractorCow\\Fluent\\Extension\\FluentExtension.UnlocaliseTooltip',
                     'Remove {name} from current locale',
                     [
                         'name' => $record->i18n_singular_name()

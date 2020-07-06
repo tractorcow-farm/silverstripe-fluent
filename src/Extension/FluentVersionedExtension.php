@@ -332,8 +332,9 @@ class FluentVersionedExtension extends FluentExtension implements Resettable
      * @param string|null $locale
      * @return bool
      */
-    public function stagesDifferInLocale($locale = null)
+    public function stagesDifferInLocale($locale = null): bool
     {
+        /** @var DataObject|Versioned|FluentExtension $record */
         $record = $this->owner;
         $id = $record->ID ?: $record->OldID;
         $class = get_class($record);
@@ -348,7 +349,7 @@ class FluentVersionedExtension extends FluentExtension implements Resettable
             return false;
         }
 
-        $locale = $locale ?: $this->getRecordLocale()->Locale;
+        $locale = $locale ?: ($this->getRecordLocale() ? $this->getRecordLocale()->Locale : null);
 
         // Potentially no Locales have been created in the system yet.
         if (!$locale) {
@@ -520,53 +521,55 @@ SQL;
         $summaryColumns['Status'] = [
             'title' => 'Status',
             'callback' => function (Locale $object) {
-                if ($object->RecordLocale()) {
-                    $recordLocale = $object->RecordLocale();
-
-                    if ($recordLocale->StagesDiffer()) {
-                        return _t(self::class . '.MODIFIED', 'Modified');
-                    }
-
-                    if ($recordLocale->IsPublished(true)) {
-                        return _t(self::class . '.PUBLISHED', 'Published');
-                    }
-
-                    if ($recordLocale->IsDraft()) {
-                        return _t(self::class . '.DRAFT', 'Draft');
-                    }
-
-                    return _t(self::class . '.NOTLOCALISED', 'Not localised');
+                if (!$object->RecordLocale()) {
+                    return '';
                 }
 
-                return '';
+                $recordLocale = $object->RecordLocale();
+
+                if ($recordLocale->getStagesDiffer()) {
+                    return _t(self::class . '.MODIFIED', 'Modified');
+                }
+
+                if ($recordLocale->IsPublished(true)) {
+                    return _t(self::class . '.PUBLISHED', 'Published');
+                }
+
+                if ($recordLocale->IsDraft()) {
+                    return _t(self::class . '.DRAFT', 'Draft');
+                }
+
+                return _t(self::class . '.NOTLOCALISED', 'Not localised');
             }
         ];
 
         $summaryColumns['Source'] = [
             'title' => 'Source',
             'callback' => function (Locale $object) {
-                if ($object->RecordLocale()) {
-                    $sourceLocale = $object->RecordLocale()->SourceLocale();
-
-                    if ($sourceLocale) {
-                        return $sourceLocale->getLongTitle();
-                    }
-
-                    return _t(self::class . '.NOSOURCE', 'No source');
+                if (!$object->RecordLocale()) {
+                    return '';
                 }
 
-                return '';
+                $sourceLocale = $object->RecordLocale()->getSourceLocale();
+
+                if ($sourceLocale) {
+                    return $sourceLocale->getLongTitle();
+                }
+
+                return _t(self::class . '.NOSOURCE', 'No source');
             }
         ];
 
         $summaryColumns['Live'] = [
             'title' => 'Live',
             'callback' => function (Locale $object) {
-                if ($object && $object->RecordLocale()) {
-                    return $object->RecordLocale()->IsPublished() ? 'Yes' : 'No';
+                if (!$object || !$object->RecordLocale()) {
+                    return '';
                 }
 
-                return '';
+                return $object->RecordLocale()->IsPublished()
+                    ? _t(self::class . '.LIVEYES', 'Yes')
+                    : _t(self::class . '.LIVENO', 'No');
             }
         ];
     }

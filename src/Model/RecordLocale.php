@@ -263,7 +263,7 @@ class RecordLocale extends ViewableData
      * @param bool $inLocale
      * @return bool
      */
-    public function IsPublished($inLocale = false)
+    public function IsPublished($inLocale = false): bool
     {
         // If object is filtered, object is not available (regardless of published status)
         if (!$inLocale && !$this->IsVisible()) {
@@ -325,7 +325,7 @@ class RecordLocale extends ViewableData
      *
      * @return bool
      */
-    public function StagesDiffer()
+    public function getStagesDiffer(): bool
     {
         if (!$this->IsPublished(true)) {
             return false;
@@ -347,7 +347,7 @@ class RecordLocale extends ViewableData
      *
      * @return Locale|null
      */
-    public function SourceLocale()
+    public function getSourceLocale(): ?Locale
     {
         /** @var DataObject|FluentExtension $record */
         $record = $this->getOriginalRecord();

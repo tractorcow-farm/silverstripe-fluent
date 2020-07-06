@@ -874,14 +874,14 @@ class FluentExtension extends DataExtension
      *
      * @return array
      */
-    public function LocaleInstances()
+    public function getLocaleInstances(): array
     {
         $locales = [];
 
         foreach (Locale::getCached() as $locale) {
             /** @var Locale $locale */
             $info = $this->owner->LocaleInformation($locale->getLocale());
-            $source = $info->SourceLocale();
+            $source = $info->getSourceLocale();
 
             if ($source->Locale !== $locale->Locale) {
                 continue;
@@ -1102,32 +1102,32 @@ class FluentExtension extends DataExtension
         $summaryColumns['Status'] = [
             'title' => 'Status',
             'callback' => function (Locale $object) {
-                if ($object->RecordLocale()) {
-                    if ($object->RecordLocale()->IsDraft()) {
-                        return _t(self::class . '.LOCALISED', 'Localised');
-                    }
-
-                    return _t(self::class . '.NOTLOCALISED', 'Not localised');
+                if (!$object->RecordLocale()) {
+                    return '';
                 }
 
-                return '';
+                if ($object->RecordLocale()->IsDraft()) {
+                    return _t(self::class . '.LOCALISED', 'Localised');
+                }
+
+                return _t(self::class . '.NOTLOCALISED', 'Not localised');
             }
         ];
 
         $summaryColumns['Source'] = [
             'title' => 'Source',
             'callback' => function (Locale $object) {
-                if ($object->RecordLocale()) {
-                    $sourceLocale = $object->RecordLocale()->SourceLocale();
-
-                    if ($sourceLocale) {
-                        return $sourceLocale->getLongTitle();
-                    }
-
-                    return _t(self::class . '.NOSOURCE', 'No source');
+                if (!$object->RecordLocale()) {
+                    return '';
                 }
 
-                return '';
+                $sourceLocale = $object->RecordLocale()->getSourceLocale();
+
+                if ($sourceLocale) {
+                    return $sourceLocale->getLongTitle();
+                }
+
+                return _t(self::class . '.NOSOURCE', 'No source');
             }
         ];
     }
@@ -1165,13 +1165,13 @@ class FluentExtension extends DataExtension
         foreach (Locale::getCached() as $locale) {
             if ($copyToLocaleEnabled) {
                 $config->addComponents([
-                    new CopyLocaleAction($locale->Locale, true),
+                    CopyLocaleAction::create($locale->Locale, true),
                 ]);
             }
 
             if ($copyFromLocaleEnabled) {
                 $config->addComponents([
-                    new CopyLocaleAction($locale->Locale, false),
+                    CopyLocaleAction::create($locale->Locale, false),
                 ]);
             }
         }
