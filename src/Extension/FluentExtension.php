@@ -547,6 +547,11 @@ class FluentExtension extends DataExtension
             return;
         }
 
+        if ($this->owner->hasMethod('processLocalisedCopy')) {
+            // execute localised copy hook if available
+            $this->owner->processLocalisedCopy();
+        }
+
         // If the record is not versioned, force change
         if (!$this->owner->hasExtension(FluentVersionedExtension::class)) {
             $this->owner->forceChange();
