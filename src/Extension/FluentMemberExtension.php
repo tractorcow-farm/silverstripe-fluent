@@ -22,6 +22,10 @@ class FluentMemberExtension extends DataExtension
         // Filter groups by those that either have no locales selected (same as selected for all),
         // or groups that have the current locale selected.
         $locale = Locale::getCurrentLocale();
+        if (!$locale) {
+            return;
+        }
+
         $filtered = $groups->filterByCallback(function (Group $group) use ($locale) {
             $localePermissions = $this->getLocalePermissionsForGroup($group);
 
