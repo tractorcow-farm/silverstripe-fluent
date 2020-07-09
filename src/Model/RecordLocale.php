@@ -351,14 +351,20 @@ class RecordLocale extends ViewableData
     {
         /** @var DataObject|FluentExtension $record */
         $record = $this->getOriginalRecord();
+        $validationMethod = 'existsInLocale';
 
-        if ($record->existsInLocale($this->getLocale())) {
+        if ($record->hasExtension(FluentVersionedExtension::class)) {
+            $stage = Versioned::get_stage() ?: Versioned::DRAFT;
+            $validationMethod = $stage === Versioned::DRAFT ? 'isDraftedInLocale' : 'isPublishedInLocale';
+        }
+
+        if ($record->{$validationMethod}($this->getLocale())) {
             return $this->getLocaleObject();
         }
 
         /** @var Locale $fallback */
         foreach ($this->getLocaleObject()->Fallbacks() as $fallback) {
-            if (!$record->existsInLocale($fallback->Locale)) {
+            if (!$record->{$validationMethod}($fallback->Locale)) {
                 continue;
             }
 
