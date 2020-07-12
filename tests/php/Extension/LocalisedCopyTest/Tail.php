@@ -1,6 +1,6 @@
 <?php
 
-namespace TractorCow\Fluent\Tests\php\Extension\LocalisedCopyTraitTest;
+namespace TractorCow\Fluent\Tests\php\Extension\LocalisedCopyTest;
 
 use SilverStripe\Dev\TestOnly;
 use SilverStripe\ORM\DataObject;

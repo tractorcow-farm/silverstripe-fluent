@@ -25,6 +25,7 @@ use SilverStripe\ORM\FieldType\DBVarchar;
 use SilverStripe\ORM\Queries\SQLConditionGroup;
 use SilverStripe\ORM\Queries\SQLSelect;
 use SilverStripe\Security\Permission;
+use SilverStripe\Versioned\Versioned;
 use SilverStripe\View\HTML;
 use TractorCow\Fluent\Extension\Traits\FluentObjectTrait;
 use TractorCow\Fluent\Forms\CopyLocaleAction;
@@ -179,9 +180,26 @@ class FluentExtension extends DataExtension
     private static $batch_actions_enabled = true;
 
     /**
+     * Localised copy duplication config
+     * example use: related object needs to be duplicated into the new locale
+     * config syntax: <relation_name> => <relation_id>
+     *
+     * @var array
+     */
+    private static $localised_copy = [];
+
+    /**
      * Cache of localised fields for this model
      */
     protected $localisedFields = [];
+
+    /**
+     * Flag indicating if the object is going through copy to locale action
+     * this is needed to determine if we need to perform localised copy
+     *
+     * @var bool
+     */
+    protected $localisedCopyActive = false;
 
     /**
      * Get list of fields that are localised
@@ -541,26 +559,25 @@ class FluentExtension extends DataExtension
      */
     public function onBeforeWrite()
     {
+        $owner = $this->owner;
+
         /** @var string $currentLocale */
         $currentLocale = FluentState::singleton()->getLocale();
         if (!$currentLocale) {
             return;
         }
 
-        if ($this->owner->hasMethod('processLocalisedCopy')) {
-            // execute localised copy hook if available
-            $this->owner->processLocalisedCopy();
-        }
+        $this->makeLocalisedCopy();
 
         // If the record is not versioned, force change
-        if (!$this->owner->hasExtension(FluentVersionedExtension::class)) {
-            $this->owner->forceChange();
+        if (!$owner->hasExtension(FluentVersionedExtension::class)) {
+            $owner->forceChange();
             return;
         }
 
         // Force a change if the record doesn't already exist in the current locale
-        if (!$this->owner->existsInLocale($currentLocale)) {
-            $this->owner->forceChange();
+        if (!$owner->existsInLocale($currentLocale)) {
+            $owner->forceChange();
         }
     }
 
@@ -1180,5 +1197,121 @@ class FluentExtension extends DataExtension
                 ]);
             }
         }
+    }
+
+    public function getLocalisedCopyActive(): bool
+    {
+        return $this->localisedCopyActive;
+    }
+
+    public function setLocalisedCopyActive(bool $active): DataObject
+    {
+        $this->localisedCopyActive = $active;
+
+        return $this->owner;
+    }
+
+    /**
+     * Provides a safe way to temporarily alter the global flag
+     *
+     * @param callable $callback
+     * @return mixed
+     */
+    public function withLocalisedCopyState(callable $callback)
+    {
+        $active = $this->localisedCopyActive;
+
+        try {
+            return $callback();
+        } finally {
+            $this->setLocalisedCopyActive($active);
+        }
+    }
+
+    /**
+     * Extension point in @see CopyLocaleAction::handleAction()
+     *
+     * @param string $fromLocale
+     * @param string $toLocale
+     */
+    public function onBeforeCopyLocale(string $fromLocale, string $toLocale): void
+    {
+        $this->setLocalisedCopyActive(true);
+    }
+
+    /**
+     * Extension point in @see CopyLocaleAction::handleAction()
+     *
+     * @param string $fromLocale
+     * @param string $toLocale
+     */
+    public function onAfterCopyLocale(string $fromLocale, string $toLocale): void
+    {
+        $this->setLocalisedCopyActive(false);
+    }
+
+    /**
+     * Duplicate related objects based on configuration
+     * Provides an extension hook for custom duplication
+     */
+    protected function makeLocalisedCopy(): void
+    {
+        if (!$this->localisedCopyNeeded()) {
+            return;
+        }
+
+        $owner = $this->owner;
+        $relations = (array) $owner->config()->get('localised_copy');
+
+        $owner->invokeWithExtensions('onBeforeLocalisedCopy');
+
+        foreach ($relations as $relation => $field) {
+            $original = $owner->{$relation}();
+
+            if (!$original instanceof DataObject) {
+                continue;
+            }
+
+            if (!$original->exists()) {
+                continue;
+            }
+
+            $duplicate = $original->duplicate();
+            $owner->{$field} = $duplicate->ID;
+        }
+
+        $owner->invokeWithExtensions('onAfterLocalisedCopy');
+    }
+
+    /**
+     * Determine if localised copy is needed
+     *
+     * @return bool
+     */
+    protected function localisedCopyNeeded(): bool
+    {
+        $owner = $this->owner;
+        $stage = Versioned::get_stage() ?: Versioned::DRAFT;
+
+        if ($stage !== Versioned::DRAFT) {
+            // only draft stage is relevant for the duplication
+            return false;
+        }
+
+        if ($owner->isInDB() && !$owner->existsInLocale()) {
+            // object has a base record and doesn't have a localised record and we are localising it
+            return true;
+        }
+
+        if ($owner->existsInLocale() && $this->getLocalisedCopyActive()) {
+            // object has a localised record and the content is being overridden
+            // from another locale (via copy to/from)
+            // note that we can't rely on isChanged() because writeToStage() calls forceChange()
+            // which would make this condition true every time
+            return true;
+        }
+
+        // all other cases should not duplicate (normal edits)
+        return false;
     }
 }

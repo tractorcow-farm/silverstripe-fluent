@@ -104,37 +104,26 @@ This is where the `Localised copy` feature comes in.
 
 Following our example above, we need to make sure that when `HomePage` is localised into Locale B a new `Banner` object is created and assigned to the `HomePage` in Locale B.
 
-### Include the feature to relevant class
+### Static configuration
 
-Include `LocalisedCopyTrait` on your class like this:
+Use static configuration to specify which relation needs to be duplicated. For our specific example the configuration would be placed into `HomePage` and it would look like this:
 
-```php
-use LocalisedCopyTrait;
+```yaml
+/**
+ * @var array
+ */
+private static $localised_copy = [
+    'Banner' => 'BannerID',
+];
 ```
 
-In our example, this trait will be put on `HomePage`.
+### Dynamic configuration
 
-### Implement copy method
+Some cases may require custom code to handle the duplication. There are two extension points available:
 
-The Trait forces us to implement `executeLocalisedCopy()` method. This method will be called just before our page is written into the new locale.
-In this specific example we decided to create a copy of the original banner and assign it to our localised page.
+* `onBeforeLocalisedCopy`
+* `onAfterLocalisedCopy`
 
-```php
-protected function executeLocalisedCopy(): void
-{
-    $original = $this->Banner();
-
-    if (!$original->exists()) {
-        return;
-    }
-
-    $duplicate = $original->duplicate();
-    $this->BannerID = $duplicate->ID;
-}
-```
-
-It's up to you how you want to implement this method, you can also create a completely new banner object instead of a copy.
-With this method implemented our banner gets localised when we localise `HomePage`, achieving the desired data state mentioned above.
 
 ## Other use cases
 

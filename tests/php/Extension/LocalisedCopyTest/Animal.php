@@ -1,10 +1,9 @@
 <?php
 
-namespace TractorCow\Fluent\Tests\php\Extension\LocalisedCopyTraitTest;
+namespace TractorCow\Fluent\Tests\php\Extension\LocalisedCopyTest;
 
 use SilverStripe\Dev\TestOnly;
 use SilverStripe\ORM\DataObject;
-use TractorCow\Fluent\Extension\Traits\LocalisedCopyTrait;
 
 /**
  * Class Animal
@@ -13,8 +12,6 @@ use TractorCow\Fluent\Extension\Traits\LocalisedCopyTrait;
  */
 class Animal extends DataObject implements TestOnly
 {
-    use LocalisedCopyTrait;
-
     /**
      * @var string
      */
@@ -26,9 +23,4 @@ class Animal extends DataObject implements TestOnly
     private static $db = [
         'Title' => 'Varchar(255)',
     ];
-
-    protected function executeLocalisedCopy(): void
-    {
-        // no op
-    }
 }

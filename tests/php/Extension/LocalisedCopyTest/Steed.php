@@ -1,10 +1,6 @@
 <?php
 
-namespace TractorCow\Fluent\Tests\php\Extension\LocalisedCopyTraitTest;
-
-use SilverStripe\Dev\TestOnly;
-use SilverStripe\ORM\DataObject;
-use TractorCow\Fluent\Extension\Traits\LocalisedCopyTrait;
+namespace TractorCow\Fluent\Tests\php\Extension\LocalisedCopyTest;
 
 /**
  * Class Steed
@@ -54,17 +50,10 @@ class Steed extends Horse
         'SaddleID',
     ];
 
-    protected function executeLocalisedCopy(): void
-    {
-        parent::executeLocalisedCopy();
-
-        $original = $this->Saddle();
-
-        if (!$original->exists()) {
-            return;
-        }
-
-        $duplicate = $original->duplicate();
-        $this->SaddleID = $duplicate->ID;
-    }
+    /**
+     * @var array
+     */
+    private static $localised_copy = [
+        'Saddle' => 'SaddleID',
+    ];
 }

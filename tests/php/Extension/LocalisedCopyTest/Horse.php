@@ -1,6 +1,6 @@
 <?php
 
-namespace TractorCow\Fluent\Tests\php\Extension\LocalisedCopyTraitTest;
+namespace TractorCow\Fluent\Tests\php\Extension\LocalisedCopyTest;
 
 /**
  * Class Horse
@@ -50,17 +50,10 @@ class Horse extends Animal
         'TailID',
     ];
 
-    protected function executeLocalisedCopy(): void
-    {
-        parent::executeLocalisedCopy();
-
-        $original = $this->Tail();
-
-        if (!$original->exists()) {
-            return;
-        }
-
-        $duplicate = $original->duplicate();
-        $this->TailID = $duplicate->ID;
-    }
+    /**
+     * @var array
+     */
+    private static $localised_copy = [
+        'Tail' => 'TailID',
+    ];
 }
