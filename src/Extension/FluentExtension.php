@@ -194,6 +194,13 @@ class FluentExtension extends DataExtension
     protected $localisedFields = [];
 
     /**
+     * Global state of localised copy feature
+     *
+     * @var bool
+     */
+    protected $localisedCopyActive = true;
+
+    /**
      * Get list of fields that are localised
      *
      * @param string $class Class to get fields for (if parent)
@@ -1191,6 +1198,36 @@ class FluentExtension extends DataExtension
         }
     }
 
+    public function getLocalisedCopyActive(): bool
+    {
+        return $this->localisedCopyActive;
+    }
+
+    public function setLocalisedCopyActive(bool $active): DataObject
+    {
+        $this->localisedCopyActive = $active;
+
+        return $this->owner;
+    }
+
+    /**
+     * Localised copy global state manipulation
+     * useful for disabling localised copy feature in parts of the code
+     *
+     * @param callable $callback
+     * @return mixed
+     */
+    public function withLocalisedCopyState(callable $callback)
+    {
+        $active = $this->localisedCopyActive;
+
+        try {
+            return $callback();
+        } finally {
+            $this->localisedCopyActive = $active;
+        }
+    }
+
     /**
      * Duplicate related objects based on configuration
      * Provides an extension hook for custom duplication
@@ -1231,6 +1268,10 @@ class FluentExtension extends DataExtension
      */
     protected function localisedCopyNeeded(): bool
     {
+        if (!$this->localisedCopyActive) {
+            return false;
+        }
+
         $owner = $this->owner;
         $stage = Versioned::get_stage() ?: Versioned::DRAFT;
 

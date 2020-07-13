@@ -121,9 +121,21 @@ private static $localised_copy = [
 
 Some cases may require custom code to handle the duplication. There are two extension points available:
 
-* `onBeforeLocalisedCopy`
-* `onAfterLocalisedCopy`
+* `onBeforeLocalisedCopy()`
+* `onAfterLocalisedCopy()`
 
+### Global state configuration
+
+This feature can be disabled globally via the `withLocalisedCopyState()`. Example use:
+
+```php
+$object->withLocalisedCopyState(function () use ($object) {
+    $object->setLocalisedCopyActive(false);
+
+    // your code goes here
+    $object->write();
+});
+```
 
 ## Other use cases
 

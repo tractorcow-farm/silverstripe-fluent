@@ -46,9 +46,10 @@ class DuplicationTest extends SapphireTest
      * case: new object with defined relation is created
      * desired outcome: no additional changes
      *
+     * @param bool $active
      * @dataProvider copyStateProvider
      */
-    public function testCreateWithDefinedRealtion(bool $active): void
+    public function testCreateWithDefinedRelation(bool $active): void
     {
         FluentState::singleton()->withState(function (FluentState $state) use ($active): void {
             $state->setLocale('en_NZ');
@@ -63,7 +64,11 @@ class DuplicationTest extends SapphireTest
             $horse = Horse::create();
             $horse->Title = 'New Horse';
             $horse->TailID = $tail->ID;
-            $horse->write();
+
+            $horse->withLocalisedCopyState(function () use ($horse, $active) {
+                $horse->setLocalisedCopyActive($active);
+                $horse->write();
+            });
 
             $this->assertCount($tailsCount, $tails);
             $this->assertGreaterThan(0, $horse->TailID);
@@ -82,27 +87,33 @@ class DuplicationTest extends SapphireTest
      * desired outcome: no additional changes
      *
      * @param string $locale
+     * @param bool $duplicated
+     * @param bool $active
      * @dataProvider localesProvider
      */
-    public function testEditWithDefinedRealtion(string $locale, bool $active): void
+    public function testEditWithDefinedRelation(string $locale, bool $duplicated, bool $active): void
     {
-        FluentState::singleton()->withState(function (FluentState $state) use ($locale, $active): void {
+        FluentState::singleton()->withState(function (FluentState $state) use ($locale, $duplicated, $active): void {
             $state->setLocale($locale);
 
             $tails = Tail::get()->sort('ID', 'DESC');
             $tailsCount = (int) $tails->count();
 
-            /** @var Horse $horse */
+            /** @var Horse|FluentExtension $horse */
             $horse = $this->objFromFixture(Horse::class, 'horse1');
             $horse->Title = 'Edited Title';
-            $horse->write();
+
+            $horse->withLocalisedCopyState(function () use ($horse, $active) {
+                $horse->setLocalisedCopyActive($active);
+                $horse->write();
+            });
 
             /** @var Tail $oldTail */
             $oldTail = $this->objFromFixture(Tail::class, 'tail1');
 
             $this->assertGreaterThan(0, $horse->TailID);
 
-            if ($active) {
+            if ($duplicated) {
                 $this->assertCount($tailsCount + 1, $tails);
                 $newTail = $tails->first();
                 $this->assertNotEquals((int) $oldTail->ID, (int) $horse->TailID);
@@ -120,9 +131,10 @@ class DuplicationTest extends SapphireTest
      * case: new object with inherited relation is created
      * desired outcome: no additional changes
      *
+     * @param bool $active
      * @dataProvider copyStateProvider
      */
-    public function testCreateWithInheritedRealtion(bool $active): void
+    public function testCreateWithInheritedRelation(bool $active): void
     {
         FluentState::singleton()->withState(function (FluentState $state) use ($active): void {
             $state->setLocale('en_NZ');
@@ -145,7 +157,11 @@ class DuplicationTest extends SapphireTest
             $steed->Title = 'New Steed';
             $steed->TailID = $tail->ID;
             $steed->SaddleID = $saddle->ID;
-            $steed->write();
+
+            $steed->withLocalisedCopyState(function () use ($steed, $active) {
+                $steed->setLocalisedCopyActive($active);
+                $steed->write();
+            });
 
             $this->assertCount($tailsCount, $tails);
             $this->assertCount($saddlesCount, $saddles);
@@ -167,12 +183,13 @@ class DuplicationTest extends SapphireTest
      * desired outcome: no additional changes
      *
      * @param string $locale
+     * @param bool $duplicated
      * @param bool $active
      * @dataProvider localesProvider
      */
-    public function testEditWithInheritedRealtion(string $locale, bool $active): void
+    public function testEditWithInheritedRelation(string $locale, bool $duplicated, bool $active): void
     {
-        FluentState::singleton()->withState(function (FluentState $state) use ($locale, $active): void {
+        FluentState::singleton()->withState(function (FluentState $state) use ($locale, $duplicated, $active): void {
             $state->setLocale($locale);
 
             $tails = Tail::get()->sort('ID', 'DESC');
@@ -181,10 +198,14 @@ class DuplicationTest extends SapphireTest
             $saddles = Saddle::get()->sort('ID', 'DESC');
             $saddlesCount = (int) $saddles->count();
 
-            /** @var Steed $steed */
+            /** @var Steed|FluentExtension $steed */
             $steed = $this->objFromFixture(Steed::class, 'steed1');
             $steed->Title = 'Edited Title';
-            $steed->write();
+
+            $steed->withLocalisedCopyState(function () use ($steed, $active) {
+                $steed->setLocalisedCopyActive($active);
+                $steed->write();
+            });
 
             /** @var Tail $tail */
             $oldTail = $this->objFromFixture(Tail::class, 'tail2');
@@ -195,7 +216,7 @@ class DuplicationTest extends SapphireTest
             $this->assertGreaterThan(0, $steed->TailID);
             $this->assertGreaterThan(0, $steed->SaddleID);
 
-            if ($active) {
+            if ($duplicated) {
                 $this->assertCount($tailsCount + 1, $tails);
                 $this->assertCount($saddlesCount + 1, $saddles);
 
@@ -220,8 +241,10 @@ class DuplicationTest extends SapphireTest
     public function localesProvider(): array
     {
         return [
-            ['en_NZ', false],
-            ['ja_JP', true],
+            ['en_NZ', false, true],
+            ['en_NZ', false, false],
+            ['ja_JP', false, false],
+            ['ja_JP', true, true],
         ];
     }
 
