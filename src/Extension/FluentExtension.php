@@ -194,14 +194,6 @@ class FluentExtension extends DataExtension
     protected $localisedFields = [];
 
     /**
-     * Flag indicating if the object is going through copy to locale action
-     * this is needed to determine if we need to perform localised copy
-     *
-     * @var bool
-     */
-    protected $localisedCopyActive = false;
-
-    /**
      * Get list of fields that are localised
      *
      * @param string $class Class to get fields for (if parent)
@@ -1199,57 +1191,6 @@ class FluentExtension extends DataExtension
         }
     }
 
-    public function getLocalisedCopyActive(): bool
-    {
-        return $this->localisedCopyActive;
-    }
-
-    public function setLocalisedCopyActive(bool $active): DataObject
-    {
-        $this->localisedCopyActive = $active;
-
-        return $this->owner;
-    }
-
-    /**
-     * Provides a safe way to temporarily alter the global flag
-     *
-     * @param callable $callback
-     * @return mixed
-     */
-    public function withLocalisedCopyState(callable $callback)
-    {
-        $active = $this->localisedCopyActive;
-
-        try {
-            return $callback();
-        } finally {
-            $this->setLocalisedCopyActive($active);
-        }
-    }
-
-    /**
-     * Extension point in @see CopyLocaleAction::handleAction()
-     *
-     * @param string $fromLocale
-     * @param string $toLocale
-     */
-    public function onBeforeCopyLocale(string $fromLocale, string $toLocale): void
-    {
-        $this->setLocalisedCopyActive(true);
-    }
-
-    /**
-     * Extension point in @see CopyLocaleAction::handleAction()
-     *
-     * @param string $fromLocale
-     * @param string $toLocale
-     */
-    public function onAfterCopyLocale(string $fromLocale, string $toLocale): void
-    {
-        $this->setLocalisedCopyActive(false);
-    }
-
     /**
      * Duplicate related objects based on configuration
      * Provides an extension hook for custom duplication
@@ -1303,7 +1244,14 @@ class FluentExtension extends DataExtension
             return true;
         }
 
-        if ($owner->existsInLocale() && $this->getLocalisedCopyActive()) {
+        $currentLocale = FluentState::singleton()->getLocale();
+        $sourceLocale = $this->getRecordLocale();
+
+        if (!$currentLocale || !$sourceLocale) {
+            return false;
+        }
+
+        if ($owner->existsInLocale() && $currentLocale !== $sourceLocale->Locale) {
             // object has a localised record and the content is being overridden
             // from another locale (via copy to/from)
             // note that we can't rely on isChanged() because writeToStage() calls forceChange()

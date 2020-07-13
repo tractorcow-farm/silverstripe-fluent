@@ -63,11 +63,7 @@ class DuplicationTest extends SapphireTest
             $horse = Horse::create();
             $horse->Title = 'New Horse';
             $horse->TailID = $tail->ID;
-
-            $horse->withLocalisedCopyState(static function () use ($horse, $active): void {
-                $horse->setLocalisedCopyActive($active);
-                $horse->write();
-            });
+            $horse->write();
 
             $this->assertCount($tailsCount, $tails);
             $this->assertGreaterThan(0, $horse->TailID);
@@ -99,14 +95,10 @@ class DuplicationTest extends SapphireTest
             /** @var Horse $horse */
             $horse = $this->objFromFixture(Horse::class, 'horse1');
             $horse->Title = 'Edited Title';
+            $horse->write();
 
             /** @var Tail $oldTail */
             $oldTail = $this->objFromFixture(Tail::class, 'tail1');
-
-            $horse->withLocalisedCopyState(static function () use ($horse, $active): void {
-                $horse->setLocalisedCopyActive($active);
-                $horse->write();
-            });
 
             $this->assertGreaterThan(0, $horse->TailID);
 
@@ -153,11 +145,7 @@ class DuplicationTest extends SapphireTest
             $steed->Title = 'New Steed';
             $steed->TailID = $tail->ID;
             $steed->SaddleID = $saddle->ID;
-
-            $steed->withLocalisedCopyState(static function () use ($steed, $active): void {
-                $steed->setLocalisedCopyActive($active);
-                $steed->write();
-            });
+            $steed->write();
 
             $this->assertCount($tailsCount, $tails);
             $this->assertCount($saddlesCount, $saddles);
@@ -196,17 +184,13 @@ class DuplicationTest extends SapphireTest
             /** @var Steed $steed */
             $steed = $this->objFromFixture(Steed::class, 'steed1');
             $steed->Title = 'Edited Title';
+            $steed->write();
 
             /** @var Tail $tail */
             $oldTail = $this->objFromFixture(Tail::class, 'tail2');
 
             /** @var Saddle $tail */
             $oldSaddle = $this->objFromFixture(Saddle::class, 'saddle1');
-
-            $steed->withLocalisedCopyState(static function () use ($steed, $active): void {
-                $steed->setLocalisedCopyActive($active);
-                $steed->write();
-            });
 
             $this->assertGreaterThan(0, $steed->TailID);
             $this->assertGreaterThan(0, $steed->SaddleID);
@@ -236,7 +220,6 @@ class DuplicationTest extends SapphireTest
     public function localesProvider(): array
     {
         return [
-            ['en_NZ', true],
             ['en_NZ', false],
             ['ja_JP', true],
         ];
