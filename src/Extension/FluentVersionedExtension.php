@@ -322,7 +322,13 @@ class FluentVersionedExtension extends FluentExtension implements Resettable
      */
     public function existsInLocale($locale = null)
     {
-        return $this->isDraftedInLocale($locale) || $this->isPublishedInLocale($locale);
+        $stage = Versioned::get_stage() ?: Versioned::DRAFT;
+
+        if ($stage === Versioned::DRAFT) {
+            return $this->isDraftedInLocale($locale);
+        }
+
+        return $this->isPublishedInLocale($locale);
     }
 
     /**
