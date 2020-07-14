@@ -12,9 +12,13 @@ use SilverStripe\Forms\CompositeField;
 use SilverStripe\Forms\FieldList;
 use SilverStripe\Forms\Form;
 use SilverStripe\Forms\LiteralField;
+use SilverStripe\Forms\Tab;
 use SilverStripe\ORM\FieldType\DBHTMLText;
+use SilverStripe\Versioned\Versioned;
+use SilverStripe\View\SSViewer;
 use TractorCow\Fluent\Extension\Traits\FluentAdminTrait;
 use TractorCow\Fluent\Model\Locale;
+use TractorCow\Fluent\Model\RecordLocale;
 use TractorCow\Fluent\State\FluentState;
 
 // Soft dependency on CMS module
@@ -38,6 +42,15 @@ class FluentSiteTreeExtension extends FluentVersionedExtension
      * @var bool
      */
     private static $locale_published_status_message = true;
+
+    /**
+     * Enable localise actions (copy to draft and copy & publish actions)
+     * these actions can be used to localise page content directly via main page actions
+     *
+     * @config
+     * @var bool
+     */
+    private static $localise_actions_enabled = true;
 
     /**
      * Add alternate links to metatags
@@ -202,6 +215,18 @@ class FluentSiteTreeExtension extends FluentVersionedExtension
         // Update specific sitetree publish actions
         $this->updateSavePublishActions($actions);
 
+        // Update specific sitetree localise actions
+        $this->updateLocaliseActions($actions);
+
+        // Update information panel (shows published state)
+        $this->updateInformationPanel($actions);
+
+        // Update the state of publish action (if needed)
+        $this->updatePublishState($actions);
+
+        // Update unpublish and archive actions
+        $this->updateMoreOptionsActions($actions);
+
         // Add extra fluent menu
         $this->updateFluentActions($actions, $this->owner);
     }
@@ -239,15 +264,25 @@ class FluentSiteTreeExtension extends FluentVersionedExtension
                 );
             }
         } else {
-            // If frontend publishing is *not* required, then we have two possibilities.
+            // If frontend publishing is *not* required, then we have multiple possibilities.
             if (!$this->isDraftedInLocale()) {
-                // Our content hasn't been drafted or published. If this Locale has a Fallback, then content might be
-                // getting inherited from that Fallback.
-                $message = _t(
-                    __CLASS__ . '.LOCALESTATUSFLUENTINHERITED',
-                    'Content for this page may be inherited from another locale. If you wish you make an ' .
-                    'independent copy of this page, please use one of the "Copy" actions provided.'
-                );
+                $info = RecordLocale::create($this->owner, Locale::getCurrentLocale());
+
+                // Our content hasn't been drafted or published.
+                if ($info->getSourceLocale()) {
+                    // If this Locale has a Fallback, then content might be getting inherited from that Fallback.
+                    $message = _t(
+                        __CLASS__ . '.LOCALESTATUSFLUENTINHERITED',
+                        'Content for this page may be inherited from another locale. If you wish you make an ' .
+                        'independent copy of this page, please use one of the "Copy" actions provided.'
+                    );
+                } else {
+                    // This locale doesn't have any content source
+                    $message = _t(
+                        __CLASS__ . '.LOCALESTATUSFLUENTUNKNOWN',
+                        'No content is available for this page. Please localise this page or provide a locale fallback.'
+                    );
+                }
             } elseif (!$this->isPublishedInLocale()) {
                 // Our content has been saved to draft, but hasn't yet been published. That published content may be
                 // coming from a Fallback.
@@ -364,6 +399,158 @@ class FluentSiteTreeExtension extends FluentVersionedExtension
                 $actionPublish->setTitle(_t(__CLASS__ . '.LOCALECOPYANDPUBLISH', 'Copy & publish'));
             }
         }
+    }
+
+    /**
+     * Update publish action state to reflect the localised record instead of the base record
+     *
+     * @param FieldList $actions
+     */
+    protected function updatePublishState(FieldList $actions): void
+    {
+        $owner = $this->owner;
+
+        if (!$owner->isInDB()) {
+            return;
+        }
+
+        $published = $owner->isPublishedInLocale();
+
+        if (!$published) {
+            return;
+        }
+
+        /** @var CompositeField $majorActions */
+        $majorActions = $actions->fieldByName('MajorActions');
+
+        if (!$majorActions) {
+            return;
+        }
+
+        $publishAction = $majorActions->fieldByName('action_publish');
+
+        if (!$publishAction) {
+            return;
+        }
+
+        // make sure that changes only on the base record
+        // do not trigger "need to publish" button state
+        // this is needed because the default interface looks
+        // at the base record instead of the localised page
+        $publishAction
+            ->setTitle(_t('SilverStripe\\CMS\\Model\\SiteTree.BUTTONPUBLISHED', 'Published'))
+            ->removeExtraClass(
+                'btn-primary font-icon-rocket btn-outline-primary font-icon-tick'
+            )
+            ->addExtraClass('btn-outline-primary font-icon-tick');
+
+        if (!$owner->stagesDifferInLocale()) {
+            return;
+        }
+
+        // If staged and live is different we change the button to "Publish"
+        // as the page hasn't been published
+        $publishAction
+            ->setTitle(_t('SilverStripe\\CMS\\Model\\SiteTree.BUTTONSAVEPUBLISH', 'Publish'))
+            ->addExtraClass('btn-primary font-icon-rocket')
+            ->removeExtraClass('btn-outline-primary font-icon-tick');
+    }
+
+    /**
+     * Update archive and unpublish actions to reflect the localised record instead of the base record
+     *
+     * @param FieldList $actions
+     */
+    protected function updateMoreOptionsActions(FieldList $actions): void
+    {
+        /** @var Tab $moreOptions */
+        $moreOptions = $actions->fieldByName('ActionMenus.MoreOptions');
+
+        if (!$moreOptions) {
+            return;
+        }
+
+        if ($this->isPublishedInLocale()) {
+            return;
+        }
+
+        // remove unpublish action as the record is not published
+        $moreOptions->removeByName('action_unpublish');
+
+        // update the label on archive action as it could have "unpublish and archive" which is incorrect
+        $archiveAction = $moreOptions->fieldByName('action_archive');
+
+        if (!$archiveAction) {
+            return;
+        }
+
+        $archiveAction->setTitle(_t('SilverStripe\\CMS\\Controllers\\CMSMain.ARCHIVE', 'Archive'));
+    }
+
+    /**
+     * Remove "copy to draft" and "copy & publish" actions based on configuration
+     *
+     * @param FieldList $actions
+     */
+    protected function updateLocaliseActions(FieldList $actions): void
+    {
+        $owner = $this->owner;
+
+        if ($owner->config()->get('localise_actions_enabled')) {
+            return;
+        }
+
+        if (!$owner->isInDB() || $owner->isDraftedInLocale()) {
+            return;
+        }
+
+        $actions->removeByName([
+            'action_save',
+            'action_publish',
+        ]);
+    }
+
+    /**
+     * Information panel show published state of a base record by default
+     * this overrides the display with the published state of the localised record
+     *
+     * @param FieldList $actions
+     */
+    protected function updateInformationPanel(FieldList $actions): void
+    {
+        $owner = $this->owner;
+
+        /** @var Tab $moreOptions */
+        $moreOptions = $actions->fieldByName('ActionMenus.MoreOptions');
+
+        if (!$moreOptions) {
+            return;
+        }
+
+        /** @var LiteralField $information */
+        $information = $moreOptions->fieldByName('Information');
+
+        if (!$information) {
+            return;
+        }
+
+        $liveRecord = Versioned::withVersionedMode(function () use ($owner) {
+            Versioned::set_stage(Versioned::LIVE);
+
+            return SiteTree::get()->byID($owner->ID);
+        });
+
+        $infoTemplate = SSViewer::get_templates_by_class(
+            $owner->ClassName,
+            '_Information',
+            SiteTree::class
+        );
+
+        // show published info of localised record, not base record (this is framework's default)
+        $information->setValue($owner->customise([
+            'Live' => $liveRecord,
+            'ExistsOnLive' => $owner->isPublishedInLocale(),
+        ])->renderWith($infoTemplate));
     }
 
     /**

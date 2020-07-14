@@ -73,8 +73,19 @@ trait FluentAdminTrait
             return;
         }
 
-        // If there are no results, this will pass as true
         $locale = Locale::getCurrentLocale();
+
+        if (!$locale) {
+            // Potentially no Locales have been created in the system yet.
+            return;
+        }
+
+        $this->updateSaveAction($actions, $record);
+        $this->updateDeleteAction($actions, $record);
+
+        if (!$record->config()->get('batch_actions_enabled')) {
+            return;
+        }
 
         // Build root tabset that makes up the menu
         $rootTabSet = TabSet::create('FluentMenu')->setTemplate(
@@ -565,5 +576,91 @@ trait FluentAdminTrait
                 $doSomething($stage);
             });
         }
+    }
+
+    /**
+     * Update save action based on localisation state
+     * valid states:
+     * - localised (localise label)
+     * - not localised (save label)
+     *
+     * @param FieldList $actions
+     * @param DataObject|FluentExtension $record
+     */
+    protected function updateSaveAction(FieldList $actions, DataObject $record): void
+    {
+        if ($record->hasExtension(Versioned::class)) {
+            return;
+        }
+
+        if ($record->existsInLocale()) {
+            // keep the action unchanged as the record is localised
+            return;
+        }
+
+        $saveAction = $actions->fieldByName('MajorActions.action_doSave');
+
+        if (!$saveAction) {
+            return;
+        }
+
+        // update save action label to localise in case record is not localised yet
+        $saveAction
+            ->setTitle(_t('TractorCow\\Fluent\\Extension\\FluentExtension.Localise', 'Localise'))
+            ->removeExtraClass('font-icon-save')
+            ->addExtraClass('font-icon-translatable');
+    }
+
+    /**
+     * Update delete action based on localisation state
+     * valid states:
+     * - localised more than one locale (unlocalise label)
+     * - localised in one locale (delete label)
+     * - not localised (remove the action)
+     *
+     * @param FieldList $actions
+     * @param DataObject|FluentExtension $record
+     */
+    protected function updateDeleteAction(FieldList $actions, DataObject $record): void
+    {
+        if ($record->hasExtension(Versioned::class)) {
+            return;
+        }
+
+        if (!$record->existsInLocale()) {
+            // record is not localised  - remove the action
+            $actions->removeByName('action_doDelete');
+
+            return;
+        }
+
+        $locales = $record->getLocaleInstances();
+
+        if (count($locales) <= 1) {
+            // keep the action unchanged as this is the last locale
+            return;
+        }
+
+        $deleteAction = $actions->fieldByName('action_doDelete');
+
+        if (!$deleteAction) {
+            return;
+        }
+
+        // update delete action label to unlocalise in case there are still more localised instances of the record left
+        $deleteAction
+            ->setTitle(_t('TractorCow\\Fluent\\Extension\\FluentExtension.Unlocalise', 'Unlocalise'))
+            ->removeExtraClass('font-icon-trash-bin')
+            ->addExtraClass('font-icon-translatable')
+            ->setAttribute(
+                'title',
+                _t(
+                    'TractorCow\\Fluent\\Extension\\FluentExtension.UnlocaliseTooltip',
+                    'Remove {name} from current locale',
+                    [
+                        'name' => $record->i18n_singular_name()
+                    ]
+                )
+            );
     }
 }

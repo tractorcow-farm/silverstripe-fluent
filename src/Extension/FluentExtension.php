@@ -155,6 +155,30 @@ class FluentExtension extends DataExtension
     private static $data_exclude = [];
 
     /**
+     * Enable copy to locale action in the localisation manager
+     *
+     * @config
+     * @var bool
+     */
+    private static $copy_to_locale_enabled = true;
+
+    /**
+     * Enable copy from locale action in the localisation manager
+     *
+     * @config
+     * @var bool
+     */
+    private static $copy_from_locale_enabled = true;
+
+    /**
+     * Enable batch actions in the edit form
+     *
+     * @config
+     * @var bool
+     */
+    private static $batch_actions_enabled = true;
+
+    /**
      * Cache of localised fields for this model
      */
     protected $localisedFields = [];
@@ -846,6 +870,30 @@ class FluentExtension extends DataExtension
     }
 
     /**
+     * Get list of locales where record is localised in
+     *
+     * @return array
+     */
+    public function getLocaleInstances(): array
+    {
+        $locales = [];
+
+        foreach (Locale::getCached() as $locale) {
+            /** @var Locale $locale */
+            $info = $this->owner->LocaleInformation($locale->getLocale());
+            $source = $info->getSourceLocale();
+
+            if ($source->Locale !== $locale->Locale) {
+                continue;
+            }
+
+            $locales[] = $locale;
+        }
+
+        return $locales;
+    }
+
+    /**
      * Return the linking mode for the current locale and object
      *
      * @param string $locale
@@ -1051,10 +1099,35 @@ class FluentExtension extends DataExtension
      */
     public function updateLocalisationTabColumns(&$summaryColumns)
     {
-        $summaryColumns['IsDraft'] = [
-            'title'    => 'Saved',
+        $summaryColumns['Status'] = [
+            'title' => 'Status',
             'callback' => function (Locale $object) {
-                return $object->RecordLocale()->IsDraft() ? 'Saved' : '';
+                if (!$object->RecordLocale()) {
+                    return '';
+                }
+
+                if ($object->RecordLocale()->IsDraft()) {
+                    return _t(self::class . '.LOCALISED', 'Localised');
+                }
+
+                return _t(self::class . '.NOTLOCALISED', 'Not localised');
+            }
+        ];
+
+        $summaryColumns['Source'] = [
+            'title' => 'Source',
+            'callback' => function (Locale $object) {
+                if (!$object->RecordLocale()) {
+                    return '';
+                }
+
+                $sourceLocale = $object->RecordLocale()->getSourceLocale();
+
+                if ($sourceLocale) {
+                    return $sourceLocale->getLongTitle();
+                }
+
+                return _t(self::class . '.NOSOURCE', 'No source');
             }
         ];
     }
@@ -1085,12 +1158,22 @@ class FluentExtension extends DataExtension
             new GroupActionMenu(GridField_ActionMenuItem::DEFAULT_GROUP)
         ]);
 
+        $copyToLocaleEnabled = $this->owner->config()->get('copy_to_locale_enabled');
+        $copyFromLocaleEnabled = $this->owner->config()->get('copy_from_locale_enabled');
+
         // Add each copy from / to
         foreach (Locale::getCached() as $locale) {
-            $config->addComponents([
-                new CopyLocaleAction($locale->Locale, true),
-                new CopyLocaleAction($locale->Locale, false),
-            ]);
+            if ($copyToLocaleEnabled) {
+                $config->addComponents([
+                    CopyLocaleAction::create($locale->Locale, true),
+                ]);
+            }
+
+            if ($copyFromLocaleEnabled) {
+                $config->addComponents([
+                    CopyLocaleAction::create($locale->Locale, false),
+                ]);
+            }
         }
     }
 }
