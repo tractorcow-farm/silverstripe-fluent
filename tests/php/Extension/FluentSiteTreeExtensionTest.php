@@ -329,7 +329,7 @@ class FluentSiteTreeExtensionTest extends SapphireTest
 
     public function testHomeVisibleOnFrontendBothConfigFalse()
     {
-        Config::modify()->set(DataObject::class, 'cms_publish_required', false);
+        Config::modify()->set(DataObject::class, 'cms_localisation_required', false);
         Config::modify()->set(DataObject::class, 'frontend_publish_required', false);
 
         FluentState::singleton()->withState(function (FluentState $newState) {
@@ -346,7 +346,7 @@ class FluentSiteTreeExtensionTest extends SapphireTest
 
     public function testHomeVisibleOnFrontendOneConfigFalse()
     {
-        Config::modify()->set(DataObject::class, 'cms_publish_required', true);
+        Config::modify()->set(DataObject::class, 'cms_localisation_required', true);
         Config::modify()->set(DataObject::class, 'frontend_publish_required', false);
 
         FluentState::singleton()->withState(function (FluentState $newState) {
@@ -363,7 +363,7 @@ class FluentSiteTreeExtensionTest extends SapphireTest
 
     public function testHomeNotVisibleOnFrontendBothConfigTrue()
     {
-        Config::modify()->set(DataObject::class, 'cms_publish_required', true);
+        Config::modify()->set(DataObject::class, 'cms_localisation_required', true);
         Config::modify()->set(DataObject::class, 'frontend_publish_required', true);
 
         FluentState::singleton()->withState(function (FluentState $newState) {
@@ -380,7 +380,7 @@ class FluentSiteTreeExtensionTest extends SapphireTest
 
     public function testHomeNotVisibleOnFrontendOneConfigTrue()
     {
-        Config::modify()->set(DataObject::class, 'cms_publish_required', false);
+        Config::modify()->set(DataObject::class, 'cms_localisation_required', false);
         Config::modify()->set(DataObject::class, 'frontend_publish_required', true);
 
         FluentState::singleton()->withState(function (FluentState $newState) {
@@ -397,7 +397,7 @@ class FluentSiteTreeExtensionTest extends SapphireTest
 
     public function testHomeVisibleInCMSBothConfigFalse()
     {
-        Config::modify()->set(DataObject::class, 'cms_publish_required', false);
+        Config::modify()->set(DataObject::class, 'cms_localisation_required', false);
         Config::modify()->set(DataObject::class, 'frontend_publish_required', false);
 
         FluentState::singleton()->withState(function (FluentState $newState) {
@@ -414,7 +414,7 @@ class FluentSiteTreeExtensionTest extends SapphireTest
 
     public function testHomeVisibleInCMSOneConfigFalse()
     {
-        Config::modify()->set(DataObject::class, 'cms_publish_required', false);
+        Config::modify()->set(DataObject::class, 'cms_localisation_required', false);
         Config::modify()->set(DataObject::class, 'frontend_publish_required', true);
 
         FluentState::singleton()->withState(function (FluentState $newState) {
@@ -431,7 +431,7 @@ class FluentSiteTreeExtensionTest extends SapphireTest
 
     public function testHomeNotVisibleInCMSBothConfigTrue()
     {
-        Config::modify()->set(DataObject::class, 'cms_publish_required', true);
+        Config::modify()->set(DataObject::class, 'cms_localisation_required', true);
         Config::modify()->set(DataObject::class, 'frontend_publish_required', true);
 
         FluentState::singleton()->withState(function (FluentState $newState) {
@@ -448,7 +448,7 @@ class FluentSiteTreeExtensionTest extends SapphireTest
 
     public function testHomeNotVisibleInCMSOneConfigTrue()
     {
-        Config::modify()->set(DataObject::class, 'cms_publish_required', true);
+        Config::modify()->set(DataObject::class, 'cms_localisation_required', true);
         Config::modify()->set(DataObject::class, 'frontend_publish_required', false);
 
         FluentState::singleton()->withState(function (FluentState $newState) {

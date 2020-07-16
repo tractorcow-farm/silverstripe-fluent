@@ -1016,7 +1016,7 @@ class FluentExtension extends DataExtension
             return $this->owner->config()->get('frontend_publish_required');
         }
 
-        return $this->owner->config()->get('cms_publish_required');
+        return $this->owner->config()->get('cms_localisation_required');
     }
 
     /**
