@@ -54,6 +54,6 @@ class Horse extends Animal
      * @var array
      */
     private static $localised_copy = [
-        'Tail' => 'TailID',
+        'Tail',
     ];
 }

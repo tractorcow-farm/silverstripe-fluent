@@ -1243,7 +1243,7 @@ class FluentExtension extends DataExtension
 
         $owner->invokeWithExtensions('onBeforeLocalisedCopy');
 
-        foreach ($relations as $relation => $field) {
+        foreach ($relations as $relation) {
             $original = $owner->{$relation}();
 
             if (!$original instanceof DataObject) {
@@ -1255,7 +1255,10 @@ class FluentExtension extends DataExtension
             }
 
             $duplicate = $original->duplicate();
-            $owner->{$field} = $duplicate->ID;
+
+            $owner->invokeWithExtensions('onBeforeLocalisedCopyRelation', $relation, $original, $duplicate);
+            $owner->setComponent($relation, $duplicate);
+            $owner->invokeWithExtensions('onAfterLocalisedCopyRelation', $relation, $original, $duplicate);
         }
 
         $owner->invokeWithExtensions('onAfterLocalisedCopy');

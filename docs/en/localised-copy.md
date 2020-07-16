@@ -108,12 +108,12 @@ Following our example above, we need to make sure that when `HomePage` is locali
 
 Use static configuration to specify which relation needs to be duplicated. For our specific example the configuration would be placed into `HomePage` and it would look like this:
 
-```yaml
+```php
 /**
  * @var array
  */
 private static $localised_copy = [
-    'Banner' => 'BannerID',
+    'Banner',
 ];
 ```
 
