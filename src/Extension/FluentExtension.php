@@ -904,6 +904,10 @@ class FluentExtension extends DataExtension
             $info = $this->owner->LocaleInformation($locale->getLocale());
             $source = $info->getSourceLocale();
 
+            if (!$source) {
+                continue;
+            }
+
             if ($source->Locale !== $locale->Locale) {
                 continue;
             }
