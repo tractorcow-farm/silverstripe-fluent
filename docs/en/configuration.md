@@ -331,3 +331,28 @@ on the session in the active HTTPRequest via a \_config.php file, or add a highe
 middleware that always starts the session ensuring it runs before `DetectLocaleMiddleware`.
 Be aware that prematurely starting sessions may complicate HTTP caching in your website.
 
+## Encoding
+
+Setting proper encoding is important especially when your application needs to deal with non-latin characters.
+Following configuration is recommended:
+
+```yaml
+SilverStripe\ORM\Connect\MySQLDatabase:
+  connection_charset: utf8mb4
+  connection_collation: utf8mb4_unicode_ci
+  charset: utf8mb4
+  collation: utf8mb4_unicode_ci
+```
+
+Note that using this configuration may cause some of your DB indexes to break as the indexes may increase in size.
+General workaround is to change any `Varchar(255)` fields which are associated with indexes to `Varchar(191)`.
+This can be done on configuration level and it can cover even fields which are not part of your code base.
+
+### Known issues with non-latin characters
+
+Core SilverStripe modules provide text processing functionality but part of it may not work properly with non-latin characters.
+Knows issues are:
+
+* incorrect detection of end of word
+* incorrect detection of end of line
+* use of functions which are not multi-byte safe
