@@ -1016,6 +1016,12 @@ class FluentExtension extends DataExtension
             return $this->owner->config()->get('frontend_publish_required');
         }
 
+        if ($this->owner->config()->get('cms_publish_required') !== null) {
+            Deprecation::notice('5.0', 'Use cms_localisation_required instead');
+
+            return $this->owner->config()->get('cms_publish_required');
+        }
+
         return $this->owner->config()->get('cms_localisation_required');
     }
 
