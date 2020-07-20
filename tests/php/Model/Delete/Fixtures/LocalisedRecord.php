@@ -15,7 +15,7 @@ class LocalisedRecord extends DataObject implements TestOnly
 
     private static $frontend_publish_required = false;
 
-    private static $cms_publish_required = false;
+    private static $cms_localisation_required = false;
 
     private static $extensions = [
         FluentExtension::class,

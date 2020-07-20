@@ -3,7 +3,7 @@ Name: fluentmodel
 ---
 SilverStripe\ORM\DataObject:
   # See FluentExtension
-  cms_publish_required: false
+  cms_localisation_required: false
   frontend_publish_required: true
   # See FluentFilteredExtension
   apply_filtered_locales_to_stage: true
