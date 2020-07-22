@@ -178,6 +178,9 @@ class FluentSiteTreeExtension extends FluentVersionedExtension
             return;
         }
 
+        $this->updateModifiedFlag($flags);
+        $this->updateNoSourceFlag($flags);
+
         // If this page does not exist it should be "invisible"
         if (!$this->isDraftedInLocale() && !$this->isPublishedInLocale()) {
             $flags['fluentinvisible'] = [
@@ -551,6 +554,48 @@ class FluentSiteTreeExtension extends FluentVersionedExtension
             'Live' => $liveRecord,
             'ExistsOnLive' => $owner->isPublishedInLocale(),
         ])->renderWith($infoTemplate));
+    }
+
+    /**
+     * Update modified flag to reflect localised record instead of base record
+     * It doesn't make sense to have modified flag if page is not localised in current locale
+     *
+     * @param array $flags
+     */
+    protected function updateModifiedFlag(array &$flags): void
+    {
+        if (!array_key_exists('modified', $flags)) {
+            return;
+        }
+
+        if ($this->owner->isDraftedInLocale()) {
+            return;
+        }
+
+        unset($flags['modified']);
+    }
+
+    /**
+     * Add a flag which indicates that a page has content in other locale but the content is not being inherited
+     *
+     * @param array $flags
+     */
+    protected function updateNoSourceFlag(array &$flags): void
+    {
+        $locale = FluentState::singleton()->getLocale();
+
+        if (!$locale) {
+            return;
+        }
+
+        if ($this->owner->LocaleInformation($locale)->getSourceLocale()) {
+            return;
+        }
+
+        $flags['removedfromdraft'] = [
+            'text' => 'No source',
+            'title' => 'This page exists in a different locale but the content is not inherited',
+        ];
     }
 
     /**
