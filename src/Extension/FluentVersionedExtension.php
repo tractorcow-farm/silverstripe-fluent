@@ -39,6 +39,12 @@ class FluentVersionedExtension extends FluentExtension implements Resettable
     const SUFFIX_VERSIONS = '_Versions';
 
     /**
+     * Indicates that record is missing in this locale and the cache search for it is complete
+     * so we can avoid multiple lookups of a missing record
+     */
+    const CACHE_COMPLETE = '_complete';
+
+    /**
      * Default version table fields. _Versions has extra Version column.
      *
      * @var array
@@ -62,6 +68,13 @@ class FluentVersionedExtension extends FluentExtension implements Resettable
             ],
         ],
     ];
+
+    /**
+     * Cache for versions related data lookups
+     *
+     * @var array
+     */
+    protected $versionsCache = [];
 
     /**
      * Array of objectIds keyed by table (ie. stage) and locale. This knows ALL object IDs that exist in the given table
@@ -150,6 +163,7 @@ class FluentVersionedExtension extends FluentExtension implements Resettable
 
         $tables = $this->getLocalisedTables();
         $versionedMode = $dataQuery->getQueryParam('Versioned.mode');
+
         switch ($versionedMode) {
             // Reading a specific stage (Stage or Live)
             case 'stage':
@@ -167,6 +181,7 @@ class FluentVersionedExtension extends FluentExtension implements Resettable
             case 'latest_version_single':
             case 'version':
                 $this->rewriteVersionedTables($query, $tables, $locale);
+                $this->localiseVersionsLookup($query, $locale);
                 break;
             default:
                 throw new InvalidArgumentException("Bad value for query parameter Versioned.mode: {$versionedMode}");
@@ -229,6 +244,28 @@ class FluentVersionedExtension extends FluentExtension implements Resettable
             $localisedTable = $this->getLocalisedTable($table);
             $query->renameTable($localisedTable, $localisedTable . self::SUFFIX_LIVE);
         }
+    }
+
+    /**
+     * Narrow down the list of versions down to only those which are related to current locale
+     *
+     * @param SQLSelect $query
+     * @param Locale $locale
+     */
+    protected function localiseVersionsLookup(SQLSelect $query, Locale $locale)
+    {
+        $class = $this->owner->ClassName;
+        $schema = DataObject::getSchema();
+        $baseClass = $schema->baseDataClass($class);
+        $baseTable = $schema->tableName($baseClass);
+
+        /** @var DataObject|FluentExtension $singleton */
+        $singleton = DataObject::singleton($class);
+
+        $localisedTable = $singleton->getLocalisedTable($baseTable);
+        $localisedAlias = sprintf('%s_%s', $localisedTable, $locale->Locale);
+
+        $query->addWhere([sprintf('"%s"."Locale" = ?', $localisedAlias) => $locale->Locale]);
     }
 
     /**
@@ -362,9 +399,11 @@ class FluentVersionedExtension extends FluentExtension implements Resettable
             return false;
         }
 
+        $schema = DataObject::getSchema();
+        $baseClass = $schema->baseDataClass($class);
+        $stageTable = $schema->tableName($baseClass);
+
         $versionSuffix = FluentVersionedExtension::SUFFIX_VERSIONS;
-        $baseClass = DataObject::getSchema()->baseDataClass($class);
-        $stageTable = DataObject::getSchema()->tableName($baseClass);
         $liveTable = $stageTable . $versionSuffix;
         $stagedTable = $record->getLocalisedTable($stageTable) . $versionSuffix;
 
@@ -433,7 +472,7 @@ SQL;
             return (bool)static::$idsInLocaleCache[$locale][$table][$this->owner->ID];
         }
 
-        if (!empty(static::$idsInLocaleCache[$locale][$table]['_complete'])) {
+        if (!empty(static::$idsInLocaleCache[$locale][$table][static::CACHE_COMPLETE])) {
             return false;
         }
 
@@ -518,7 +557,7 @@ SQL;
 
             // We need to execute ourselves as the param is lost from the subSelect
             self::$idsInLocaleCache[$locale][$table] = array_combine($ids, $ids);
-            self::$idsInLocaleCache[$locale][$table]['_complete'] = true;
+            self::$idsInLocaleCache[$locale][$table][static::CACHE_COMPLETE] = true;
         }
     }
 
@@ -594,5 +633,338 @@ SQL;
             UnpublishAction::create(),
             PublishAction::create(),
         ]);
+    }
+
+    /**
+     * Localise archived state
+     * Extension point in @see Versioned::isArchived()
+     *
+     * @param bool $isArchived
+     */
+    public function updateIsArchived(bool &$isArchived): void
+    {
+        $locale = FluentState::singleton()->getLocale();
+
+        if (!$locale) {
+            return;
+        }
+
+        $archived = $this->owner->isArchivedInLocale($locale);
+
+        if ($archived === null) {
+            return;
+        }
+
+        $isArchived = $archived;
+    }
+
+    /**
+     * @param string|null $locale
+     * @return bool|null
+     */
+    public function isArchivedInLocale(?string $locale = null): ?bool
+    {
+        $locale = $locale ?: FluentState::singleton()->getLocale();
+
+        if (!$locale) {
+            return null;
+        }
+
+        $owner = $this->owner;
+        $class = $owner->ClassName;
+        $id = $owner->ID ?: $owner->OldID;
+
+        if (!$id) {
+            return false;
+        }
+
+        if ($owner->existsInLocale($locale)) {
+            return false;
+        }
+
+        return $owner->hasArchiveInLocale($locale);
+    }
+
+    /**
+     * Check if the record has previously existed in a locale
+     *
+     * @param string|null $locale
+     * @return bool|null
+     */
+    public function hasArchiveInLocale(string $locale = null): ?bool
+    {
+        $locale = $locale ?: FluentState::singleton()->getLocale();
+
+        if (!$locale) {
+            return null;
+        }
+
+        $owner = $this->owner;
+        $class = $owner->ClassName;
+        $id = $owner->ID ?: $owner->OldID;
+
+        $schema = DataObject::getSchema();
+        $baseClass = $schema->baseDataClass($class);
+        $baseTable = $schema->tableName($baseClass);
+
+        $localisedTable = $owner->getLocalisedTable($baseTable);
+        $localisedVersionTable = $localisedTable . static::SUFFIX_VERSIONS;
+
+        $query = SQLSelect::create(
+            'COUNT(*)',
+            $localisedVersionTable,
+            [
+                'Locale' => $locale,
+                'RecordID' => $id,
+            ]
+        );
+
+        return $query->execute()->value();
+    }
+
+    /**
+     * Localise max version lookup
+     * Extension point in @see Versioned::prepareMaxVersionSubSelect()
+     *
+     * @param SQLSelect $subSelect
+     * @param DataQuery $dataQuery
+     * @param bool $shouldApplySubSelectAsCondition
+     */
+    public function augmentMaxVersionSubSelect(
+        SQLSelect $subSelect,
+        DataQuery $dataQuery,
+        bool $shouldApplySubSelectAsCondition
+    ): void {
+        $locale = FluentState::singleton()->getLocale();
+
+        if (!$locale) {
+            return;
+        }
+
+        $owner = $this->owner;
+        $class = $owner->ClassName;
+
+        $schema = DataObject::getSchema();
+        $baseClass = $schema->baseDataClass($class);
+        $baseTable = $schema->tableName($baseClass);
+
+        $localisedTable = $owner->getLocalisedTable($baseTable);
+        $localisedVersionTable = $localisedTable . static::SUFFIX_VERSIONS;
+        $alias = $baseTable . '_Versions_Latest';
+        $localisedAlias = $baseTable . '_Localised_Versions_Latest';
+
+        $subSelect
+            ->addInnerJoin(
+                $localisedVersionTable,
+                sprintf(
+                    '"%1$s"."RecordID" = "%2$s"."RecordID" AND "%1$s"."Version" = "%2$s"."Version"',
+                    $alias,
+                    $localisedAlias
+                ),
+                $localisedAlias
+            )
+            ->addWhere([sprintf('"%s"."Locale"', $localisedAlias) => $locale]);
+    }
+
+    /**
+     * Localise version cache populate
+     * Extension point in @see Versioned::prepopulate_versionnumber_cache()
+     *
+     * @param array $versions
+     * @param DataObject|string $class
+     * @param string $stage
+     * @param array|null $idList
+     */
+    public function updatePrePopulateVersionNumberCache(array $versions, $class, string $stage, ?array $idList): void
+    {
+        $locale = FluentState::singleton()->getLocale();
+
+        if (!$locale) {
+            return;
+        }
+
+        $schema = DataObject::getSchema();
+        $baseClass = $schema->baseDataClass($class);
+        $className = $class instanceof DataObject ? $class->ClassName : $class;
+        $list = $this->getCurrentVersionNumbers($className, $stage, $idList);
+
+        foreach ($list as $id => $version) {
+            $this->setVersionCacheItem($baseClass, $stage, $locale, $id, $version);
+        }
+
+        if ($idList) {
+            return;
+        }
+
+        $this->setVersionCacheItem($baseClass, $stage, $locale, static::CACHE_COMPLETE);
+    }
+
+    /**
+     * Localise version lookup
+     * Extension point in @see Versioned::get_versionnumber_by_stage()
+     *
+     * @param int|null $version
+     * @param DataObject|string $class
+     * @param string $stage
+     * @param int $id
+     * @param bool $cache
+     */
+    public function updateGetVersionNumberByStage(?int &$version, $class, string $stage, int $id, bool $cache): void
+    {
+        $locale = FluentState::singleton()->getLocale();
+
+        if (!$locale) {
+            return;
+        }
+
+        $schema = DataObject::getSchema();
+        $baseClass = $schema->baseDataClass($class);
+        $className = $class instanceof DataObject ? $class->ClassName : $class;
+
+        if ($cache) {
+            $localisedVersion = $this->getVersionCacheItem($baseClass, $stage, $locale, $id);
+
+            if ($localisedVersion !== false) {
+                $version = $localisedVersion;
+
+                return;
+            }
+        }
+
+        $list = $this->getCurrentVersionNumbers($className, $stage, [$id]);
+
+        if (!$list) {
+            $version = null;
+
+            return;
+        }
+
+        $localisedVersion = array_shift($list);
+
+        if ($cache) {
+            $this->setVersionCacheItem($baseClass, $stage, $locale, $id, $localisedVersion);
+        }
+
+        $version = $localisedVersion;
+    }
+
+    /**
+     * List versions for all objects in current locale (or a subset based on provided ids)
+     *
+     * @param string $class
+     * @param string $stage
+     * @param array|null $ids
+     * @return array
+     */
+    protected function getCurrentVersionNumbers(string $class, string $stage, ?array $ids = null): array
+    {
+        $locale = FluentState::singleton()->getLocale();
+        $schema = DataObject::getSchema();
+        $baseClass = $schema->baseDataClass($class);
+        $baseTable = $schema->tableName($baseClass);
+
+        /** @var DataObject|FluentExtension $singleton */
+        $singleton = DataObject::singleton($class);
+        $versionedTable = $baseTable . static::SUFFIX_VERSIONS;
+        $localisedTable = $singleton->getLocalisedTable($baseTable);
+        $localisedVersionTable = $localisedTable . static::SUFFIX_VERSIONS;
+
+        if ($stage === Versioned::LIVE) {
+            $localisedTable .= static::SUFFIX_LIVE;
+        }
+
+        // note the following query gets called for each record in the site tree - so it is a possible performance issue
+        // the core implementation is much simpler but does not handle versions across locales
+        $liveSegment = $stage === Versioned::LIVE
+            ? sprintf(' AND "%s"."WasPublished" = 1', $versionedTable)
+            : '';
+
+        $idSegment = $ids
+            ? sprintf(' AND "BaseTable"."RecordID" IN (%s)', DB::placeholders($ids))
+            : '';
+
+        $sql = 'SELECT "BaseTable"."RecordID" as "LatestID", MAX("%1$s"."Version") as "LatestVersion" FROM "%2$s" AS "BaseTable"'
+            . ' INNER JOIN "%1$s" ON "BaseTable"."RecordID" = "%1$s"."RecordID" AND "%1$s"."Locale" = ?'
+            . ' INNER JOIN "%3$s" ON "%3$s"."RecordID" = "%1$s"."RecordID" AND "%3$s"."Version" = "%1$s"."Version"'
+            . ' WHERE "BaseTable"."Locale" = ?%4$s%5$s'
+            . ' GROUP BY "LatestID"';
+
+        $query = sprintf(
+            $sql,
+            $localisedVersionTable,
+            $localisedTable,
+            $versionedTable,
+            $liveSegment,
+            $idSegment
+        );
+
+        $params = [$locale, $locale];
+        $params = $ids ? array_merge($params, $ids) : $params;
+
+        $results = DB::prepared_query($query, $params);
+        $versions = [];
+
+        while ($result = $results->next()) {
+            $id = (int) $result['LatestID'];
+            $version = (int) $result['LatestVersion'];
+
+            $versions[$id] = $version;
+        }
+
+        return $versions;
+    }
+
+    /**
+     * @param string $class
+     * @param string $stage
+     * @param string $locale
+     * @param int $id
+     * @return int|bool|null
+     */
+    protected function getVersionCacheItem(string $class, string $stage, string $locale, int $id)
+    {
+        if (isset($this->versionsCache[$class][$stage][$locale][$id])) {
+            return $this->versionsCache[$class][$stage][$locale][$id] ?: null;
+        }
+
+        if (isset($this->versionsCache[$class][$stage][$locale][static::CACHE_COMPLETE])) {
+            // if the cache was marked as "complete" then we know the record is missing, just return null
+            // this is used for treeview optimisation to avoid unnecessary re-requests for draft pages
+            return null;
+        }
+
+        // special value indicating that cache lookup couldn't find anything and fresh lookup needs to be done
+        return false;
+    }
+
+    /**
+     * @param string $class
+     * @param string $stage
+     * @param string $locale
+     * @param mixed $key
+     * @param int|null $value
+     */
+    protected function setVersionCacheItem(string $class, string $stage, string $locale, $key, ?int $value = 0): void
+    {
+        if (!array_key_exists($class, $this->versionsCache)) {
+            $this->versionsCache[$class] = [];
+        }
+
+        if (!array_key_exists($stage, $this->versionsCache[$class])) {
+            $this->versionsCache[$class][$stage] = [];
+        }
+
+        if (!array_key_exists($locale, $this->versionsCache[$class][$stage])) {
+            $this->versionsCache[$class][$stage][$locale] = [];
+        }
+
+        if ($key === static::CACHE_COMPLETE) {
+            $this->versionsCache[$class][$stage][$locale][$key] = true;
+
+            return;
+        }
+
+        // Internally store nulls as 0
+        $this->versionsCache[$class][$stage][$locale][$key] = $value ?: 0;
     }
 }

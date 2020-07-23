@@ -18,7 +18,6 @@ use SilverStripe\Versioned\Versioned;
 use SilverStripe\View\SSViewer;
 use TractorCow\Fluent\Extension\Traits\FluentAdminTrait;
 use TractorCow\Fluent\Model\Locale;
-use TractorCow\Fluent\Model\RecordLocale;
 use TractorCow\Fluent\State\FluentState;
 
 // Soft dependency on CMS module
@@ -179,6 +178,7 @@ class FluentSiteTreeExtension extends FluentVersionedExtension
         }
 
         $this->updateModifiedFlag($flags);
+        $this->updateArchivedFlag($flags);
         $this->updateNoSourceFlag($flags);
 
         // If this page does not exist it should be "invisible"
@@ -230,6 +230,9 @@ class FluentSiteTreeExtension extends FluentVersionedExtension
         // Update unpublish and archive actions
         $this->updateMoreOptionsActions($actions);
 
+        // restore action needs to be removed if current locale was never archived
+        $this->updateRestoreAction($actions);
+
         // Add extra fluent menu
         $this->updateFluentActions($actions, $this->owner);
     }
@@ -256,47 +259,7 @@ class FluentSiteTreeExtension extends FluentVersionedExtension
             return;
         }
 
-        $message = null;
-
-        if ($this->owner->config()->get('frontend_publish_required')) {
-            // If publishing is required, then we can just check whether or not this locale has been published.
-            if (!$this->isPublishedInLocale()) {
-                $message = _t(
-                    __CLASS__ . '.LOCALESTATUSFLUENTINVISIBLE',
-                    'This page will not be visible in this locale until it has been published.'
-                );
-            }
-        } else {
-            // If frontend publishing is *not* required, then we have multiple possibilities.
-            if (!$this->isDraftedInLocale()) {
-                $info = RecordLocale::create($this->owner, Locale::getCurrentLocale());
-
-                // Our content hasn't been drafted or published.
-                if ($info->getSourceLocale()) {
-                    // If this Locale has a Fallback, then content might be getting inherited from that Fallback.
-                    $message = _t(
-                        __CLASS__ . '.LOCALESTATUSFLUENTINHERITED',
-                        'Content for this page may be inherited from another locale. If you wish you make an ' .
-                        'independent copy of this page, please use one of the "Copy" actions provided.'
-                    );
-                } else {
-                    // This locale doesn't have any content source
-                    $message = _t(
-                        __CLASS__ . '.LOCALESTATUSFLUENTUNKNOWN',
-                        'No content is available for this page. Please localise this page or provide a locale fallback.'
-                    );
-                }
-            } elseif (!$this->isPublishedInLocale()) {
-                // Our content has been saved to draft, but hasn't yet been published. That published content may be
-                // coming from a Fallback.
-                $message = _t(
-                    __CLASS__ . '.LOCALESTATUSFLUENTDRAFT',
-                    'A draft has been created for this locale, however, published content may still be ' .
-                    'inherited from another. To publish this content for this locale, use the "Save & publish" ' .
-                    'action provided.'
-                );
-            }
-        }
+        $message = $this->getLocaleStatusMessage();
 
         if ($message === null) {
             return;
@@ -311,6 +274,61 @@ class FluentSiteTreeExtension extends FluentVersionedExtension
                 )
             )
         );
+    }
+
+    /**
+     * @return string|string
+     */
+    protected function getLocaleStatusMessage(): ?string
+    {
+        $owner = $this->owner;
+
+        if ($owner->config()->get('frontend_publish_required')) {
+            // If publishing is required, then we can just check whether or not this locale has been published.
+            if (!$this->isPublishedInLocale()) {
+                return _t(
+                    __CLASS__ . '.LOCALESTATUSFLUENTINVISIBLE',
+                    'This page will not be visible in this locale until it has been published.'
+                );
+            }
+
+            return null;
+        }
+
+        // If frontend publishing is *not* required, then we have multiple possibilities.
+        if (!$this->isDraftedInLocale()) {
+            $locale = FluentState::singleton()->getLocale();
+            $info = $owner->LocaleInformation($locale);
+
+            // Our content hasn't been drafted or published.
+            if ($info->getSourceLocale()) {
+                // If this Locale has a Fallback, then content might be getting inherited from that Fallback.
+                return _t(
+                    __CLASS__ . '.LOCALESTATUSFLUENTINHERITED',
+                    'Content for this page may be inherited from another locale. If you wish you make an ' .
+                    'independent copy of this page, please use one of the "Copy" actions provided.'
+                );
+            }
+
+            // This locale doesn't have any content source
+            return _t(
+                __CLASS__ . '.LOCALESTATUSFLUENTUNKNOWN',
+                'No content is available for this page. Please localise this page or provide a locale fallback.'
+            );
+        }
+
+        if (!$this->isPublishedInLocale()) {
+            // Our content has been saved to draft, but hasn't yet been published. That published content may be
+            // coming from a Fallback.
+            return _t(
+                __CLASS__ . '.LOCALESTATUSFLUENTDRAFT',
+                'A draft has been created for this locale, however, published content may still be ' .
+                'inherited from another. To publish this content for this locale, use the "Save & publish" ' .
+                'action provided.'
+            );
+        }
+
+        return null;
     }
 
     /**
@@ -491,6 +509,26 @@ class FluentSiteTreeExtension extends FluentVersionedExtension
     }
 
     /**
+     * Restore action needs to be removed if there is no version to revert to
+     *
+     * @param FieldList $actions
+     */
+    protected function updateRestoreAction(FieldList $actions): void
+    {
+        $owner = $this->owner;
+
+        if ($owner->existsInLocale()) {
+            return;
+        }
+
+        if ($owner->hasArchiveInLocale()) {
+            return;
+        }
+
+        $actions->removeByName('action_restore');
+    }
+
+    /**
      * Remove "copy to draft" and "copy & publish" actions based on configuration
      *
      * @param FieldList $actions
@@ -576,19 +614,54 @@ class FluentSiteTreeExtension extends FluentVersionedExtension
     }
 
     /**
-     * Add a flag which indicates that a page has content in other locale but the content is not being inherited
+     * Localise archived flag - remove archived flag if there is content on other locales
      *
      * @param array $flags
      */
-    protected function updateNoSourceFlag(array &$flags): void
+    protected function updateArchivedFlag(array &$flags): void
     {
+        if (!array_key_exists('archived', $flags)) {
+            return;
+        }
+
         $locale = FluentState::singleton()->getLocale();
 
         if (!$locale) {
             return;
         }
 
-        if ($this->owner->LocaleInformation($locale)->getSourceLocale()) {
+        if (!$this->owner->getLocaleInstances()) {
+            return;
+        }
+
+        unset($flags['archived']);
+    }
+
+    /**
+     * Add a flag which indicates that a page has content in other locale but the content is not being inherited
+     *
+     * @param array $flags
+     */
+    protected function updateNoSourceFlag(array &$flags): void
+    {
+        if (array_key_exists('archived', $flags)) {
+            return;
+        }
+
+        $locale = FluentState::singleton()->getLocale();
+
+        if (!$locale) {
+            return;
+        }
+
+        $owner = $this->owner;
+        $info = $owner->LocaleInformation($locale);
+
+        if ($info->getSourceLocale()) {
+            return;
+        }
+
+        if (!$owner->getLocaleInstances()) {
             return;
         }
 
