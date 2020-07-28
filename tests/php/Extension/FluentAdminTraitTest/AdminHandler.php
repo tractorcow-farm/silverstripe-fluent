@@ -1,6 +1,6 @@
 <?php
 
-namespace TractorCow\Fluent\Tests\php\Extension\FluentAdminTraitTest;
+namespace TractorCow\Fluent\Tests\Extension\FluentAdminTraitTest;
 
 use SilverStripe\Core\Injector\Injectable;
 use SilverStripe\Dev\TestOnly;

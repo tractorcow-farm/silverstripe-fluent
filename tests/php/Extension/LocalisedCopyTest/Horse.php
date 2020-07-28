@@ -1,6 +1,6 @@
 <?php
 
-namespace TractorCow\Fluent\Tests\php\Extension\LocalisedCopyTest;
+namespace TractorCow\Fluent\Tests\Extension\LocalisedCopyTest;
 
 /**
  * Class Horse

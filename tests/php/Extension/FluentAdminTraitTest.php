@@ -1,6 +1,6 @@
 <?php
 
-namespace TractorCow\Fluent\Tests\php\Extension;
+namespace TractorCow\Fluent\Tests\Extension;
 
 use SilverStripe\Dev\SapphireTest;
 use SilverStripe\Forms\Form;
@@ -14,8 +14,8 @@ use TractorCow\Fluent\Tests\Extension\FluentExtensionTest\LocalisedChild;
 use TractorCow\Fluent\Tests\Extension\FluentExtensionTest\LocalisedParent;
 use TractorCow\Fluent\Tests\Extension\FluentExtensionTest\MixedLocalisedSortObject;
 use TractorCow\Fluent\Tests\Extension\FluentExtensionTest\UnlocalisedChild;
-use TractorCow\Fluent\Tests\php\Extension\FluentAdminTraitTest\AdminHandler;
-use TractorCow\Fluent\Tests\php\Extension\FluentAdminTraitTest\GridObjectVersioned;
+use TractorCow\Fluent\Tests\Extension\FluentAdminTraitTest\AdminHandler;
+use TractorCow\Fluent\Tests\Extension\FluentAdminTraitTest\GridObjectVersioned;
 
 class FluentAdminTraitTest extends SapphireTest
 {
