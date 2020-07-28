@@ -56,7 +56,7 @@
     "autoload": {
         "psr-4": {
             "TractorCow\\Fluent\\": "src/",
-            "TractorCow\\Fluent\\Tests\\": "tests/"
+            "TractorCow\\Fluent\\Tests\\": "tests/php/"
         }
     },
     "scripts": {
