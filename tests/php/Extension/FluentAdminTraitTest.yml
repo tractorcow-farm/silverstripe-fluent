@@ -2,7 +2,7 @@
 
 # Three base records, all defined initially in English. The Title and Description fields are used for sorting
 # unit tests, and the Description column is deliberately not localised. The Description field is localised.
-TractorCow\Fluent\Tests\php\Extension\FluentAdminTraitTest\GridObjectVersioned:
+TractorCow\Fluent\Tests\Extension\FluentAdminTraitTest\GridObjectVersioned:
   record_a:
     Title: A record
     Description: Unique value
@@ -10,19 +10,19 @@ TractorCow\Fluent\Tests\php\Extension\FluentAdminTraitTest\GridObjectVersioned:
 
 FluentTest_GridObjectVersioned_Live:
   record_a:
-    ID: =>TractorCow\Fluent\Tests\php\Extension\FluentAdminTraitTest\GridObjectVersioned.record_a
+    ID: =>TractorCow\Fluent\Tests\Extension\FluentAdminTraitTest\GridObjectVersioned.record_a
     Title: A record
     Description: Unique value
     Version: 2
 
 FluentTest_GridObjectVersioned_Localised:
   record_a_us:
-    RecordID: =>TractorCow\Fluent\Tests\php\Extension\FluentAdminTraitTest\GridObjectVersioned.record_a
+    RecordID: =>TractorCow\Fluent\Tests\Extension\FluentAdminTraitTest\GridObjectVersioned.record_a
     Title: A record
     Description: Not very interesting
     Locale: en_US
   record_a_de:
-    RecordID: =>TractorCow\Fluent\Tests\php\Extension\FluentAdminTraitTest\GridObjectVersioned.record_a
+    RecordID: =>TractorCow\Fluent\Tests\Extension\FluentAdminTraitTest\GridObjectVersioned.record_a
     Title: Eine Akte
     Description: Nicht sehr interessant
     Locale: de_DE
@@ -30,7 +30,7 @@ FluentTest_GridObjectVersioned_Localised:
 
 FluentTest_GridObjectVersioned_Localised_Live:
   record_a_de:
-    RecordID: =>TractorCow\Fluent\Tests\php\Extension\FluentAdminTraitTest\GridObjectVersioned.record_a
+    RecordID: =>TractorCow\Fluent\Tests\Extension\FluentAdminTraitTest\GridObjectVersioned.record_a
     Title: Eine Akte
     Description: Live live de hahaha
     Locale: de_DE
