@@ -76,55 +76,55 @@ class FluentDirectorExtension extends Extension
      */
     public function updateRules(&$rules)
     {
-        $originalRules = $rules;
-        $fluentRules = $this->getExplicitRoutes($rules);
-
-        // Insert Fluent Rules before the default '$URLSegment//$Action/$ID/$OtherID'
-        $rules = $this->insertRuleBefore($rules, '$URLSegment//$Action/$ID/$OtherID', $fluentRules);
-
         $request = Injector::inst()->get(HTTPRequest::class);
         if (!$request) {
             throw new Exception('No request found');
         }
 
         // Ensure InitStateMddleware is called here to set the correct defaultLocale
-        Injector::inst()->create(InitStateMiddleware::class)->process($request, function () {
-        });
+        Injector::inst()->create(InitStateMiddleware::class)
+            ->process($request, function () use (&$rules) {
+                $originalRules = $rules;
+                $fluentRules = $this->getExplicitRoutes($rules);
 
-        $defaultLocale = Locale::getDefault(true);
-        if (!$defaultLocale) {
-            return;
-        }
+                // Insert Fluent Rules before the default '$URLSegment//$Action/$ID/$OtherID'
+                $rules = $this->insertRuleBefore($rules, '$URLSegment//$Action/$ID/$OtherID', $fluentRules);
 
-        // If we don't want to detect home page locale, or the home page only has one candidate locale anyway,
-        if (!static::config()->get('detect_locale')
-            || $defaultLocale->getIsOnlyLocale()
-            || FluentDirectorExtension::config()->get('disable_default_prefix')
-        ) {
-            // Respect existing home controller
-            $originalHomeRole = $originalRules[''] ?? null;
-            if ($originalHomeRole) {
-                $rules[''] = [
-                    'Controller'                         => $this->getRuleController($originalHomeRole, $defaultLocale),
-                    static::config()->get('query_param') => $defaultLocale->Locale,
-                ];
-            }
-        }
+                $defaultLocale = Locale::getDefault(true);
+                if (!$defaultLocale) {
+                    return;
+                }
 
-        // If default locale doesn't have prefix, replace default route with
-        // the default locale for this domain
-        if (static::config()->get('disable_default_prefix')) {
-            $originalURLSegmentRule = $originalRules['$URLSegment//$Action/$ID/$OtherID'] ?? null;
-            if ($originalURLSegmentRule) {
-                $rules['$URLSegment//$Action/$ID/$OtherID'] = [
-                    'Controller'                         => $this->getRuleController($originalURLSegmentRule, $defaultLocale),
-                    static::config()->get('query_param') => $defaultLocale->Locale
-                ];
-            }
-        }
+                // If we don't want to detect home page locale, or the home page only has one candidate locale anyway,
+                if (!static::config()->get('detect_locale')
+                    || $defaultLocale->getIsOnlyLocale()
+                    || FluentDirectorExtension::config()->get('disable_default_prefix')
+                ) {
+                    // Respect existing home controller
+                    $originalHomeRole = $originalRules[''] ?? null;
+                    if ($originalHomeRole) {
+                        $rules[''] = [
+                            'Controller'                         => $this->getRuleController($originalHomeRole, $defaultLocale),
+                            static::config()->get('query_param') => $defaultLocale->Locale,
+                        ];
+                    }
+                }
 
-        // Hook for appending / adjusting any additional rules
-        $this->owner->extend('updateFluentRoutes', $rules);
+                // If default locale doesn't have prefix, replace default route with
+                // the default locale for this domain
+                if (static::config()->get('disable_default_prefix')) {
+                    $originalURLSegmentRule = $originalRules['$URLSegment//$Action/$ID/$OtherID'] ?? null;
+                    if ($originalURLSegmentRule) {
+                        $rules['$URLSegment//$Action/$ID/$OtherID'] = [
+                            'Controller'                         => $this->getRuleController($originalURLSegmentRule, $defaultLocale),
+                            static::config()->get('query_param') => $defaultLocale->Locale
+                        ];
+                    }
+                }
+
+                // Hook for appending / adjusting any additional rules
+                $this->owner->extend('updateFluentRoutes', $rules);
+            });
     }
 
     /**
