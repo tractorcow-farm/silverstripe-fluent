@@ -489,9 +489,18 @@ SQL;
         static::reset();
     }
 
+    public function flushVersionsCache(): void
+    {
+        $this->versionsCache = [];
+    }
+
     public static function reset()
     {
         static::$idsInLocaleCache = [];
+
+        /** @var FluentVersionedExtension $singleton */
+        $singleton = singleton(static::class);
+        $singleton->flushVersionsCache();
     }
 
     /**
@@ -636,6 +645,28 @@ SQL;
     }
 
     /**
+     * Extension point in @see Versioned::isPublished()
+     *
+     * @param bool $isPublished
+     */
+    public function updateIsPublished(bool &$isPublished): void
+    {
+        if (!FluentState::singleton()->getLocale()) {
+            return;
+        }
+
+        // isPublished() has to refer to the base record as we have isPublishedInLocale() for localised record
+        $isPublished = FluentState::singleton()->withState(function (FluentState $state): bool {
+            $state->setLocale(null);
+
+            /** @var Versioned $owner */
+            $owner = $this->owner;
+
+            return $owner->isPublished();
+        });
+    }
+
+    /**
      * Localise archived state
      * Extension point in @see Versioned::isArchived()
      *
@@ -656,6 +687,28 @@ SQL;
         }
 
         $isArchived = $archived;
+    }
+
+    /**
+     * Extension point in @see Versioned::isOnDraft()
+     *
+     * @param bool $isOnDraft
+     */
+    public function updateIsOnDraft(bool &$isOnDraft): void
+    {
+        if (!FluentState::singleton()->getLocale()) {
+            return;
+        }
+
+        // isOnDraft() has to refer to the base record as we have isDraftedInLocale() for localised record
+        $isOnDraft = FluentState::singleton()->withState(function (FluentState $state): bool {
+            $state->setLocale(null);
+
+            /** @var Versioned $owner */
+            $owner = $this->owner;
+
+            return $owner->isOnDraft();
+        });
     }
 
     /**

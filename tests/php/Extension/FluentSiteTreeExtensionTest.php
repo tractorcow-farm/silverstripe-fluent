@@ -260,6 +260,8 @@ class FluentSiteTreeExtensionTest extends SapphireTest
 
     public function testUpdateCMSActionsInherited()
     {
+        Config::modify()->set(Page::class, 'localise_actions_enabled', true);
+
         /** @var Page|FluentSiteTreeExtension $page */
         $page = $this->objFromFixture(Page::class, 'home');
         $actions = $page->getCMSActions();
@@ -281,6 +283,8 @@ class FluentSiteTreeExtensionTest extends SapphireTest
 
     public function testUpdateCMSActionsDrafted()
     {
+        Config::modify()->set(Page::class, 'localise_actions_enabled', true);
+
         /** @var Page|FluentSiteTreeExtension $page */
         $page = $this->objFromFixture(Page::class, 'about');
         $actions = $page->getCMSActions();
