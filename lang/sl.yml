@@ -1,0 +1,58 @@
+sl:
+  TractorCow\Fluent\Control\LocaleAdmin:
+    MENUTITLE: Lokalizacije / Jeziki
+  TractorCow\Fluent\Extension\FluentBadgeExtension:
+    BadgeDefault: 'Privzeto'
+    BadgeInvisible: 'Lokalizirano v {locale}'
+    BadgeLocalised: 'Tip {type} je skrit za to lokalizacijo'
+  TractorCow\Fluent\Extension\FluentExtension:
+    FLUENT_ICON_TOOLTIP: 'Lokalizirano polje'
+  TractorCow\Fluent\Extension\FluentFilteredExtension:
+    FILTERED_LOCALES: 'Prikaži te lokalizacije'
+    LOCALEFILTEREDHELP: 'Stran za to lokalizacijo ni vidna'
+    TAB_LOCALES: Lokalizacije
+  TractorCow\Fluent\Extension\FluentSiteTreeExtension:
+    LOCALECOPYANDPUBLISH: 'Kopiraj in objavi'
+    LOCALECOPYTODRAFT: 'Kopiraj v osnutek'
+    LOCALESTATUSFLUENTDRAFT: 'Ustvarili smo osnutek strani za izbrano lokalizacijo, a je na strani lahko še vedno objavljena vsebina iz izvorne lokalizacije. Za objavo vsebine iz te lokalizacije kliknite "Kopiraj in objavi".'
+    LOCALESTATUSFLUENTINHERITED: 'Stran lahko prevzema vsebino iz druge lokalizacije. Če želite ustvariti nepovezano kopijo strani, uporabite eno od akcij kopiranja, ki so na voljo.'
+    LOCALESTATUSFLUENTINVISIBLE: 'Stran ne bo vidna dokler ne bo objavljena za to lokalizacijo.'
+  TractorCow\Fluent\Model\Domain:
+    DEFAULT: 'Privzeta lokalizacija'
+    DEFAULT_NONE: (brez)
+    DOMAIN_HOSTNAME: 'Domensko ime gostitelja / hostname'
+    DOMAIN_LOCALES: Lokalizacije
+    PLURALNAME: Domene
+    PLURALS:
+      one: 'Domena'
+      two: '{count} domeni'
+      few: '{count} domen'
+      other: '{count} domen'
+    SINGULARNAME: Domena
+    UnsavedNotice: 'Lokalizacije boste lahko dodajali, ko boste shranili domeno.'
+  TractorCow\Fluent\Model\FallbackLocale:
+    LOCALE: Lokalizacija
+    PLURALNAME: 'Nadomestne lokalizacije'
+    PLURALS:
+      one: 'Nadomestna lokalizacija'
+      two: '{count} nadomestni lokalizaciji'
+      few: '{count} nadomestnih lokalizacij'
+      other: '{count} nadomestnih lokalizacij'
+    SINGULARNAME: 'Nadomestna lokalizacija'
+  TractorCow\Fluent\Model\Locale:
+    DEFAULT_NONE: (brez)
+    DOMAIN: Domena
+    FALLBACKS: 'Nadomestne lokalizacije'
+    IS_DEFAULT: 'Splošno privzeta lokalizacija'
+    IS_DEFAULT_DESCRIPTION: 'Opomba: Lokalizacije, vezane na posamezno domeno, je mogoče nastaviti v zavihku Lokalizacije. V tem primeru bo specifična lokalizacija prevladala nad splošno privzeto.'
+    LOCALE: Lokalizacija
+    LOCALE_TITLE: Naslov
+    LOCALE_URL: 'URL segment'
+    PLURALNAME: Lokalizacije
+    PLURALS:
+      one: 'Lokalizacija'
+      two: '{count} lokalizaciji'
+      few: '{count} lokalizacij/e'
+      other: '{count} lokalizacij/e'
+    SINGULARNAME: Lokalizacija
+    UnsavedNotice: 'Nadomestne lokalizacije boste lahko dodali, ko boste shranili trenutno lokalizacijo.'
