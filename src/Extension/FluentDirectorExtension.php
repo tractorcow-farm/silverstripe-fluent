@@ -91,6 +91,7 @@ class FluentDirectorExtension extends Extension
                 $rules = $this->insertRuleBefore($rules, '$URLSegment//$Action/$ID/$OtherID', $fluentRules);
 
                 $defaultLocale = Locale::getDefault(true);
+                $this->owner->extend('updateFluentDirectorDefaultLocale', $defaultLocale);
                 if (!$defaultLocale) {
                     return;
                 }
