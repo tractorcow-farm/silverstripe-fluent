@@ -1,0 +1,11 @@
+es:
+    BadgeHiddenHelp: Página oculta para este idioma
+    BadgeHiddenShort: Oculto
+    ChangeLocale: Cambiar de idioma
+    LocaleFilter: Filtro de idioma
+    LocaleFilterDescription: Seleccione un idioma para esta página
+    LocaleMenuFilterDescription: Seleccione los idiomas en los que se muestra esta página
+    TABLOCALES: Idiomas
+    DefaultLocale: Este es el idioma predeterminado
+    DefaultLocaleIs: El idioma predeterminado es
+    EditingIn: Editando en
