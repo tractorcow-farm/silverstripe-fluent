@@ -1,6 +1,6 @@
 sl:
   TractorCow\Fluent\Control\LocaleAdmin:
-    MENUTITLE: Lokalizacije / Jeziki
+    MENUTITLE: Lokalizacije
   TractorCow\Fluent\Extension\FluentBadgeExtension:
     BadgeDefault: 'Privzeto'
     BadgeInvisible: 'Lokalizirano v {locale}'

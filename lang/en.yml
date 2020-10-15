@@ -1,4 +1,9 @@
 en:
+  SilverStripe\CMS\Controllers\CMSMain:
+    ARCHIVE: Archive
+  SilverStripe\CMS\Model\SiteTree:
+    BUTTONPUBLISHED: Published
+    BUTTONSAVEPUBLISH: Publish
   TractorCow\Fluent\Control\LocaleAdmin:
     MENUTITLE: Locales
   TractorCow\Fluent\Extension\FluentBadgeExtension:
@@ -6,7 +11,15 @@ en:
     BadgeInvisible: 'Localised in {locale}'
     BadgeLocalised: '{type} is not visible in this locale'
   TractorCow\Fluent\Extension\FluentExtension:
+    COPY_FROM: 'Copy to {locale} from:'
+    COPY_TO: 'Copy from {locale} to:'
     FLUENT_ICON_TOOLTIP: 'Translatable field'
+    LOCALISED: Localised
+    Localise: Localise
+    NOSOURCE: 'No source'
+    NOTLOCALISED: 'Not localised'
+    Unlocalise: Unlocalise
+    UnlocaliseTooltip: 'Remove {name} from current locale'
   TractorCow\Fluent\Extension\FluentFilteredExtension:
     FILTERED_LOCALES: 'Display in the following locales'
     LOCALEFILTEREDHELP: 'This page is not visible in this locale'
@@ -17,6 +30,29 @@ en:
     LOCALESTATUSFLUENTDRAFT: 'A draft has been created for this locale, however, published content may still be inherited from another. To publish this content for this locale, use the "Save & publish" action provided.'
     LOCALESTATUSFLUENTINHERITED: 'Content for this page may be inherited from another locale. If you wish you make an independent copy of this page, please use one of the "Copy" actions provided.'
     LOCALESTATUSFLUENTINVISIBLE: 'This page will not be visible in this locale until it has been published.'
+    LOCALESTATUSFLUENTUNKNOWN: 'No content is available for this page. Please localise this page or provide a locale fallback.'
+  TractorCow\Fluent\Extension\FluentVersionedExtension:
+    DRAFT: Draft
+    LIVENO: 'No'
+    LIVEYES: 'Yes'
+    MODIFIED: Modified
+    NOSOURCE: 'No source'
+    NOTLOCALISED: 'Not localised'
+    PUBLISHED: Published
+  TractorCow\Fluent\Forms\DeleteAllLocalesAction:
+    Delete: 'Delete record in all locales'
+  TractorCow\Fluent\Forms\DeleteLocaleAction:
+    DELETE: 'Delete in this locale'
+  TractorCow\Fluent\Forms\LocaleToggleColumn:
+    DISPLAY_IN: 'Visible?'
+  TractorCow\Fluent\Forms\PublishAction:
+    PUBLISH: 'Publish in this locale'
+  TractorCow\Fluent\Forms\SaveLocaleAction:
+    SAVE: 'Save in this locale'
+  TractorCow\Fluent\Forms\UnpublishAction:
+    UNPUBLISH: 'Unpublish in this locale'
+  TractorCow\Fluent\Forms\VisibleLocalesColumn:
+    LocalesTitle: Locales
   TractorCow\Fluent\Model\Domain:
     DEFAULT: 'Default locale'
     DEFAULT_NONE: (none)
@@ -38,17 +74,22 @@ en:
   TractorCow\Fluent\Model\Locale:
     DEFAULT_NONE: (none)
     DOMAIN: Domain
+    EDIT_LOCALE: 'Access "{title}" ({locale})'
     FALLBACKS: 'Fallback Locales'
     IS_DEFAULT: 'This is the global default locale'
     IS_DEFAULT_DESCRIPTION: 'Note: Per-domain specific locale can be assigned on the Locales tab and will override this value for specific domains.'
     LOCALE: Locale
     LOCALE_TITLE: Title
     LOCALE_URL: 'URL Segment'
+    MULTI_LOCALE: 'Access to multi-locale actions (E.g. save in all locales)'
+    PERMISSION: Localisation
     PLURALNAME: Locales
     PLURALS:
       one: 'A Locale'
       other: '{count} Locales'
     SINGULARNAME: Locale
+    USE_X_DEFAULT: 'Use {code} as SEO language code (treat as global)'
+    USE_X_DEFAULT_DESCRIPTION: 'Use of this code indicates to search engines that this is a non-localised global landing page'
     UnsavedNotice: 'You can add fallbacks once you''ve saved the locale.'
   TractorCow\Fluent\Extension\Traits\FluentAdminTrait:
     ClearAllNotice: 'All localisations have been cleared for ''{title}''.'
