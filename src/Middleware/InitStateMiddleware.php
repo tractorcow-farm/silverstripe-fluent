@@ -8,7 +8,6 @@ use SilverStripe\Control\HTTPRequest;
 use SilverStripe\Control\Middleware\HTTPMiddleware;
 use SilverStripe\Core\Config\Configurable;
 use SilverStripe\Core\Environment;
-use SilverStripe\Core\Injector\Injector;
 use TractorCow\Fluent\Extension\FluentDirectorExtension;
 use TractorCow\Fluent\Model\Domain;
 use TractorCow\Fluent\State\FluentState;
@@ -33,31 +32,31 @@ class InitStateMiddleware implements HTTPMiddleware
 
     public function process(HTTPRequest $request, callable $delegate)
     {
-        $state = FluentState::create();
-        Injector::inst()->registerService($state);
+        return FluentState::singleton()
+            ->withState(function ($state) use ($delegate, $request) {
+                // Detect frontend
+                $isFrontend = $this->getIsFrontend($request);
 
-        // Detect frontend
-        $isFrontend = $this->getIsFrontend($request);
+                // Only set domain mode on the frontend
+                $isDomainMode = $isFrontend ? $this->getIsDomainMode($request) : false;
 
-        // Only set domain mode on the frontend
-        $isDomainMode = $isFrontend ? $this->getIsDomainMode($request) : false;
+                // Don't set domain unless in domain mode
+                $domain = $isDomainMode ? Director::host($request) : null;
 
-        // Don't set domain unless in domain mode
-        $domain = $isDomainMode ? Director::host($request) : null;
+                // Update state
+                $state
+                    ->setIsFrontend($isFrontend)
+                    ->setIsDomainMode($isDomainMode)
+                    ->setDomain($domain);
 
-        // Update state
-        $state
-            ->setIsFrontend($isFrontend)
-            ->setIsDomainMode($isDomainMode)
-            ->setDomain($domain);
-
-        return $delegate($request);
+                return $delegate($request);
+            });
     }
 
     /**
      * Determine whether the website is being viewed from the frontend or not
      *
-     * @param  HTTPRequest $request
+     * @param HTTPRequest $request
      * @return bool
      */
     public function getIsFrontend(HTTPRequest $request)
@@ -83,7 +82,7 @@ class InitStateMiddleware implements HTTPMiddleware
     /**
      * Determine whether the website is running in domain segmentation mode
      *
-     * @param  HTTPRequest $request
+     * @param HTTPRequest $request
      * @return bool
      */
     public function getIsDomainMode(HTTPRequest $request)

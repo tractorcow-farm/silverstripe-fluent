@@ -5,6 +5,7 @@ namespace TractorCow\Fluent\State;
 use InvalidArgumentException;
 use SilverStripe\Core\Injector\Injectable;
 use SilverStripe\Core\Injector\Injector;
+use SilverStripe\i18n\i18n;
 
 /**
  * Stores the current fluent state
@@ -145,11 +146,13 @@ class FluentState
     public function withState(callable $callback)
     {
         $newState = clone $this;
+        $oldLocale = i18n::get_locale(); // Backup locale in case the callback modifies this
         try {
             Injector::inst()->registerService($newState);
             return $callback($newState);
         } finally {
             Injector::inst()->registerService($this);
+            i18n::set_locale($oldLocale);
         }
     }
 }

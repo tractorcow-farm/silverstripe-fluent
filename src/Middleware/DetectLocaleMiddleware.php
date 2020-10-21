@@ -93,26 +93,28 @@ class DetectLocaleMiddleware implements HTTPMiddleware
      */
     public function process(HTTPRequest $request, callable $delegate)
     {
-        $state = FluentState::singleton();
-        $locale = $state->getLocale();
+        return FluentState::singleton()
+            ->withState(function ($state) use ($delegate, $request) {
+                $locale = $state->getLocale();
 
-        if (!$locale) {
-            $locale = $this->getLocale($request);
-            $state->setLocale($locale);
-        }
+                if (!$locale) {
+                    $locale = $this->getLocale($request);
+                    $state->setLocale($locale);
+                }
 
-        if ($locale && $state->getIsFrontend()) {
-            i18n::set_locale($state->getLocale());
-        }
+                if ($locale && $state->getIsFrontend()) {
+                    i18n::set_locale($state->getLocale());
+                }
 
-        // Persist the current locale if it has a value.
-        // Distinguishes null from empty strings in order to unset locales.
-        $newLocale = $state->getLocale();
-        if (!is_null($newLocale)) {
-            $this->setPersistLocale($request, $newLocale);
-        }
+                // Persist the current locale if it has a value.
+                // Distinguishes null from empty strings in order to unset locales.
+                $newLocale = $state->getLocale();
+                if (!is_null($newLocale)) {
+                    $this->setPersistLocale($request, $newLocale);
+                }
 
-        return $delegate($request);
+                return $delegate($request);
+            });
     }
 
     /**
