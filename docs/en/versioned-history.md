@@ -24,6 +24,36 @@ Content author is expected to switch to the locale where the archive is availabl
 
 `No source` flag indicates that the page is localised in some other locale but current locale does not have its own content nor does it inherit content form other locale.
 
+## Common Versioned methods
+
+Methods from `Versioned` will have altered behaviour.
+The data lookup will target localised records instead of base records.
+This may have impact on your CMS UI (buttons not showing up).
+
+### Common methods which are impacted
+
+* `isOnDraft()`
+* `isPublished()`
+* `isArchived()`
+* `stagesDiffer()`
+
+### How to query the base record
+
+There are some cases which need to use data lookup from base record.
+Example below shows how to do it.
+
+```
+// This will query the localised record
+$object->isPublished()
+
+// This will query the base record
+$baseRecordPublished = FluentState::singleton()->withState(function (FluentState $state) use ($object): bool {
+    $state->setLocale(null);
+
+    return $object->isPublished();
+});
+```
+
 ## Known issues
 
 There are some issues that may impact your project. It's recommended to review these before using this module.

@@ -43,15 +43,6 @@ class FluentSiteTreeExtension extends FluentVersionedExtension
     private static $locale_published_status_message = true;
 
     /**
-     * Enable localise actions (copy to draft and copy & publish actions)
-     * these actions can be used to localise page content directly via main page actions
-     *
-     * @config
-     * @var bool
-     */
-    private static $localise_actions_enabled = true;
-
-    /**
      * Add alternate links to metatags
      *
      * @param string &$tags
@@ -215,20 +206,8 @@ class FluentSiteTreeExtension extends FluentVersionedExtension
             return;
         }
 
-        // Update specific sitetree publish actions
-        $this->updateSavePublishActions($actions);
-
-        // Update specific sitetree localise actions
-        $this->updateLocaliseActions($actions);
-
         // Update information panel (shows published state)
         $this->updateInformationPanel($actions);
-
-        // Update the state of publish action (if needed)
-        $this->updatePublishState($actions);
-
-        // Update unpublish and archive actions
-        $this->updateMoreOptionsActions($actions);
 
         // restore action needs to be removed if current locale was never archived
         $this->updateRestoreAction($actions);
@@ -378,137 +357,6 @@ class FluentSiteTreeExtension extends FluentVersionedExtension
     }
 
     /**
-     * @param FieldList $actions
-     */
-    protected function updateSavePublishActions(FieldList $actions)
-    {
-        /** @var CompositeField $majorActions */
-        $majorActions = $actions->fieldByName('MajorActions');
-
-        // If another extension has removed this CompositeField then we don't need to update them.
-        if ($majorActions === null) {
-            return;
-        }
-
-        // There's no need to update actions in these ways if the Page has previously been published in this Locale.
-        if ($this->isPublishedInLocale()) {
-            return;
-        }
-
-        $isDraftedInLocale = $this->isDraftedInLocale();
-        $actionSave = $majorActions->getChildren()->fieldByName('action_save');
-        $actionPublish = $majorActions->getChildren()->fieldByName('action_publish');
-
-        // Make sure no other extensions have removed this field.
-        if ($actionSave !== null) {
-            // Check that the Page doesn't have a current draft.
-            if (!$isDraftedInLocale) {
-                $actionSave->addExtraClass('btn-primary font-icon-save');
-                $actionSave->setTitle(_t(__CLASS__ . '.LOCALECOPYTODRAFT', 'Copy to draft'));
-                $actionSave->removeExtraClass('btn-outline-primary font-icon-tick');
-            }
-        }
-
-        // Make sure no other extensions have removed this field.
-        if ($actionPublish !== null) {
-            $actionPublish->addExtraClass('btn-primary font-icon-rocket');
-            $actionPublish->removeExtraClass('btn-outline-primary font-icon-tick');
-
-            if ($isDraftedInLocale) {
-                $actionPublish->setTitle(_t('SilverStripe\CMS\Model\SiteTree.BUTTONSAVEPUBLISH', 'Save & publish'));
-            } else {
-                $actionPublish->setTitle(_t(__CLASS__ . '.LOCALECOPYANDPUBLISH', 'Copy & publish'));
-            }
-        }
-    }
-
-    /**
-     * Update publish action state to reflect the localised record instead of the base record
-     *
-     * @param FieldList $actions
-     */
-    protected function updatePublishState(FieldList $actions): void
-    {
-        $owner = $this->owner;
-
-        if (!$owner->isInDB()) {
-            return;
-        }
-
-        $published = $owner->isPublishedInLocale();
-
-        if (!$published) {
-            return;
-        }
-
-        /** @var CompositeField $majorActions */
-        $majorActions = $actions->fieldByName('MajorActions');
-
-        if (!$majorActions) {
-            return;
-        }
-
-        $publishAction = $majorActions->fieldByName('action_publish');
-
-        if (!$publishAction) {
-            return;
-        }
-
-        // make sure that changes only on the base record
-        // do not trigger "need to publish" button state
-        // this is needed because the default interface looks
-        // at the base record instead of the localised page
-        $publishAction
-            ->setTitle(_t('SilverStripe\\CMS\\Model\\SiteTree.BUTTONPUBLISHED', 'Published'))
-            ->removeExtraClass(
-                'btn-primary font-icon-rocket btn-outline-primary font-icon-tick'
-            )
-            ->addExtraClass('btn-outline-primary font-icon-tick');
-
-        if (!$owner->stagesDifferInLocale()) {
-            return;
-        }
-
-        // If staged and live is different we change the button to "Publish"
-        // as the page hasn't been published
-        $publishAction
-            ->setTitle(_t('SilverStripe\\CMS\\Model\\SiteTree.BUTTONSAVEPUBLISH', 'Publish'))
-            ->addExtraClass('btn-primary font-icon-rocket')
-            ->removeExtraClass('btn-outline-primary font-icon-tick');
-    }
-
-    /**
-     * Update archive and unpublish actions to reflect the localised record instead of the base record
-     *
-     * @param FieldList $actions
-     */
-    protected function updateMoreOptionsActions(FieldList $actions): void
-    {
-        /** @var Tab $moreOptions */
-        $moreOptions = $actions->fieldByName('ActionMenus.MoreOptions');
-
-        if (!$moreOptions) {
-            return;
-        }
-
-        if ($this->isPublishedInLocale()) {
-            return;
-        }
-
-        // remove unpublish action as the record is not published
-        $moreOptions->removeByName('action_unpublish');
-
-        // update the label on archive action as it could have "unpublish and archive" which is incorrect
-        $archiveAction = $moreOptions->fieldByName('action_archive');
-
-        if (!$archiveAction) {
-            return;
-        }
-
-        $archiveAction->setTitle(_t('SilverStripe\\CMS\\Controllers\\CMSMain.ARCHIVE', 'Archive'));
-    }
-
-    /**
      * Restore action needs to be removed if there is no version to revert to
      *
      * @param FieldList $actions
@@ -526,29 +374,6 @@ class FluentSiteTreeExtension extends FluentVersionedExtension
         }
 
         $actions->removeByName('action_restore');
-    }
-
-    /**
-     * Remove "copy to draft" and "copy & publish" actions based on configuration
-     *
-     * @param FieldList $actions
-     */
-    protected function updateLocaliseActions(FieldList $actions): void
-    {
-        $owner = $this->owner;
-
-        if ($owner->config()->get('localise_actions_enabled')) {
-            return;
-        }
-
-        if (!$owner->isInDB() || $owner->isDraftedInLocale()) {
-            return;
-        }
-
-        $actions->removeByName([
-            'action_save',
-            'action_publish',
-        ]);
     }
 
     /**

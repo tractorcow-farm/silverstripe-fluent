@@ -645,25 +645,19 @@ SQL;
     }
 
     /**
-     * Extension point in @see Versioned::isPublished()
+     * Extension point in @see Versioned::stagesDiffer()
      *
-     * @param bool $isPublished
+     * @param bool $stagesDiffer
      */
-    public function updateIsPublished(bool &$isPublished): void
+    public function updateStagesDiffer(bool &$stagesDiffer): void
     {
-        if (!FluentState::singleton()->getLocale()) {
+        $locale = FluentState::singleton()->getLocale();
+
+        if (!$locale) {
             return;
         }
 
-        // isPublished() has to refer to the base record as we have isPublishedInLocale() for localised record
-        $isPublished = FluentState::singleton()->withState(function (FluentState $state): bool {
-            $state->setLocale(null);
-
-            /** @var Versioned $owner */
-            $owner = $this->owner;
-
-            return $owner->isPublished();
-        });
+        $stagesDiffer = $this->owner->stagesDifferInLocale($locale);
     }
 
     /**
@@ -687,28 +681,6 @@ SQL;
         }
 
         $isArchived = $archived;
-    }
-
-    /**
-     * Extension point in @see Versioned::isOnDraft()
-     *
-     * @param bool $isOnDraft
-     */
-    public function updateIsOnDraft(bool &$isOnDraft): void
-    {
-        if (!FluentState::singleton()->getLocale()) {
-            return;
-        }
-
-        // isOnDraft() has to refer to the base record as we have isDraftedInLocale() for localised record
-        $isOnDraft = FluentState::singleton()->withState(function (FluentState $state): bool {
-            $state->setLocale(null);
-
-            /** @var Versioned $owner */
-            $owner = $this->owner;
-
-            return $owner->isOnDraft();
-        });
     }
 
     /**
