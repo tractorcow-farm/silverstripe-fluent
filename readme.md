@@ -56,6 +56,7 @@ localisations, or being a part of the contributing team, please see
  * [How Fluent works](docs/en/how-fluent-works.md)
  * [Scenarios](docs/en/scenarios.md)
  * [Localised copy](docs/en/localised-copy.md)
+ * [Versioned history](docs/en/versioned-history.md)
  * [Migrating from Translatable](docs/en/migrating-from-translatable.md)
  * [Changelogs](CHANGELOG.md)
 

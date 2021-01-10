@@ -1,0 +1,21 @@
+TractorCow\Fluent\Model\Locale:
+  nz:
+    Locale: en_NZ
+    Title: 'English (New Zealand)'
+    URLSegment: newzealand
+  us:
+    Locale: en_US
+    Title: 'English (US)'
+    URLSegment: usa
+    Fallbacks:
+      - =>TractorCow\Fluent\Model\Locale.nz
+  ca:
+    Locale: en_CA
+    Title: 'English (CA)'
+    URLSegment: ca
+    Fallbacks:
+      - =>TractorCow\Fluent\Model\Locale.nz
+  jp:
+    Locale: jp_JP
+    Title: 'Japanese'
+    URLSegment: jp

@@ -5,6 +5,7 @@ namespace TractorCow\Fluent\Tests\Extension;
 use SilverStripe\Dev\SapphireTest;
 use SilverStripe\Forms\Form;
 use SilverStripe\ORM\DB;
+use SilverStripe\ORM\ValidationException;
 use SilverStripe\Versioned\Versioned;
 use TractorCow\Fluent\Extension\FluentVersionedExtension;
 use TractorCow\Fluent\Model\Locale;
@@ -19,10 +20,7 @@ use TractorCow\Fluent\Tests\Extension\FluentAdminTraitTest\GridObjectVersioned;
 
 class FluentAdminTraitTest extends SapphireTest
 {
-    protected static $fixture_file = [
-        'FluentAdminTraitTest.yml',
-        'FluentExtensionTest.yml',
-    ];
+    protected static $fixture_file = 'FluentExtensionTest.yml';
 
     protected static $extra_dataobjects = [
         // Versioned
@@ -35,9 +33,18 @@ class FluentAdminTraitTest extends SapphireTest
         UnlocalisedChild::class,
     ];
 
+    /**
+     * @var int
+     */
+    protected $recordId = 0;
+
+    /**
+     * @throws ValidationException
+     */
     protected function setUp()
     {
         parent::setUp();
+        $this->setUpTestModels();
         $this->reset();
     }
 
@@ -45,6 +52,41 @@ class FluentAdminTraitTest extends SapphireTest
     {
         parent::tearDown();
         $this->reset();
+    }
+
+    /**
+     * Generate test models during runtime as writing the fixture is way too complicated
+     *
+     * @throws ValidationException
+     */
+    protected function setUpTestModels(): void
+    {
+        FluentState::singleton()->withState(function (FluentState $state): void {
+            $state->setLocale('en_US');
+
+            // draft only object
+            $object = GridObjectVersioned::create();
+            $object->Title = 'A record';
+            $object->Description = 'Not very interesting';
+            $object->write();
+
+            $this->recordId = (int) $object->ID;
+        });
+
+        FluentState::singleton()->withState(function (FluentState $state): void {
+            $state->setLocale('de_DE');
+
+            // published object with different stages
+            /** @var GridObjectVersioned $object */
+            $object = GridObjectVersioned::get()->byID($this->recordId);
+            $object->Title = 'Eine Akte';
+            $object->Description = 'Live live de hahaha';
+            $object->write();
+            $object->publishRecursive();
+
+            $object->Description = 'Nicht sehr interessant';
+            $object->write();
+        });
     }
 
     protected function reset()
@@ -62,7 +104,7 @@ class FluentAdminTraitTest extends SapphireTest
         FluentState::singleton()->withState(function (FluentState $state) {
             $state->setLocale('en_US');
             /** @var GridObjectVersioned $object */
-            $object = $this->objFromFixture(GridObjectVersioned::class, 'record_a');
+            $object = GridObjectVersioned::get()->byID($this->recordId);
 
             // In 2 locales before
             $this->assertTrue($object->existsInLocale('en_US'));
@@ -87,7 +129,7 @@ class FluentAdminTraitTest extends SapphireTest
         FluentState::singleton()->withState(function (FluentState $state) {
             $state->setLocale('en_US');
             /** @var GridObjectVersioned $object */
-            $object = $this->objFromFixture(GridObjectVersioned::class, 'record_a');
+            $object = GridObjectVersioned::get()->byID($this->recordId);
 
             /** @var Form $form */
             $form = Form::create();
@@ -119,8 +161,16 @@ SQL
         FluentState::singleton()->withState(function (FluentState $state) {
             $state->setLocale('en_US');
             /** @var GridObjectVersioned $object */
-            $object = $this->objFromFixture(GridObjectVersioned::class, 'record_a');
-            $this->assertTrue($object->isPublished());
+            $object = GridObjectVersioned::get()->byID($this->recordId);
+
+            $baseRecordPublished = FluentState::singleton()->withState(function (FluentState $state) use ($object): bool {
+                $state->setLocale(null);
+
+                return $object->isPublished();
+            });
+
+            $this->assertTrue($baseRecordPublished);
+            $this->assertFalse($object->isPublished());
 
             /** @var Form $form */
             $form = Form::create();
@@ -140,7 +190,7 @@ SQL
         FluentState::singleton()->withState(function (FluentState $state) {
             $state->setLocale('en_US');
             /** @var GridObjectVersioned $object */
-            $object = $this->objFromFixture(GridObjectVersioned::class, 'record_a');
+            $object = GridObjectVersioned::get()->byID($this->recordId);
             $objectID = $object->ID;
 
             /** @var Form $form */
@@ -178,7 +228,7 @@ SQL
         FluentState::singleton()->withState(function (FluentState $state) {
             $state->setLocale('en_US');
             /** @var GridObjectVersioned $object */
-            $object = $this->objFromFixture(GridObjectVersioned::class, 'record_a');
+            $object = GridObjectVersioned::get()->byID($this->recordId);
 
             $this->assertTrue($object->isPublishedInLocale('de_DE'));
             $this->assertFalse($object->isPublishedInLocale('en_US'));
@@ -204,7 +254,7 @@ SQL
         FluentState::singleton()->withState(function (FluentState $state) {
             $state->setLocale('en_US');
             /** @var LocalisedParent $object */
-            $object = $this->objFromFixture(LocalisedParent::class, 'record_a');
+            $object = GridObjectVersioned::get()->byID($this->recordId);
 
             /** @var Form $form */
             $form = Form::create();
