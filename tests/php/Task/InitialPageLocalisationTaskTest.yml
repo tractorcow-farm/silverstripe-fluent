@@ -1,0 +1,24 @@
+TractorCow\Fluent\Model\Locale:
+  en_NZ:
+    Locale: en_NZ
+    URLSegment: nz
+    IsGlobalDefault: 1
+  en_AU:
+    Locale: en_AU
+    URLSegment: au
+    Fallbacks:
+      - =>TractorCow\Fluent\Model\Locale.en_NZ
+
+SilverStripe\CMS\Model\SiteTree:
+  page1:
+    Title: Page1
+    URLSegment: page1
+  page2:
+    Title: Page2
+    URLSegment: page2
+  page3:
+    Title: Page3
+    URLSegment: page3
+  page4:
+    Title: Page4
+    URLSegment: page4
