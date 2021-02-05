@@ -14,6 +14,7 @@ use SilverStripe\Forms\Form;
 use SilverStripe\Forms\LiteralField;
 use SilverStripe\Forms\Tab;
 use SilverStripe\ORM\FieldType\DBHTMLText;
+use SilverStripe\Security\Permission;
 use SilverStripe\Versioned\Versioned;
 use SilverStripe\View\SSViewer;
 use TractorCow\Fluent\Extension\Traits\FluentAdminTrait;
@@ -41,6 +42,15 @@ class FluentSiteTreeExtension extends FluentVersionedExtension
      * @var bool
      */
     private static $locale_published_status_message = true;
+
+    /**
+     * Enable localise actions (copy to draft and copy & publish actions)
+     * these actions can be used to localise page content directly via main page actions
+     *
+     * @config
+     * @var bool
+     */
+    private static $localise_actions_enabled = true;
 
     /**
      * Add alternate links to metatags
@@ -206,13 +216,9 @@ class FluentSiteTreeExtension extends FluentVersionedExtension
             return;
         }
 
-        // Update information panel (shows published state)
+        $this->updateSavePublishActions($actions);
         $this->updateInformationPanel($actions);
-
-        // restore action needs to be removed if current locale was never archived
         $this->updateRestoreAction($actions);
-
-        // Add extra fluent menu
         $this->updateFluentActions($actions, $this->owner);
     }
 
@@ -357,6 +363,74 @@ class FluentSiteTreeExtension extends FluentVersionedExtension
     }
 
     /**
+     * Update SiteTree specific save/publish actions
+     *
+     * @param FieldList $actions
+     */
+    protected function updateSavePublishActions(FieldList $actions)
+    {
+        $owner = $this->owner;
+
+        if (!$owner->config()->get('localise_actions_enabled')) {
+            return;
+        }
+
+        if (!$owner->isInDB()) {
+            return;
+        }
+
+        // There's no need to update actions in these ways if the Page has previously been drafted in this Locale.
+        if ($owner->isDraftedInLocale()) {
+            return;
+        }
+
+        // Actions from the base record may not be available because the base record may be considered not in draft state
+        // due to localisation rules
+        $baseActions = FluentState::singleton()->withState(function (FluentState $state) {
+            $state->setLocale(null);
+
+            return $this->owner->getCMSActions();
+        });
+
+        /** @var CompositeField $baseMajorActions */
+        $baseMajorActions = $baseActions->fieldByName('MajorActions');
+        /** @var CompositeField $majorActions */
+        $majorActions = $actions->fieldByName('MajorActions');
+
+        // If another extension has removed this CompositeField then we don't need to update them.
+        if ($baseMajorActions === null || $majorActions === null) {
+            return;
+        }
+
+        $actionSave = $baseMajorActions->getChildren()->fieldByName('action_save');
+        $actionPublish = $baseMajorActions->getChildren()->fieldByName('action_publish');
+        $actionsToAdd = [];
+
+        // Make sure no other extensions have removed this field.
+        if ($actionSave !== null) {
+            $actionSave->addExtraClass('btn-primary font-icon-translatable');
+            $actionSave->setTitle(_t(__CLASS__ . '.LOCALECOPYTODRAFT', 'Copy to draft'));
+            $actionSave->removeExtraClass('btn-outline-primary font-icon-tick');
+            $actionsToAdd[] = $actionSave;
+        }
+
+        // Make sure no other extensions have removed this field.
+        if ($actionPublish !== null) {
+            $actionPublish->addExtraClass('btn-primary font-icon-rocket');
+            $actionPublish->removeExtraClass('btn-outline-primary font-icon-tick');
+            $actionPublish->setTitle(_t(__CLASS__ . '.LOCALECOPYANDPUBLISH', 'Copy & publish'));
+            $actionsToAdd[] = $actionPublish;
+        }
+
+        $actionsToAdd = array_reverse($actionsToAdd);
+
+        // Add customised base actions to actions (at the start of the set)
+        foreach ($actionsToAdd as $action) {
+            $majorActions->unshift($action);
+        }
+    }
+
+    /**
      * Restore action needs to be removed if there is no version to revert to
      *
      * @param FieldList $actions
@@ -377,7 +451,7 @@ class FluentSiteTreeExtension extends FluentVersionedExtension
     }
 
     /**
-     * Information panel show published state of a base record by default
+     * Information panel shows published state of a base record by default
      * this overrides the display with the published state of the localised record
      *
      * @param FieldList $actions

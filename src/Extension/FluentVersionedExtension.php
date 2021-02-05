@@ -2,6 +2,7 @@
 
 namespace TractorCow\Fluent\Extension;
 
+use Exception;
 use InvalidArgumentException;
 use LogicException;
 use SilverStripe\Core\Config\Config;
@@ -13,6 +14,7 @@ use SilverStripe\ORM\DataQuery;
 use SilverStripe\ORM\DB;
 use SilverStripe\ORM\Queries\SQLSelect;
 use SilverStripe\Versioned\Versioned;
+use TractorCow\Fluent\Forms\CopyLocaleAction;
 use TractorCow\Fluent\Forms\PublishAction;
 use TractorCow\Fluent\Forms\UnpublishAction;
 use TractorCow\Fluent\Model\Locale;
@@ -77,6 +79,13 @@ class FluentVersionedExtension extends FluentExtension implements Resettable
     protected $versionsCache = [];
 
     /**
+     * Keeps track of objects which are undergoing localised versions correction during write
+     *
+     * @var array
+     */
+    protected $ensureLocalisedVersionsFlags = [];
+
+        /**
      * Array of objectIds keyed by table (ie. stage) and locale. This knows ALL object IDs that exist in the given table
      * and locale.
      *
@@ -312,6 +321,11 @@ class FluentVersionedExtension extends FluentExtension implements Resettable
         }
     }
 
+    public function onAfterWrite(): void
+    {
+        $this->ensureLocalisedVersion();
+    }
+
     /**
      * Decorate table to delete with _Live suffix as necessary
      *
@@ -492,6 +506,7 @@ SQL;
     public function flushVersionsCache(): void
     {
         $this->versionsCache = [];
+        $this->ensureLocalisedVersionsFlags = [];
     }
 
     public static function reset()
@@ -991,5 +1006,83 @@ SQL;
 
         // Internally store nulls as 0
         $this->versionsCache[$class][$stage][$locale][$key] = $value ?: 0;
+    }
+
+    public function onBeforeWrite()
+    {
+        $locale = FluentState::singleton()->getLocale();
+
+        if (!$locale) {
+            return;
+        }
+
+        /** @var DataObject|FluentVersionedExtension|Versioned $owner */
+        $owner = $this->owner;
+
+        if (!$owner->config()->get('localise_actions_enabled')) {
+            return;
+        }
+
+        if (!$owner->isInDB()) {
+            return;
+        }
+
+        if ($owner->existsInLocale()) {
+            return;
+        }
+
+        $owner->forceChange();
+    }
+
+    /**
+     * This covers the case when copy-to-draft or copy-and-publish buttons are used
+     * When a page is being localised without making any changes to the page we have to force a new localised version
+     * to be created
+     * @see Versioned::writeToStage()
+     * @see DataObject::write()
+     * @see CopyLocaleAction::handleAction()
+     *
+     * @throws Exception
+     */
+    protected function ensureLocalisedVersion(): void
+    {
+        return;
+        $locale = FluentState::singleton()->getLocale();
+
+        if (!$locale) {
+            return;
+        }
+
+        $stage = Versioned::get_stage() ?: Versioned::DRAFT;
+
+        if ($stage !== Versioned::DRAFT) {
+            // Only relevant for Draft stage
+            return;
+        }
+
+        /** @var DataObject|FluentVersionedExtension|Versioned $owner */
+        $owner = $this->owner;
+
+        if (!$owner->config()->get('localise_actions_enabled')) {
+            return;
+        }
+
+        if (!$owner->isInDB()) {
+            return;
+        }
+
+        if ($owner->existsInLocale()) {
+            return;
+        }
+
+        $key = $owner->getUniqueKey();
+
+        if (array_key_exists($key, $this->ensureLocalisedVersionsFlags)) {
+            return;
+        }
+
+        $this->ensureLocalisedVersionsFlags[$key] = $key;
+        $owner->writeToStage($stage);
+        unset($this->ensureLocalisedVersionsFlags[$key]);
     }
 }

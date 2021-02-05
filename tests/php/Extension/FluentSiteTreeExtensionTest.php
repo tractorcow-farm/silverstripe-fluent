@@ -258,6 +258,49 @@ class FluentSiteTreeExtensionTest extends SapphireTest
         });
     }
 
+    public function testUpdateCMSActionsInherited()
+    {
+        /** @var Page|FluentSiteTreeExtension $page */
+        $page = $this->objFromFixture(Page::class, 'home');
+        $actions = $page->getCMSActions();
+
+        /** @var \SilverStripe\Forms\CompositeField $majorActions */
+        $majorActions = $actions->fieldByName('MajorActions');
+
+        $this->assertNotNull($majorActions);
+
+        $actionSave = $majorActions->getChildren()->fieldByName('action_save');
+        $actionPublish = $majorActions->getChildren()->fieldByName('action_publish');
+
+        $this->assertNotNull($actionSave);
+        $this->assertNotNull($actionPublish);
+
+        $this->assertEquals('Copy to draft', $actionSave->Title());
+        $this->assertEquals('Copy & publish', $actionPublish->Title());
+    }
+
+    public function testUpdateCMSActionsDrafted()
+    {
+        /** @var Page|FluentSiteTreeExtension $page */
+        $page = $this->objFromFixture(Page::class, 'about');
+        $actions = $page->getCMSActions();
+
+        /** @var \SilverStripe\Forms\CompositeField $majorActions */
+        $majorActions = $actions->fieldByName('MajorActions');
+
+        $this->assertNotNull($majorActions);
+
+        $actionSave = $majorActions->getChildren()->fieldByName('action_save');
+        $actionPublish = $majorActions->getChildren()->fieldByName('action_publish');
+
+        $this->assertNotNull($actionSave);
+        $this->assertNotNull($actionPublish);
+
+        $this->assertEquals('Saved', $actionSave->Title());
+        // The default value changed between SS 4.0 and 4.1 - assert it contains Publish instead of exact matching
+        $this->assertContains('publish', strtolower($actionPublish->Title()));
+    }
+
     /**
      * @param string $localeCode
      * @param string $fixture
