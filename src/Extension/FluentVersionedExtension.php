@@ -377,7 +377,7 @@ class FluentVersionedExtension extends FluentExtension implements Resettable
      */
     public function stagesDifferInLocale($locale = null): bool
     {
-        /** @var DataObject|Versioned|FluentExtension $record */
+        /** @var DataObject|Versioned|FluentExtension|FluentVersionedExtension $record */
         $record = $this->owner;
         $id = $record->ID ?: $record->OldID;
         $class = get_class($record);
@@ -390,6 +390,17 @@ class FluentVersionedExtension extends FluentExtension implements Resettable
         // Need to check that it has stages and is not new
         if (!$id || !$record->hasStages()) {
             return false;
+        }
+
+        if (!$record->isDraftedInLocale()) {
+            // Record is not localised so there is nothing to check
+            // This is because Localised version records can not be inherited from other locales via the fallbacks
+            return false;
+        }
+
+        if (!$record->isPublishedInLocale()) {
+            // Record is drafted but not published so we know the stages are different
+            return true;
         }
 
         $locale = $locale ?: ($this->getRecordLocale() ? $this->getRecordLocale()->Locale : null);

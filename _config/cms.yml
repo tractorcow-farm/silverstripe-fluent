@@ -5,6 +5,10 @@ SilverStripe\Admin\LeftAndMain:
   extensions:
     FluentLeftAndMainExtension: TractorCow\Fluent\Extension\FluentLeftAndMainExtension
 
+SilverStripe\CMS\Controllers\CMSMain:
+  extensions:
+    FluentLeftAndMainExtension: TractorCow\Fluent\Extension\FluentCMSMainExtension
+
 SilverStripe\Versioned\ChangeSetItem:
   extensions:
     FluentChangesExtension: TractorCow\Fluent\Extension\FluentChangesExtension

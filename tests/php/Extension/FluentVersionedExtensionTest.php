@@ -5,6 +5,7 @@ namespace TractorCow\Fluent\Tests\Extension;
 use Page;
 use SilverStripe\CMS\Model\SiteTree;
 use SilverStripe\Dev\SapphireTest;
+use SilverStripe\ORM\ValidationException;
 use TractorCow\Fluent\Extension\FluentSiteTreeExtension;
 use TractorCow\Fluent\Extension\FluentVersionedExtension;
 use TractorCow\Fluent\Model\Domain;
@@ -148,5 +149,61 @@ class FluentVersionedExtensionTest extends SapphireTest
         // We expect the lookup method to never get called, because the results are optimistically cached
         $extension->expects($this->never())->method('findRecordInLocale');
         $this->assertTrue($extension->isPublishedInLocale('en_NZ'), 'Fixtured page is published');
+    }
+
+    /**
+     * @throws ValidationException
+     */
+    public function testStagesDifferInLocale(): void
+    {
+        $pageId = FluentState::singleton()->withState(function (FluentState $state): int {
+            $state->setLocale(null);
+
+            $page = Page::create();
+            $page->Title = 'Test page stages differ';
+            $page->URLSegment = 'test-page-stages-differ';
+
+            // Not in DB
+            $this->assertFalse($page->stagesDifferInLocale());
+
+            return (int) $page->write();
+        });
+
+        /** @var Page $page */
+        $page = Page::get()->byID($pageId);
+
+        // Not Localised in Draft
+        $this->assertFalse($page->stagesDifferInLocale());
+
+        // Localise to Draft
+        $page->write();
+
+        // Not Localised in Live (draft only)
+        $this->assertTrue($page->stagesDifferInLocale());
+
+        // Publish
+        $page->publishRecursive();
+
+        // Localised in both Draft and Live (same content)
+        $this->assertFalse($page->stagesDifferInLocale());
+
+        // Update draft content
+        $page->MetaDescription = 'New description';
+        $page->write();
+
+        // Draft has newer content
+        $this->assertTrue($page->stagesDifferInLocale());
+
+        // Publish
+        $page->publishRecursive();
+
+        // Same content on Draft and Live
+        $this->assertFalse($page->stagesDifferInLocale());
+
+        // Unpublish
+        $page->doUnpublish();
+
+        // No Live version
+        $this->assertTrue($page->stagesDifferInLocale());
     }
 }
