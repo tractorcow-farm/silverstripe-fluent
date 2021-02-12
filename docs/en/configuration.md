@@ -356,3 +356,25 @@ Knows issues are:
 * incorrect detection of end of word
 * incorrect detection of end of line
 * use of functions which are not multi-byte safe
+
+## CMS UI
+
+There are some optional components which can be enabled / disabled.
+
+### Page edit form action buttons
+
+Using the page edit form buttons to localise pages may not work properly in all situations, hence the following configuration (enabled by default):
+
+```yml
+SilverStripe\CMS\Model\SiteTree:
+  localise_actions_enabled: true
+```
+
+If it's disabled, the `Copy to draft` and `Copy & publish` buttons will not be displayed.
+Users are expected to use the `Localisation` manager tab in the page edit form instead in such case.
+
+#### When should I disable this setting?
+
+In case your setup contains multiple top level locales (i.e. locales which have no fallbacks) you may need to review this setting.
+Using the action buttons to localise pages may result in unpredictable results as the content for the newly localised page will be taken from the base record as no fallback locale exists.
+This may still be fine in some cases, for example when migrating from a single language site.
