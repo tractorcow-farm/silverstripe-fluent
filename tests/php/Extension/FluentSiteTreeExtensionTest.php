@@ -8,10 +8,12 @@ use SilverStripe\CMS\Model\SiteTree;
 use SilverStripe\Control\Director;
 use SilverStripe\Core\Config\Config;
 use SilverStripe\Dev\SapphireTest;
+use SilverStripe\Forms\CompositeField;
 use SilverStripe\Forms\FieldList;
 use SilverStripe\Forms\LiteralField;
 use SilverStripe\ORM\ArrayList;
 use SilverStripe\ORM\DataObject;
+use SilverStripe\Versioned\Versioned;
 use TractorCow\Fluent\Extension\FluentDirectorExtension;
 use TractorCow\Fluent\Extension\FluentSiteTreeExtension;
 use TractorCow\Fluent\Extension\FluentVersionedExtension;
@@ -264,13 +266,13 @@ class FluentSiteTreeExtensionTest extends SapphireTest
         $page = $this->objFromFixture(Page::class, 'home');
         $actions = $page->getCMSActions();
 
-        /** @var \SilverStripe\Forms\CompositeField $majorActions */
+        /** @var CompositeField $majorActions */
         $majorActions = $actions->fieldByName('MajorActions');
 
         $this->assertNotNull($majorActions);
 
-        $actionSave = $majorActions->getChildren()->fieldByName('action_save');
-        $actionPublish = $majorActions->getChildren()->fieldByName('action_publish');
+        $actionSave = $majorActions->getChildren()->fieldByName('action_save_localised_copy');
+        $actionPublish = $majorActions->getChildren()->fieldByName('action_publish_localised_copy');
 
         $this->assertNotNull($actionSave);
         $this->assertNotNull($actionPublish);
@@ -283,9 +285,11 @@ class FluentSiteTreeExtensionTest extends SapphireTest
     {
         /** @var Page|FluentSiteTreeExtension $page */
         $page = $this->objFromFixture(Page::class, 'about');
+        // Make sure page is properly localised (including version records)
+        $page->writeToStage(Versioned::DRAFT);
         $actions = $page->getCMSActions();
 
-        /** @var \SilverStripe\Forms\CompositeField $majorActions */
+        /** @var CompositeField $majorActions */
         $majorActions = $actions->fieldByName('MajorActions');
 
         $this->assertNotNull($majorActions);

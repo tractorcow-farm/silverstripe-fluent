@@ -341,10 +341,10 @@ class FluentExtensionTest extends SapphireTest
     protected function hasLocalisedRecord(DataObject $record, $locale)
     {
         $result = SQLSelect::create()
-            ->setFrom($record->config()->get('table_name') . '_Localised')
+            ->setFrom('"' . $record->config()->get('table_name') . '_Localised"')
             ->setWhere([
-                'RecordID' => $record->ID,
-                'Locale' => $locale,
+                '"RecordID"' => $record->ID,
+                '"Locale"' => $locale,
             ])
             ->execute()
             ->first();

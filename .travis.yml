@@ -1,40 +1,4 @@
-language: php
+version: ~> 1.0
 
-dist: xenial
-
-services:
-  - mysql
-
-addons:
-  apt:
-    packages:
-      - tidy
-
-matrix:
-  include:
-    - php: 7.1
-      env: DB=MYSQL RECIPE_VERSION=4.4.x-dev PHPCS_TEST=1 PHPUNIT_TEST=1
-    - php: 7.2
-      env: DB=MYSQL RECIPE_VERSION=4.4.x-dev PHPUNIT_COVERAGE_TEST=1
-    - php: 7.3
-      env: DB=MYSQL RECIPE_VERSION=4.5.x-dev PHPUNIT_TEST=1
-    - php: 7.3
-      env: DB=MYSQL RECIPE_VERSION=4.x-dev PHPUNIT_TEST=1
-
-before_script:
-  # Init PHP
-  - phpenv rehash
-  - phpenv config-rm xdebug.ini
-
-  # Install composer dependencies
-  - composer validate
-  - composer require --no-update silverstripe/recipe-cms:"$RECIPE_VERSION"
-  - composer install --prefer-dist --no-interaction --no-progress --no-suggest --optimize-autoloader --verbose --profile
-
-script:
-  - if [[ $PHPUNIT_TEST ]]; then vendor/bin/phpunit --exclude-group exclude-from-travis; fi
-  - if [[ $PHPUNIT_COVERAGE_TEST ]]; then phpdbg -qrr vendor/bin/phpunit --coverage-clover=coverage.xml --exclude-group exclude-from-travis; fi
-  - if [[ $PHPCS_TEST ]]; then vendor/bin/phpcs src/ tests/; fi
-
-after_success:
-  - if [[ $PHPUNIT_COVERAGE_TEST ]]; then bash <(curl -s https://codecov.io/bash) -f coverage.xml; fi
+import:
+  - silverstripe/silverstripe-travis-shared:config/provision/standard-jobs-range.yml

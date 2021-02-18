@@ -8,6 +8,8 @@ use SilverStripe\Versioned\Versioned;
 use TractorCow\Fluent\Extension\FluentVersionedExtension;
 
 /**
+ * @property string $Title
+ * @property string $Description
  * @mixin Versioned
  * @mixin FluentVersionedExtension
  */
