@@ -13,6 +13,7 @@ use SilverStripe\Forms\FieldList;
 use SilverStripe\Forms\Form;
 use SilverStripe\Forms\LiteralField;
 use SilverStripe\Forms\Tab;
+use SilverStripe\ORM\FieldType\DBField;
 use SilverStripe\ORM\FieldType\DBHTMLText;
 use SilverStripe\Versioned\Versioned;
 use SilverStripe\View\SSViewer;
@@ -577,5 +578,33 @@ class FluentSiteTreeExtension extends FluentVersionedExtension
     public function actionComplete($form, $message)
     {
         return null;
+    }
+
+    /**
+     * @param $summaryColumns
+     * @see FluentExtension::updateFluentCMSFields()
+     */
+    public function updateLocalisationTabColumns(&$summaryColumns)
+    {
+        parent::updateLocalisationTabColumns($summaryColumns);
+
+        $summaryColumns['Title'] = [
+            'title' => 'Title',
+            'callback' => function (Locale $object) {
+                if (!$object->RecordLocale()) {
+                    return ;
+                }
+
+                $query_param = '?l=' . $object->RecordLocale()->getLocale();
+                $locale = $object->RecordLocale()->getTitle();
+
+                $baseURL = $_SERVER['REQUEST_URI'];
+                $baseURL = preg_replace('/\?.*/', '', $baseURL);
+
+                $render = sprintf('<a href="%s%s" target="_top">%s</a>', $baseURL, $query_param, $locale);
+
+                return DBField::create_field('HTMLVarchar', $render);
+            }
+        ];
     }
 }
