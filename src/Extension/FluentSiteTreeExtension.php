@@ -581,6 +581,8 @@ class FluentSiteTreeExtension extends FluentVersionedExtension
     }
 
     /**
+     * Augment Localisation tab with clickable locale links to allow easy navigation between page localisations
+     *
      * @param $summaryColumns
      * @see FluentExtension::updateFluentCMSFields()
      */
@@ -588,20 +590,40 @@ class FluentSiteTreeExtension extends FluentVersionedExtension
     {
         parent::updateLocalisationTabColumns($summaryColumns);
 
+        if (!array_key_exists('Title', $summaryColumns)) {
+            return;
+        }
+
+        $controller = Controller::curr();
+
+        if (!$controller) {
+            return;
+        }
+
+        $request = $controller->getRequest();
+
+        if (!$request) {
+            return;
+        }
+
+        $url = $request->getURL();
+
+        if (!$url) {
+            return;
+        }
+
         $summaryColumns['Title'] = [
             'title' => 'Title',
-            'callback' => function (Locale $object) {
+            'callback' => function (Locale $object) use ($url) {
                 if (!$object->RecordLocale()) {
-                    return ;
+                    return;
                 }
 
-                $query_param = '?l=' . $object->RecordLocale()->getLocale();
-                $locale = $object->RecordLocale()->getTitle();
-
-                $baseURL = $_SERVER['REQUEST_URI'];
-                $baseURL = preg_replace('/\?.*/', '', $baseURL);
-
-                $render = sprintf('<a href="%s%s" target="_top">%s</a>', $baseURL, $query_param, $locale);
+                $recordLocale = $object->RecordLocale();
+                $locale = $recordLocale->getLocale();
+                $localeLink = Controller::join_links($url, '?l=' . $locale);
+                $localeTitle = $recordLocale->getTitle();
+                $render = sprintf('<a href="%s" target="_top">%s</a>', $localeLink, $localeTitle);
 
                 return DBField::create_field('HTMLVarchar', $render);
             }
