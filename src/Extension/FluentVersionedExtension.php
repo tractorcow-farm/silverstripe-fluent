@@ -748,10 +748,10 @@ SQL;
 
         $query = SQLSelect::create(
             'COUNT(*)',
-            $localisedVersionTable,
+            sprintf('"%s"', $localisedVersionTable),
             [
-                'Locale' => $locale,
-                'RecordID' => $id,
+                '"Locale"' => $locale,
+                '"RecordID"' => $id,
             ]
         );
 
@@ -791,7 +791,7 @@ SQL;
 
         $subSelect
             ->addInnerJoin(
-                $localisedVersionTable,
+                sprintf('"%s"', $localisedVersionTable),
                 sprintf(
                     '"%1$s"."RecordID" = "%2$s"."RecordID" AND "%1$s"."Version" = "%2$s"."Version"',
                     $alias,
