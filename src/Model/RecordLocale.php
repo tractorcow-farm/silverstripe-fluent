@@ -209,7 +209,8 @@ class RecordLocale extends ViewableData
         }
 
         // Get link from localised record
-        return $record->Link();
+        $action = Controller::curr()->getRequest()->params()['Action'] ?? null;
+        return $record->Link($action);
     }
 
     /**
