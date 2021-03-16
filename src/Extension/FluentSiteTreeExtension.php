@@ -622,7 +622,8 @@ class FluentSiteTreeExtension extends FluentVersionedExtension
                 $recordLocale = $object->RecordLocale();
                 $locale = $recordLocale->getLocale();
                 $localeLink = Controller::join_links($url, '?l=' . $locale);
-                $localeTitle = $recordLocale->getTitle();
+                $localeTitle = Convert::raw2xml($recordLocale->getTitle());
+
                 $render = sprintf('<a href="%s" target="_top">%s</a>', $localeLink, $localeTitle);
 
                 return DBField::create_field('HTMLVarchar', $render);
