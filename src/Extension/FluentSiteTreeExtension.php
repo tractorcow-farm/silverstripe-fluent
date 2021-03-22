@@ -607,7 +607,10 @@ class FluentSiteTreeExtension extends FluentVersionedExtension
             return;
         }
 
+        // This is to get URL only, getVars are not part of the URL
         $url = $request->getURL();
+        // Pass getVars separately so we can process them later
+        $params = $request->getVars();
 
         if (!$url) {
             return;
@@ -615,16 +618,16 @@ class FluentSiteTreeExtension extends FluentVersionedExtension
 
         $summaryColumns['Title'] = [
             'title' => 'Title',
-            'callback' => function (Locale $object) use ($url) {
+            'callback' => function (Locale $object) use ($url, $params) {
                 if (!$object->RecordLocale()) {
                     return;
                 }
 
                 $recordLocale = $object->RecordLocale();
                 $locale = $recordLocale->getLocale();
-                $localeLink = Controller::join_links($url, '?l=' . $locale);
+                $params['l'] = $locale;
+                $localeLink = Controller::join_links($url, '?' . http_build_query($params));
                 $localeTitle = Convert::raw2xml($recordLocale->getTitle());
-
                 $render = sprintf('<a href="%s" target="_top">%s</a>', $localeLink, $localeTitle);
 
                 return DBField::create_field('HTMLVarchar', $render);
