@@ -80,15 +80,18 @@ class RecordLocale extends ViewableData
             return $this->record ?: null;
         }
 
-        // If record isn't saved, use draft record
-        if (!$this->originalRecord->isInDB()) {
-            return $this->originalRecord;
+        // If record isn't saved, clone the draft record, but mark it
+        // as belonging to the current locale
+        $originalRecord = $this->getOriginalRecord();
+        if (!$originalRecord->isInDB()) {
+            $localeRecord = clone $originalRecord;
+            $localeRecord->setSourceQueryParam('Fluent.Locale', $this->getLocale());
+            return $localeRecord;
         }
 
         // Reload localised record in the corret locale
-        $record = FluentState::singleton()->withState(function (FluentState $newState) {
+        $record = FluentState::singleton()->withState(function (FluentState $newState) use ($originalRecord) {
             $newState->setLocale($this->getLocale());
-            $originalRecord = $this->getOriginalRecord();
             return $originalRecord->get()->byID($originalRecord->ID);
         });
 
