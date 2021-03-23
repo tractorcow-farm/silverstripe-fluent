@@ -8,11 +8,13 @@ use SilverStripe\CMS\Model\SiteTree;
 use SilverStripe\Control\Controller;
 use SilverStripe\Control\Director;
 use SilverStripe\Control\HTTPResponse;
+use SilverStripe\Core\Convert;
 use SilverStripe\Forms\CompositeField;
 use SilverStripe\Forms\FieldList;
 use SilverStripe\Forms\Form;
 use SilverStripe\Forms\LiteralField;
 use SilverStripe\Forms\Tab;
+use SilverStripe\ORM\FieldType\DBField;
 use SilverStripe\ORM\FieldType\DBHTMLText;
 use SilverStripe\Versioned\Versioned;
 use SilverStripe\View\SSViewer;
@@ -577,5 +579,59 @@ class FluentSiteTreeExtension extends FluentVersionedExtension
     public function actionComplete($form, $message)
     {
         return null;
+    }
+
+    /**
+     * Augment Localisation tab with clickable locale links to allow easy navigation between page localisations
+     *
+     * @param $summaryColumns
+     * @see FluentExtension::updateFluentCMSFields()
+     */
+    public function updateLocalisationTabColumns(&$summaryColumns)
+    {
+        parent::updateLocalisationTabColumns($summaryColumns);
+
+        if (!array_key_exists('Title', $summaryColumns)) {
+            return;
+        }
+
+        $controller = Controller::curr();
+
+        if (!$controller) {
+            return;
+        }
+
+        $request = $controller->getRequest();
+
+        if (!$request) {
+            return;
+        }
+
+        // This is to get URL only, getVars are not part of the URL
+        $url = $request->getURL();
+        // Pass getVars separately so we can process them later
+        $params = $request->getVars();
+
+        if (!$url) {
+            return;
+        }
+
+        $summaryColumns['Title'] = [
+            'title' => 'Title',
+            'callback' => function (Locale $object) use ($url, $params) {
+                if (!$object->RecordLocale()) {
+                    return;
+                }
+
+                $recordLocale = $object->RecordLocale();
+                $locale = $recordLocale->getLocale();
+                $params['l'] = $locale;
+                $localeLink = Controller::join_links($url, '?' . http_build_query($params));
+                $localeTitle = Convert::raw2xml($recordLocale->getTitle());
+                $render = sprintf('<a href="%s" target="_top">%s</a>', $localeLink, $localeTitle);
+
+                return DBField::create_field('HTMLVarchar', $render);
+            }
+        ];
     }
 }
