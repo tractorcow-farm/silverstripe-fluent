@@ -791,7 +791,7 @@ SQL;
 
         $subSelect
             ->addInnerJoin(
-                sprintf('"%s"', $localisedVersionTable),
+                sprintf('%s', $localisedVersionTable),
                 sprintf(
                     '"%1$s"."RecordID" = "%2$s"."RecordID" AND "%1$s"."Version" = "%2$s"."Version"',
                     $alias,
