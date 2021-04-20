@@ -21,10 +21,13 @@ use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\DB;
 use SilverStripe\ORM\HasManyList;
 use SilverStripe\ORM\ManyManyList;
+use SilverStripe\Security\Member;
+use SilverStripe\Security\Permission;
 use SilverStripe\Security\PermissionProvider;
 use Symbiote\GridFieldExtensions\GridFieldAddNewInlineButton;
 use Symbiote\GridFieldExtensions\GridFieldEditableColumns;
 use Symbiote\GridFieldExtensions\GridFieldOrderableRows;
+use TractorCow\Fluent\Control\LocaleAdmin;
 use TractorCow\Fluent\Extension\FluentDirectorExtension;
 use TractorCow\Fluent\Extension\Traits\FluentObjectTrait;
 use TractorCow\Fluent\State\FluentState;
@@ -625,5 +628,66 @@ class Locale extends DataObject implements PermissionProvider
             ];
         }
         return $permissions;
+    }
+
+
+    /**
+     * @param Member $member
+     * @return boolean
+     */
+    public function canView($member = null)
+    {
+        $extended = $this->extendedCan(__FUNCTION__, $member);
+        if ($extended !== null) {
+            return $extended;
+        }
+        return Permission::check('CMS_ACCESS', 'any', $member);
+    }
+
+    /**
+     * @param Member $member
+     * @return boolean
+     */
+    public function canEdit($member = null)
+    {
+        $extended = $this->extendedCan(__FUNCTION__, $member);
+        if ($extended !== null) {
+            return $extended;
+        }
+
+        // Access locale admin permission
+        return LocaleAdmin::singleton()->canView($member);
+    }
+
+    /**
+     * @param Member $member
+     * @return boolean
+     */
+    public function canDelete($member = null)
+    {
+        $extended = $this->extendedCan(__FUNCTION__, $member);
+        if ($extended !== null) {
+            return $extended;
+        }
+
+        // Access locale admin permission
+        return LocaleAdmin::singleton()->canView($member);
+    }
+
+    /**
+     * @param Member $member
+     * @param array $context Additional context-specific data which might
+     * affect whether (or where) this object could be created.
+     * @return boolean
+     */
+    public function canCreate($member = null, $context = [])
+    {
+        $extended = $this->extendedCan(__FUNCTION__, $member, $context);
+        if ($extended !== null) {
+            return $extended;
+        }
+
+        // Access locale admin permission
+        return LocaleAdmin::singleton()->canView($member);
     }
 }
