@@ -58,7 +58,6 @@ localisations, or being a part of the contributing team, please see
  * [Localised copy](docs/en/localised-copy.md)
  * [Versioned history](docs/en/versioned-history.md)
  * [Migrating from Translatable](docs/en/migrating-from-translatable.md)
- * [Changelogs](CHANGELOG.md)
 
 ## Translations
 
