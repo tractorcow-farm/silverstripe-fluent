@@ -92,6 +92,14 @@ class FluentIsolatedExtension extends DataExtension
             return;
         }
 
+        // skip filter by ID
+        if (!$this->owner->config()->get('apply_isolated_locales_to_byid')
+            && !FluentState::singleton()->getIsFrontend()
+            && ($query->filtersOnID() || $query->filtersOnFK())
+        ) {
+            return;
+        }
+
         // Apply filter
         $table = $this->owner->baseTable();
         $query->addWhere([
