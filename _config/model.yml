@@ -9,7 +9,7 @@ SilverStripe\ORM\DataObject:
   apply_filtered_locales_to_stage: true
   # See FluentIsolatedExtension
   apply_isolated_locales_to_admin: true # Set to false to disable entirely in CMS
-  apply_isolated_locales_to_byid: false # Set to false to disable for id/fk filters in CMS
+  apply_isolated_locales_to_byid: true # Set to false to disable for id/fk filters in CMS
 
 # Prevent duplicate siteconfigs when localised
 SilverStripe\SiteConfig\SiteConfig:
