@@ -592,6 +592,9 @@ class FluentExtension extends DataExtension
             return;
         }
 
+        $defaultLocaleObj = Locale::getDefault();
+        $defaultLocale = $defaultLocaleObj ? $defaultLocaleObj->getLocale() : i18n::config()->get('default_locale');
+
         // Get all tables to translate fields for, and their respective field names
         $includedTables = $this->getLocalisedTables();
         foreach ($includedTables as $table => $localisedFields) {
@@ -603,15 +606,13 @@ class FluentExtension extends DataExtension
                 $localisedFields,
                 $locale
             );
-        }
 
-        // Remove localised fields from base table if the editing locale is not the global default locale
-        $defaultLocaleObj = Locale::getDefault();
-        $defaultLocale = $defaultLocaleObj ? $defaultLocaleObj->getLocale() : i18n::config()->get('default_locale');
-
-        if ($locale->getLocale() !== $defaultLocale) {
-            foreach ($localisedFields as $localisedField) {
-                unset($manipulation[$table]['fields'][$localisedField]);
+            // Remove localised fields from base table if the editing locale is
+            // not the global default locale
+            if ($locale->getLocale() !== $defaultLocale) {
+                foreach ($localisedFields as $localisedField) {
+                    unset($manipulation[$table]['fields'][$localisedField]);
+                }
             }
         }
     }
