@@ -7,6 +7,7 @@ use LogicException;
 use SilverStripe\Core\Config\Config;
 use SilverStripe\Core\Resettable;
 use SilverStripe\Forms\GridField\GridFieldConfig;
+use SilverStripe\i18n\i18n;
 use SilverStripe\ORM\DataList;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\DataQuery;
@@ -246,6 +247,10 @@ class FluentVersionedExtension extends FluentExtension implements Resettable
             return;
         }
 
+        $defaultLocaleObj = Locale::getDefault();
+        $defaultLocale    = $defaultLocaleObj ? $defaultLocaleObj->getLocale() : i18n::config()->get('default_locale');
+        $notDefaultLocale = $locale->getLocale() !== $defaultLocale;
+
         // Get all tables to translate fields for, and their respective field names
         $includedTables = $this->getLocalisedTables();
         foreach ($includedTables as $table => $localisedFields) {
@@ -271,6 +276,14 @@ class FluentVersionedExtension extends FluentExtension implements Resettable
                     $localisedVersionFields,
                     $locale
                 );
+
+                // Remove localised fields from base and Live tables if the editing
+                // locale is not the global default locale
+                if ($notDefaultLocale && $suffix === self::SUFFIX_LIVE) {
+                    foreach ($localisedFields as $localisedField) {
+                        unset($manipulation[$versionedTable]['fields'][$localisedField]);
+                    }
+                }
             }
         }
     }
