@@ -12,6 +12,7 @@ use SilverStripe\Forms\FieldList;
 use SilverStripe\Forms\FormField;
 use SilverStripe\Forms\GridField\GridField_ActionMenuItem;
 use SilverStripe\Forms\GridField\GridFieldConfig;
+use SilverStripe\i18n\i18n;
 use SilverStripe\ORM\ArrayList;
 use SilverStripe\ORM\DataExtension;
 use SilverStripe\ORM\DataObject;
@@ -593,7 +594,8 @@ class FluentExtension extends DataExtension
         }
 
         $defaultLocaleObj = Locale::getDefault();
-        $defaultLocale = $defaultLocaleObj ? $defaultLocaleObj->getLocale() : i18n::config()->get('default_locale');
+        $defaultLocale    = $defaultLocaleObj ? $defaultLocaleObj->getLocale() : i18n::config()->get('default_locale');
+        $notDefaultLocale = $locale->getLocale() !== $defaultLocale;
 
         // Get all tables to translate fields for, and their respective field names
         $includedTables = $this->getLocalisedTables();
@@ -607,9 +609,9 @@ class FluentExtension extends DataExtension
                 $locale
             );
 
-            // Remove localised fields from base table if the editing locale is
+            // Remove localised fields from base tables if the editing locale is
             // not the global default locale
-            if ($locale->getLocale() !== $defaultLocale) {
+            if ($notDefaultLocale) {
                 foreach ($localisedFields as $localisedField) {
                     unset($manipulation[$table]['fields'][$localisedField]);
                 }
