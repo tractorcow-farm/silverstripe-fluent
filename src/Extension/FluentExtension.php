@@ -604,6 +604,16 @@ class FluentExtension extends DataExtension
                 $locale
             );
         }
+
+        // Remove localised fields from base table if the editing locale is not the global default locale
+        $defaultLocaleObj = Locale::getDefault();
+        $defaultLocale = $defaultLocaleObj ? $defaultLocaleObj->getLocale() : i18n::config()->get('default_locale');
+
+        if ($locale->getLocale() !== $defaultLocale) {
+            foreach ($localisedFields as $localisedField) {
+                unset($manipulation[$table]['fields'][$localisedField]);
+            }
+        }
     }
 
     /**
