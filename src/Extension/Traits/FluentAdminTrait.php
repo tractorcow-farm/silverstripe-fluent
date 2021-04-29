@@ -2,11 +2,13 @@
 
 namespace TractorCow\Fluent\Extension\Traits;
 
+use SilverStripe\CMS\Model\SiteTree;
 use SilverStripe\Control\HTTPResponse;
 use SilverStripe\Control\HTTPResponse_Exception;
 use SilverStripe\Forms\FieldList;
 use SilverStripe\Forms\Form;
 use SilverStripe\Forms\FormAction;
+use SilverStripe\Forms\LiteralField;
 use SilverStripe\Forms\Tab;
 use SilverStripe\Forms\TabSet;
 use SilverStripe\ORM\DataObject;
@@ -14,8 +16,10 @@ use SilverStripe\ORM\FieldType\DBHTMLText;
 use SilverStripe\ORM\ValidationException;
 use SilverStripe\Security\Permission;
 use SilverStripe\Versioned\Versioned;
+use SilverStripe\View\SSViewer;
 use TractorCow\Fluent\Extension\FluentExtension;
 use TractorCow\Fluent\Extension\FluentFilteredExtension;
+use TractorCow\Fluent\Extension\FluentVersionedExtension;
 use TractorCow\Fluent\Model\Delete\ArchiveRecordPolicy;
 use TractorCow\Fluent\Model\Delete\DeleteFilterPolicy;
 use TractorCow\Fluent\Model\Delete\DeleteLocalisationPolicy;
@@ -63,12 +67,19 @@ trait FluentAdminTrait
         // Flush data before checking actions
         $record->flushCache(true);
 
+        // These actions need to be executed before we bail out on archived check
+        // as the UI needs to be updated even if such case
+        $this->updateSaveAction($actions, $record);
+        $this->updateDeleteAction($actions, $record);
+        $this->updateInformationPanel($actions, $record);
+
         // Skip if record is archived
         $results = $record->invokeWithExtensions('isArchived');
         $results = array_filter($results, function ($v) {
             return !is_null($v);
         });
         $isArchived = $results ? min($results) : false;
+
         if ($isArchived) {
             return;
         }
@@ -79,9 +90,6 @@ trait FluentAdminTrait
             // Potentially no Locales have been created in the system yet.
             return;
         }
-
-        $this->updateSaveAction($actions, $record);
-        $this->updateDeleteAction($actions, $record);
 
         if (!$record->config()->get('batch_actions_enabled')) {
             return;
@@ -589,12 +597,15 @@ trait FluentAdminTrait
      */
     protected function updateSaveAction(FieldList $actions, DataObject $record): void
     {
-        if ($record->hasExtension(Versioned::class)) {
+        if ($record->existsInLocale()) {
+            // keep the action unchanged as the record is localised
             return;
         }
 
-        if ($record->existsInLocale()) {
-            // keep the action unchanged as the record is localised
+        if (!$record->config()->get('localise_actions_enabled')) {
+            // Save action UI is disabled
+            $actions->removeByName('action_doSave');
+
             return;
         }
 
@@ -623,10 +634,6 @@ trait FluentAdminTrait
      */
     protected function updateDeleteAction(FieldList $actions, DataObject $record): void
     {
-        if ($record->hasExtension(Versioned::class)) {
-            return;
-        }
-
         if (!$record->existsInLocale()) {
             // record is not localised  - remove the action
             $actions->removeByName('action_doDelete');
@@ -662,5 +669,57 @@ trait FluentAdminTrait
                     ]
                 )
             );
+    }
+
+    /**
+     * Information panel shows published state of a base record by default
+     * this overrides the display with the published state of the localised record
+     *
+     * @param FieldList $actions
+     * @param DataObject|FluentVersionedExtension $record
+     */
+    protected function updateInformationPanel(FieldList $actions, DataObject $record): void
+    {
+        if (!$record->hasExtension(Versioned::class)) {
+            // This is only relevant for versioned records (base)
+            return;
+        }
+
+        if (!$record->hasExtension(FluentVersionedExtension::class)) {
+            // This is only relevant for versioned records (fluent)
+            return;
+        }
+
+        /** @var Tab $moreOptions */
+        $moreOptions = $actions->fieldByName('ActionMenus.MoreOptions');
+
+        if (!$moreOptions) {
+            return;
+        }
+
+        /** @var LiteralField $information */
+        $information = $moreOptions->fieldByName('Information');
+
+        if (!$information) {
+            return;
+        }
+
+        $liveRecord = Versioned::withVersionedMode(function () use ($record) {
+            Versioned::set_stage(Versioned::LIVE);
+
+            return DataObject::get_by_id($record->ClassName, $record->ID);
+        });
+
+        $infoTemplate = SSViewer::get_templates_by_class(
+            $record->ClassName,
+            '_Information',
+            $record instanceof SiteTree ? SiteTree::class : DataObject::class
+        );
+
+        // show published info of localised record, not base record (this is framework's default)
+        $information->setValue($record->customise([
+            'Live' => $liveRecord,
+            'ExistsOnLive' => $record->isPublishedInLocale(),
+        ])->renderWith($infoTemplate));
     }
 }

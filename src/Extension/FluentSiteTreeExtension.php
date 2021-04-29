@@ -13,11 +13,8 @@ use SilverStripe\Forms\CompositeField;
 use SilverStripe\Forms\FieldList;
 use SilverStripe\Forms\Form;
 use SilverStripe\Forms\LiteralField;
-use SilverStripe\Forms\Tab;
 use SilverStripe\ORM\FieldType\DBField;
 use SilverStripe\ORM\FieldType\DBHTMLText;
-use SilverStripe\Versioned\Versioned;
-use SilverStripe\View\SSViewer;
 use TractorCow\Fluent\Extension\Traits\FluentAdminTrait;
 use TractorCow\Fluent\Model\Locale;
 use TractorCow\Fluent\State\FluentState;
@@ -43,15 +40,6 @@ class FluentSiteTreeExtension extends FluentVersionedExtension
      * @var bool
      */
     private static $locale_published_status_message = true;
-
-    /**
-     * Enable localise actions (copy to draft and copy & publish actions)
-     * these actions can be used to localise page content directly via main page actions
-     *
-     * @config
-     * @var bool
-     */
-    private static $localise_actions_enabled = true;
 
     /**
      * Add alternate links to metatags
@@ -218,7 +206,6 @@ class FluentSiteTreeExtension extends FluentVersionedExtension
         }
 
         $this->updateSavePublishActions($actions);
-        $this->updateInformationPanel($actions);
         $this->updateRestoreAction($actions);
         $this->updateFluentActions($actions, $this->owner);
     }
@@ -452,49 +439,6 @@ class FluentSiteTreeExtension extends FluentVersionedExtension
     }
 
     /**
-     * Information panel shows published state of a base record by default
-     * this overrides the display with the published state of the localised record
-     *
-     * @param FieldList $actions
-     */
-    protected function updateInformationPanel(FieldList $actions): void
-    {
-        $owner = $this->owner;
-
-        /** @var Tab $moreOptions */
-        $moreOptions = $actions->fieldByName('ActionMenus.MoreOptions');
-
-        if (!$moreOptions) {
-            return;
-        }
-
-        /** @var LiteralField $information */
-        $information = $moreOptions->fieldByName('Information');
-
-        if (!$information) {
-            return;
-        }
-
-        $liveRecord = Versioned::withVersionedMode(function () use ($owner) {
-            Versioned::set_stage(Versioned::LIVE);
-
-            return SiteTree::get()->byID($owner->ID);
-        });
-
-        $infoTemplate = SSViewer::get_templates_by_class(
-            $owner->ClassName,
-            '_Information',
-            SiteTree::class
-        );
-
-        // show published info of localised record, not base record (this is framework's default)
-        $information->setValue($owner->customise([
-            'Live' => $liveRecord,
-            'ExistsOnLive' => $owner->isPublishedInLocale(),
-        ])->renderWith($infoTemplate));
-    }
-
-    /**
      * Update modified flag to reflect localised record instead of base record
      * It doesn't make sense to have modified flag if page is not localised in current locale
      *
@@ -620,7 +564,7 @@ class FluentSiteTreeExtension extends FluentVersionedExtension
             'title' => 'Title',
             'callback' => function (Locale $object) use ($url, $params) {
                 if (!$object->RecordLocale()) {
-                    return;
+                    return null;
                 }
 
                 $recordLocale = $object->RecordLocale();
