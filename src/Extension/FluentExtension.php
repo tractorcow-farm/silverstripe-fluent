@@ -189,6 +189,15 @@ class FluentExtension extends DataExtension
     private static $localised_copy = [];
 
     /**
+     * Enable localise actions (copy to draft, copy & publish and Localise actions)
+     * these actions can be used to localise page content directly via main page actions
+     *
+     * @config
+     * @var bool
+     */
+    private static $localise_actions_enabled = true;
+
+    /**
      * Cache of localised fields for this model
      */
     protected $localisedFields = [];
