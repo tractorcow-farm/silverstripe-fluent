@@ -256,7 +256,7 @@ class FluentSiteTreeExtension extends FluentVersionedExtension
     {
         $owner = $this->owner;
 
-        if ($owner->config()->get('frontend_publish_required') === FluentExtension::INHERITANCE_MODE_NONE) {
+        if ($owner->config()->get('frontend_publish_required') === FluentExtension::INHERITANCE_MODE_EXACT) {
             // If publishing is required, then we can just check whether or not this locale has been published.
             if (!$this->isPublishedInLocale()) {
                 return _t(

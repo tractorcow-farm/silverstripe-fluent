@@ -69,7 +69,7 @@ class FluentExtension extends DataExtension
      * Content inheritance - content will be served from the following sources in this order:
      * current locale
      */
-    const INHERITANCE_MODE_NONE = 'none';
+    const INHERITANCE_MODE_EXACT = 'exact';
 
     /**
      * Content inheritance - content will be served from the following sources in this order:
@@ -489,19 +489,16 @@ class FluentExtension extends DataExtension
 
         // Resolve content inheritance (this drives what content is shown)
         $inheritanceMode = $this->getInheritanceMode();
-        if ($inheritanceMode === self::INHERITANCE_MODE_NONE) {
+        if ($inheritanceMode === self::INHERITANCE_MODE_EXACT) {
             $joinAlias = $this->getLocalisedTable($this->owner->baseTable(), $locale->Locale);
             $where = sprintf('"%s"."ID" IS NOT NULL', $joinAlias);
             $query->addWhereAny($where);
         } elseif ($inheritanceMode === self::INHERITANCE_MODE_FALLBACK) {
             $conditions = [];
 
-            foreach ($this->owner->getLocalisedTables() as $table => $fields) {
-                foreach ($locale->getChain() as $joinLocale) {
-                    $joinAlias = $this->getLocalisedTable($table, $joinLocale->Locale);
-
-                    $conditions[] = sprintf('"%s"."ID" IS NOT NULL', $joinAlias);
-                }
+            foreach ($locale->getChain() as $joinLocale) {
+                $joinAlias = $this->getLocalisedTable($this->owner->baseTable(), $joinLocale->Locale);
+                $conditions[] = sprintf('"%s"."ID" IS NOT NULL', $joinAlias);
             }
 
             $query->addWhereAny($conditions);
@@ -1061,8 +1058,15 @@ class FluentExtension extends DataExtension
             ? $config->get('frontend_publish_required')
             : $config->get('cms_localisation_required');
 
+        // Detect legacy type
+        if (is_bool($inheritanceMode)) {
+            $inheritanceMode = $inheritanceMode
+                ? self::INHERITANCE_MODE_EXACT
+                : self::INHERITANCE_MODE_ANY;
+        }
+
         if (!in_array($inheritanceMode, [
-            self::INHERITANCE_MODE_NONE,
+            self::INHERITANCE_MODE_EXACT,
             self::INHERITANCE_MODE_FALLBACK,
             self::INHERITANCE_MODE_ANY,
         ])) {
