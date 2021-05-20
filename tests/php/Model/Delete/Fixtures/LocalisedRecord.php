@@ -13,9 +13,9 @@ class LocalisedRecord extends DataObject implements TestOnly
 {
     private static $table_name = 'FluentDeleteTest_LocalisedRecord';
 
-    private static $frontend_publish_required = false;
+    private static $frontend_publish_required = FluentExtension::INHERITANCE_MODE_ANY;
 
-    private static $cms_localisation_required = false;
+    private static $cms_localisation_required = FluentExtension::INHERITANCE_MODE_ANY;
 
     private static $extensions = [
         FluentExtension::class,

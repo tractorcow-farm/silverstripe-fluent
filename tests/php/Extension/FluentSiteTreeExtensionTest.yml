@@ -7,6 +7,12 @@ TractorCow\Fluent\Model\Locale:
     Locale: en_US
     Title: 'English (US)'
     URLSegment: usa
+  uk:
+    Locale: en_GB
+    Title: 'English (GB)'
+    URLSegment: uk
+    Fallbacks:
+      - =>TractorCow\Fluent\Model\Locale.nz
   de:
     Locale: de_DE
     Title: German
