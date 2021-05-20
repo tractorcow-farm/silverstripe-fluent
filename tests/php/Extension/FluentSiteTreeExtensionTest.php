@@ -13,8 +13,10 @@ use SilverStripe\Forms\FieldList;
 use SilverStripe\Forms\LiteralField;
 use SilverStripe\ORM\ArrayList;
 use SilverStripe\ORM\DataObject;
+use SilverStripe\ORM\ValidationException;
 use SilverStripe\Versioned\Versioned;
 use TractorCow\Fluent\Extension\FluentDirectorExtension;
+use TractorCow\Fluent\Extension\FluentExtension;
 use TractorCow\Fluent\Extension\FluentSiteTreeExtension;
 use TractorCow\Fluent\Extension\FluentVersionedExtension;
 use TractorCow\Fluent\Model\Domain;
@@ -91,11 +93,12 @@ class FluentSiteTreeExtensionTest extends SapphireTest
             $result = $page->Locales();
 
             $this->assertInstanceOf(ArrayList::class, $result);
-            $this->assertCount(5, $result);
+            $this->assertCount(6, $result);
             $this->assertListEquals([
                 ['Locale' => 'en_NZ'],
                 ['Locale' => 'de_DE'],
                 ['Locale' => 'en_US'],
+                ['Locale' => 'en_GB'],
                 ['Locale' => 'es_ES'],
                 ['Locale' => 'zh_CN'],
             ], $result);
@@ -161,7 +164,7 @@ class FluentSiteTreeExtensionTest extends SapphireTest
      * @param string $pageName
      * @param string $url
      */
-    public function testFluentURLs($domain, $locale, $prefixDisabled, $pageName, $url)
+    public function testFluentURLs(?string $domain, string $locale, bool $prefixDisabled, string $pageName, string $url)
     {
         FluentState::singleton()->withState(
             function (FluentState $newState) use ($domain, $locale, $prefixDisabled, $pageName, $url) {
@@ -201,7 +204,7 @@ class FluentSiteTreeExtensionTest extends SapphireTest
             $page = $this->objFromFixture(Page::class, 'staff');
             $page->config()
                 ->set('locale_published_status_message', true)
-                ->set('frontend_publish_required', true);
+                ->set('frontend_publish_required', FluentExtension::INHERITANCE_MODE_EXACT);
 
             $fields = $page->getCMSFields();
 
@@ -224,7 +227,7 @@ class FluentSiteTreeExtensionTest extends SapphireTest
             $page = $this->objFromFixture(Page::class, 'home');
             $page->config()
                 ->set('locale_published_status_message', true)
-                ->set('frontend_publish_required', false);
+                ->set('frontend_publish_required', FluentExtension::INHERITANCE_MODE_ANY);
 
             $fields = $page->getCMSFields();
 
@@ -247,7 +250,7 @@ class FluentSiteTreeExtensionTest extends SapphireTest
             $page = $this->objFromFixture(Page::class, 'home');
             $page->config()
                 ->set('locale_published_status_message', true)
-                ->set('frontend_publish_required', false);
+                ->set('frontend_publish_required', FluentExtension::INHERITANCE_MODE_ANY);
             $page->write();
 
             $fields = $page->getCMSFields();
@@ -311,7 +314,7 @@ class FluentSiteTreeExtensionTest extends SapphireTest
      * @param string $expected
      * @dataProvider localePrefixUrlProvider
      */
-    public function testAddLocalePrefixToUrlSegment($localeCode, $fixture, $expected)
+    public function testAddLocalePrefixToUrlSegment(string $localeCode, string $fixture, string $expected)
     {
         FluentState::singleton()->withState(
             function (FluentState $newState) use ($localeCode, $fixture, $expected) {
@@ -319,7 +322,6 @@ class FluentSiteTreeExtensionTest extends SapphireTest
                     ->setLocale($localeCode)
                     ->setIsDomainMode(true);
 
-                /** @var FieldList $fields */
                 $fields = $this->objFromFixture(Page::class, $fixture)->getCMSFields();
 
                 /** @var SiteTreeURLSegmentField $segmentField */
@@ -331,10 +333,10 @@ class FluentSiteTreeExtensionTest extends SapphireTest
         );
     }
 
-    public function testHomeVisibleOnFrontendBothConfigFalse()
+    public function testHomeVisibleOnFrontendBothConfigAny()
     {
-        Config::modify()->set(DataObject::class, 'cms_localisation_required', false);
-        Config::modify()->set(DataObject::class, 'frontend_publish_required', false);
+        Config::modify()->set(DataObject::class, 'cms_localisation_required', FluentExtension::INHERITANCE_MODE_ANY);
+        Config::modify()->set(DataObject::class, 'frontend_publish_required', FluentExtension::INHERITANCE_MODE_ANY);
 
         FluentState::singleton()->withState(function (FluentState $newState) {
             $newState
@@ -348,10 +350,10 @@ class FluentSiteTreeExtensionTest extends SapphireTest
         });
     }
 
-    public function testHomeVisibleOnFrontendOneConfigFalse()
+    public function testHomeVisibleOnFrontendOneConfigAny()
     {
-        Config::modify()->set(DataObject::class, 'cms_localisation_required', true);
-        Config::modify()->set(DataObject::class, 'frontend_publish_required', false);
+        Config::modify()->set(DataObject::class, 'cms_localisation_required', FluentExtension::INHERITANCE_MODE_EXACT);
+        Config::modify()->set(DataObject::class, 'frontend_publish_required', FluentExtension::INHERITANCE_MODE_ANY);
 
         FluentState::singleton()->withState(function (FluentState $newState) {
             $newState
@@ -365,27 +367,10 @@ class FluentSiteTreeExtensionTest extends SapphireTest
         });
     }
 
-    public function testHomeNotVisibleOnFrontendBothConfigTrue()
+    public function testHomeNotVisibleOnFrontendBothConfigExact()
     {
-        Config::modify()->set(DataObject::class, 'cms_localisation_required', true);
-        Config::modify()->set(DataObject::class, 'frontend_publish_required', true);
-
-        FluentState::singleton()->withState(function (FluentState $newState) {
-            $newState
-                ->setLocale('de_DE')
-                ->setIsDomainMode(false)
-                ->setIsFrontend(true);
-
-            $page = Page::get()->filter('URLSegment', 'home')->first();
-
-            $this->assertNull($page);
-        });
-    }
-
-    public function testHomeNotVisibleOnFrontendOneConfigTrue()
-    {
-        Config::modify()->set(DataObject::class, 'cms_localisation_required', false);
-        Config::modify()->set(DataObject::class, 'frontend_publish_required', true);
+        Config::modify()->set(DataObject::class, 'cms_localisation_required', FluentExtension::INHERITANCE_MODE_EXACT);
+        Config::modify()->set(DataObject::class, 'frontend_publish_required', FluentExtension::INHERITANCE_MODE_EXACT);
 
         FluentState::singleton()->withState(function (FluentState $newState) {
             $newState
@@ -399,10 +384,27 @@ class FluentSiteTreeExtensionTest extends SapphireTest
         });
     }
 
-    public function testHomeVisibleInCMSBothConfigFalse()
+    public function testHomeNotVisibleOnFrontendOneConfigExact()
     {
-        Config::modify()->set(DataObject::class, 'cms_localisation_required', false);
-        Config::modify()->set(DataObject::class, 'frontend_publish_required', false);
+        Config::modify()->set(DataObject::class, 'cms_localisation_required', FluentExtension::INHERITANCE_MODE_ANY);
+        Config::modify()->set(DataObject::class, 'frontend_publish_required', FluentExtension::INHERITANCE_MODE_EXACT);
+
+        FluentState::singleton()->withState(function (FluentState $newState) {
+            $newState
+                ->setLocale('de_DE')
+                ->setIsDomainMode(false)
+                ->setIsFrontend(true);
+
+            $page = Page::get()->filter('URLSegment', 'home')->first();
+
+            $this->assertNull($page);
+        });
+    }
+
+    public function testHomeVisibleInCMSBothConfigAny()
+    {
+        Config::modify()->set(DataObject::class, 'cms_localisation_required', FluentExtension::INHERITANCE_MODE_ANY);
+        Config::modify()->set(DataObject::class, 'frontend_publish_required', FluentExtension::INHERITANCE_MODE_ANY);
 
         FluentState::singleton()->withState(function (FluentState $newState) {
             $newState
@@ -416,10 +418,10 @@ class FluentSiteTreeExtensionTest extends SapphireTest
         });
     }
 
-    public function testHomeVisibleInCMSOneConfigFalse()
+    public function testHomeVisibleInCMSOneConfigAny()
     {
-        Config::modify()->set(DataObject::class, 'cms_localisation_required', false);
-        Config::modify()->set(DataObject::class, 'frontend_publish_required', true);
+        Config::modify()->set(DataObject::class, 'cms_localisation_required', FluentExtension::INHERITANCE_MODE_ANY);
+        Config::modify()->set(DataObject::class, 'frontend_publish_required', FluentExtension::INHERITANCE_MODE_EXACT);
 
         FluentState::singleton()->withState(function (FluentState $newState) {
             $newState
@@ -433,10 +435,10 @@ class FluentSiteTreeExtensionTest extends SapphireTest
         });
     }
 
-    public function testHomeNotVisibleInCMSBothConfigTrue()
+    public function testHomeNotVisibleInCMSBothConfigExact()
     {
-        Config::modify()->set(DataObject::class, 'cms_localisation_required', true);
-        Config::modify()->set(DataObject::class, 'frontend_publish_required', true);
+        Config::modify()->set(DataObject::class, 'cms_localisation_required', FluentExtension::INHERITANCE_MODE_EXACT);
+        Config::modify()->set(DataObject::class, 'frontend_publish_required', FluentExtension::INHERITANCE_MODE_EXACT);
 
         FluentState::singleton()->withState(function (FluentState $newState) {
             $newState
@@ -450,10 +452,10 @@ class FluentSiteTreeExtensionTest extends SapphireTest
         });
     }
 
-    public function testHomeNotVisibleInCMSOneConfigTrue()
+    public function testHomeNotVisibleInCMSOneConfigExact()
     {
-        Config::modify()->set(DataObject::class, 'cms_localisation_required', true);
-        Config::modify()->set(DataObject::class, 'frontend_publish_required', false);
+        Config::modify()->set(DataObject::class, 'cms_localisation_required', FluentExtension::INHERITANCE_MODE_EXACT);
+        Config::modify()->set(DataObject::class, 'frontend_publish_required', FluentExtension::INHERITANCE_MODE_ANY);
 
         FluentState::singleton()->withState(function (FluentState $newState) {
             $newState
@@ -476,6 +478,87 @@ class FluentSiteTreeExtensionTest extends SapphireTest
             'locale_with_domain'            => ['en_US', 'about', 'http://www.example.com/usa/'],
             'locale_without_domain'         => ['zh_CN', 'about', 'http://mocked/zh_CN/'],
             'locale_alone_on_domain_nested' => ['de_DE', 'staff', 'http://www.example.de/about-us/'],
+        ];
+    }
+
+    /**
+     * @param string|bool $cmsMode
+     * @param string|bool $frontendMode
+     * @param bool $isFrontend
+     * @param int $expected
+     * @throws ValidationException
+     * @dataProvider localeFallbackProvider
+     */
+    public function testPageVisibilityWithFallback($cmsMode, $frontendMode, bool $isFrontend, int $expected)
+    {
+        Config::modify()
+            ->set(DataObject::class, 'cms_localisation_required', $cmsMode)
+            ->set(DataObject::class, 'frontend_publish_required', $frontendMode);
+
+        $pageId = FluentState::singleton()->withState(function (FluentState $state): int {
+            $state
+                ->setLocale('en_NZ')
+                ->setIsDomainMode(false);
+
+            // Intentionally avoiding fixtures as this is easier to maintain
+            $page = Page::create();
+            $page->Title = 'fallback-test';
+            $page->URLSegment = 'fallback-test';
+            $page->write();
+            $page->publishRecursive();
+
+            return $page->ID;
+        });
+
+        FluentState::singleton()->withState(function (FluentState $state) use ($isFrontend, $pageId, $expected) {
+            $state
+                ->setLocale('en_GB')
+                ->setIsDomainMode(false)
+                ->setIsFrontend($isFrontend);
+
+            $this->assertCount($expected, Page::get()->byIDs([$pageId]));
+        });
+    }
+
+    public function localeFallbackProvider(): array
+    {
+        return [
+            'Frontend / no inheritance' => [
+                FluentExtension::INHERITANCE_MODE_EXACT,
+                FluentExtension::INHERITANCE_MODE_EXACT,
+                true,
+                0,
+            ],
+            'Frontend / fallback inheritance' => [
+                FluentExtension::INHERITANCE_MODE_EXACT,
+                FluentExtension::INHERITANCE_MODE_FALLBACK,
+                true,
+                1,
+            ],
+            'Frontend / no inheritance (legacy)' => [
+                true,
+                true,
+                true,
+                0,
+            ],
+            'CMS / no inheritance' => [
+                FluentExtension::INHERITANCE_MODE_EXACT,
+                FluentExtension::INHERITANCE_MODE_EXACT,
+                false,
+                0,
+            ],
+            'CMS / fallback inheritance' => [
+                FluentExtension::INHERITANCE_MODE_FALLBACK,
+                FluentExtension::INHERITANCE_MODE_EXACT,
+                false,
+                1,
+            ],
+            'CMS / no inheritance (legacy)' => [
+                true,
+                true,
+                false,
+                0,
+            ],
         ];
     }
 }

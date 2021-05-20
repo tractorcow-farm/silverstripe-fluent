@@ -3,8 +3,8 @@ Name: fluentmodel
 ---
 SilverStripe\ORM\DataObject:
   # See FluentExtension
-  cms_localisation_required: false
-  frontend_publish_required: true
+  cms_localisation_required: any
+  frontend_publish_required: fallback
   # See FluentFilteredExtension
   apply_filtered_locales_to_stage: true
   # See FluentIsolatedExtension
@@ -12,4 +12,4 @@ SilverStripe\ORM\DataObject:
 
 # Prevent duplicate siteconfigs when localised
 SilverStripe\SiteConfig\SiteConfig:
-  frontend_publish_required: false
+  frontend_publish_required: any

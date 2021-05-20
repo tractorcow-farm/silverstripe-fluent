@@ -26,9 +26,9 @@ This policy will delete the localisation for the record in the current locale.
 E.g. if you have a locale in both EN and CN, pressing delete in the CN locale
 will delete only that locale, but not the EN (or base) record.
 
-Note that if you have disabled `frontend_publish_required` config, then the record
-will still be available in that locale, but will instead fall back to the failover
-locale instead.
+Note that if you have set `frontend_publish_required` config to `fallback` or `any`, then the record
+will still be available in that locale, but will instead fall back to the failover instead
+(depending on your configuration).
 
 This policy is applied only to records with `FluentExtension` applied.
 

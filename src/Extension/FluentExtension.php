@@ -66,6 +66,24 @@ class FluentExtension extends DataExtension
     const TRANSLATE_NONE = 'none';
 
     /**
+     * Content inheritance - content will be served from the following sources in this order:
+     * current locale
+     */
+    const INHERITANCE_MODE_EXACT = 'exact';
+
+    /**
+     * Content inheritance - content will be served from the following sources in this order:
+     * current locale, fallback locale
+     */
+    const INHERITANCE_MODE_FALLBACK = 'fallback';
+
+    /**
+     * Content inheritance - content will be served from the following sources in this order:
+     * current locale, fallback locale, base record
+     */
+    const INHERITANCE_MODE_ANY = 'any';
+
+    /**
      * DB fields to be used added in when creating a localised version of the owner's table
      *
      * @config
@@ -469,11 +487,21 @@ class FluentExtension extends DataExtension
             }
         }
 
-        // On frontend only show if published in this specific locale
-        if ($this->requireSavedInLocale()) {
+        // Resolve content inheritance (this drives what content is shown)
+        $inheritanceMode = $this->getInheritanceMode();
+        if ($inheritanceMode === self::INHERITANCE_MODE_EXACT) {
             $joinAlias = $this->getLocalisedTable($this->owner->baseTable(), $locale->Locale);
-            $where = "\"{$joinAlias}\".\"ID\" IS NOT NULL";
+            $where = sprintf('"%s"."ID" IS NOT NULL', $joinAlias);
             $query->addWhereAny($where);
+        } elseif ($inheritanceMode === self::INHERITANCE_MODE_FALLBACK) {
+            $conditions = [];
+
+            foreach ($locale->getChain() as $joinLocale) {
+                $joinAlias = $this->getLocalisedTable($this->owner->baseTable(), $joinLocale->Locale);
+                $conditions[] = sprintf('"%s"."ID" IS NOT NULL', $joinAlias);
+            }
+
+            $query->addWhereAny($conditions);
         }
 
         // Add the "source locale", which the content exists in up the chain
@@ -1021,21 +1049,32 @@ class FluentExtension extends DataExtension
     /**
      * Require that this record is saved in the given locale for it to be visible
      *
-     * @return bool
+     * @return string
      */
-    protected function requireSavedInLocale()
+    protected function getInheritanceMode(): string
     {
-        if (FluentState::singleton()->getIsFrontend()) {
-            return $this->owner->config()->get('frontend_publish_required');
+        $config = $this->owner->config();
+        $inheritanceMode = FluentState::singleton()->getIsFrontend()
+            ? $config->get('frontend_publish_required')
+            : $config->get('cms_localisation_required');
+
+        // Detect legacy type
+        if (is_bool($inheritanceMode)) {
+            $inheritanceMode = $inheritanceMode
+                ? self::INHERITANCE_MODE_EXACT
+                : self::INHERITANCE_MODE_ANY;
         }
 
-        if ($this->owner->config()->get('cms_publish_required') !== null) {
-            Deprecation::notice('5.0', 'Use cms_localisation_required instead');
-
-            return $this->owner->config()->get('cms_publish_required');
+        if (!in_array($inheritanceMode, [
+            self::INHERITANCE_MODE_EXACT,
+            self::INHERITANCE_MODE_FALLBACK,
+            self::INHERITANCE_MODE_ANY,
+        ])) {
+            // Default mode
+            $inheritanceMode = self::INHERITANCE_MODE_ANY;
         }
 
-        return $this->owner->config()->get('cms_localisation_required');
+        return $inheritanceMode;
     }
 
     /**

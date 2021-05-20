@@ -279,7 +279,7 @@ class RecordLocale extends ViewableData
         }
 
         // If frontend publishing is not required for localisation, no further checks required
-        if (!$inLocale && !$record->config()->get('frontend_publish_required')) {
+        if (!$inLocale && $record->config()->get('frontend_publish_required') !== FluentExtension::INHERITANCE_MODE_EXACT) {
             return true;
         }
 

@@ -62,13 +62,13 @@ By default, DataObjects must be Localised for them to display on the frontend (E
 **Globally:**
 ```yaml
 TractorCow\Fluent\Extension\FluentExtension:
-  frontend_publish_required: false
+  frontend_publish_required: any
 ```
 
 **For a specific DataObject:**
 ```yaml
 MySite\Model\MyModel:
-  frontend_publish_required: false
+  frontend_publish_required: any
 ```
 
 #### Result

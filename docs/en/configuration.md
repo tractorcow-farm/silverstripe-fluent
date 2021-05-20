@@ -209,13 +209,13 @@ We can change this behaviour by updating the `frontend_publish_required` configu
 Globally:
 ```yaml
 TractorCow\Fluent\Extension\FluentExtension:
-  frontend_publish_required: false
+  frontend_publish_required: any
 ```
 
 For a specific DataObject:
 ```yaml
 MySite\Model\MyModel:
-  frontend_publish_required: false
+  frontend_publish_required: any
 ```
 
 **Note:** If you are applying this via an `Extension`, be sure to apply it after the `FluentExtension`.
