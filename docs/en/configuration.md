@@ -223,6 +223,32 @@ MySite\Model\MyModel:
 The result is that a DataObject that has *not* been Localised, will display on the frontend with content populated by
 it's Fallbacks (the same beheviour as what you see when viewing DataObjects from within the CMS).
 
+## Timezone
+
+Locales can also optionally have a Timezone assigned to each.
+
+Since all dates are stored in the timezone the server is located in (often NZ, or UTC)
+you will need to call another function to display a date/time in a local time.
+
+A default extension `FluentDateTimeExtension` allows you to use the `LocalTime` helper to render
+datetimes in the local time.
+
+E.g.
+
+```html
+<p>Hello, it is now {$Now.LocalTime.Nice}</p>
+```
+
+Or if you want to use local time in a summary field (where server time is UTC)
+
+```php
+ private static $summary_fields = [
+    'Title'                           => 'Title',
+    'Created'                         => 'Created (utc)',
+    'Created.getLocalTime.LocalValue' => 'Created (local)',
+];
+```
+
 ## SilverStripe Fluent and search
 
 ### SilverStripe Core search

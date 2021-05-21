@@ -14,3 +14,8 @@ SilverStripe\ORM\DataObject:
 # Prevent duplicate siteconfigs when localised
 SilverStripe\SiteConfig\SiteConfig:
   frontend_publish_required: false
+
+# allow localised dates
+SilverStripe\ORM\FieldType\DBDatetime:
+  extensions:
+    fluentextension: TractorCow\Fluent\Extension\FluentDateTimeExtension
