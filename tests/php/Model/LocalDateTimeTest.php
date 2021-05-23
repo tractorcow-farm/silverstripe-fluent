@@ -64,4 +64,43 @@ class LocalDateTimeTest extends SapphireTest
         $this->assertEquals('2021-02-18 12:59:59', $date->getValue());
         $this->assertEquals('2021-02-18 07:59:59', $date->getLocalValue()); // 5 hours before UTC
     }
+
+
+    /**
+     * Test all DB locales
+     *
+     * @dataProvider provideTestSwitchLocales
+     * @param $locales
+     */
+    public function testSwitchLocales($locale, $expectedTime)
+    {
+        /** @var DBDatetime|FluentDateTimeExtension $date */
+        $date = DBField::create_field('Datetime', '2021-01-12 13:00:12'); // UTC
+        FluentState::singleton()->withState(function (FluentState $state) use ($locale, $expectedTime, $date) {
+            $state->setLocale($locale);
+            $this->assertEquals($expectedTime, $date->getLocalTime()->getLocalValue());
+        });
+    }
+
+    public function provideTestSwitchLocales()
+    {
+        return [
+            [
+                'locale'    => 'en_NZ',
+                'localTIme' => '2021-01-13 02:00:12',
+            ],
+            [
+                'locale'    => 'en_AU',
+                'localTime' => '2021-01-12 23:00:12',
+            ],
+            [
+                'locale'    => 'es_ES',
+                'localTime' => '2021-01-12 14:00:12',
+            ],
+            [
+                'locale'    => 'es_US',
+                'localTime' => '2021-01-12 08:00:12',
+            ],
+        ];
+    }
 }
