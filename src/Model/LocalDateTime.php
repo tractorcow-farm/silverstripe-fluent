@@ -49,13 +49,6 @@ class LocalDateTime extends DBDatetime
         return $this;
     }
 
-    /**
-     * @param null $locale
-     * @param null $pattern
-     * @param int $dateLength
-     * @param int $timeLength
-     * @return IntlDateFormatter
-     */
     public function getCustomFormatter(
         $locale = null,
         $pattern = null,
