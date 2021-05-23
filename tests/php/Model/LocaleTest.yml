@@ -2,16 +2,20 @@ TractorCow\Fluent\Model\Locale:
   en_NZ:
     Locale: en_NZ
     URLSegment: nz
+    Timezone: Pacific/Auckland
   en_AU:
     Locale: en_AU
     URLSegment: au
     IsGlobalDefault: 1
+    Timezone: Australia/Brisbane
   es_ES:
     Locale: es_ES
     URLSegment: es
+    Timezone: Europe/Madrid
   es_US:
     Locale: es_US
     URLSegment: es-usa
+    Timezone: America/New_York
 
 TractorCow\Fluent\Model\Domain:
   kiwi:

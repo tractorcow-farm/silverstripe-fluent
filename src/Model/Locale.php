@@ -42,7 +42,7 @@ use TractorCow\Fluent\State\FluentState;
  * @property bool $IsGlobalDefault
  * @property int $DomainID
  * @property bool $UseDefaultCode
- * @property string $TimeZone
+ * @property string $Timezone
  * @method HasManyList|FallbackLocale[] FallbackLocales()
  * @method ManyManyList|Locale[] Fallbacks()
  * @method Domain Domain() Raw SQL Domain (unfiltered by domain mode)
@@ -96,7 +96,7 @@ class Locale extends DataObject implements PermissionProvider
         'IsGlobalDefault' => 'Boolean',
         'UseDefaultCode'  => 'Boolean',
         'Sort'            => 'Int',
-        'TimeZone'        => 'Varchar(100)',
+        'Timezone'        => 'Varchar(100)',
     ];
 
     private static $default_sort = '"Fluent_Locale"."Sort" ASC, "Fluent_Locale"."Locale" ASC';
@@ -104,7 +104,7 @@ class Locale extends DataObject implements PermissionProvider
     public function populateDefaults()
     {
         parent::populateDefaults();
-        $this->TimeZone = date_default_timezone_get();
+        $this->Timezone = date_default_timezone_get();
     }
 
     /**
@@ -296,9 +296,9 @@ class Locale extends DataObject implements PermissionProvider
                         'Use of this code indicates to search engines that this is a non-localised global landing page'
                     )),
                 DropdownField::create(
-                    'TimeZone',
+                    'Timezone',
                     _t(__CLASS__ . '.TIMEZONE', 'Timezone'),
-                    $this->getTimeZones()
+                    $this->getTimezones()
                 )->setEmptyString(_t(__CLASS__ . '.DEFAULT_NONE', '(none)')),
                 DropdownField::create(
                     'DomainID',
@@ -713,7 +713,7 @@ class Locale extends DataObject implements PermissionProvider
      * @return array
      * @throws Exception
      */
-    protected function getTimeZones()
+    protected function getTimezones()
     {
         static $timezones = null;
         if ($timezones !== null) {

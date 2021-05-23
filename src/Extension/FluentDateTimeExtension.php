@@ -20,10 +20,8 @@ class FluentDateTimeExtension extends Extension
     public function getLocalTime(): LocalDateTime
     {
         $locale = Locale::getCurrentLocale();
-        $timezone = $locale ? $locale->TimeZone : null;
+        $timezone = $locale ? $locale->Timezone : null;
 
-        // Note: Only specify timezone after assigning value, since most internal functions rely on value
-        // being in server timezone.
         return LocalDateTime::create($this->owner->getName(), $this->owner->getOptions())
             ->setValue($this->owner->getValue())
             ->setTimezone($timezone);

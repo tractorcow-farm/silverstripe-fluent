@@ -2,6 +2,9 @@
 
 namespace TractorCow\Fluent\Model;
 
+use DateTimeImmutable;
+use DateTimeZone;
+use Exception;
 use IntlDateFormatter;
 use InvalidArgumentException;
 use SilverStripe\ORM\FieldType\DBDatetime;
@@ -19,7 +22,7 @@ class LocalDateTime extends DBDatetime
 
     public function __construct($name = null, $options = [], $timezone = null)
     {
-        $this->timezone = $timezone;
+        $this->setTimezone($timezone);
         parent::__construct($name, $options);
     }
 
@@ -62,9 +65,29 @@ class LocalDateTime extends DBDatetime
         $formatter = parent::getCustomFormatter($locale, $pattern, $dateLength, $timeLength);
         $timezone = $this->getTimezone();
         if ($timezone) {
-            $formatter->setTimeZone($timezone);
+            $formatter->setTimezone($timezone);
         }
         return $formatter;
+    }
+
+    /**
+     * Assign value in server timezone
+     *
+     * @param mixed $value
+     * @param string $record
+     * @param bool $markChanged
+     * @return $this
+     */
+    public function setValue($value, $record = null, $markChanged = true)
+    {
+        // Disable timezone when setting value (always stored in server timezone)
+        $timezone = $this->getTimezone();
+        try {
+            $this->setTimezone(null);
+            return parent::setValue($value, $record, $markChanged);
+        } finally {
+            $this->setTimezone($timezone);
+        }
     }
 
     /**
@@ -75,5 +98,33 @@ class LocalDateTime extends DBDatetime
     public function getLocalValue(): string
     {
         return $this->Format(self::ISO_DATETIME);
+    }
+
+    /** Assign a value that's already in the current locale
+     *
+     * @param string $value
+     * @param string $timezone Timezone to assign to this date (defaults to current assigned timezone)
+     * @return $this
+     * @throws Exception
+     */
+    public function setLocalValue($value, $timezone = null)
+    {
+        // If assigning timezone, set first
+        if (func_num_args() >= 2) {
+            $this->setTimezone($timezone);
+        }
+
+        // Empty values
+        if (empty($value)) {
+            $this->value = null;
+            return $this;
+        }
+
+        // Parse from local timezone
+        $timezone = $this->getTimezone() ?: date_default_timezone_get();
+        $localTime = new DateTimeImmutable($value, new DateTimeZone($timezone));
+        $localTime->setTimezone(new DateTimeZone(date_default_timezone_get())); // Store in server timezone
+        $this->value = $localTime->format('Y-m-d H:i:s');
+        return $this;
     }
 }
