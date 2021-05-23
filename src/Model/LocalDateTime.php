@@ -2,7 +2,7 @@
 
 namespace TractorCow\Fluent\Model;
 
-use DateTimeImmutable;
+use DateTime;
 use DateTimeZone;
 use Exception;
 use IntlDateFormatter;
@@ -122,9 +122,10 @@ class LocalDateTime extends DBDatetime
 
         // Parse from local timezone
         $timezone = $this->getTimezone() ?: date_default_timezone_get();
-        $localTime = new DateTimeImmutable($value, new DateTimeZone($timezone));
+        $localTime = new DateTime($value, new DateTimeZone($timezone));
         $localTime->setTimezone(new DateTimeZone(date_default_timezone_get())); // Store in server timezone
-        $this->value = $localTime->format('Y-m-d H:i:s');
+        $serverValue = $localTime->format('Y-m-d H:i:s');
+        $this->value = $serverValue;
         return $this;
     }
 }
