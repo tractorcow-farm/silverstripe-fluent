@@ -2,6 +2,9 @@
 
 namespace TractorCow\Fluent\Model;
 
+use DateTime;
+use DateTimeZone;
+use Exception;
 use SilverStripe\Control\Controller;
 use SilverStripe\Control\Director;
 use SilverStripe\Core\Config\Config;
@@ -39,6 +42,7 @@ use TractorCow\Fluent\State\FluentState;
  * @property bool $IsGlobalDefault
  * @property int $DomainID
  * @property bool $UseDefaultCode
+ * @property string $Timezone
  * @method HasManyList|FallbackLocale[] FallbackLocales()
  * @method ManyManyList|Locale[] Fallbacks()
  * @method Domain Domain() Raw SQL Domain (unfiltered by domain mode)
@@ -92,9 +96,16 @@ class Locale extends DataObject implements PermissionProvider
         'IsGlobalDefault' => 'Boolean',
         'UseDefaultCode'  => 'Boolean',
         'Sort'            => 'Int',
+        'Timezone'        => 'Varchar(100)',
     ];
 
     private static $default_sort = '"Fluent_Locale"."Sort" ASC, "Fluent_Locale"."Locale" ASC';
+
+    public function populateDefaults()
+    {
+        parent::populateDefaults();
+        $this->Timezone = date_default_timezone_get();
+    }
 
     /**
      * @config
@@ -284,6 +295,11 @@ class Locale extends DataObject implements PermissionProvider
                         __CLASS__ . '.USE_X_DEFAULT_DESCRIPTION',
                         'Use of this code indicates to search engines that this is a non-localised global landing page'
                     )),
+                DropdownField::create(
+                    'Timezone',
+                    _t(__CLASS__ . '.TIMEZONE', 'Timezone'),
+                    $this->getTimezones()
+                )->setEmptyString(_t(__CLASS__ . '.DEFAULT_NONE', '(none)')),
                 DropdownField::create(
                     'DomainID',
                     _t(__CLASS__ . '.DOMAIN', 'Domain'),
@@ -689,5 +705,39 @@ class Locale extends DataObject implements PermissionProvider
 
         // Access locale admin permission
         return LocaleAdmin::singleton()->canView($member);
+    }
+
+    /**
+     * Get list of timezones
+     *
+     * @return array
+     * @throws Exception
+     */
+    protected function getTimezones()
+    {
+        static $timezones = null;
+        if ($timezones !== null) {
+            return $timezones;
+        }
+
+        $timezones = [];
+        $offsets = [];
+        $now = new DateTime('now', new DateTimeZone('UTC'));
+
+        foreach (DateTimeZone::listIdentifiers() as $timezone) {
+            $now->setTimezone(new DateTimeZone($timezone));
+            $offsets[] = $offset = $now->getOffset();
+
+            // Format offset
+            $hours = intval($offset / 3600);
+            $minutes = abs(intval($offset % 3600 / 60));
+            $name = str_replace(['/', '_', 'St'], [', ', ' ', 'St. '], $timezone);
+            $offsetTime = $offset ? sprintf('%+03d:%02d', $hours, $minutes) : '';
+            $timezones[$timezone] = "(GMT{$offsetTime}) {$name}";
+        }
+
+        array_multisort($offsets, $timezones);
+
+        return $timezones;
     }
 }
