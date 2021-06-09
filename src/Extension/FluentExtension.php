@@ -24,6 +24,7 @@ use SilverStripe\ORM\FieldType\DBText;
 use SilverStripe\ORM\FieldType\DBVarchar;
 use SilverStripe\ORM\Queries\SQLConditionGroup;
 use SilverStripe\ORM\Queries\SQLSelect;
+use SilverStripe\ORM\ValidationException;
 use SilverStripe\Security\Permission;
 use SilverStripe\Versioned\Versioned;
 use SilverStripe\View\HTML;
@@ -593,15 +594,17 @@ class FluentExtension extends DataExtension
      * loading a page in a different locale and pressing "save" won't actually make the record available in
      * this locale.
      */
-    public function onBeforeWrite()
+    public function onBeforeWrite(): void
     {
         $owner = $this->owner;
-
-        /** @var string $currentLocale */
         $currentLocale = FluentState::singleton()->getLocale();
+
         if (!$currentLocale) {
             return;
         }
+
+        // Detect class name change (used later to properly localised newly available relation data)
+        $owner->classNameChangeDetected = $owner->isInDB() && $owner->isChanged('ClassName');
 
         $this->makeLocalisedCopy();
 
@@ -614,6 +617,114 @@ class FluentExtension extends DataExtension
         // Force a change if the record doesn't already exist in the current locale
         if (!$owner->existsInLocale($currentLocale)) {
             $owner->forceChange();
+        }
+    }
+
+    /**
+     * @throws ValidationException
+     */
+    public function onAfterWrite(): void
+    {
+        $owner = $this->owner;
+        $stage = Versioned::get_stage() ?: Versioned::DRAFT;
+        $currentLocale = FluentState::singleton()->getLocale();
+
+        if (!$this->localisedCopyActive) {
+            return;
+        }
+
+        if (!$currentLocale) {
+            return;
+        }
+
+        if (!$owner->classNameChangeDetected) {
+            // ClassName did not change so we can bail out
+            return;
+        }
+
+        if (!$owner->isInDB() || !$owner->existsInLocale()) {
+            // This is just a sanity check
+            return;
+        }
+
+        if ($stage !== Versioned::DRAFT) {
+            // Only draft stage is relevant for the duplication
+            return;
+        }
+
+        // Get list of all localised instances of this model and duplicate relations if needed (if current one has it)
+        $locales = $owner->getLocaleInstances();
+
+        /** @var Locale $locale */
+        foreach ($locales as $locale) {
+            if ($locale->Locale === $currentLocale) {
+                // We only need to handle other locale instances, current locale doesn't need updates
+                continue;
+            }
+
+            $relations = (array) $owner->config()->get('localised_copy');
+
+            foreach ($relations as $relation) {
+                $original = $owner->{$relation}();
+
+                if (!$original instanceof DataObject) {
+                    // Nothing to duplicate
+                    continue;
+                }
+
+                if (!$original->exists()) {
+                    // Nothing to duplicate
+                    continue;
+                }
+
+                /** @var DataObject $localisedRecord */
+                $localisedRecord = FluentState::singleton()->withState(
+                    function (FluentState $state) use ($owner, $locale): ?DataObject {
+                        $state->setLocale($locale->Locale);
+
+                        // Fetch localised record from other locale
+                        return DataObject::get_by_id($owner->ClassName, $owner->ID);
+                    }
+                );
+
+                if (!$localisedRecord) {
+                    // This is just a sanity check
+                    continue;
+                }
+
+                $relationIdField = $relation . 'ID';
+                $localisedRelationID = $localisedRecord->{$relationIdField};
+                $localisedRelation = $localisedRecord->{$relation}();
+
+                // TODO decide if we want to override existing relation or not
+                if ((int) $localisedRelationID !== (int) $owner->{$relationIdField}
+                    && $localisedRelation instanceof DataObject
+                    && $localisedRelation->exists()
+                ) {
+                    // Relation is already available on the localised record, let's keep it
+                    continue;
+                }
+
+                $duplicate = $original->duplicate();
+
+                // Attach the duplicated relation to localised record
+                FluentState::singleton()->withState(
+                    function (FluentState $state) use ($locale, $localisedRecord, $relation, $duplicate): void {
+                        $state->setLocale($locale->Locale);
+
+                        $localisedRecord->setComponent($relation, $duplicate);
+
+                        if ($localisedRecord->hasExtension(Versioned::class)) {
+                            /** @var DataObject|Versioned $localisedRecord */
+                            $localisedRecord->writeWithoutVersion();
+
+                            return;
+                        }
+
+                        $localisedRecord->write();
+                    }
+                );
+            }
         }
     }
 
