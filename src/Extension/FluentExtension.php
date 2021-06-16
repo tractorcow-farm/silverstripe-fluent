@@ -603,9 +603,6 @@ class FluentExtension extends DataExtension
             return;
         }
 
-        // Detect class name change (used later to properly localised newly available relation data)
-        $owner->classNameChangeDetected = $owner->isInDB() && $owner->isChanged('ClassName');
-
         $this->makeLocalisedCopy();
 
         // If the record is not versioned, force change
@@ -637,7 +634,7 @@ class FluentExtension extends DataExtension
             return;
         }
 
-        if (!$owner->classNameChangeDetected) {
+        if (!$owner->isChanged('ClassName')) {
             // ClassName did not change so we can bail out
             return;
         }
@@ -654,6 +651,7 @@ class FluentExtension extends DataExtension
 
         // Get list of all localised instances of this model and duplicate relations if needed (if current one has it)
         $locales = $owner->getLocaleInstances();
+        $objectsToWrite = [];
 
         /** @var Locale $locale */
         foreach ($locales as $locale) {
@@ -678,14 +676,16 @@ class FluentExtension extends DataExtension
                 }
 
                 /** @var DataObject $localisedRecord */
-                $localisedRecord = FluentState::singleton()->withState(
-                    function (FluentState $state) use ($owner, $locale): ?DataObject {
-                        $state->setLocale($locale->Locale);
+                $localisedRecord = array_key_exists($locale->Locale, $objectsToWrite)
+                    ? $objectsToWrite[$locale->Locale]
+                    : FluentState::singleton()->withState(
+                        static function (FluentState $state) use ($owner, $locale): ?DataObject {
+                            $state->setLocale($locale->Locale);
 
-                        // Fetch localised record from other locale
-                        return DataObject::get_by_id($owner->ClassName, $owner->ID);
-                    }
-                );
+                            // Fetch localised record from other locale
+                            return DataObject::get_by_id($owner->ClassName, $owner->ID);
+                        }
+                    );
 
                 if (!$localisedRecord) {
                     // This is just a sanity check
@@ -696,7 +696,6 @@ class FluentExtension extends DataExtension
                 $localisedRelationID = $localisedRecord->{$relationIdField};
                 $localisedRelation = $localisedRecord->{$relation}();
 
-                // TODO decide if we want to override existing relation or not
                 if ((int) $localisedRelationID !== (int) $owner->{$relationIdField}
                     && $localisedRelation instanceof DataObject
                     && $localisedRelation->exists()
@@ -706,25 +705,22 @@ class FluentExtension extends DataExtension
                 }
 
                 $duplicate = $original->duplicate();
-
                 // Attach the duplicated relation to localised record
-                FluentState::singleton()->withState(
-                    function (FluentState $state) use ($locale, $localisedRecord, $relation, $duplicate): void {
-                        $state->setLocale($locale->Locale);
+                $localisedRecord->setComponent($relation, $duplicate);
 
-                        $localisedRecord->setComponent($relation, $duplicate);
-
-                        if ($localisedRecord->hasExtension(Versioned::class)) {
-                            /** @var DataObject|Versioned $localisedRecord */
-                            $localisedRecord->writeWithoutVersion();
-
-                            return;
-                        }
-
-                        $localisedRecord->write();
-                    }
-                );
+                // Store the record so we can write it later, this makes us execute only one write
+                // even though we duplicate several relations
+                $objectsToWrite[$locale->Locale] = $localisedRecord;
             }
+        }
+
+        foreach ($objectsToWrite as $localeCode => $localisedRecord) {
+            FluentState::singleton()->withState(
+                static function (FluentState $state) use ($localeCode, $localisedRecord): void {
+                    $state->setLocale($localeCode);
+                    $localisedRecord->write();
+                }
+            );
         }
     }
 

@@ -2,10 +2,12 @@
 
 namespace TractorCow\Fluent\Tests\Extension;
 
+use Page;
 use SilverStripe\CMS\Model\SiteTree;
 use SilverStripe\Dev\SapphireTest;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\Queries\SQLSelect;
+use SilverStripe\ORM\ValidationException;
 use TractorCow\Fluent\Extension\FluentSiteTreeExtension;
 use TractorCow\Fluent\Model\Locale;
 use TractorCow\Fluent\State\FluentState;
@@ -13,6 +15,8 @@ use TractorCow\Fluent\Tests\Extension\FluentExtensionTest\LocalisedAnother;
 use TractorCow\Fluent\Tests\Extension\FluentExtensionTest\LocalisedChild;
 use TractorCow\Fluent\Tests\Extension\FluentExtensionTest\LocalisedParent;
 use TractorCow\Fluent\Tests\Extension\FluentExtensionTest\MixedLocalisedSortObject;
+use TractorCow\Fluent\Tests\Extension\FluentExtensionTest\TestModel;
+use TractorCow\Fluent\Tests\Extension\FluentExtensionTest\TestRelationPage;
 use TractorCow\Fluent\Tests\Extension\FluentExtensionTest\UnlocalisedChild;
 use TractorCow\Fluent\Tests\Extension\Stub\FluentStubObject;
 
@@ -26,6 +30,8 @@ class FluentExtensionTest extends SapphireTest
         LocalisedParent::class,
         MixedLocalisedSortObject::class,
         UnlocalisedChild::class,
+        TestRelationPage::class,
+        TestModel::class,
     ];
 
     protected static $required_extensions = [
@@ -193,6 +199,78 @@ class FluentExtensionTest extends SapphireTest
                 'Item C',
                 $objects->offsetGet(2)->Title
             );
+        });
+    }
+
+    /**
+     * @throws ValidationException
+     */
+    public function testLocalisedCopyClassNameChange(): void
+    {
+        // Setup first localisation
+        $pageId = FluentState::singleton()->withState(function (FluentState $state): int {
+            $state->setLocale('en_US');
+
+            /** @var Page|FluentSiteTreeExtension $page */
+            $page = Page::create();
+            $page->Title = 'Localised copy test page';
+            $page->URLSegment = 'localised-copy-test-page';
+
+            return $page->write();
+        });
+
+        // Setup second localisation and make sure we have two localisations to work with
+        FluentState::singleton()->withState(function (FluentState $state) use ($pageId): void {
+            $state->setLocale('de_DE');
+
+            /** @var Page|FluentSiteTreeExtension $page */
+            $page = Page::get()->byID($pageId);
+            $page->write();
+            $locales = [];
+
+            /** @var Locale $locale */
+            foreach ($page->getLocaleInstances() as $locale) {
+                $locales[] = $locale->Locale;
+            }
+
+            sort($locales, SORT_STRING);
+
+            $this->assertEquals([
+                'de_DE',
+                'en_US',
+            ], $locales);
+        });
+
+        // Change the ClassName of the first localisation, attach related model
+        $modelId = FluentState::singleton()->withState(function (FluentState $state) use ($pageId): int {
+            $state->setLocale('en_US');
+
+            $model = TestModel::create();
+            $model->Title = 'Test model';
+            $model->write();
+
+            /** @var Page|FluentSiteTreeExtension $page */
+            $page = Page::get()->byID($pageId);
+
+            /** @var TestRelationPage|FluentSiteTreeExtension $page */
+            $page = $page->newClassInstance(TestRelationPage::class);
+            $page->TestRelationID = $model->ID;
+            $page->write();
+
+            return $model->ID;
+        });
+
+        // We expect the second localisation to also change class and have a copy of the related model
+        FluentState::singleton()->withState(function (FluentState $state) use ($pageId, $modelId): void {
+            $state->setLocale('de_DE');
+
+            /** @var TestRelationPage|FluentSiteTreeExtension $page */
+            $page = TestRelationPage::get()->byID($pageId);
+
+            $this->assertGreaterThan(0, $page->TestRelationID);
+            $this->assertNotEquals($modelId, $page->TestRelationID);
+            $this->assertTrue($page->TestRelation()->exists());
+            $this->assertEquals('Test model', $page->TestRelation()->Title);
         });
     }
 
