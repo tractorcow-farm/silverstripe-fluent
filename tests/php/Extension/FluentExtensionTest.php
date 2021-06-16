@@ -257,6 +257,12 @@ class FluentExtensionTest extends SapphireTest
             $page->TestRelationID = $model->ID;
             $page->write();
 
+            /** @var TestRelationPage|FluentSiteTreeExtension $page */
+            $page = TestRelationPage::get()->byID($pageId);
+
+            // Make sure that the relation remains intact
+            $this->assertEquals($page->TestRelationID, $model->ID);
+
             return $model->ID;
         });
 
