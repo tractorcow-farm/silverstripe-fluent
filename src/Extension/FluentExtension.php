@@ -692,13 +692,13 @@ class FluentExtension extends DataExtension
                     continue;
                 }
 
-                $relationIdField = $relation . 'ID';
-                $localisedRelationID = $localisedRecord->{$relationIdField};
+                /** @var DataObject $localisedRelation */
                 $localisedRelation = $localisedRecord->{$relation}();
 
-                if ((int) $localisedRelationID !== (int) $owner->{$relationIdField}
-                    && $localisedRelation instanceof DataObject
+                if ($localisedRelation instanceof DataObject
                     && $localisedRelation->exists()
+                    && ((int) $original->ID !== (int) $localisedRelation->ID
+                    || get_class($original) !== get_class($localisedRelation))
                 ) {
                     // Relation is already available on the localised record, let's keep it
                     continue;
