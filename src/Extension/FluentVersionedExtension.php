@@ -67,6 +67,15 @@ class FluentVersionedExtension extends FluentExtension implements Resettable
                 'Version',
             ],
         ],
+        // Needed to speedup version table joins which are used in Version related operations
+        // such as isPublishedInLocale
+        'Fluent_Version' => [
+            'type' => 'index',
+            'columns' => [
+                'RecordID',
+                'Version',
+            ],
+        ],
     ];
 
     /**
