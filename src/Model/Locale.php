@@ -24,6 +24,7 @@ use SilverStripe\ORM\ManyManyList;
 use SilverStripe\Security\Member;
 use SilverStripe\Security\Permission;
 use SilverStripe\Security\PermissionProvider;
+use SilverStripe\Versioned\Versioned;
 use Symbiote\GridFieldExtensions\GridFieldAddNewInlineButton;
 use Symbiote\GridFieldExtensions\GridFieldEditableColumns;
 use Symbiote\GridFieldExtensions\GridFieldOrderableRows;
@@ -95,6 +96,27 @@ class Locale extends DataObject implements PermissionProvider
     ];
 
     private static $default_sort = '"Fluent_Locale"."Sort" ASC, "Fluent_Locale"."Locale" ASC';
+
+    /**
+     * Currently, locale codes must be unique across locale objects
+     *
+     * @var array[]
+     */
+    private static $indexes = [
+        'Locale_Locale' => [
+            'type'    => 'unique',
+            'columns' => ['Locale'],
+        ],
+    ];
+
+    /**
+     * Version locales to track changes to localisations over time
+     *
+     * @var string[]
+     */
+    private static $extensions = [
+        'versioned' => Versioned::class . '.versioned',
+    ];
 
     /**
      * @config

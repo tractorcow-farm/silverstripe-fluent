@@ -59,7 +59,7 @@ class FluentVersionedExtension extends FluentExtension implements Resettable
      * @var array
      */
     protected $defaultVersionsIndexes = [
-        'Fluent_Record' => [
+        'Fluent_Record'  => [
             'type'    => 'unique',
             'columns' => [
                 'RecordID',
@@ -70,7 +70,7 @@ class FluentVersionedExtension extends FluentExtension implements Resettable
         // Needed to speedup version table joins which are used in Version related operations
         // such as isPublishedInLocale
         'Fluent_Version' => [
-            'type' => 'index',
+            'type'    => 'index',
             'columns' => [
                 'RecordID',
                 'Version',
@@ -201,8 +201,8 @@ class FluentVersionedExtension extends FluentExtension implements Resettable
      * Rewrite all joined tables
      *
      * @param SQLSelect $query
-     * @param array     $tables
-     * @param Locale    $locale
+     * @param array $tables
+     * @param Locale $locale
      */
     protected function rewriteVersionedTables(SQLSelect $query, array $tables, Locale $locale)
     {
@@ -220,8 +220,8 @@ class FluentVersionedExtension extends FluentExtension implements Resettable
      * Update all joins to include Version as well as Locale / Record
      *
      * @param SQLSelect $query
-     * @param string    $tableName
-     * @param Locale    $locale
+     * @param string $tableName
+     * @param Locale $locale
      */
     protected function addLocaleFallbackChain(SQLSelect $query, $tableName, Locale $locale)
     {
@@ -234,9 +234,11 @@ class FluentVersionedExtension extends FluentExtension implements Resettable
 
             $query->setJoinFilter(
                 $joinAlias,
-                "\"{$versionTable}\".\"RecordID\" = \"{$joinAlias}\".\"RecordID\" "
-                . "AND \"{$joinAlias}\".\"Locale\" = ? "
-                . "AND \"{$joinAlias}\".\"Version\" = \"{$versionTable}\".\"Version\""
+                <<<JOIN
+"{$versionTable}"."RecordID" = "{$joinAlias}"."RecordID"
+AND "{$joinAlias}"."LocaleID" = ?
+AND "{$joinAlias}"."Version" = "{$versionTable}"."Version"
+JOIN
             );
         }
     }
@@ -245,7 +247,7 @@ class FluentVersionedExtension extends FluentExtension implements Resettable
      * Rename all localised tables to the "live" equivalent name (note: alias remains unchanged)
      *
      * @param SQLSelect $query
-     * @param array     $tables
+     * @param array $tables
      */
     protected function renameLocalisedTables(SQLSelect $query, array $tables)
     {
@@ -274,7 +276,7 @@ class FluentVersionedExtension extends FluentExtension implements Resettable
         $localisedTable = $singleton->getLocalisedTable($baseTable);
         $localisedAlias = sprintf('%s_%s', $localisedTable, $locale->Locale);
 
-        $query->addWhere([sprintf('"%s"."Locale" = ?', $localisedAlias) => $locale->Locale]);
+        $query->addWhere([sprintf('"%s"."LocaleID" = ?', $localisedAlias) => $locale->ID]);
     }
 
     /**
@@ -379,10 +381,10 @@ class FluentVersionedExtension extends FluentExtension implements Resettable
 
     /**
      * Check if this record has modifications in this locale
-     * Fluent friendly version of @see Versioned::stagesDiffer()
-     *
-     * @param string|null $locale
+     * Fluent friendly version of @param string|null $locale
      * @return bool
+     * @see Versioned::stagesDiffer()
+     *
      */
     public function stagesDifferInLocale($locale = null): bool
     {
@@ -412,10 +414,13 @@ class FluentVersionedExtension extends FluentExtension implements Resettable
             return true;
         }
 
-        $locale = $locale ?: ($this->getRecordLocale() ? $this->getRecordLocale()->Locale : null);
-
+        if ($locale) {
+            $localeObject = Locale::getByLocale($locale);
+        } else {
+            $localeObject = $this->getRecordLocale();
+        }
         // Potentially no Locales have been created in the system yet.
-        if (!$locale) {
+        if (!$localeObject) {
             return false;
         }
 
@@ -437,7 +442,7 @@ INNER JOIN "$liveTable" as "V"
     ON "VL"."RecordID" = "V"."RecordID"
     AND "VL"."Version" = "V"."Version"
 WHERE "VL"."RecordID" = ?
-AND "VL"."Locale" = ?
+AND "VL"."LocaleID" = ?
 AND "V"."WasPublished" = ?
 ORDER BY "VL"."Version" DESC
 LIMIT 1
@@ -445,13 +450,13 @@ SQL;
 
         $draftVersion = DB::prepared_query($query, [
             $id,
-            $locale,
+            $localeObject->ID,
             0,
         ])->value();
 
         $liveVersion = DB::prepared_query($query, [
             $id,
-            $locale,
+            $localeObject->ID,
             1,
         ])->value();
 
@@ -464,7 +469,7 @@ SQL;
     /**
      * Check to see whether or not a record exists for a specific Locale in a specific stage.
      *
-     * @param string $stage  Version stage
+     * @param string $stage Version stage
      * @param string $locale Locale to check. Defaults to current locale.
      * @return bool
      */
@@ -527,7 +532,7 @@ SQL;
      * Hook into {@link Hierarchy::prepopulateTreeDataCache}.
      *
      * @param DataList|array $recordList The list of records to prepopulate caches for. Null for all records.
-     * @param array          $options    A map of hints about what should be cached. "numChildrenMethod" and
+     * @param array $options A map of hints about what should be cached. "numChildrenMethod" and
      *                                   "childrenMethod" are allowed keys.
      */
     public function onPrepopulateTreeDataCache($recordList = null, array $options = [])
@@ -550,8 +555,8 @@ SQL;
      *
      * @param string $locale
      * @param string $dataObjectClass
-     * @param bool   $populateLive
-     * @param bool   $populateDraft
+     * @param bool $populateLive
+     * @param bool $populateDraft
      */
     public static function prepoulateIdsInLocale($locale, $dataObjectClass, $populateLive = true, $populateDraft = true)
     {
@@ -559,6 +564,7 @@ SQL;
         /** @var DataObject|FluentExtension $dataObject */
         $dataObject = DataObject::singleton($dataObjectClass);
         $table = $dataObject->getLocalisedTable($dataObject->baseTable());
+        $localeObject = Locale::getByLocale($locale);
 
         // If we already have items then we've been here before...
         if (isset(self::$idsInLocaleCache[$locale][$table])) {
@@ -579,7 +585,7 @@ SQL;
             $select = SQLSelect::create(
                 ['"RecordID"'],
                 '"' . $table . '"',
-                ['"Locale"' => $locale]
+                ['"LocaleID"' => $localeObject->ID]
             );
             $result = $select->execute();
             $ids = $result->column('RecordID');
@@ -593,7 +599,7 @@ SQL;
     public function updateLocalisationTabColumns(&$summaryColumns)
     {
         $summaryColumns['Status'] = [
-            'title' => 'Status',
+            'title'    => 'Status',
             'callback' => function (Locale $object) {
                 if (!$object->RecordLocale()) {
                     return '';
@@ -618,7 +624,7 @@ SQL;
         ];
 
         $summaryColumns['Source'] = [
-            'title' => 'Source',
+            'title'    => 'Source',
             'callback' => function (Locale $object) {
                 if (!$object->RecordLocale()) {
                     return '';
@@ -635,7 +641,7 @@ SQL;
         ];
 
         $summaryColumns['Live'] = [
-            'title' => 'Live',
+            'title'    => 'Live',
             'callback' => function (Locale $object) {
                 if (!$object || !$object->RecordLocale()) {
                     return '';
@@ -665,9 +671,9 @@ SQL;
     }
 
     /**
-     * Extension point in @see Versioned::stagesDiffer()
+     * Extension point in @param bool $stagesDiffer
+     * @see Versioned::stagesDiffer()
      *
-     * @param bool $stagesDiffer
      */
     public function updateStagesDiffer(bool &$stagesDiffer): void
     {
@@ -682,9 +688,9 @@ SQL;
 
     /**
      * Localise archived state
-     * Extension point in @see Versioned::isArchived()
+     * Extension point in @param bool $isArchived
+     * @see Versioned::isArchived()
      *
-     * @param bool $isArchived
      */
     public function updateIsArchived(bool &$isArchived): void
     {
@@ -739,8 +745,8 @@ SQL;
     public function hasArchiveInLocale(string $locale = null): ?bool
     {
         $locale = $locale ?: FluentState::singleton()->getLocale();
-
-        if (!$locale) {
+        $localeObject = Locale::getByLocale($locale);
+        if (!$localeObject) {
             return null;
         }
 
@@ -759,7 +765,7 @@ SQL;
             'COUNT(*)',
             sprintf('"%s"', $localisedVersionTable),
             [
-                '"Locale"' => $locale,
+                '"LocaleID"' => $localeObject->ID,
                 '"RecordID"' => $id,
             ]
         );
@@ -769,20 +775,20 @@ SQL;
 
     /**
      * Localise max version lookup
-     * Extension point in @see Versioned::prepareMaxVersionSubSelect()
-     *
-     * @param SQLSelect $subSelect
+     * Extension point in @param SQLSelect $subSelect
      * @param DataQuery $dataQuery
      * @param bool $shouldApplySubSelectAsCondition
+     * @see Versioned::prepareMaxVersionSubSelect()
+     *
      */
     public function augmentMaxVersionSubSelect(
         SQLSelect $subSelect,
         DataQuery $dataQuery,
         bool $shouldApplySubSelectAsCondition
-    ): void {
-        $locale = FluentState::singleton()->getLocale();
-
-        if (!$locale) {
+    ): void
+    {
+        $localeObject = Locale::getCurrentLocale();
+        if (!$localeObject) {
             return;
         }
 
@@ -800,25 +806,25 @@ SQL;
 
         $subSelect
             ->addInnerJoin(
-                sprintf('%s', $localisedVersionTable),
-                sprintf(
-                    '"%1$s"."RecordID" = "%2$s"."RecordID" AND "%1$s"."Version" = "%2$s"."Version"',
-                    $alias,
-                    $localisedAlias
-                ),
+                $localisedVersionTable,
+                <<<JOIN
+"{$alias}"."RecordID" = "{$localisedAlias}"."RecordID"
+AND "{$alias}"."Version" = "{$localisedAlias}"."Version"
+JOIN
+                ,
                 $localisedAlias
             )
-            ->addWhere([sprintf('"%s"."Locale"', $localisedAlias) => $locale]);
+            ->addWhere(["\"{$localisedAlias}\".\"LocaleID\"" => $localeObject->ID]);
     }
 
     /**
      * Localise version cache populate
-     * Extension point in @see Versioned::prepopulate_versionnumber_cache()
-     *
-     * @param array $versions
+     * Extension point in @param array $versions
      * @param DataObject|string $class
      * @param string $stage
      * @param array|null $idList
+     * @see Versioned::prepopulate_versionnumber_cache()
+     *
      */
     public function updatePrePopulateVersionNumberCache(array $versions, $class, string $stage, ?array $idList): void
     {
@@ -846,13 +852,13 @@ SQL;
 
     /**
      * Localise version lookup
-     * Extension point in @see Versioned::get_versionnumber_by_stage()
-     *
-     * @param int|null $version
+     * Extension point in @param int|null $version
      * @param DataObject|string $class
      * @param string $stage
      * @param int $id
      * @param bool $cache
+     * @see Versioned::get_versionnumber_by_stage()
+     *
      */
     public function updateGetVersionNumberByStage(?int &$version, $class, string $stage, int $id, bool $cache): void
     {
@@ -903,7 +909,7 @@ SQL;
      */
     protected function getCurrentVersionNumbers(string $class, string $stage, ?array $ids = null): array
     {
-        $locale = FluentState::singleton()->getLocale();
+        $localeObject = Locale::getCurrentLocale();
         $schema = DataObject::getSchema();
         $baseClass = $schema->baseDataClass($class);
         $baseTable = $schema->tableName($baseClass);
@@ -921,37 +927,37 @@ SQL;
         // note the following query gets called for each record in the site tree - so it is a possible performance issue
         // the core implementation is much simpler but does not handle versions across locales
         $liveSegment = $stage === Versioned::LIVE
-            ? sprintf(' AND "%s"."WasPublished" = 1', $versionedTable)
+            ? " AND \"{$versionedTable}\".\"WasPublished\" = 1"
             : '';
 
         $idSegment = $ids
-            ? sprintf(' AND "BaseTable"."RecordID" IN (%s)', DB::placeholders($ids))
+            ? ' AND "BaseTable"."RecordID" IN (' . DB::placeholders($ids) . ')'
             : '';
 
-        $sql = 'SELECT "BaseTable"."RecordID" as "LatestID", MAX("%1$s"."Version") as "LatestVersion" FROM "%2$s" AS "BaseTable"'
-            . ' INNER JOIN "%1$s" ON "BaseTable"."RecordID" = "%1$s"."RecordID" AND "%1$s"."Locale" = ?'
-            . ' INNER JOIN "%3$s" ON "%3$s"."RecordID" = "%1$s"."RecordID" AND "%3$s"."Version" = "%1$s"."Version"'
-            . ' WHERE "BaseTable"."Locale" = ?%4$s%5$s'
-            . ' GROUP BY "LatestID"';
+        $query = <<<SELECT
+SELECT "BaseTable"."RecordID" as "LatestID",
+    MAX("{$localisedVersionTable}"."Version") as "LatestVersion"
+FROM "{$localisedTable}" AS "BaseTable"
+INNER JOIN "{$localisedVersionTable}"
+    ON "BaseTable"."RecordID" = "{$localisedVersionTable}"."RecordID"
+    AND "{$localisedVersionTable}"."LocaleID" = ?
+INNER JOIN "{$versionedTable}"
+    ON "{$versionedTable}"."RecordID" = "{$localisedVersionTable}"."RecordID"
+    AND "{$versionedTable}"."Version" = "{$localisedVersionTable}"."Version"
+WHERE "BaseTable"."LocaleID" = ?
+$liveSegment
+$idSegment
+GROUP BY "LatestID"
+SELECT;
 
-        $query = sprintf(
-            $sql,
-            $localisedVersionTable,
-            $localisedTable,
-            $versionedTable,
-            $liveSegment,
-            $idSegment
-        );
-
-        $params = [$locale, $locale];
+        $params = [$localeObject->ID, $localeObject->ID];
         $params = $ids ? array_merge($params, $ids) : $params;
-
         $results = DB::prepared_query($query, $params);
         $versions = [];
 
         while ($result = $results->next()) {
-            $id = (int) $result['LatestID'];
-            $version = (int) $result['LatestVersion'];
+            $id = (int)$result['LatestID'];
+            $version = (int)$result['LatestVersion'];
 
             $versions[$id] = $version;
         }

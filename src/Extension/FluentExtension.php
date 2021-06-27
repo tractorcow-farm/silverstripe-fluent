@@ -93,7 +93,7 @@ class FluentExtension extends DataExtension
     private static $db_for_localised_table = [
         'ID'       => 'PrimaryKey',
         'RecordID' => 'Int',
-        'Locale'   => 'Varchar(10)',
+        'LocaleID' => 'Int',
     ];
 
     /**
@@ -107,7 +107,7 @@ class FluentExtension extends DataExtension
             'type'    => 'unique',
             'columns' => [
                 'RecordID',
-                'Locale',
+                'LocaleID',
             ],
         ],
     ];
@@ -480,10 +480,14 @@ class FluentExtension extends DataExtension
                 $joinAlias = $this->getLocalisedTable($table, $joinLocale->Locale);
                 $query->addLeftJoin(
                     $localisedTable,
-                    "\"{$table}\".\"ID\" = \"{$joinAlias}\".\"RecordID\" AND \"{$joinAlias}\".\"Locale\" = ?",
+                    <<<JOIN
+"{$table}"."ID" = "{$joinAlias}"."RecordID"
+AND "{$joinAlias}"."LocaleID" = ?
+JOIN
+,
                     $joinAlias,
                     20,
-                    [$joinLocale->Locale]
+                    [$joinLocale->ID]
                 );
             }
         }
@@ -783,13 +787,13 @@ class FluentExtension extends DataExtension
 
         // Populate Locale / RecordID fields
         $localisedUpdate['fields']['RecordID'] = $id;
-        $localisedUpdate['fields']['Locale'] = $locale->getLocale();
+        $localisedUpdate['fields']['LocaleID'] = $locale->ID;
 
         // Convert ID filter to RecordID / Locale
         unset($localisedUpdate['id']);
         $localisedUpdate['where'] = [
             "\"{$localeTable}\".\"RecordID\"" => $id,
-            "\"{$localeTable}\".\"Locale\""   => $locale->getLocale(),
+            "\"{$localeTable}\".\"LocaleID\""   => $locale->ID,
         ];
 
         // Save back modifications to the manipulation
@@ -1252,11 +1256,16 @@ class FluentExtension extends DataExtension
      */
     protected function findRecordInLocale($locale, $table, $id)
     {
+        $localeObject = Locale::getByLocale($locale);
+        if (!$localeObject) {
+            return false;
+        }
+
         $query = SQLSelect::create('"ID"');
         $query->addFrom('"' . $table . '"');
         $query->addWhere([
             '"RecordID"' => $id,
-            '"Locale"'   => $locale,
+            '"LocaleID"'   => $localeObject->ID,
         ]);
 
         return $query->firstRow()->execute()->value() !== null;
