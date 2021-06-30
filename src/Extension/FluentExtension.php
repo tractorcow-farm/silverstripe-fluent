@@ -666,7 +666,6 @@ class FluentExtension extends DataExtension
                 continue;
             }
 
-            $locale = $recordLocale->getLocaleObject();
             if ($recordLocale->getLocale() === $currentLocale) {
                 // We only need to handle other locale instances, current locale doesn't need updates
                 continue;
