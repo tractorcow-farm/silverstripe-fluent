@@ -95,6 +95,10 @@ class FluentSiteTreeExtension extends FluentVersionedExtension
      */
     public function updateRelativeLink(&$base, &$action)
     {
+
+        if ($this->owner->hasMethod('disablePrependLocaleURLSegmentToLink') && $this->owner->disablePrependLocaleURLSegmentToLink()) {
+            return;
+        }
         // Don't inject locale to subpages
         if ($this->owner->ParentID && SiteTree::config()->get('nested_urls')) {
             return;
