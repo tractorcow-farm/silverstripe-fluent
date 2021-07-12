@@ -237,12 +237,15 @@ class Locale extends DataObject implements PermissionProvider
     public function getURLSegment()
     {
         $segment = $this->getField('URLSegment');
-        if ($segment) {
-            return $segment;
-        }
 
         // Default to locale
-        return $this->getLocale();
+        if (!$segment) {
+            $segment = $this->getLocale();
+        }
+        
+        $this->extend('updateURLSegment', $segment);
+
+        return $segment;
     }
 
     public function getCMSFields()
