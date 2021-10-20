@@ -7,6 +7,8 @@ use SilverStripe\ORM\DataObject;
 use TractorCow\Fluent\Extension\FluentExtension;
 
 /**
+ * @property string $Title
+ * @property string $Description
  * @mixin FluentExtension
  */
 class LocalisedParent extends DataObject implements TestOnly

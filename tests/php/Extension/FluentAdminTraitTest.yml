@@ -1,0 +1,13 @@
+# Three locales - English and German will have translated records and Spanish records will be created
+# by the unit tests
+TractorCow\Fluent\Model\Locale:
+  default:
+    Title: US English
+    Locale: en_US
+    IsGlobalDefault: true
+  german:
+    Title: German
+    Locale: de_DE
+  spanish:
+    Title: Spanish
+    Locale: es_ES
