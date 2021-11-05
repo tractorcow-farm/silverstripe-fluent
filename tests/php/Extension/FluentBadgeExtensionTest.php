@@ -37,7 +37,7 @@ class FluentBadgeExtensionTest extends SapphireTest
      */
     protected $extension;
 
-    protected function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
 
@@ -63,9 +63,9 @@ class FluentBadgeExtensionTest extends SapphireTest
 
             $result = $this->extension->getBadge($this->mockPage);
             $this->assertInstanceOf(DBHTMLText::class, $result);
-            $this->assertContains('fluent-badge--default', $result->getValue());
-            $this->assertContains('Default locale', $result->getValue());
-            $this->assertContains('NZ', $result->getValue(), 'Badge shows owner locale');
+            $this->assertStringContainsString('fluent-badge--default', (string) $result->getValue());
+            $this->assertStringContainsString('Default locale', (string) $result->getValue());
+            $this->assertStringContainsString('NZ', (string) $result->getValue(), 'Badge shows owner locale');
         });
     }
 
@@ -77,9 +77,9 @@ class FluentBadgeExtensionTest extends SapphireTest
 
             $result = $this->extension->getBadge($this->mockPage);
             $this->assertInstanceOf(DBHTMLText::class, $result);
-            $this->assertContains('fluent-badge--invisible', $result->getValue());
-            $this->assertContains('is not visible in this locale', $result->getValue());
-            $this->assertContains('NZ', $result->getValue(), 'Badge shows owner locale');
+            $this->assertStringContainsString('fluent-badge--invisible', (string) $result->getValue());
+            $this->assertStringContainsString('is not visible in this locale', (string) $result->getValue());
+            $this->assertStringContainsString('NZ', (string) $result->getValue(), 'Badge shows owner locale');
         });
     }
 }
