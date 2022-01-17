@@ -552,13 +552,15 @@ class FluentSiteTreeExtension extends FluentVersionedExtension
         }
 
         // This is to get URL only, getVars are not part of the URL
-        $url = $request->getURL();
-        // Pass getVars separately so we can process them later
-        $params = $request->getVars();
+        $url = $this->owner->CMSEditLink();
 
         if (!$url) {
             return;
         }
+
+        // Pass getVars separately so we can process them later
+        $params = $request->getVars();
+        $url = Director::makeRelative($url);
 
         $summaryColumns['Title'] = [
             'title' => 'Title',
