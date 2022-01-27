@@ -7,11 +7,11 @@ use SilverStripe\Control\HTTPResponse_Exception;
 use SilverStripe\Forms\GridField\GridField;
 use SilverStripe\Forms\GridField\GridField_FormAction;
 use SilverStripe\ORM\DataObject;
+use SilverStripe\ORM\ValidationException;
 use SilverStripe\Security\Permission;
-use SilverStripe\Versioned\Versioned;
 use TractorCow\Fluent\Model\Locale;
 use TractorCow\Fluent\Model\RecordLocale;
-use TractorCow\Fluent\State\FluentState;
+use TractorCow\Fluent\Service\CopyToLocaleService;
 
 class CopyLocaleAction extends BaseAction
 {
@@ -72,6 +72,7 @@ class CopyLocaleAction extends BaseAction
      * @param array $arguments Arguments relevant for this
      * @param array $data All form data
      * @throws HTTPResponse_Exception
+     * @throws ValidationException
      */
     public function handleAction(GridField $gridField, $actionName, $arguments, $data)
     {
@@ -84,44 +85,12 @@ class CopyLocaleAction extends BaseAction
             throw new HTTPResponse_Exception("Action not allowed", 403);
         }
 
-        // Load record in base locale
-        FluentState::singleton()->withState(function (FluentState $sourceState) use ($arguments) {
-            $fromLocale = Locale::getByLocale($arguments['FromLocale']);
-            if (!$fromLocale) {
-                return;
-            }
-            $sourceState->setLocale($fromLocale->getLocale());
-
-            // Load record in source locale
-            $record = DataObject::get($arguments['RecordClass'])->byID($arguments['RecordID']);
-            if (!$record) {
-                return;
-            }
-
-            // Save record to other locale
-            $sourceState->withState(function (FluentState $destinationState) use ($record, $arguments) {
-                $toLocale = Locale::getByLocale($arguments['ToLocale']);
-                if (!$toLocale) {
-                    return;
-                }
-                $destinationState->setLocale($toLocale->getLocale());
-
-                $fromLocale = $arguments['FromLocale'];
-                $toLocale = $arguments['ToLocale'];
-                $record->invokeWithExtensions('onBeforeCopyLocale', $fromLocale, $toLocale);
-
-                // Write
-                /** @var DataObject|Versioned $record */
-                if ($record->hasExtension(Versioned::class)) {
-                    $record->writeToStage(Versioned::DRAFT);
-                } else {
-                    $record->forceChange();
-                    $record->write();
-                }
-
-                $record->invokeWithExtensions('onAfterCopyLocale', $fromLocale, $toLocale);
-            });
-        });
+        CopyToLocaleService::singleton()->copyToLocale(
+            $arguments['RecordClass'],
+            $arguments['RecordID'],
+            $arguments['FromLocale'],
+            $arguments['ToLocale']
+        );
     }
 
     /**

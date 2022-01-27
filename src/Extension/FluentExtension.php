@@ -34,6 +34,7 @@ use TractorCow\Fluent\Forms\GroupActionMenu;
 use TractorCow\Fluent\Model\Delete\UsesDeletePolicy;
 use TractorCow\Fluent\Model\Locale;
 use TractorCow\Fluent\Model\RecordLocale;
+use TractorCow\Fluent\Service\CopyToLocaleService;
 use TractorCow\Fluent\State\FluentState;
 
 /**
@@ -1373,6 +1374,19 @@ class FluentExtension extends DataExtension
         } finally {
             $this->localisedCopyActive = $active;
         }
+    }
+
+    /**
+     * Copy data object content from current locale to the target locale
+     *
+     * @param string $toLocale
+     * @throws ValidationException
+     */
+    public function copyToLocale(string $toLocale): void
+    {
+        $owner = $this->owner;
+        $fromLocale = FluentState::singleton()->getLocale();
+        CopyToLocaleService::singleton()->copyToLocale($owner->ClassName, $owner->ID, $fromLocale, $toLocale);
     }
 
     /**
