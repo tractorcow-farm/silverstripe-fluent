@@ -401,13 +401,13 @@ class FluentVersionedExtension extends FluentExtension implements Resettable
             return false;
         }
 
-        if (!$record->isDraftedInLocale()) {
+        if (!$record->isDraftedInLocale($locale)) {
             // Record is not localised so there is nothing to check
             // This is because Localised version records can not be inherited from other locales via the fallbacks
             return false;
         }
 
-        if (!$record->isPublishedInLocale()) {
+        if (!$record->isPublishedInLocale($locale)) {
             // Record is drafted but not published so we know the stages are different
             return true;
         }
