@@ -273,24 +273,31 @@ class RecordLocale extends ViewableData
         /** @var DataObject|FluentExtension|FluentVersionedExtension|FluentFilteredExtension|Versioned $record */
         $record = $this->getOriginalRecord();
 
-        // If versioned, record must be published
-        if ($record->hasExtension(Versioned::class) && !$record->isPublished()) {
-            return false;
-        }
-
-        // If frontend publishing is not required for localisation, no further checks required
+        // If frontend publishing is not required for localisation,
+        // we need to check if record is published in the source locale
         if (!$inLocale && $record->config()->get('frontend_publish_required') !== FluentExtension::INHERITANCE_MODE_EXACT) {
-            return true;
+            $sourceLocale = $this->getSourceLocale();
+
+            if (!$sourceLocale) {
+                // No source locale available
+                return false;
+            }
+
+            // Record needs to be published in the source locale
+            $locale = $sourceLocale->Locale;
+        } else {
+            // Record needs to be published in the current locale
+            $locale = $this->getLocale();
         }
 
         // Check if versioned item is published
         if ($record->hasExtension(FluentVersionedExtension::class)) {
-            return $record->isPublishedInLocale($this->getLocale());
+            return $record->isPublishedInLocale($locale);
         }
 
         // Check if un-versioned item is saved
         if ($record->hasExtension(FluentExtension::class)) {
-            return $record->existsInLocale($this->getLocale());
+            return $record->existsInLocale($locale);
         }
 
         return true;
@@ -339,7 +346,16 @@ class RecordLocale extends ViewableData
             return false;
         }
 
-        return $record->stagesDifferInLocale($this->getLocale());
+        $locale = $this->getLocale();
+        $stagesDiffer = $record->stagesDifferInLocale($locale);
+
+        // Allow customisation of stages differ
+        // For example, this is useful for advanced stages comparison which cover nested models like blocks
+        // Note that this is intentionally separate from FluentVersionedExtension::updateStagesDiffer()
+        // so we can have more flexibility on where this is applied
+        $record->extend('updateRecordLocaleStagesDiffer', $stagesDiffer, $locale);
+
+        return $stagesDiffer;
     }
 
     /**
