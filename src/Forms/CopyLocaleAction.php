@@ -8,7 +8,6 @@ use SilverStripe\Forms\GridField\GridField;
 use SilverStripe\Forms\GridField\GridField_FormAction;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\ValidationException;
-use SilverStripe\Security\Permission;
 use TractorCow\Fluent\Model\Locale;
 use TractorCow\Fluent\Model\RecordLocale;
 use TractorCow\Fluent\Service\CopyToLocaleService;
@@ -76,20 +75,23 @@ class CopyLocaleAction extends BaseAction
      */
     public function handleAction(GridField $gridField, $actionName, $arguments, $data)
     {
-        if (!$this->validateAction($actionName, $arguments['FromLocale'], $arguments['ToLocale'])) {
+        $fromLocale = $arguments['FromLocale'];
+        $toLocale = $arguments['ToLocale'];
+
+        if (!$this->validateAction($actionName, $fromLocale, $toLocale)) {
             return;
         }
 
-        // Check permissions for adding global actions
-        if (!Permission::check(Locale::CMS_ACCESS_MULTI_LOCALE)) {
+        if (!$this->validateLocalePermissions($toLocale)) {
+            // User doesn't have permissions to use this action
             throw new HTTPResponse_Exception("Action not allowed", 403);
         }
 
         CopyToLocaleService::singleton()->copyToLocale(
             $arguments['RecordClass'],
             $arguments['RecordID'],
-            $arguments['FromLocale'],
-            $arguments['ToLocale']
+            $fromLocale,
+            $toLocale
         );
     }
 
@@ -131,9 +133,10 @@ class CopyLocaleAction extends BaseAction
     {
         $action = $this->isTo ? 'fluentcopyto' : 'fluentcopyfrom';
         $name = "{$action}_{$locale->Locale}_{$this->otherLocale}_{$record->ID}";
+        $toLocale = $this->isTo ? $this->otherLocale : $locale->Locale;
 
         $title = $this->getTitle($gridField, $record, $columnName);
-        return GridField_FormAction::create(
+        $action = GridField_FormAction::create(
             $gridField,
             $name,
             $title,
@@ -142,7 +145,7 @@ class CopyLocaleAction extends BaseAction
                 'RecordID'    => $record->ID,
                 'RecordClass' => get_class($record),
                 'FromLocale'  => $this->isTo ? $locale->Locale : $this->otherLocale,
-                'ToLocale'    => $this->isTo ? $this->otherLocale : $locale->Locale,
+                'ToLocale'    => $toLocale,
             ]
         )
             ->addExtraClass(
@@ -151,6 +154,13 @@ class CopyLocaleAction extends BaseAction
             ->setAttribute('classNames', 'action--fluentpublish font-icon-translatable')
             ->setDescription($title)
             ->setAttribute('aria-label', $title);
+
+        if (!$this->validateLocalePermissions($toLocale)) {
+            // User doesn't have permissions to use this action
+            $action->setDisabled(true);
+        }
+
+        return $action;
     }
 
     public function getGroup($gridField, $record, $columnName)

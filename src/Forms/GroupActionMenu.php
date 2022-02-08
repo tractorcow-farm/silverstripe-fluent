@@ -56,6 +56,14 @@ class GroupActionMenu extends GridField_ActionMenu
             if ($group !== $this->group) {
                 continue;
             }
+
+            $extraData = $item->getExtraData($gridField, $record, $columnName);
+
+            if (array_key_exists('disabled', $extraData) && $extraData['disabled']) {
+                // Skip disabled components (likely disabled because of permissions)
+                continue;
+            }
+
             $schema[] = [
                 'type'  => $item instanceof GridField_ActionMenuLink ? 'link' : 'submit',
                 'title' => $item->getTitle($gridField, $record, $columnName),
@@ -63,7 +71,7 @@ class GroupActionMenu extends GridField_ActionMenu
                     ? $item->getUrl($gridField, $record, $columnName)
                     : null,
                 'group' => $this->group,
-                'data'  => $item->getExtraData($gridField, $record, $columnName),
+                'data'  => $extraData,
             ];
         }
 

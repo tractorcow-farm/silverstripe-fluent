@@ -1303,16 +1303,12 @@ class FluentExtension extends DataExtension
 
     /**
      * Add copy actions to each locale
+     * Note that permissions for these actions are resolved within the GridField components themselves
      *
      * @param GridFieldConfig $config
      */
     public function updateLocalisationTabConfig(GridFieldConfig $config)
     {
-        // Add cross-locale actions (if allowed)
-        if (!Permission::check(Locale::CMS_ACCESS_MULTI_LOCALE)) {
-            return;
-        }
-
         // Add locale copy actions
         $config->addComponents([
             new GroupActionMenu(

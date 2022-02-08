@@ -49,6 +49,11 @@ class UnpublishAction extends BaseAction
             return;
         }
 
+        if (!$this->validatePermissions($locale->Locale, $record)) {
+            // User doesn't have permissions to use this action
+            throw new HTTPResponse_Exception("Action not allowed", 403);
+        }
+
         // Unpublish in locale
         FluentState::singleton()->withState(function (FluentState $newState) use ($record, $locale) {
             $newState->setLocale($locale->getLocale());
@@ -84,7 +89,7 @@ class UnpublishAction extends BaseAction
     protected function getButtonAction($gridField, DataObject $record, Locale $locale, $columnName)
     {
         $title = $this->getTitle($gridField, $record, $columnName);
-        return GridField_FormAction::create(
+        $action = GridField_FormAction::create(
             $gridField,
             "FluentUnpublish_{$locale->Locale}_{$record->ID}",
             $title,
@@ -99,5 +104,32 @@ class UnpublishAction extends BaseAction
             ->setAttribute('classNames', 'action--fluentpublish font-icon-translatable')
             ->setDescription($title)
             ->setAttribute('aria-label', $title);
+
+        if (!$this->validatePermissions($locale->Locale, $record)) {
+            // User doesn't have permissions to use this action
+            $action->setDisabled(true);
+        }
+
+        return $action;
+    }
+
+    /**
+     * Additional permission check - un-publish
+     *
+     * @param string $locale
+     * @param DataObject $record
+     * @return bool
+     */
+    protected function validatePermissions(string $locale, DataObject $record): bool
+    {
+        if (!$this->validateLocalePermissions($locale)) {
+            return false;
+        }
+
+        return FluentState::singleton()->withState(function (FluentState $state) use ($record, $locale): bool {
+            $state->setLocale($locale);
+
+            return (bool) $record->canUnpublish();
+        });
     }
 }
