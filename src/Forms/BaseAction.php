@@ -8,6 +8,7 @@ use SilverStripe\Forms\GridField\GridField_ActionMenuItem;
 use SilverStripe\Forms\GridField\GridField_ActionProvider;
 use SilverStripe\Forms\GridField\GridField_FormAction;
 use SilverStripe\ORM\DataObject;
+use SilverStripe\Security\Permission;
 use TractorCow\Fluent\Model\Locale;
 
 /**
@@ -70,7 +71,6 @@ abstract class BaseAction implements GridField_ActionProvider, GridField_ActionM
         return null;
     }
 
-
     /**
      * Given a gridfield, and either an ID or record, return a list with
      * both the record  being localised, and the locale object
@@ -93,5 +93,24 @@ abstract class BaseAction implements GridField_ActionProvider, GridField_ActionM
         // E.g. list of blog posts in one locale
         $locale = Locale::getCurrentLocale();
         return [$rowRecord, $locale];
+    }
+
+    /**
+     * Validate locale permission for specific locale
+     *
+     * @param string $locale
+     * @return bool
+     */
+    protected function validateLocalePermissions(string $locale): bool
+    {
+        if (Permission::check(Locale::CMS_ACCESS_MULTI_LOCALE)) {
+            // The user has permission to access all locales, no further checks are needed
+            return true;
+        }
+
+        $localeObject = Locale::getByLocale($locale);
+
+        // Validate permission of the target locale
+        return Permission::check($localeObject->getLocaleEditPermission());
     }
 }
