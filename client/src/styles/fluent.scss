@@ -36,7 +36,8 @@ $fluent-color-localised: rgb(102, 15, 242);
   }
 }
 
-.cms-tree.jstree .status-fluentinvisible a {
+.cms-tree.jstree .status-fluentinvisible > a {
+  // These styles should be applied only to the SiteTree item, not the whole sub-tree
   color: $fluent-color-invisible-text;
 }
 
