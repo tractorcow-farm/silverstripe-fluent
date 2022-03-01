@@ -279,7 +279,7 @@ trait FluentAdminTrait
 
         $originalLocale = Locale::getCurrentLocale();
 
-        $this->inEveryLocale(function () use ($record, $originalLocale) {
+        $this->inEveryLocale(function (Locale $locale) use ($record, $originalLocale) {
             // Skip original locale
             if ($locale->ID == $originalLocale->ID) {
                 return;
