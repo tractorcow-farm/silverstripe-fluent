@@ -277,7 +277,14 @@ trait FluentAdminTrait
         $record = $form->getRecord();
         $record->flushCache(true);
 
-        $this->inEveryLocale(function () use ($record) {
+        $originalLocale = Locale::getCurrentLocale();
+
+        $this->inEveryLocale(function (Locale $locale) use ($record, $originalLocale) {
+            // Skip original locale
+            if ($locale->ID == $originalLocale->ID) {
+                return;
+            }
+            
             if ($record->hasExtension(Versioned::class)) {
                 $record->writeToStage(Versioned::DRAFT);
             } else {
