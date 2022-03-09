@@ -7,7 +7,7 @@ use SilverStripe\Forms\GridField\GridField;
 use SilverStripe\Forms\GridField\GridFieldConfig;
 use SilverStripe\Forms\GridField\GridFieldConfig_Base;
 use SilverStripe\Forms\GridField\GridFieldDataColumns;
-use SilverStripe\ORM\DataList;
+use SilverStripe\ORM\ArrayList;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\DataQuery;
 use SilverStripe\ORM\Queries\SQLSelect;
@@ -41,8 +41,8 @@ trait FluentObjectTrait
     /**
      * Gets list of all Locale dataobjects, linked to this record
      *
-     * @return DataList|Locale[]
-     * @see Locale::getRecordLocale()
+     * @return ArrayList|Locale[]
+     * @see Locale::RecordLocale()
      */
     public function LinkedLocales()
     {
@@ -50,10 +50,20 @@ trait FluentObjectTrait
             return null;
         }
 
-        return Locale::get()->setDataQueryParam([
-            'FluentObjectID' => $this->owner->ID,
-            'FluentObjectClass' => get_class($this->owner)
-        ]);
+        $locales = ArrayList::create();
+        Locale::getCached()->each(function (DataObject $item) use ($locales) {
+            // Create a clone of the locale model as we are going to add some context specific information into it
+            // We don't want this information to be present in the globally shared locale cache
+            $clone = clone $item;
+            $clone->setSourceQueryParams([
+                'FluentObjectID' => $this->owner->ID,
+                'FluentObjectClass' => get_class($this->owner)
+            ]);
+
+            $locales->push($clone);
+        });
+
+        return $locales;
     }
 
     /**

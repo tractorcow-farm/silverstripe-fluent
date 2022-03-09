@@ -122,11 +122,6 @@ class Locale extends DataObject implements PermissionProvider
     protected $chain = null;
 
     /**
-     * @var Locale[]
-     */
-    protected static $locales_by_title;
-
-    /**
      * Get internal title for this locale
      *
      * @return string
@@ -366,11 +361,12 @@ class Locale extends DataObject implements PermissionProvider
     /**
      * Get current locale object
      *
-     * @return Locale
+     * @return Locale|null
      */
-    public static function getCurrentLocale()
+    public static function getCurrentLocale(): ?Locale
     {
         $locale = FluentState::singleton()->getLocale();
+
         return static::getByLocale($locale);
     }
 
@@ -378,9 +374,9 @@ class Locale extends DataObject implements PermissionProvider
      * Get object by locale code.
      *
      * @param string|Locale $locale
-     * @return Locale
+     * @return Locale|null
      */
-    public static function getByLocale($locale)
+    public static function getByLocale($locale): ?Locale
     {
         if (!$locale) {
             return null;
@@ -390,15 +386,8 @@ class Locale extends DataObject implements PermissionProvider
             return $locale;
         }
 
-        if (!static::$locales_by_title) {
-            static::$locales_by_title = [];
-            foreach (Locale::getCached() as $localeObj) {
-                static::$locales_by_title[$localeObj->Locale] = $localeObj;
-            }
-        }
-
         // Get filtered locale
-        return isset(static::$locales_by_title[$locale]) ? static::$locales_by_title[$locale] : null;
+        return Locale::getCached()->find('Locale', $locale);
     }
 
     /**

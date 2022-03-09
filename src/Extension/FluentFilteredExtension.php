@@ -39,7 +39,7 @@ class FluentFilteredExtension extends DataExtension
 
     public function updateCMSFields(FieldList $fields)
     {
-        $locales = Locale::get();
+        $locales = Locale::getCached();
 
         // If there are no Locales, then we're not adding any fields.
         if ($locales->count() === 0) {
