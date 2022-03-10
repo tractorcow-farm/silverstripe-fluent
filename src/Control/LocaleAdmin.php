@@ -58,8 +58,10 @@ class LocaleAdmin extends ModelAdmin
         /** @var Member|FluentMemberExtension $member */
         $member = Security::getCurrentUser();
         $locales = $member
-            ? $member->getCMSAccessLocales()->toArray()
-            : Locale::getCached()->toArray();
+            ? $member->getCMSAccessLocales()
+            : Locale::getCached();
+        $this->extend('updateFluentLocales', $locales);
+        $locales = $locales->toArray();
         return array_merge(
             parent::getClientConfig(),
             [

@@ -92,6 +92,14 @@ class FluentIsolatedExtension extends DataExtension
             return;
         }
 
+        // skip filter by ID
+        if (!$this->owner->config()->get('apply_isolated_locales_to_byid')
+            && !FluentState::singleton()->getIsFrontend()
+            && $this->getIsIDFiltered($query)
+        ) {
+            return;
+        }
+
         // Apply filter
         $table = $this->owner->baseTable();
         $query->addWhere([
@@ -172,5 +180,30 @@ SQL;
         }
 
         DB::alteration_message("Migrated {$count} records to FluentIsolatedExtension", 'repaired');
+    }
+
+    /**
+     * Determine if this record is being filtered by ID
+     *
+     * @param SQLSelect $query
+     * @return bool
+     */
+    protected function getIsIDFiltered(SQLSelect $query): bool
+    {
+        // Use default silverstripe id filtering detection
+        if ($query->filtersOnID() || $query->filtersOnFK()) {
+            return true;
+        }
+
+        // Check if ID is joined (inner only)
+        $table = $this->owner->baseTable();
+        foreach ($query->getJoins($parameters) as $join) {
+            // find inner joins on the primary key (e.g. used in many_many relations)
+            $idField = DataObject::getSchema()->sqlColumnForField($this->owner, 'ID');
+            if (stristr($join, 'INNER JOIN') && stristr($join, $idField)) {
+                return true;
+            }
+        }
+        return false;
     }
 }
