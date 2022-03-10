@@ -54,7 +54,7 @@ class Locale extends DataObject implements PermissionProvider
     /**
      * Code for accessing cross-locale actions
      */
-    const CMS_ACCESS_MULTI_LOCALE = 'CMS_ACCESS_Fluent_Actions_MultiLocale';
+    const CMS_ACCESS_MULTI_LOCALE = 'Fluent_Actions_MultiLocale';
 
     /**
      * Prefix for per-locale permission code.
@@ -62,7 +62,7 @@ class Locale extends DataObject implements PermissionProvider
      * Note that this is not a permission code in itself, and must always be
      * joined with a locale.
      */
-    const CMS_ACCESS_FLUENT_LOCALE = "CMS_ACCESS_Fluent_Locale_";
+    const CMS_ACCESS_FLUENT_LOCALE = 'Fluent_Locale_';
 
     private static $table_name = 'Fluent_Locale';
 
@@ -131,6 +131,27 @@ class Locale extends DataObject implements PermissionProvider
      * @var ArrayList
      */
     protected $chain = null;
+
+    /**
+     * @var Locale[]
+     */
+    protected static $locales_by_title;
+
+    public function requireDefaultRecords()
+    {
+        parent::requireDefaultRecords();
+
+        // Migrate legacy permission codes to new codes
+        $permissions = Permission::get()->filter('Code:StartsWith', 'CMS_ACCESS_Fluent_');
+        $count = $permissions->count();
+        if ($count) {
+            DB::alteration_message("Migrating ${$count} old fluent permissions", 'changed');
+        }
+        foreach ($permissions as $permission) {
+            $permission->Code = str_replace('CMS_ACCESS_Fluent_', 'Fluent_', $permission->Code);
+            $permission->write();
+        }
+    }
 
     /**
      * Get internal title for this locale

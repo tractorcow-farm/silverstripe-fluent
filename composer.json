@@ -48,7 +48,7 @@
     "extra": {
         "branch-alias": {
             "dev-master": "6.x-dev",
-            "5.x-dev": "5.1.x-dev"
+            "5.x-dev": "5.2.x-dev"
         },
         "expose": [
             "client/dist"
