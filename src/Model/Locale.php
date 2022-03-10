@@ -512,10 +512,16 @@ class Locale extends DataObject implements PermissionProvider
             return $this->chain;
         }
 
-        // Build list
         $this->chain = ArrayList::create();
+
+        // Push the current locale as the first fallback.
         $this->chain->push($this);
-        $this->chain->merge($this->Fallbacks());
+
+        // Get the current locale and sort them by "Sort" field.
+        $fallbacks = $this->FallbackLocales()->sort('Sort');
+        foreach ($fallbacks as $fallback) {
+            $this->chain->push($fallback->Locale());
+        }
 
         return $this->chain;
     }

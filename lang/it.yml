@@ -1,0 +1,59 @@
+it:
+  TractorCow\Fluent\Control\LocaleAdmin:
+    MENUTITLE: Lingue
+  TractorCow\Fluent\Extension\FluentBadgeExtension:
+    BadgeDefault: 'Lingua di default'
+    BadgeInvisible: 'Localizzato in {locale}'
+    BadgeLocalised: '{type} non è visibile per questa lingua'
+  TractorCow\Fluent\Extension\FluentExtension:
+    FLUENT_ICON_TOOLTIP: 'Campo traducibile'
+  TractorCow\Fluent\Extension\FluentFilteredExtension:
+    FILTERED_LOCALES: 'Mostra nelle seguenti lingue'
+    LOCALEFILTEREDHELP: 'Questa pagina non è visibile in questa lingua'
+    TAB_LOCALES: Lingue
+  TractorCow\Fluent\Extension\FluentSiteTreeExtension:
+    LOCALECOPYANDPUBLISH: 'Copia & pubblica'
+    LOCALECOPYTODRAFT: 'Copia in bozza'
+    LOCALESTATUSFLUENTDRAFT: 'È stata creata una bozza per questa lingua, tuttavia, il contenuto pubblicato potrebbe ancora essere ereditato da un altro. Per pubblicare questo contenuto per questa lingua, utilizza l''azione fornita "Salva e pubblica".'
+    LOCALESTATUSFLUENTINHERITED: 'Il contenuto di questa pagina potrebbe essere ereditato da un''altra lingua. Se desideri creare una copia indipendente di questa pagina, utilizza una delle azioni "Copia" fornite.'
+    LOCALESTATUSFLUENTINVISIBLE: 'Questa pagina non sarà visibile in questa lingua fino a quando non sarà stata pubblicata.'
+  TractorCow\Fluent\Model\Domain:
+    DEFAULT: 'Lingua di default'
+    DEFAULT_NONE: (nessuna)
+    DOMAIN_HOSTNAME: 'Nome host del dominio'
+    DOMAIN_LOCALES: Lingue
+    PLURALNAME: Domini
+    PLURALS:
+      one: 'Un dominio'
+      other: '{count} domini'
+    SINGULARNAME: Dominio
+    UnsavedNotice: 'Puoi aggiungere lingue una volta salvato il dominio.'
+  TractorCow\Fluent\Model\FallbackLocale:
+    LOCALE: Lingue
+    PLURALNAME: 'Lingue di riserva'
+    PLURALS:
+      one: 'Una lingua di riserva'
+      other: '{count} lingue di riserva'
+    SINGULARNAME: 'Lingua di riserva'
+  TractorCow\Fluent\Model\Locale:
+    DEFAULT_NONE: (nessuna)
+    DOMAIN: Dominio
+    FALLBACKS: 'Lingue di riserva'
+    IS_DEFAULT: 'Questa è la lingua predefinita globale'
+    IS_DEFAULT_DESCRIPTION: 'Nota: le impostazioni internazionali specifiche per dominio possono essere assegnate nella tab Lingue e sovrascriveranno questo valore per domini specifici.'
+    LOCALE: Lingua
+    LOCALE_TITLE: Titolo
+    LOCALE_URL: 'Segmento URL'
+    PLURALNAME: Lingue
+    PLURALS:
+      one: 'Una lingua'
+      other: '{count} lingue'
+    SINGULARNAME: Lingue
+    UnsavedNotice: 'Puoi aggiungere lingue di riserva dopo aver salvato la lingua.'
+  TractorCow\Fluent\Extension\Traits\FluentAdminTrait:
+    ClearAllNotice: 'Tutte le localizzazioni sono state cancellate per ''{title}''.'
+    CopyNotice: 'Copiato ''{title}'' nelle altre lingue.'
+    DeleteNotice: 'Cancellato ''{title}'' e tutte le sue lingue.'
+    UnpublishNotice: 'Depubblicato ''{title}'' in tutte le lingue.'
+    ArchiveNotice: 'Archiviato ''{title}'' e tutte le sue lingue.'
+    PublishNotice: 'Pubblicato ''{title}'' in tutte le lingue.'
