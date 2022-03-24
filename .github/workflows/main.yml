@@ -6,6 +6,6 @@ on:
 
 jobs:
   ci:
-    uses: silverstripe/github-actions-ci-cd/.github/workflows/ci.yml@0.1.14
+    uses: silverstripe/github-actions-ci-cd/.github/workflows/ci.yml@v0.1
     with:
       run_phplinting: false
