@@ -1,0 +1,9 @@
+name: Module CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  ci:
+    uses: silverstripe/github-actions-ci-cd/.github/workflows/ci.yml@v0.1
