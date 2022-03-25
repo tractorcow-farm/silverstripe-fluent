@@ -15,7 +15,7 @@ class LocalDateTimeTest extends SapphireTest
 {
     protected static $fixture_file = 'LocaleTest.yml';
 
-    public function setUp()
+    protected function setUp(): void
     {
         // SapphireTest SetUp() sets timezone to UTC
         parent::setUp();

@@ -40,7 +40,7 @@ class FluentDirectorExtensionTest extends FunctionalTest
         ],
     ];
 
-    public function setUp() // phpcs:ignore SlevomatCodingStandard.TypeHints
+    protected function setUp(): void
     {
         parent::setUp();
 

@@ -39,7 +39,7 @@ class FluentSiteTreeExtensionTest extends SapphireTest
         ],
     ];
 
-    protected function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
         Config::modify()
