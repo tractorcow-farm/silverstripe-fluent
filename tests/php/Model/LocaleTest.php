@@ -100,26 +100,26 @@ class LocaleTest extends SapphireTest
     {
         // es_ES has a domain but is not the default locale for that domain
         $result = Locale::getByLocale('es_ES')->getBaseURL();
-        $this->assertContains('fluent.es', $result, "Locale's domain is in the URL");
-        $this->assertContains('/es/', $result, 'URL segment for non-default locale is in the URL');
+        $this->assertStringContainsString('fluent.es', $result, "Locale's domain is in the URL");
+        $this->assertStringContainsString('/es/', $result, 'URL segment for non-default locale is in the URL');
 
         // Turning off domain mode removes domain but not prefix
         FluentState::singleton()->setIsDomainMode(false);
         $result = Locale::getByLocale('es_ES')->getBaseURL();
-        $this->assertNotContains('fluent.es', $result, "Locale's domain is in the URL");
-        $this->assertContains('/es/', $result, 'URL segment for non-default locale is in the URL');
+        $this->assertStringNotContainsString('fluent.es', $result, "Locale's domain is in the URL");
+        $this->assertStringContainsString('/es/', $result, 'URL segment for non-default locale is in the URL');
     }
 
     public function testBaseURLPrefixDisabled()
     {
         // Default base url includes the default url segment
         $result = Locale::getDefault()->getBaseURL();
-        $this->assertContains('/au/', $result);
+        $this->assertStringContainsString('/au/', $result);
 
         // Default base url shortens the default locale url base by excluding the locale's url segment
         Config::inst()->set(FluentDirectorExtension::class, 'disable_default_prefix', true);
         $result = Locale::getDefault()->getBaseURL();
-        $this->assertNotContains('/au/', $result);
+        $this->assertStringNotContainsString('/au/', $result);
     }
 
     public function testGetBaseURLOnlyContainsDomainForPrefixDisabledDefaultLocale()
@@ -128,14 +128,14 @@ class LocaleTest extends SapphireTest
 
         // es_US has a domain and is the default
         $result = Locale::getByLocale('es_US')->getBaseURL();
-        $this->assertContains('fluent.es', $result, "Locale's domain is in the URL");
-        $this->assertNotContains('/es-usa/', $result, 'URL segment is not in the URL for default locales');
+        $this->assertStringContainsString('fluent.es', $result, "Locale's domain is in the URL");
+        $this->assertStringNotContainsString('/es-usa/', $result, 'URL segment is not in the URL for default locales');
 
         // When domain mode is turned off, prefix is now necessary
         FluentState::singleton()->setIsDomainMode(false);
         $result = Locale::getByLocale('es_US')->getBaseURL();
-        $this->assertNotContains('fluent.es', $result, "Domain not used");
-        $this->assertContains('/es-usa/', $result, 'URL Segment necessary for non-global default');
+        $this->assertStringNotContainsString('fluent.es', $result, "Domain not used");
+        $this->assertStringContainsString('/es-usa/', $result, 'URL Segment necessary for non-global default');
     }
 
     public function testGetSiblings()

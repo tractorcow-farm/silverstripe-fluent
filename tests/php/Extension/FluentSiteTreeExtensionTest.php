@@ -212,7 +212,7 @@ class FluentSiteTreeExtensionTest extends SapphireTest
             $statusMessage = $fields->fieldByName('LocaleStatusMessage');
 
             $this->assertNotNull($statusMessage, 'Locale message was not added');
-            $this->assertContains('This page will not be visible', $statusMessage->getContent());
+            $this->assertStringContainsString('This page will not be visible', $statusMessage->getContent());
         });
     }
 
@@ -235,7 +235,7 @@ class FluentSiteTreeExtensionTest extends SapphireTest
             $statusMessage = $fields->fieldByName('LocaleStatusMessage');
 
             $this->assertNotNull($fields->fieldByName('LocaleStatusMessage'));
-            $this->assertContains('No content is available for this page', $statusMessage->getContent());
+            $this->assertStringContainsString('No content is available for this page', $statusMessage->getContent());
         });
     }
 
@@ -259,7 +259,7 @@ class FluentSiteTreeExtensionTest extends SapphireTest
             $statusMessage = $fields->fieldByName('LocaleStatusMessage');
 
             $this->assertNotNull($fields->fieldByName('LocaleStatusMessage'));
-            $this->assertContains('A draft has been created for this locale', $statusMessage->getContent());
+            $this->assertStringContainsString('A draft has been created for this locale', $statusMessage->getContent());
         });
     }
 
@@ -305,7 +305,7 @@ class FluentSiteTreeExtensionTest extends SapphireTest
 
         $this->assertEquals('Saved', $actionSave->Title());
         // The default value changed between SS 4.0 and 4.1 - assert it contains Publish instead of exact matching
-        $this->assertContains('publish', strtolower($actionPublish->Title()));
+        $this->assertStringContainsString('publish', strtolower($actionPublish->Title()));
     }
 
     /**
