@@ -63,9 +63,9 @@ class FluentBadgeExtensionTest extends SapphireTest
 
             $result = $this->extension->getBadge($this->mockPage);
             $this->assertInstanceOf(DBHTMLText::class, $result);
-            $this->assertContains('fluent-badge--default', $result->getValue());
-            $this->assertContains('Localised in', $result->getValue());
-            $this->assertContains('NZ', $result->getValue(), 'Badge shows owner locale');
+            $this->assertStringContainsString('fluent-badge--default', $result->getValue());
+            $this->assertStringContainsString('Localised in', $result->getValue());
+            $this->assertStringContainsString('NZ', $result->getValue(), 'Badge shows owner locale');
         });
     }
 
@@ -77,9 +77,9 @@ class FluentBadgeExtensionTest extends SapphireTest
 
             $result = $this->extension->getBadge($this->mockPage);
             $this->assertInstanceOf(DBHTMLText::class, $result);
-            $this->assertContains('fluent-badge--invisible', $result->getValue());
-            $this->assertContains('Page has no available content in', $result->getValue());
-            $this->assertContains('de_DE', $result->getValue(), 'Badge shows owner locale');
+            $this->assertStringContainsString('fluent-badge--invisible', $result->getValue());
+            $this->assertStringContainsString('Page has no available content in', $result->getValue());
+            $this->assertStringContainsString('de_DE', $result->getValue(), 'Badge shows owner locale');
         });
     }
 }

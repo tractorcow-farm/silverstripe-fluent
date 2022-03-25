@@ -62,7 +62,7 @@ class FluentDirectorExtensionTest extends FunctionalTest
 
             $this->get($page->AbsoluteLink());
 
-            $this->assertContains(sprintf('<title>%s', $expectedTitle), $this->content());
+            $this->assertStringContainsString(sprintf('<title>%s', $expectedTitle), $this->content());
         });
     }
 
@@ -83,7 +83,7 @@ class FluentDirectorExtensionTest extends FunctionalTest
 
         $this->get(Director::absoluteURL('nouvelle-z%C3%A9lande/TestController'));
 
-        $this->assertContains('Test Controller! en_NZ', $this->content());
+        $this->assertStringContainsString('Test Controller! en_NZ', $this->content());
     }
 
     protected function setUpRoutes()
