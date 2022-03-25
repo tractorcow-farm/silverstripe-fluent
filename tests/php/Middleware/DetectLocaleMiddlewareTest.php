@@ -29,7 +29,7 @@ class DetectLocaleMiddlewareTest extends SapphireTest
      */
     protected $globalDefaultLocale;
 
-    protected function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
         $this->middleware = new Stub\DetectLocaleMiddlewareSpy;

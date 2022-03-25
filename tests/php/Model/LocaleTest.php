@@ -14,7 +14,7 @@ class LocaleTest extends SapphireTest
 {
     protected static $fixture_file = 'LocaleTest.yml';
 
-    public function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
 
