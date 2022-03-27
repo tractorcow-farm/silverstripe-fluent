@@ -38,14 +38,14 @@ class FluentAdminTraitTest extends SapphireTest
     /**
      * @throws ValidationException
      */
-    protected function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
         $this->setUpTestModels();
         $this->reset();
     }
 
-    protected function tearDown()
+    protected function tearDown(): void
     {
         parent::tearDown();
         $this->reset();
