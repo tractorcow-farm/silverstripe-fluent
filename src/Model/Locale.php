@@ -137,16 +137,18 @@ class Locale extends DataObject implements PermissionProvider
      */
     protected static $locales_by_title;
 
-    public function requireDefaultRecords()
+    public function requireDefaultRecords(): void
     {
         parent::requireDefaultRecords();
 
         // Migrate legacy permission codes to new codes
         $permissions = Permission::get()->filter('Code:StartsWith', 'CMS_ACCESS_Fluent_');
         $count = $permissions->count();
+
         if ($count) {
-            DB::alteration_message("Migrating ${$count} old fluent permissions", 'changed');
+            DB::alteration_message(sprintf('Migrating %d old fluent permissions', $count), 'changed');
         }
+
         foreach ($permissions as $permission) {
             $permission->Code = str_replace('CMS_ACCESS_Fluent_', 'Fluent_', $permission->Code);
             $permission->write();
