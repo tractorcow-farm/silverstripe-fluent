@@ -295,7 +295,7 @@ class FluentSiteTreeExtensionTest extends SapphireTest
 
         $this->assertEquals('Saved', $actionSave->Title());
         // The default value changed between SS 4.0 and 4.1 - assert it contains Publish instead of exact matching
-        $this->assertStringContainsString('publish', strtolower($actionPublish->Title()));
+        $this->assertStringContainsString('publish', strtolower($actionPublish->Title() ?? ''));
     }
 
     /**

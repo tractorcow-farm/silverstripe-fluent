@@ -231,7 +231,7 @@ class FluentVersionedExtension extends FluentExtension
                 if ($suffix === self::SUFFIX_VERSIONS) {
                     $localisedVersionFields = array_merge(
                         $localisedVersionFields,
-                        array_keys($this->defaultVersionsFields)
+                        array_keys($this->defaultVersionsFields ?? [])
                     );
                 }
 
@@ -428,7 +428,7 @@ class FluentVersionedExtension extends FluentExtension
             $ids = $result->column('RecordID');
 
             // We need to execute ourselves as the param is lost from the subSelect
-            self::$idsInLocaleCache[$locale][$table] = array_combine($ids, $ids);
+            self::$idsInLocaleCache[$locale][$table] = array_combine($ids ?? [], $ids ?? []);
             self::$idsInLocaleCache[$locale][$table]['_complete'] = true;
         }
     }

@@ -51,9 +51,9 @@ class FluentSearchForm extends SearchForm
         ];
         foreach ($keyword_patterns as $k_p) {
             $keywords = preg_replace_callback(
-                $k_p['patterns'],
+                $k_p['patterns'] ?? '',
                 $k_p['callback'],
-                $keywords
+                $keywords ?? ''
             );
         }
 
@@ -70,10 +70,10 @@ class FluentSearchForm extends SearchForm
             ORDER BY Relevance DESC
 SQL;
         $params = [
-            str_replace(['*', '+', '-'], '', $keywords),
+            str_replace(['*', '+', '-'], '', $keywords ?? ''),
             $current_locale,
             $keywords,
-            htmlentities($keywords, ENT_NOQUOTES, 'UTF-8')
+            htmlentities($keywords ?? '', ENT_NOQUOTES, 'UTF-8')
         ];
         // Generate results list
         $sitetree_objects = SiteTree::get()

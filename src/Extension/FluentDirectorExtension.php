@@ -123,7 +123,7 @@ class FluentDirectorExtension extends Extension
             $url = $localeObj->getURLSegment();
 
             // apply encode so we could route urls that contain multi-byte charaters
-            $url = urlencode($url);
+            $url = urlencode($url ?? '');
 
             // Apply to nested page url
             $controller = $this->getRuleController($originalRules['$URLSegment//$Action/$ID/$OtherID'], $localeObj);
@@ -166,9 +166,9 @@ class FluentDirectorExtension extends Extension
      */
     protected function insertRuleBefore(array $rules, $key, array $rule, $prependIfMissing = true)
     {
-        $i = array_search($key, array_keys($rules));
+        $i = array_search($key, array_keys($rules ?? []));
         if ($i !== false) {
-            return array_slice($rules, 0, $i, true) + $rule + array_slice($rules, $i, null, true);
+            return array_slice($rules ?? [], 0, $i, true) + $rule + array_slice($rules ?? [], $i ?? 0, null, true);
         } elseif ($prependIfMissing) {
             $rules = $rule + $rules;
         }

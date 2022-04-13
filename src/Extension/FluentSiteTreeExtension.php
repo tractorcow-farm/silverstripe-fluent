@@ -61,7 +61,7 @@ class FluentSiteTreeExtension extends FluentVersionedExtension
         if (!$this->owner->exists()) {
             $base = Controller::join_links(
                 $base,
-                '?' . FluentDirectorExtension::config()->get('query_param') . '=' . urlencode($localeObj->Locale)
+                '?' . FluentDirectorExtension::config()->get('query_param') . '=' . urlencode($localeObj->Locale ?? '')
             );
             return;
         }

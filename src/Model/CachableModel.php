@@ -84,7 +84,7 @@ trait CachableModel
         }
 
         $objFields = $object->getSchema()->databaseFields($object, false);
-        $missingFields = array_diff_key($objFields, $dbFields);
+        $missingFields = array_diff_key($objFields ?? [], $dbFields);
 
         if ($missingFields) {
             return false;

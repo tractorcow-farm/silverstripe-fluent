@@ -44,7 +44,7 @@ class LocaleAdmin extends ModelAdmin
                             'code' => $locale->getLocale(),
                             'title' => $locale->getTitle(),
                         ];
-                    }, Locale::getCached()->toArray()),
+                    }, Locale::getCached()->toArray() ?? []),
                     'locale' => FluentState::singleton()->getLocale(),
                     'param' => FluentDirectorExtension::config()->get('query_param'),
                 ]
