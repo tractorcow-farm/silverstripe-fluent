@@ -17,7 +17,7 @@ class DetectLocaleMiddlewareSpy extends DetectLocaleMiddleware implements TestOn
 {
     public function __call($method, $arguments)
     {
-        if (method_exists($this, $method)) {
+        if (method_exists($this, $method ?? '')) {
             return $this->$method(...$arguments);
         }
     }

@@ -167,10 +167,10 @@ class FluentFilteredExtension extends DataExtension
         $readingMode = Versioned::get_reading_mode();
         $draft = Versioned::DRAFT;
 
-        if (strlen($readingMode) === 0) {
+        if (strlen($readingMode ?? '') === 0) {
             $readingMode = Versioned::DEFAULT_MODE;
         }
 
-        return substr_compare($readingMode, $draft, strlen($readingMode) - strlen($draft), strlen($draft)) === 0;
+        return substr_compare($readingMode ?? '', $draft ?? '', strlen($readingMode ?? '') - strlen($draft ?? ''), strlen($draft ?? '')) === 0;
     }
 }

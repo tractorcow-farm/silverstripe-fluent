@@ -199,7 +199,7 @@ class FluentExtension extends DataExtension
             return false;
         }
         if ($filter && is_array($filter)) {
-            return in_array($field, $filter);
+            return in_array($field, $filter ?? []);
         }
 
         // Named blacklist
@@ -249,7 +249,7 @@ class FluentExtension extends DataExtension
 
             // Mark this table as translatable
             $table = DataObject::getSchema()->tableName($class);
-            $includedTables[$table] = array_keys($translatedFields);
+            $includedTables[$table] = array_keys($translatedFields ?? []);
         }
         return $includedTables;
     }
@@ -265,11 +265,11 @@ class FluentExtension extends DataExtension
     protected function anyMatch($value, $patterns)
     {
         // Test both explicit value, as well as the value stripped of any trailing parameters
-        $valueBase = preg_replace('/\(.*/', '', $value);
+        $valueBase = preg_replace('/\(.*/', '', $value ?? '');
         foreach ($patterns as $pattern) {
-            if (strpos($pattern, '/') === 0) {
+            if (strpos($pattern ?? '', '/') === 0) {
                 // Assume value prefaced with '/' are regexp
-                if (preg_match($pattern, $value) || preg_match($pattern, $valueBase)) {
+                if (preg_match($pattern ?? '', $value ?? '') || preg_match($pattern ?? '', $valueBase ?? '')) {
                     return true;
                 }
             } else {
@@ -352,7 +352,7 @@ class FluentExtension extends DataExtension
                 'extensions',
                 Config::EXCLUDE_EXTRA_SOURCES | Config::UNINHERITED
             ) ?: [];
-        $extensions = array_filter(array_values($extensions));
+        $extensions = array_filter(array_values($extensions ?? []));
         foreach ($extensions as $extension) {
             $extensionClass = Extension::get_classname_without_arguments($extension);
             if (is_a($extensionClass, self::class, true)) {
@@ -460,11 +460,11 @@ class FluentExtension extends DataExtension
                     $localisedColumn = str_replace(
                         "\"{$field}\"",
                         "\"{$table}\".\"{$field}\"",
-                        $localisedColumn
+                        $localisedColumn ?? ''
                     );
                 }
                 // Apply substitutions
-                $localisedColumn = str_replace($conditionSearch, $conditionReplace, $localisedColumn);
+                $localisedColumn = str_replace($conditionSearch ?? '', $conditionReplace ?? '', $localisedColumn ?? '');
                 if ($column !== $localisedColumn) {
                     // Wrap sort in group to prevent dataquery messing it up
                     unset($order[$column]);
@@ -488,12 +488,12 @@ class FluentExtension extends DataExtension
                 $parameters = array();
                 $predicate = $condition->conditionSQL($parameters);
             } else {
-                $parameters = array_values(reset($condition));
-                $predicate = key($condition);
+                $parameters = array_values(reset($condition) ?? []);
+                $predicate = key($condition ?? []);
             }
 
             // Apply substitutions
-            $localisedPredicate = str_replace($conditionSearch, $conditionReplace, $predicate);
+            $localisedPredicate = str_replace($conditionSearch ?? '', $conditionReplace ?? '', $predicate ?? '');
 
             $where[$index] = [
                 $localisedPredicate => $parameters
@@ -581,8 +581,8 @@ class FluentExtension extends DataExtension
 
         // Filter fields by localised fields
         $localisedUpdate['fields'] = array_intersect_key(
-            $updates['fields'],
-            array_combine($localisedFields, $localisedFields)
+            $updates['fields'] ?? [],
+            array_combine($localisedFields ?? [], $localisedFields ?? [])
         );
         unset($localisedUpdate['fields']['id']);
 
@@ -938,7 +938,7 @@ class FluentExtension extends DataExtension
                 // If the translated field has an ID suffix also check for the non-suffixed version
                 // E.g. UploadField()
                 $field = $fields->dataFieldByName($translatedField);
-                if (!$field && preg_match('/^(?<field>\w+)ID$/', $translatedField, $matches)) {
+                if (!$field && preg_match('/^(?<field>\w+)ID$/', $translatedField ?? '', $matches)) {
                     $field = $fields->dataFieldByName($matches['field']);
                 }
                 if (!$field || $field->hasClass('fluent__localised-field')) {
@@ -985,24 +985,24 @@ class FluentExtension extends DataExtension
     protected function detectLocalisedTableField($tables, $sql)
     {
         // Check explicit "table"."field" within the fragment
-        if (preg_match('/"(?<table>[\w\\\\]+)"\."(?<field>\w+)"/i', $sql, $matches)) {
+        if (preg_match('/"(?<table>[\w\\\\]+)"\."(?<field>\w+)"/i', $sql ?? '', $matches)) {
             $table = $matches['table'];
             $field = $matches['field'];
 
             // Ensure both table and this field are valid
-            if (empty($tables[$table]) || !in_array($field, $tables[$table])) {
+            if (empty($tables[$table]) || !in_array($field, $tables[$table] ?? [])) {
                 return [null, null, false];
             }
             return [$table, $field, true];
         }
 
         // Check sole "field" without table specifier ("name" without leading or trailing '.')
-        if (preg_match('/(?<![.])"(?<field>\w+)"(?![.])/i', $sql, $matches)) {
+        if (preg_match('/(?<![.])"(?<field>\w+)"(?![.])/i', $sql ?? '', $matches)) {
             $field = $matches['field'];
 
             // Check if this field is in any of the tables, and just pick any that match
             foreach ($tables as $table => $fields) {
-                if (in_array($field, $fields)) {
+                if (in_array($field, $fields ?? [])) {
                     return [$table, $field, false];
                 }
             }

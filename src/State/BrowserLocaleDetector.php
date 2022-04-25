@@ -38,14 +38,14 @@ class BrowserLocaleDetector implements LocaleDetector
         // break up string into pieces (languages and q factors)
         preg_match_all(
             '/(?<code>[a-z]{1,8}(-[a-z]{1,8})?)\s*(;\s*q\s*=\s*(?<priority>1|0\.[0-9]+))?/i',
-            $inputLocales,
+            $inputLocales ?? '',
             $parsedLocales
         );
 
         $prioritisedLocales = [];
-        if (count($parsedLocales['code'])) {
+        if (count($parsedLocales['code'] ?? [])) {
             // create a list like "en" => 0.8
-            $parsedLocales = array_combine($parsedLocales['code'], $parsedLocales['priority']);
+            $parsedLocales = array_combine($parsedLocales['code'] ?? [], $parsedLocales['priority'] ?? []);
 
             // Generate nested list of priorities => [locales]
             foreach ($parsedLocales as $locale => $priority) {

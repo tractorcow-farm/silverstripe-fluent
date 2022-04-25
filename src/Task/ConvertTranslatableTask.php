@@ -80,7 +80,7 @@ class ConvertTranslatableTask extends BuildTask
                 }
             }
         }
-        return array_unique($classes);
+        return array_unique($classes ?? []);
     }
 
     public function run($request)

@@ -94,7 +94,7 @@ class FluentDirectorExtensionTest extends FunctionalTest
         $rules = Director::config()->rules;
 
         // Modify the rule for our test controller to include the locale parameter
-        $i = array_search('admin', array_keys($rules));
+        $i = array_search('admin', array_keys($rules ?? []));
         if ($i !== false) {
             $rule = [
                 'nouvelle-z%C3%A9lande/TestController//$Action/$ID/$OtherID' => [
@@ -103,7 +103,7 @@ class FluentDirectorExtensionTest extends FunctionalTest
                 ]
             ];
 
-            $rules = array_slice($rules, 0, $i, true) + $rule + array_slice($rules, $i, null, true);
+            $rules = array_slice($rules ?? [], 0, $i, true) + $rule + array_slice($rules ?? [], $i ?? 0, null, true);
         } else {
             throw new \Exception('Could not find "admin" url rule');
         }
