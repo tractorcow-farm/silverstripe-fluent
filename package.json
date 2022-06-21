@@ -3,7 +3,7 @@
   "version": "4.0.0",
   "description": "Fluent localisation module for SilverStrip CMS",
   "engines": {
-    "node": "^6.x"
+    "node": "^10.x"
   },
   "scripts": {
     "build": "NODE_ENV=production webpack -p --bail --progress",
