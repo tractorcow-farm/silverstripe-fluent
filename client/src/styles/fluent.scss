@@ -67,7 +67,7 @@ $fluent-color-localised: rgb(102, 15, 242);
   .cms-fluent-selector-locales {
     background-color: #368b39;
     background-image: url("../images/menu-icon-24-white.png");
-    background-position: 6px center;;
+    background-position: 6px center;
     background-repeat: none;
     background-size: 12px;
     border-radius: 5px;
@@ -80,6 +80,7 @@ $fluent-color-localised: rgb(102, 15, 242);
       // hide text on main dropdown when collapsed, show icon only
       color: transparent;
       padding: 2px;
+
       > option {
         color: white;
       }
@@ -118,7 +119,7 @@ $fluent-color-localised: rgb(102, 15, 242);
 
   // button
   .popover-actions-simulate .ui-tabs-anchor {
-    font-size: 1.0em;
+    font-size: 1em;
     color: #303b4d;
 
     &:before {
@@ -130,7 +131,7 @@ $fluent-color-localised: rgb(102, 15, 242);
     &:hover,
     &:active {
       &:after {
-        display: none !important;
+        display: none !important;// sass-lint:disable-line no-important
       }
     }
   }
@@ -143,7 +144,7 @@ $fluent-color-localised: rgb(102, 15, 242);
     .action-description {
       font-size: 0.9em;
       line-height: 1em;
-      display: block !important;
+      display: block !important;// sass-lint:disable-line no-important
       margin: 0;
       padding: 0 11px 8px 11px;
       border-bottom: 1px solid #ccc;
@@ -156,24 +157,24 @@ $fluent-color-localised: rgb(102, 15, 242);
   }
 }
 
-.action-group-COPY_FROM .action-menu__toggle:before,
-.action-group-COPY_TO .action-menu__toggle:before {
-  font-family: inherit !important;
+.action-group-COPY_FROM .action-menu__toggle:before, // sass-lint:disable-line class-name-format
+.action-group-COPY_TO .action-menu__toggle:before { // sass-lint:disable-line class-name-format
+  font-family: inherit !important;// sass-lint:disable-line no-important
   line-height: 1em;
-  font-size: 1.0em;
+  font-size: 1em;
 }
 
 // Gridfield menu items
-.action-group-COPY_FROM .action-menu__toggle:before {
+.action-group-COPY_FROM .action-menu__toggle:before {// sass-lint:disable-line class-name-format
   // force ... to turn into actual title
   // @todo i18n this
-  content: "Copy from" !important;
+  content: "Copy from" !important;// sass-lint:disable-line no-important
 }
 
-.action-group-COPY_TO .action-menu__toggle:before {
+.action-group-COPY_TO .action-menu__toggle:before {// sass-lint:disable-line class-name-format
   // force ... to turn into actual title
   // @todo i18n this
-  content: "Copy to" !important;
+  content: "Copy to" !important;// sass-lint:disable-line no-important
 }
 
 // gridfield "visible locales" column
