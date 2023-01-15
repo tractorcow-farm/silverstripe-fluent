@@ -27,6 +27,7 @@
   },
   "homepage": "https://github.com/tractorcow-farm/silverstripe-fluent",
   "devDependencies": {
+    "@silverstripe/eslint-config": "^0.0.5",
     "@silverstripe/webpack-config": "^0.4.1"
   },
   "dependencies": {

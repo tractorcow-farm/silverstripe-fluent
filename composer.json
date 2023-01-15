@@ -64,5 +64,12 @@
         "lint-clean": "phpcbf src/ tests/php/"
     },
     "prefer-stable": true,
-    "minimum-stability": "dev"
+    "minimum-stability": "dev",
+    "config": {
+        "allow-plugins": {
+            "composer/installers": true,
+            "silverstripe/recipe-plugin": true,
+            "silverstripe/vendor-plugin": true
+        }
+    }
 }
