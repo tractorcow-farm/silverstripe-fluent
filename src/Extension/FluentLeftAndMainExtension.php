@@ -23,8 +23,8 @@ class FluentLeftAndMainExtension extends Extension
 
     public function init()
     {
-        Requirements::javascript("tractorcow/silverstripe-fluent:client/dist/js/fluent.js");
-        Requirements::css("tractorcow/silverstripe-fluent:client/dist/styles/fluent.css");
+        Requirements::javascript("silverstripe/silverstripe-fluent:client/dist/js/fluent.js");
+        Requirements::css("silverstripe/silverstripe-fluent:client/dist/styles/fluent.css");
     }
 
     /**

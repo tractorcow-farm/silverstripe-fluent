@@ -34,8 +34,8 @@ class LocaleAdmin extends ModelAdmin
     protected function init()
     {
         parent::init();
-        Requirements::javascript('tractorcow/silverstripe-fluent:client/dist/js/fluent.js');
-        Requirements::css("tractorcow/silverstripe-fluent:client/dist/styles/fluent.css");
+        Requirements::javascript('silverstripe/silverstripe-fluent:client/dist/js/fluent.js');
+        Requirements::css("silverstripe/silverstripe-fluent:client/dist/styles/fluent.css");
     }
 
     public function getEditForm($id = null, $fields = null)
