@@ -1,3 +1,6 @@
+# WARNING
+
+This is a temporary fork of `tractorcow/silverstripe-fluent`. Do not install in production environment.
 # Fluent
 
 [![Build Status](https://travis-ci.org/tractorcow-farm/silverstripe-fluent.svg?branch=master)](https://travis-ci.org/tractorcow-farm/silverstripe-fluent)

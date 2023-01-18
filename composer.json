@@ -1,5 +1,5 @@
 {
-    "name": "tractorcow/silverstripe-fluent",
+    "name": "silverstripe/silverstripe-fluent",
     "description": "Simple localisation for Silverstripe",
     "type": "silverstripe-vendormodule",
     "keywords": [
@@ -30,25 +30,21 @@
         "issues": "http://github.com/tractorcow-farm/silverstripe-fluent/issues"
     },
     "require": {
-        "php": "^7.1 || ^8",
-        "silverstripe/vendor-plugin": "^1.6",
-        "silverstripe/framework": "^4.7",
-        "silverstripe/admin": "^1",
-        "silverstripe/versioned": "^1.7",
-        "symbiote/silverstripe-gridfieldextensions": "^3.1",
+        "php": "^8.1",
+        "silverstripe/vendor-plugin": "^2",
+        "silverstripe/framework": "^5",
+        "silverstripe/admin": "^2",
+        "silverstripe/versioned": "^2",
+        "symbiote/silverstripe-gridfieldextensions": "^4",
         "ext-json": "*"
     },
     "suggest": {
         "silverstripe/cms": "Localise pages"
     },
     "require-dev": {
-        "silverstripe/recipe-testing": "^2"
+        "silverstripe/recipe-testing": "^3"
     },
     "extra": {
-        "branch-alias": {
-            "dev-master": "6.x-dev",
-            "5.x-dev": "5.2.x-dev"
-        },
         "expose": [
             "client/dist"
         ]
