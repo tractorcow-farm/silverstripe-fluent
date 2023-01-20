@@ -18,9 +18,6 @@ class LocaleToggleColumn implements GridField_SaveHandler, GridField_ColumnProvi
 {
     use Injectable;
 
-    /**
-     * @skipUpgrade
-     */
     const COLUMN_NAME = 'VisibleToggle';
 
     /**
