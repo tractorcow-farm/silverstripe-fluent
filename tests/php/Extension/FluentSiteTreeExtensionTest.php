@@ -5,6 +5,7 @@ namespace TractorCow\Fluent\Tests\Extension;
 use Page;
 use SilverStripe\CMS\Forms\SiteTreeURLSegmentField;
 use SilverStripe\CMS\Model\SiteTree;
+use SilverStripe\Control\Controller;
 use SilverStripe\Control\Director;
 use SilverStripe\Core\Config\Config;
 use SilverStripe\Dev\SapphireTest;
@@ -74,8 +75,8 @@ class FluentSiteTreeExtensionTest extends SapphireTest
             $this->assertEquals('English (New Zealand)', $result->getTitle());
             $this->assertEquals('English', $result->getLanguageNative());
             $this->assertEquals('en', $result->getLanguage());
-            $this->assertEquals('/newzealand/a-page/', $result->getLink());
-            $this->assertEquals('http://mocked/newzealand/a-page/', $result->getAbsoluteLink());
+            $this->assertEquals(Controller::normaliseTrailingSlash('/newzealand/a-page/'), $result->getLink());
+            $this->assertEquals(Controller::normaliseTrailingSlash('http://mocked/newzealand/a-page/'), $result->getAbsoluteLink());
             $this->assertEquals('link', $result->getLinkingMode());
             $this->assertEquals('newzealand', $result->getURLSegment());
         });
@@ -179,7 +180,7 @@ class FluentSiteTreeExtensionTest extends SapphireTest
 
                 /** @var Page|FluentSiteTreeExtension $page */
                 $page = $this->objFromFixture(Page::class, $pageName);
-                $this->assertEquals($url, $page->Link());
+                $this->assertEquals(Controller::normaliseTrailingSlash($url), $page->Link());
             }
         );
     }
