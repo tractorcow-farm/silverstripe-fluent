@@ -949,7 +949,7 @@ SQL;
         $results = DB::prepared_query($query, $params);
         $versions = [];
 
-        while ($result = $results->next()) {
+        foreach ($results as $result) {
             $id = (int) $result['LatestID'];
             $version = (int) $result['LatestVersion'];
 
