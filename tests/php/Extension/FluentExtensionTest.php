@@ -176,7 +176,7 @@ class FluentExtensionTest extends SapphireTest
 
             // Sort by the NonLocalisedSort field first then the LocalisedField second both in ascending order
             // so the result will be opposite if the order of the columns is not maintained
-            $objects=MixedLocalisedSortObject::get()->sort(
+            $objects=MixedLocalisedSortObject::get()->orderBy(
                 '"FluentExtensionTest_MixedLocalisedSortObject"."LocalizedSort", '.
                 '"FluentExtensionTest_MixedLocalisedSortObject"."NonLocalizedSort", '.
                 '"FluentExtensionTest_MixedLocalisedSortObject"."Title"'
@@ -289,12 +289,16 @@ class FluentExtensionTest extends SapphireTest
      * @param string[] $expected
      * @group exclude-from-travis
      */
-    public function testLocalisedFieldsCanBeSorted($locale, array $sortArgs, $expected)
+    public function testLocalisedFieldsCanBeSorted($locale, array $sortArgs, $expected, $useOrderBy = false)
     {
-        FluentState::singleton()->withState(function (FluentState $newState) use ($locale, $sortArgs, $expected) {
+        FluentState::singleton()->withState(function (FluentState $newState) use ($locale, $sortArgs, $expected, $useOrderBy) {
             $newState->setLocale($locale);
 
-            $records = LocalisedParent::get()->sort(...$sortArgs);
+            if ($useOrderBy) {
+                $records = LocalisedParent::get()->orderBy(...$sortArgs);
+            } else {
+                $records = LocalisedParent::get()->sort(...$sortArgs);
+            }
             $titles = $records->column('Title');
             $this->assertEquals($expected, $titles);
         });
@@ -411,6 +415,7 @@ class FluentExtensionTest extends SapphireTest
                 'en_US',
                 ['CONCAT((SELECT COUNT(*) FROM "FluentExtensionTest_LocalisedParent_Localised"), "FluentExtensionTest_LocalisedParent"."ID")'],
                 ['A record', 'Read about things', 'Go for a run'],
+                true,
             ]
         ];
     }
@@ -431,7 +436,7 @@ class FluentExtensionTest extends SapphireTest
                 '"Locale"' => $locale,
             ])
             ->execute()
-            ->first();
+            ->record();
 
         return !empty($result);
     }
