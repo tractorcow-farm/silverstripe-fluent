@@ -1,9 +1,0 @@
-version: ~> 1.0
-
-env:
-  global:
-    - COMPOSER_ROOT_VERSION="4.7.x-dev"
-    - REQUIRE_RECIPE="4.7.x-dev"
-
-import:
-  - silverstripe/silverstripe-travis-shared:config/provision/standard-jobs-fixed.yml

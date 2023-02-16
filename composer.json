@@ -31,7 +31,7 @@
     },
     "require": {
         "php": "^7.1 || ^8",
-        "silverstripe/vendor-plugin": "^1",
+        "silverstripe/vendor-plugin": "^1.6",
         "silverstripe/framework": "^4.7",
         "silverstripe/admin": "^1",
         "silverstripe/versioned": "^1.7",
@@ -42,7 +42,7 @@
         "silverstripe/cms": "Localise pages"
     },
     "require-dev": {
-        "silverstripe/recipe-testing": "^1 || ^2"
+        "silverstripe/recipe-testing": "^2"
     },
     "extra": {
         "branch-alias": {
@@ -63,5 +63,12 @@
         "lint-clean": "phpcbf src/ tests/php/"
     },
     "prefer-stable": true,
-    "minimum-stability": "dev"
+    "minimum-stability": "dev",
+    "config": {
+        "allow-plugins": {
+            "composer/installers": true,
+            "silverstripe/recipe-plugin": true,
+            "silverstripe/vendor-plugin": true
+        }
+    }
 }

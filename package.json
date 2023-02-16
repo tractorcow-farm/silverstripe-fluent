@@ -3,7 +3,7 @@
   "version": "4.0.0",
   "description": "Fluent localisation module for SilverStrip CMS",
   "engines": {
-    "node": "^6.x"
+    "node": "^10.x"
   },
   "scripts": {
     "build": "NODE_ENV=production webpack -p --bail --progress",
@@ -27,6 +27,7 @@
   },
   "homepage": "https://github.com/tractorcow-farm/silverstripe-fluent",
   "devDependencies": {
+    "@silverstripe/eslint-config": "^0.0.5",
     "@silverstripe/webpack-config": "^0.4.1"
   },
   "dependencies": {
