@@ -8,6 +8,7 @@ use SilverStripe\Core\ClassInfo;
 use SilverStripe\Core\Config\Config;
 use SilverStripe\Core\Convert;
 use SilverStripe\Core\Extension;
+use SilverStripe\Dev\Deprecation;
 use SilverStripe\Forms\FieldList;
 use SilverStripe\i18n\i18n;
 use SilverStripe\ORM\ArrayList;
@@ -826,10 +827,10 @@ class FluentExtension extends DataExtension
         $locale = $localeObj->getLocale();
 
         // Check linking mode
-        $linkingMode = $this->getLinkingMode($locale);
+        $linkingMode = $this->getLinkingModeValue($locale);
 
         // Check link
-        $link = $this->LocaleLink($locale);
+        $link = $this->getLocaleLinkValue($locale);
 
         // Store basic locale information
         return ArrayData::create([
@@ -852,6 +853,12 @@ class FluentExtension extends DataExtension
      * @return string
      */
     public function getLinkingMode($locale)
+    {
+        Deprecation::notice('4.13.0', 'Use LocaleInformation() instead');
+        return $this->getLinkingModeValue($locale);
+    }
+
+    private function getLinkingModeValue($locale)
     {
         if ($this->owner->hasMethod('canViewInLocale') && !$this->owner->canViewInLocale($locale)) {
             return 'invalid';
@@ -884,6 +891,12 @@ class FluentExtension extends DataExtension
      * @return string
      */
     public function LocaleLink($locale)
+    {
+        Deprecation::notice('4.13.0', 'Use LocaleInformation() instead');
+        return $this->getLocaleLinkValue($locale);
+    }
+
+    private function getLocaleLinkValue($locale)
     {
         // Skip dataobjects that do not have the Link method
         if (!$this->owner->hasMethod('Link')) {
