@@ -1137,6 +1137,22 @@ class FluentExtension extends DataExtension
     }
 
     /**
+     * Update preview link to null if the object isn't in the current locale
+     * and we can't fallback cleanly.
+     *
+     * @param ?string $link
+     */
+    public function updatePreviewLink(&$link): void
+    {
+        $owner = $this->owner;
+        $info = $owner->LocaleInformation(FluentState::singleton()->getLocale());
+
+        if (!$info->getSourceLocale()) {
+            $link = null;
+        }
+    }
+
+    /**
      * Require that this record is saved in the given locale for it to be visible
      *
      * @return string
