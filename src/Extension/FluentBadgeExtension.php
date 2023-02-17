@@ -3,6 +3,7 @@
 namespace TractorCow\Fluent\Extension;
 
 use SilverStripe\Core\Extension;
+use SilverStripe\Dev\Deprecation;
 use SilverStripe\ORM\ArrayList;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\FieldType\DBField;
@@ -11,6 +12,19 @@ use TractorCow\Fluent\State\FluentState;
 
 class FluentBadgeExtension extends Extension
 {
+
+    public function __construct()
+    {
+        Deprecation::withNoReplacement(function () {
+            Deprecation::notice(
+                '4.13.0',
+                'Will be replaced with using TractorCow\Fluent\Extension\Traits\FluentBadgeTrait on an extension instead',
+                Deprecation::SCOPE_CLASS
+            );
+        });
+
+        parent::__construct();
+    }
     /**
      * Push a badge to indicate the language that owns the current item
      *
