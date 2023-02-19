@@ -3,9 +3,9 @@ name: Module CI
 on:
   push:
   pull_request:
+  workflow_dispatch:
 
 jobs:
   ci:
-    uses: silverstripe/github-actions-ci-cd/.github/workflows/ci.yml@v0.1
-    with:
-      run_phplinting: false
+    name: CI
+    uses: silverstripe/gha-ci/.github/workflows/ci.yml@v1
