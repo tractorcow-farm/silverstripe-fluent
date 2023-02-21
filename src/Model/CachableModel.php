@@ -37,7 +37,7 @@ trait CachableModel
         $dataList = DataObject::get(static::class);
         $sort = Config::inst()->get(static::class, 'default_sort');
         if ($sort) {
-            $dataList = $dataList->sort($sort);
+            $dataList = $dataList->orderBy($sort);
         }
 
         // If DB isn't ready, silently return empty array to prevent bootstrapping issues

@@ -7,7 +7,6 @@ use SilverStripe\Core\ClassInfo;
 use SilverStripe\Core\Config\Config;
 use SilverStripe\Core\Convert;
 use SilverStripe\Core\Extension;
-use SilverStripe\Dev\Deprecation;
 use SilverStripe\Forms\FieldList;
 use SilverStripe\Forms\FormField;
 use SilverStripe\Forms\GridField\GridField_ActionMenuItem;
@@ -1046,19 +1045,6 @@ class FluentExtension extends DataExtension
     }
 
     /**
-     * Return the linking mode for the current locale and object
-     *
-     * @param string $locale
-     * @return string
-     * @deprecated 5.0 use LocaleInformation() instead
-     */
-    public function getLinkingMode($locale)
-    {
-        Deprecation::notice('5.0', 'Use LocaleInformation instead');
-        return $this->LocaleInformation($locale)->getLinkingMode();
-    }
-
-    /**
      * Determine the baseurl within a specified $locale.
      *
      * @param string $locale Locale
@@ -1071,17 +1057,6 @@ class FluentExtension extends DataExtension
             return null;
         }
         return $localeObject->getBaseURL();
-    }
-
-    /**
-     * @param string $locale
-     * @return string
-     * @deprecated Use LocaleInformation instead
-     */
-    public function LocaleLink($locale)
-    {
-        Deprecation::notice('5.0', 'Use LocaleInformation instead');
-        return $this->LocaleInformation($locale)->getLink();
     }
 
     /**
