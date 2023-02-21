@@ -15,16 +15,22 @@ class FluentBadgeExtension extends Extension
 
     public function __construct()
     {
-        Deprecation::withNoReplacement(function () {
+        $deprecation = function () {
             Deprecation::notice(
                 '4.13.0',
                 'Will be replaced with using TractorCow\Fluent\Extension\Traits\FluentBadgeTrait on an extension instead',
                 Deprecation::SCOPE_CLASS
             );
-        });
+        };
+        if (method_exists(Deprecation::class, 'withNoReplacement')) {
+            Deprecation::withNoReplacement($deprecation);
+        } else {
+            $deprecation();
+        }
 
         parent::__construct();
     }
+
     /**
      * Push a badge to indicate the language that owns the current item
      *
