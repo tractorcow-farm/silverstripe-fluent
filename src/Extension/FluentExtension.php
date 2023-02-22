@@ -923,11 +923,11 @@ class FluentExtension extends DataExtension
      *
      * @param string $locale
      * @return string
-     * @deprecated 5.0 use LocaleInformation() instead
+     * @deprecated 5.0.0 Use LocaleInformation() instead
      */
     public function getLinkingMode($locale)
     {
-        Deprecation::notice('5.0', 'Use LocaleInformation instead');
+        Deprecation::notice('5.0.0', 'Use LocaleInformation() instead');
         return $this->LocaleInformation($locale)->getLinkingMode();
     }
 
@@ -949,11 +949,11 @@ class FluentExtension extends DataExtension
     /**
      * @param string $locale
      * @return string
-     * @deprecated Use LocaleInformation instead
+     * @deprecated 5.0.0 Use LocaleInformation() instead
      */
     public function LocaleLink($locale)
     {
-        Deprecation::notice('5.0', 'Use LocaleInformation instead');
+        Deprecation::notice('5.0.0', 'Use LocaleInformation() instead');
         return $this->LocaleInformation($locale)->getLink();
     }
 
@@ -1021,7 +1021,11 @@ class FluentExtension extends DataExtension
         }
 
         if ($this->owner->config()->get('cms_publish_required') !== null) {
-            Deprecation::notice('5.0', 'Use cms_localisation_required instead');
+            Deprecation::notice(
+                '5.0.0',
+                'The "' . self::class . '.cms_publish_required" configuration option is deprecated. Use "'
+                    . self::class . '.cms_localisation_required instead'
+            );
 
             return $this->owner->config()->get('cms_publish_required');
         }
