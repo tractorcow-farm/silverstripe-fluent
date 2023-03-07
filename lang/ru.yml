@@ -8,16 +8,20 @@ ru:
     DOMAIN_LOCALES: Языки
     PLURALNAME: Домены
     PLURALS:
-      one: Домен
-      other: '{count} Доменов'
+      one: ''
+      other: ''
+      few: ''
+      many: ''
     SINGULARNAME: Домен
     UnsavedNotice: 'Вы можете добавить языки для домена как только его сохраните.'
   TractorCow\Fluent\Model\FallbackLocale:
     LOCALE: Язык
     PLURALNAME: 'Резервные Языки'
     PLURALS:
-      one: 'Резервный Язык'
-      other: '{count} Резервных Языков'
+      one: ''
+      other: ''
+      few: ''
+      many: ''
     SINGULARNAME: 'Резервный Язык'
   TractorCow\Fluent\Model\Locale:
     DEFAULT_NONE: '(не выбран)'
@@ -30,9 +34,17 @@ ru:
     LOCALE_URL: URL-адрес
     PLURALNAME: Языки
     PLURALS:
-      one: Язык
-      other: '{count} Языков'
+      one: ''
+      other: ''
+      few: ''
+      many: ''
     SINGULARNAME: Язык
+    UnsavedNotice: ''
+    EDIT_LOCALE: ''
+    MULTI_LOCALE: ''
+    PERMISSION: ''
+    USE_X_DEFAULT: ''
+    USE_X_DEFAULT_DESCRIPTION: ''
   TractorCow\Fluent\Extension\FluentSiteTreeExtension:
     LOCALECOPYTODRAFT: 'Скопировать в Черновик'
     LOCALECOPYANDPUBLISH: 'Скопировать и опубликовать'
@@ -42,3 +54,59 @@ ru:
     LOCALEINHERITEDHELP: 'Данные страницы унаследованы от резевного языка'
     LOCALESTATUSINHERITED: 'Данные страницы унаследованы от резевного языка. Если вы хотите сделать независимую копию страницы. Пожалуйста воскользуйтесь одной из кнопок "Скопировать".'
     LOCALESTATUSDRAFT: 'Черновая версия перевода была создана для этого языка, однако, опубликованное содержимое всё ещё на другом языке. Для публикации этого языка воспользуйтесь кнопкой "Сохранить и Опубликовать".'
+    LOCALESTATUSFLUENTDRAFT: ''
+    LOCALESTATUSFLUENTINHERITED: ''
+    LOCALESTATUSFLUENTINVISIBLE: ''
+    LOCALESTATUSFLUENTUNKNOWN: ''
+  TractorCow\Fluent\Extension\FluentBadgeExtension:
+    BadgeDefault: 'Стандартный язык'
+    BadgeInvisible: ''
+    BadgeLocalised: ''
+  TractorCow\Fluent\Extension\FluentExtension:
+    FLUENT_ICON_TOOLTIP: ''
+    COPY_FROM: ''
+    COPY_TO: ''
+    LOCALISED: ''
+    Localise: ''
+    NOSOURCE: ''
+    NOTLOCALISED: ''
+    Unlocalise: ''
+    UnlocaliseTooltip: ''
+  TractorCow\Fluent\Extension\FluentFilteredExtension:
+    FILTERED_LOCALES: ''
+    LOCALEFILTEREDHELP: ''
+    TAB_LOCALES: Языки
+  SilverStripe\CMS\Controllers\CMSMain:
+    ARCHIVE: ''
+  SilverStripe\CMS\Model\SiteTree:
+    BUTTONPUBLISHED: ''
+    BUTTONSAVEPUBLISH: ''
+  TractorCow\Fluent\Extension\FluentVersionedExtension:
+    DRAFT: ''
+    LIVENO: ''
+    LIVEYES: ''
+    MODIFIED: ''
+    NOSOURCE: ''
+    NOTLOCALISED: ''
+    PUBLISHED: ''
+  TractorCow\Fluent\Forms\DeleteAllLocalesAction:
+    Delete: ''
+  TractorCow\Fluent\Forms\DeleteLocaleAction:
+    DELETE: ''
+  TractorCow\Fluent\Forms\LocaleToggleColumn:
+    DISPLAY_IN: ''
+  TractorCow\Fluent\Forms\PublishAction:
+    PUBLISH: ''
+  TractorCow\Fluent\Forms\SaveLocaleAction:
+    SAVE: ''
+  TractorCow\Fluent\Forms\UnpublishAction:
+    UNPUBLISH: ''
+  TractorCow\Fluent\Forms\VisibleLocalesColumn:
+    LocalesTitle: Языки
+  TractorCow\Fluent\Extension\Traits\FluentAdminTrait:
+    ClearAllNotice: ''
+    CopyNotice: ''
+    DeleteNotice: ''
+    UnpublishNotice: ''
+    ArchiveNotice: ''
+    PublishNotice: ''
