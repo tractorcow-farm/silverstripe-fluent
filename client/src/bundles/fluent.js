@@ -1,6 +1,7 @@
 /* eslint-env browser */
 import liburl from 'url';
 import queryString from 'query-string';
+import Injector from 'lib/Injector';
 
 window.jQuery.entwine('ss', ($) => {
   /**
@@ -81,32 +82,34 @@ window.jQuery.entwine('ss', ($) => {
      */
     onmatch() {
       this._super();
-      const config = fluentConfig();
-      // Skip if no locales defined
-      if (typeof config.locales === 'undefined' || config.locales.length === 0) {
-        return;
-      }
-      // Note: Remove c-select once admin upgraded to bootstrap v4.0.0-alpha.6
-      const selector = $(
-        `<div class='cms-fluent-selector font-icon font-icon-caret-up-down'>
-          <select class='cms-fluent-selector-locales custom-select c-select'></select>
-        </div>`
-      );
-
-      // Create options
-      config.locales.forEach((locale) => {
-        const item = $('<option />')
-          .text(locale.title)
-          .prop('value', locale.code);
-
-        // Display selected locale
-        if (locale.code === config.locale) {
-          item.prop('selected', true);
+      Injector.ready(() => {
+        const config = fluentConfig();
+        // Skip if no locales defined
+        if (typeof config.locales === 'undefined' || config.locales.length === 0) {
+          return;
         }
+        // Note: Remove c-select once admin upgraded to bootstrap v4.0.0-alpha.6
+        const selector = $(
+          `<div class='cms-fluent-selector font-icon font-icon-caret-up-down'>
+            <select class='cms-fluent-selector-locales custom-select c-select'></select>
+          </div>`
+        );
 
-        $('select', selector).append(item);
+        // Create options
+        config.locales.forEach((locale) => {
+          const item = $('<option />')
+            .text(locale.title)
+            .prop('value', locale.code);
+
+          // Display selected locale
+          if (locale.code === config.locale) {
+            item.prop('selected', true);
+          }
+
+          $('select', selector).append(item);
+        });
+        this.prepend(selector);
       });
-      this.prepend(selector);
     },
   });
 
