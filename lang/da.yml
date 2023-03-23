@@ -3,18 +3,8 @@ da:
     MENUTITLE: Sprog
   TractorCow\Fluent\Extension\FluentBadgeExtension:
     BadgeDefault: 'Standard sprog'
-    BadgeInvisible: ''
-    BadgeLocalised: ''
   TractorCow\Fluent\Extension\FluentExtension:
     FLUENT_ICON_TOOLTIP: 'Dette felt kan oversættes'
-    COPY_FROM: ''
-    COPY_TO: ''
-    LOCALISED: ''
-    Localise: ''
-    NOSOURCE: ''
-    NOTLOCALISED: ''
-    Unlocalise: ''
-    UnlocaliseTooltip: ''
   TractorCow\Fluent\Extension\FluentFilteredExtension:
     FILTERED_LOCALES: 'Vis i følgende sprog'
     LOCALEFILTEREDHELP: 'Denne side er ikke synlig på dette sprog'
@@ -22,10 +12,7 @@ da:
   TractorCow\Fluent\Extension\FluentSiteTreeExtension:
     LOCALECOPYANDPUBLISH: 'Kopier & udgiv'
     LOCALECOPYTODRAFT: 'Kopier til kladde'
-    LOCALESTATUSFLUENTDRAFT: ''
-    LOCALESTATUSFLUENTINHERITED: ''
     LOCALESTATUSFLUENTINVISIBLE: 'Denne side er ikke synlig på dette sprog indtil den er tilføjet og udgivet.'
-    LOCALESTATUSFLUENTUNKNOWN: ''
   TractorCow\Fluent\Model\Domain:
     DEFAULT: 'Standard sprog'
     DEFAULT_NONE: (ingen)
@@ -59,42 +46,5 @@ da:
       other: '{count} sprog'
     SINGULARNAME: Sprog
     UnsavedNotice: 'Du kan tilføje fald-tilbage sprog når du har gemt dette sprog.'
-    EDIT_LOCALE: ''
-    MULTI_LOCALE: ''
-    PERMISSION: ''
-    USE_X_DEFAULT: ''
-    USE_X_DEFAULT_DESCRIPTION: ''
-  SilverStripe\CMS\Controllers\CMSMain:
-    ARCHIVE: ''
-  SilverStripe\CMS\Model\SiteTree:
-    BUTTONPUBLISHED: ''
-    BUTTONSAVEPUBLISH: ''
-  TractorCow\Fluent\Extension\FluentVersionedExtension:
-    DRAFT: ''
-    LIVENO: ''
-    LIVEYES: ''
-    MODIFIED: ''
-    NOSOURCE: ''
-    NOTLOCALISED: ''
-    PUBLISHED: ''
-  TractorCow\Fluent\Forms\DeleteAllLocalesAction:
-    Delete: ''
-  TractorCow\Fluent\Forms\DeleteLocaleAction:
-    DELETE: ''
-  TractorCow\Fluent\Forms\LocaleToggleColumn:
-    DISPLAY_IN: ''
-  TractorCow\Fluent\Forms\PublishAction:
-    PUBLISH: ''
-  TractorCow\Fluent\Forms\SaveLocaleAction:
-    SAVE: ''
-  TractorCow\Fluent\Forms\UnpublishAction:
-    UNPUBLISH: ''
   TractorCow\Fluent\Forms\VisibleLocalesColumn:
     LocalesTitle: Sprog
-  TractorCow\Fluent\Extension\Traits\FluentAdminTrait:
-    ClearAllNotice: ''
-    CopyNotice: ''
-    DeleteNotice: ''
-    UnpublishNotice: ''
-    ArchiveNotice: ''
-    PublishNotice: ''
