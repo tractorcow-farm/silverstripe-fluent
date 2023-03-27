@@ -10,10 +10,7 @@ de:
     COPY_FROM: 'In {locale} von kopieren:'
     COPY_TO: 'Von {locale} in kopieren:'
     LOCALISED: Lokalisiert
-    Localise: ''
-    NOSOURCE: ''
     NOTLOCALISED: 'Nicht lokalisiert'
-    Unlocalise: ''
     UnlocaliseTooltip: '{Name} aus dem aktuellen Gebietsschema entfernen'
   TractorCow\Fluent\Extension\FluentFilteredExtension:
     FILTERED_LOCALES: 'Wird in folgenden Gebietsschemata angezeigt'
@@ -60,10 +57,6 @@ de:
     SINGULARNAME: Gebietsschema
     UnsavedNotice: 'Sie können Fallbacks hinzufügen, sobald Sie das Gebietsschema gespeichert haben.'
     EDIT_LOCALE: 'Zugriff "{title}" ({locale})'
-    MULTI_LOCALE: ''
-    PERMISSION: ''
-    USE_X_DEFAULT: ''
-    USE_X_DEFAULT_DESCRIPTION: ''
   SilverStripe\CMS\Controllers\CMSMain:
     ARCHIVE: Archiv
   SilverStripe\CMS\Model\SiteTree:
@@ -74,21 +67,10 @@ de:
     LIVENO: Nein
     LIVEYES: Ja
     MODIFIED: Geändert
-    NOSOURCE: ''
     NOTLOCALISED: 'Nicht lokalisiert'
     PUBLISHED: Veröffentlicht
-  TractorCow\Fluent\Forms\DeleteAllLocalesAction:
-    Delete: ''
-  TractorCow\Fluent\Forms\DeleteLocaleAction:
-    DELETE: ''
   TractorCow\Fluent\Forms\LocaleToggleColumn:
     DISPLAY_IN: 'Sichtbar?'
-  TractorCow\Fluent\Forms\PublishAction:
-    PUBLISH: ''
-  TractorCow\Fluent\Forms\SaveLocaleAction:
-    SAVE: ''
-  TractorCow\Fluent\Forms\UnpublishAction:
-    UNPUBLISH: ''
   TractorCow\Fluent\Forms\VisibleLocalesColumn:
     LocalesTitle: Gebietsschemata
   TractorCow\Fluent\Extension\Traits\FluentAdminTrait:
