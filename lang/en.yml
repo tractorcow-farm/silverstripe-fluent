@@ -28,7 +28,7 @@ en:
     LOCALECOPYANDPUBLISH: 'Copy & publish'
     LOCALECOPYTODRAFT: 'Copy to draft'
     LOCALESTATUSFLUENTDRAFT: 'A draft has been created for this locale, however, published content may still be inherited from another. To publish this content for this locale, use the "Save & publish" action provided.'
-    LOCALESTATUSFLUENTINHERITED: 'Content for this page may be inherited from another locale. If you wish to make an independent copy of this page, please use one of the "Copy" actions provided.'
+    LOCALESTATUSFLUENTINHERITED: 'Content for this page may be inherited from another locale. If you wish you make an independent copy of this page, please use one of the "Copy" actions provided.'
     LOCALESTATUSFLUENTINVISIBLE: 'This page will not be visible in this locale until it has been published.'
     LOCALESTATUSFLUENTUNKNOWN: 'No content is available for this page. Please localise this page or provide a locale fallback.'
   TractorCow\Fluent\Extension\FluentVersionedExtension:
@@ -39,6 +39,13 @@ en:
     NOSOURCE: 'No source'
     NOTLOCALISED: 'Not localised'
     PUBLISHED: Published
+  TractorCow\Fluent\Extension\Traits\FluentAdminTrait:
+    ArchiveNotice: "Archived '{title}' and all of its localisations."
+    ClearAllNotice: "All localisations have been cleared for '{title}'."
+    CopyNotice: "Copied '{title}' to all other locales."
+    DeleteNotice: "Deleted '{title}' and all of its localisations."
+    PublishNotice: "Published '{title}' across all locales."
+    UnpublishNotice: "Unpublished '{title}' from all locales."
   TractorCow\Fluent\Forms\DeleteAllLocalesAction:
     Delete: 'Delete record in all locales'
   TractorCow\Fluent\Forms\DeleteLocaleAction:
@@ -63,7 +70,7 @@ en:
       one: 'A Domain'
       other: '{count} Domains'
     SINGULARNAME: Domain
-    UnsavedNotice: 'You can add locales once you''ve saved the domain.'
+    UnsavedNotice: "You can add locales once you've saved the domain."
   TractorCow\Fluent\Model\FallbackLocale:
     LOCALE: Locale
     PLURALNAME: 'Fallback Locales'
@@ -90,11 +97,4 @@ en:
     SINGULARNAME: Locale
     USE_X_DEFAULT: 'Use {code} as SEO language code (treat as global)'
     USE_X_DEFAULT_DESCRIPTION: 'Use of this code indicates to search engines that this is a non-localised global landing page'
-    UnsavedNotice: 'You can add fallbacks once you''ve saved the locale.'
-  TractorCow\Fluent\Extension\Traits\FluentAdminTrait:
-    ClearAllNotice: 'All localisations have been cleared for ''{title}''.'
-    CopyNotice: 'Copied ''{title}'' to all other locales.'
-    DeleteNotice: 'Deleted ''{title}'' and all of its localisations.'
-    UnpublishNotice: 'Unpublished ''{title}'' from all locales.'
-    ArchiveNotice: 'Archived ''{title}'' and all of its localisations.'
-    PublishNotice: 'Published ''{title}'' across all locales.'
+    UnsavedNotice: "You can add fallbacks once you've saved the locale."

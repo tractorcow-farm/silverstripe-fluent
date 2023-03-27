@@ -1,14 +1,22 @@
 de:
+  SilverStripe\CMS\Controllers\CMSMain:
+    ARCHIVE: Archiv
+  SilverStripe\CMS\Model\SiteTree:
+    BUTTONPUBLISHED: Veröffentlicht
+    BUTTONSAVEPUBLISH: Öffentlich
   TractorCow\Fluent\Control\LocaleAdmin:
     MENUTITLE: Gebietsschemata
   TractorCow\Fluent\Extension\FluentBadgeExtension:
-    BadgeDefault: 'Standardgebietsschema'
+    BadgeDefault: Standardgebietsschema
     BadgeInvisible: 'Übersetzt nach {locale}'
     BadgeLocalised: '{type} ist nicht sichtbar in diesem Gebietsschema'
   TractorCow\Fluent\Extension\FluentExtension:
-    FLUENT_ICON_TOOLTIP: 'Übersetzbares Feld'
     COPY_FROM: 'In {locale} von kopieren:'
     COPY_TO: 'Von {locale} in kopieren:'
+    FLUENT_ICON_TOOLTIP: 'Übersetzbares Feld'
+    LOCALISED: Lokalisiert
+    NOTLOCALISED: 'Nicht lokalisiert'
+    UnlocaliseTooltip: '{Name} aus dem aktuellen Gebietsschema entfernen'
   TractorCow\Fluent\Extension\FluentFilteredExtension:
     FILTERED_LOCALES: 'Wird in folgenden Gebietsschemata angezeigt'
     LOCALEFILTEREDHELP: 'Diese Seite ist nicht sichbar in diesem Gebietsschema'
@@ -19,61 +27,56 @@ de:
     LOCALESTATUSFLUENTDRAFT: 'Für dieses Gebietsschema wurde ein Entwurf erstellt. Veröffentlichte Inhalte können jedoch weiterhin von einem anderen geerbt werden. Verwenden Sie die bereitgestellte Aktion "Speichern und veröffentlichen", um diesen Inhalt für dieses Gebietsschema zu veröffentlichen.'
     LOCALESTATUSFLUENTINHERITED: 'Der Inhalt dieser Seite wird möglicherweise von einem anderen Gebietsschema geerbt. Wenn Sie eine unabhängige Kopie dieser Seite erstellen möchten, verwenden Sie bitte eine der bereitgestellten Aktionen "Kopieren".'
     LOCALESTATUSFLUENTINVISIBLE: 'This page will not be visible in this locale until it has been published.'
+    LOCALESTATUSFLUENTUNKNOWN: 'Für diese Seite ist kein Inhalt verfügbar. Bitte lokalisieren Sie diese Seite oder stellen Sie ein Gebietsschema als Ersatz bereit.'
+  TractorCow\Fluent\Extension\FluentVersionedExtension:
+    DRAFT: Entwurf
+    LIVENO: Nein
+    LIVEYES: Ja
+    MODIFIED: Geändert
+    NOTLOCALISED: 'Nicht lokalisiert'
+    PUBLISHED: Veröffentlicht
+  TractorCow\Fluent\Extension\Traits\FluentAdminTrait:
+    ArchiveNotice: "'{title}' und alle seine Lokalisierungen wurden gelöscht."
+    ClearAllNotice: 'Alle Übersetzungen sind entfern worden.'
+    CopyNotice: "'{title}' wurde in alle anderen Gebietsschemas kopiert."
+    DeleteNotice: '"{title}" und alle seine Lokalisierungen wurden gelöscht.'
+    PublishNotice: "'{title}' ist in allen Gebietsschemata veröffentlicht worden."
+    UnpublishNotice: "Veröffentlichung '{title}' in allen Gebietsschemas enfernt."
+  TractorCow\Fluent\Forms\LocaleToggleColumn:
+    DISPLAY_IN: 'Sichtbar?'
+  TractorCow\Fluent\Forms\VisibleLocalesColumn:
+    LocalesTitle: Gebietsschemata
   TractorCow\Fluent\Model\Domain:
-    DEFAULT: 'Standardgebietsschema'
-    DEFAULT_NONE: '(keine)'
+    DEFAULT: Standardgebietsschema
+    DEFAULT_NONE: (keine)
     DOMAIN_HOSTNAME: 'Domain Hostname'
     DOMAIN_LOCALES: Standardgebietsschema
     PLURALNAME: Domains
     PLURALS:
-      one: 'Domain'
+      one: Domain
       other: '{count} Domains'
     SINGULARNAME: Domain
     UnsavedNotice: 'Sie können Gebietsschemas hinzufügen, sobald Sie die Domain gespeichert haben.'
   TractorCow\Fluent\Model\FallbackLocale:
     LOCALE: Standardgebietsschema
-    PLURALNAME: 'Fallback-Gebietsschemata'
+    PLURALNAME: Fallback-Gebietsschemata
     PLURALS:
-      one: 'Fallback-Gebietsschema'
+      one: Fallback-Gebietsschema
       other: '{count} Fallback-Gebietsschemata'
-    SINGULARNAME: 'Fallback-Gebietsschema'
+    SINGULARNAME: Fallback-Gebietsschema
   TractorCow\Fluent\Model\Locale:
-    DEFAULT_NONE: '(keine)'
+    DEFAULT_NONE: (keine)
     DOMAIN: Domain
-    FALLBACKS: 'Fallback-Gebietsschemata'
+    EDIT_LOCALE: 'Zugriff "{title}" ({locale})'
+    FALLBACKS: Fallback-Gebietsschemata
     IS_DEFAULT: 'This is the global default locale'
     IS_DEFAULT_DESCRIPTION: 'Hinweis: Das domänenspezifische Gebietsschema kann auf der Registerkarte "Gebietsschemas" zugewiesen werden und überschreibt diesen Wert für bestimmte Domänen.'
     LOCALE: Gebietsschema
     LOCALE_TITLE: Titel
-    LOCALE_URL: 'URL-Segment'
+    LOCALE_URL: URL-Segment
     PLURALNAME: Gebietsschemata
     PLURALS:
-      one: 'Gebietsschema'
+      one: Gebietsschema
       other: '{count} Gebietsschemata'
     SINGULARNAME: Gebietsschema
     UnsavedNotice: 'Sie können Fallbacks hinzufügen, sobald Sie das Gebietsschema gespeichert haben.'
-  TractorCow\Fluent\Extension\Traits\FluentAdminTrait:
-    ClearAllNotice: 'Alle Übersetzungen sind entfern worden.'
-    CopyNotice: "'{title}' wurde in alle anderen Gebietsschemas kopiert."
-    UnpublishNotice: "Veröffentlichung '{title}' in allen Gebietsschemas enfernt."
-    ArchiveNotice: "'{title}' und alle seine Lokalisierungen wurden gelöscht."
-    ShowNotice: "'{title}' ist nun in {locale} sichtbar"
-    HideNotice: "'{title}' wird in {locale} nicht mehr angezeigt."
-    PublishNotice: "'{title}' ist in allen Gebietsschemata veröffentlicht worden."
-    Localisation: 'Übersetzungen'
-    Label_clearFluent: "Alle ausser '{title}' löschen"
-    Label_copyFluent: "'{title}' in alle anderen Sprachen kopieren"
-    Label_unpublishFluent: 'Veröffentlichung zurücknehmen (alle Sprachen)'
-    Label_archiveFluent: 'Veröffentlichungen zurücknehmen und archivieren (alle Sprachen)'
-    Label_publishFluent: 'Speichern & veröffentlichen (alle Sprachen)'
-    Label_deleteFluent: 'Löschen (alle Sprachen)'
-    Label_hideFluent: "In '{title}' verstecken"
-    Label_showFluent: "In '{title}' anzeigen"
-
-  TractorCow\Fluent\Extension\Traits\FluentBadgeTrait:
-    BadgePublished: 'In {locale} veröffentlicht'
-    BadgeDraft: 'Als Entwurf in {locale} gespeichert'
-    BaggeInvisible: '{type} ist in dieser Sprache nicht sichtbar'
-
-  TractorCow\Fluent\Extension\Traits\FluentObjectTrait:
-    TAB_LOCALISATION: 'Übersetzungen'
