@@ -2,22 +2,19 @@ da:
   TractorCow\Fluent\Control\LocaleAdmin:
     MENUTITLE: Sprog
   TractorCow\Fluent\Extension\FluentBadgeExtension:
-    BadgeDefault: ''
-    BadgeInvisible: ''
-    BadgeLocalised: ''
+    BadgeDefault: 'Standard sprog'
   TractorCow\Fluent\Extension\FluentExtension:
     FLUENT_ICON_TOOLTIP: 'Dette felt kan oversættes'
   TractorCow\Fluent\Extension\FluentFilteredExtension:
     FILTERED_LOCALES: 'Vis i følgende sprog'
     LOCALEFILTEREDHELP: 'Denne side er ikke synlig på dette sprog'
-    LOCALEFILTEREDSHORT: Filteret
     TAB_LOCALES: Sprog
   TractorCow\Fluent\Extension\FluentSiteTreeExtension:
     LOCALECOPYANDPUBLISH: 'Kopier & udgiv'
     LOCALECOPYTODRAFT: 'Kopier til kladde'
     LOCALESTATUSFLUENTINVISIBLE: 'Denne side er ikke synlig på dette sprog indtil den er tilføjet og udgivet.'
-    LOCALESTATUSFLUENTDRAFT: ''
-    LOCALESTATUSFLUENTINHERITED: ''
+  TractorCow\Fluent\Forms\VisibleLocalesColumn:
+    LocalesTitle: Sprog
   TractorCow\Fluent\Model\Domain:
     DEFAULT: 'Standard sprog'
     DEFAULT_NONE: (ingen)

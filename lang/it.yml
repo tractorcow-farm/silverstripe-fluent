@@ -1,59 +1,103 @@
 it:
+  SilverStripe\CMS\Controllers\CMSMain:
+    ARCHIVE: Archivia
+  SilverStripe\CMS\Model\SiteTree:
+    BUTTONPUBLISHED: Pubblicato
+    BUTTONSAVEPUBLISH: Pubblica
   TractorCow\Fluent\Control\LocaleAdmin:
-    MENUTITLE: Lingue
+    MENUTITLE: Localizzazione
   TractorCow\Fluent\Extension\FluentBadgeExtension:
-    BadgeDefault: 'Lingua di default'
-    BadgeInvisible: 'Localizzato in {locale}'
-    BadgeLocalised: '{type} non è visibile per questa lingua'
+    BadgeDefault: 'Lingua predefinita'
+    BadgeInvisible: 'Tradotto in {locale}'
+    BadgeLocalised: '{type} non è visibile in questa lingua'
   TractorCow\Fluent\Extension\FluentExtension:
+    COPY_FROM: 'Copia in {locale} da:'
+    COPY_TO: 'Copia da {locale} a:'
     FLUENT_ICON_TOOLTIP: 'Campo traducibile'
+    LOCALISED: Tradotto
+    Localise: Tradurre
+    NOSOURCE: 'Nessun originale'
+    NOTLOCALISED: 'Non tradotto'
+    Unlocalise: 'Elimina traduzione'
+    UnlocaliseTooltip: 'Togli {name} dalla lingua attiva'
   TractorCow\Fluent\Extension\FluentFilteredExtension:
-    FILTERED_LOCALES: 'Mostra nelle seguenti lingue'
+    FILTERED_LOCALES: 'Mostrare nelle seguenti lingue'
     LOCALEFILTEREDHELP: 'Questa pagina non è visibile in questa lingua'
-    TAB_LOCALES: Lingue
+    TAB_LOCALES: Localizzazione
   TractorCow\Fluent\Extension\FluentSiteTreeExtension:
-    LOCALECOPYANDPUBLISH: 'Copia & pubblica'
-    LOCALECOPYTODRAFT: 'Copia in bozza'
-    LOCALESTATUSFLUENTDRAFT: 'È stata creata una bozza per questa lingua, tuttavia, il contenuto pubblicato potrebbe ancora essere ereditato da un altro. Per pubblicare questo contenuto per questa lingua, utilizza l''azione fornita "Salva e pubblica".'
-    LOCALESTATUSFLUENTINHERITED: 'Il contenuto di questa pagina potrebbe essere ereditato da un''altra lingua. Se desideri creare una copia indipendente di questa pagina, utilizza una delle azioni "Copia" fornite.'
-    LOCALESTATUSFLUENTINVISIBLE: 'Questa pagina non sarà visibile in questa lingua fino a quando non sarà stata pubblicata.'
+    LOCALECOPYANDPUBLISH: 'Salva e pubblica'
+    LOCALECOPYTODRAFT: 'Copia nella bozza'
+    LOCALESTATUSFLUENTDRAFT: 'Una bozza è stata creata per questa lingua ma il contenuto pubblicato può essere ancora quello di un''altra. Per pubblicare nuovo contenuto in questa lingua usare il pulsante "Salva e pubblica".'
+    LOCALESTATUSFLUENTINHERITED: 'Il contenuto di questa pagina può essere ancora quello di un''altra lingua. Per fare una copia indipendente di questa pagina, usare il pulsante "Copia".'
+    LOCALESTATUSFLUENTINVISIBLE: 'Questa pagina non sarà visibile in questa lingua fino a quando verrà pubblicata.'
+    LOCALESTATUSFLUENTUNKNOWN: 'Contenuto non disponibile per questa pagina. Localizzare la pagina o fornire una lingua alternativa.'
+  TractorCow\Fluent\Extension\FluentVersionedExtension:
+    DRAFT: Bozza
+    LIVENO: 'No'
+    LIVEYES: Sì
+    MODIFIED: Modificato
+    NOSOURCE: 'Nessun originale'
+    NOTLOCALISED: 'Non tradotto'
+    PUBLISHED: Pubblicato
+  TractorCow\Fluent\Extension\Traits\FluentAdminTrait:
+    ArchiveNotice: "Archiviato '{title}' e tutte le sue traduzioni."
+    ClearAllNotice: "Tutte le traduzioni sono state eliminate per '{title}'."
+    CopyNotice: "'{title}' copiato in tutte le altre lingue."
+    DeleteNotice: "Eliminato '{title}' e tutte le sue traduzioni."
+    PublishNotice: "'{title}' pubblicato in tutte le lingue."
+    UnpublishNotice: "'{title}' nascosto in tutte le lingue."
+  TractorCow\Fluent\Forms\DeleteAllLocalesAction:
+    Delete: 'Elimina i dati da tutte le lingue'
+  TractorCow\Fluent\Forms\DeleteLocaleAction:
+    DELETE: 'Elimina da questa lingua'
+  TractorCow\Fluent\Forms\LocaleToggleColumn:
+    DISPLAY_IN: 'Visibile?'
+  TractorCow\Fluent\Forms\PublishAction:
+    PUBLISH: 'Pubblica in questa lingua'
+  TractorCow\Fluent\Forms\SaveLocaleAction:
+    SAVE: 'Salva in questa lingua'
+  TractorCow\Fluent\Forms\UnpublishAction:
+    UNPUBLISH: 'Nascondi in questa lingua'
+  TractorCow\Fluent\Forms\VisibleLocalesColumn:
+    LocalesTitle: Localizzazione
   TractorCow\Fluent\Model\Domain:
-    DEFAULT: 'Lingua di default'
-    DEFAULT_NONE: (nessuna)
-    DOMAIN_HOSTNAME: 'Nome host del dominio'
+    DEFAULT: 'Lingua predefinita'
+    DEFAULT_NONE: (nessuno)
+    DOMAIN_HOSTNAME: 'Host del Dominio'
     DOMAIN_LOCALES: Lingue
     PLURALNAME: Domini
     PLURALS:
-      one: 'Un dominio'
-      other: '{count} domini'
+      one: 'Un Dominio'
+      many: '{count} Domini'
+      other: '{count} Domini'
     SINGULARNAME: Dominio
     UnsavedNotice: 'Puoi aggiungere lingue una volta salvato il dominio.'
   TractorCow\Fluent\Model\FallbackLocale:
-    LOCALE: Lingue
-    PLURALNAME: 'Lingue di riserva'
+    LOCALE: Lingua
+    PLURALNAME: 'Lingue Alternative'
     PLURALS:
-      one: 'Una lingua di riserva'
-      other: '{count} lingue di riserva'
-    SINGULARNAME: 'Lingua di riserva'
+      one: 'Una Lingua Alternativa'
+      many: '{count} Lingue Alternative'
+      other: '{count} Lingue Alternative'
+    SINGULARNAME: 'Lingua Alternativa'
   TractorCow\Fluent\Model\Locale:
     DEFAULT_NONE: (nessuna)
     DOMAIN: Dominio
-    FALLBACKS: 'Lingue di riserva'
-    IS_DEFAULT: 'Questa è la lingua predefinita globale'
-    IS_DEFAULT_DESCRIPTION: 'Nota: le impostazioni internazionali specifiche per dominio possono essere assegnate nella tab Lingue e sovrascriveranno questo valore per domini specifici.'
+    EDIT_LOCALE: 'Accesso a "{title}" ({locale})'
+    FALLBACKS: 'Lingue Alternative'
+    IS_DEFAULT: 'Questa è la lingua principale di default'
+    IS_DEFAULT_DESCRIPTION: 'Attenzione: nella scheda Lingue possono essere impostate lingue diverse per dominio e avranno la precedenza su questo valore nei domini specificati.'
     LOCALE: Lingua
     LOCALE_TITLE: Titolo
     LOCALE_URL: 'Segmento URL'
+    MULTI_LOCALE: 'Accesso ad azioni multilingua (per esempio Salva in tutte le lingue)'
+    PERMISSION: Localizzazione
     PLURALNAME: Lingue
     PLURALS:
-      one: 'Una lingua'
-      other: '{count} lingue'
-    SINGULARNAME: Lingue
-    UnsavedNotice: 'Puoi aggiungere lingue di riserva dopo aver salvato la lingua.'
-  TractorCow\Fluent\Extension\Traits\FluentAdminTrait:
-    ClearAllNotice: 'Tutte le localizzazioni sono state cancellate per ''{title}''.'
-    CopyNotice: 'Copiato ''{title}'' nelle altre lingue.'
-    DeleteNotice: 'Cancellato ''{title}'' e tutte le sue lingue.'
-    UnpublishNotice: 'Depubblicato ''{title}'' in tutte le lingue.'
-    ArchiveNotice: 'Archiviato ''{title}'' e tutte le sue lingue.'
-    PublishNotice: 'Pubblicato ''{title}'' in tutte le lingue.'
+      one: 'Una Lingua'
+      many: '{count} Lingue'
+      other: '{count} Lingue'
+    SINGULARNAME: Lingua
+    USE_X_DEFAULT: 'Usare {code} come codice lingua SEO (da considerare globale)'
+    USE_X_DEFAULT_DESCRIPTION: "L'uso di questo codice suggerisce ai motori di ricerca che questa è una pagina di destinazione globale non localizzata"
+    UnsavedNotice: 'Puoi aggiungere alternative una volta salvata la lingua.'
