@@ -5,11 +5,15 @@
 [![codecov](https://codecov.io/gh/tractorcow-farm/silverstripe-fluent/branch/master/graph/badge.svg)](https://codecov.io/gh/tractorcow-farm/silverstripe-fluent)
 [![SilverStripe supported module](https://img.shields.io/badge/silverstripe-supported-0071C4.svg)](https://www.silverstripe.org/software/addons/silverstripe-commercially-supported-module-list/)
 
+## Installation
+
+```sh
+composer require tractorcow/silverstripe-fluent
+```
+
 ## Simple Silverstripe Localisation
 
-This module allows websites to manage localisation of content, and navigation between localisations,
-in a similar fashion to [Translatable](https://github.com/silverstripe/silverstripe-translatable)
-or [Multilingual](https://github.com/kreationsbyran/multilingual).
+This module allows websites to manage localisation of content, and navigation between localisations.
 
 Locales are distinguished by a url prefix, that of the selected locale, at the start
 of all page links. E.g. `http://damian.geek.nz/en_NZ/about-me` would be the NZ English
@@ -39,11 +43,6 @@ localisations, or being a part of the contributing team, please see
  * Damian Mooyman - <https://github.com/tractorcow-farm/silverstripe-fluent>
  * Robbie Averill - <https://github.com/robbieaverill> Migrating to SilverStripe 4.0
  * Attribution to Michael (dAKirby309) for his metro translate icon - <http://dakirby309.deviantart.com/>
-
-## Requirements
-
- * SilverStripe 4.0.0 or above
- * PHP 7.1 or above
 
 ## Documentation
 
