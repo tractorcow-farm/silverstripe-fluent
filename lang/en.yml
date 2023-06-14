@@ -24,6 +24,9 @@ en:
     FILTERED_LOCALES: 'Display in the following locales'
     LOCALEFILTEREDHELP: 'This page is not visible in this locale'
     TAB_LOCALES: Locales
+    many_many_FilteredLocales: 'Filtered locales'
+  TractorCow\Fluent\Extension\FluentIsolatedExtension:
+    has_one_Locale: Locale
   TractorCow\Fluent\Extension\FluentSiteTreeExtension:
     LOCALECOPYANDPUBLISH: 'Copy & publish'
     LOCALECOPYTODRAFT: 'Copy to draft'
@@ -39,6 +42,30 @@ en:
     NOSOURCE: 'No source'
     NOTLOCALISED: 'Not localised'
     PUBLISHED: Published
+  TractorCow\Fluent\Extension\Traits\FluentAdminTrait:
+    ArchiveNotice: "Archived '{title}' and all of its localisations."
+    ClearAllNotice: "All localisations have been cleared for '{title}'."
+    CopyNotice: "Copied '{title}' to all other locales."
+    DeleteNotice: "Deleted '{title}' and all of its localisations."
+    HideNotice: "Record '{title}' is now hidden in {locale}"
+    Label_archiveFluent: 'Unpublish and Archive (all locales)'
+    Label_clearFluent: "Clear from all except '{title}'"
+    Label_copyFluent: "Copy '{title}' to other locales"
+    Label_deleteFluent: 'Delete (all locales)'
+    Label_hideFluent: "Hide from '{title}'"
+    Label_publishFluent: 'Save & Publish (all locales)'
+    Label_showFluent: "Show in '{title}'"
+    Label_unpublishFluent: 'Unpublish (all locales)'
+    Localisation: Localisation
+    PublishNotice: "Published '{title}' across all locales."
+    ShowNotice: "Record '{title}' is now visible in {locale}"
+    UnpublishNotice: "Unpublished '{title}' from all locales."
+  TractorCow\Fluent\Extension\Traits\FluentBadgeTrait:
+    BadgeInherited: 'Inherited from {locale}'
+    BadgeLocalised: 'Localised in {locale}'
+    BaggeInvisible: '{type} has no available content in {locale}, localise the {type} or provide a locale fallback'
+  TractorCow\Fluent\Extension\Traits\FluentObjectTrait:
+    TAB_LOCALISATION: Localisation
   TractorCow\Fluent\Forms\DeleteAllLocalesAction:
     Delete: 'Delete record in all locales'
   TractorCow\Fluent\Forms\DeleteLocaleAction:
@@ -63,7 +90,10 @@ en:
       one: 'A Domain'
       other: '{count} Domains'
     SINGULARNAME: Domain
-    UnsavedNotice: 'You can add locales once you''ve saved the domain.'
+    UnsavedNotice: "You can add locales once you've saved the domain."
+    db_Domain: Domain
+    has_many_Locales: Locales
+    has_one_DefaultLocale: 'Default locale'
   TractorCow\Fluent\Model\FallbackLocale:
     LOCALE: Locale
     PLURALNAME: 'Fallback Locales'
@@ -71,6 +101,9 @@ en:
       one: 'A Fallback Locale'
       other: '{count} Fallback Locales'
     SINGULARNAME: 'Fallback Locale'
+    db_Sort: Sort
+    has_one_Locale: Locale
+    has_one_Parent: Parent
   TractorCow\Fluent\Model\Locale:
     DEFAULT_NONE: (none)
     DOMAIN: Domain
@@ -88,13 +121,17 @@ en:
       one: 'A Locale'
       other: '{count} Locales'
     SINGULARNAME: Locale
+    TIMEZONE: Timezone
     USE_X_DEFAULT: 'Use {code} as SEO language code (treat as global)'
     USE_X_DEFAULT_DESCRIPTION: 'Use of this code indicates to search engines that this is a non-localised global landing page'
-    UnsavedNotice: 'You can add fallbacks once you''ve saved the locale.'
-  TractorCow\Fluent\Extension\Traits\FluentAdminTrait:
-    ClearAllNotice: 'All localisations have been cleared for ''{title}''.'
-    CopyNotice: 'Copied ''{title}'' to all other locales.'
-    DeleteNotice: 'Deleted ''{title}'' and all of its localisations.'
-    UnpublishNotice: 'Unpublished ''{title}'' from all locales.'
-    ArchiveNotice: 'Archived ''{title}'' and all of its localisations.'
-    PublishNotice: 'Published ''{title}'' across all locales.'
+    UnsavedNotice: "You can add fallbacks once you've saved the locale."
+    db_IsGlobalDefault: 'Is global default'
+    db_Locale: Locale
+    db_Sort: Sort
+    db_Timezone: Timezone
+    db_Title: Title
+    db_URLSegment: 'URL segment'
+    db_UseDefaultCode: 'Use default code'
+    has_many_FallbackLocales: 'Fallback locales'
+    has_one_Domain: Domain
+    many_many_Fallbacks: Fallbacks
