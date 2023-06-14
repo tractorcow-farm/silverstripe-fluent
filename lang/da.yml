@@ -24,6 +24,9 @@ da:
       other: '{count} domæner'
     SINGULARNAME: Domæne
     UnsavedNotice: 'Du kan tilføje sprog efter du har gemt domænet.'
+    db_Domain: Domæne
+    has_many_Locales: Sprog
+    has_one_DefaultLocale: 'Standard sprog'
   TractorCow\Fluent\Model\FallbackLocale:
     LOCALE: Sprog
     PLURALNAME: 'Fald-tilbage sprog'
@@ -31,6 +34,7 @@ da:
       one: 'Et fald-tilbage sprog'
       other: '{count} fald-tilbage sprog'
     SINGULARNAME: 'Fald-tilbage sprog'
+    has_one_Locale: Sprog
   TractorCow\Fluent\Model\Locale:
     DEFAULT_NONE: (none)
     DOMAIN: Domæne
@@ -46,5 +50,10 @@ da:
       other: '{count} sprog'
     SINGULARNAME: Sprog
     UnsavedNotice: 'Du kan tilføje fald-tilbage sprog når du har gemt dette sprog.'
+    db_Locale: Sprog
+    db_Title: Titel
+    has_one_Domain: Domæne
   TractorCow\Fluent\Forms\VisibleLocalesColumn:
     LocalesTitle: Sprog
+  TractorCow\Fluent\Extension\FluentIsolatedExtension:
+    has_one_Locale: Sprog

@@ -39,6 +39,9 @@ pl:
       other: 'Domeny {count}'
     SINGULARNAME: Domena
     UnsavedNotice: 'Po zapisaniu domeny możesz dodać języki.'
+    db_Domain: Domena
+    has_many_Locales: Języki
+    has_one_DefaultLocale: 'Domyślny język'
   TractorCow\Fluent\Model\FallbackLocale:
     LOCALE: Język
     PLURALNAME: 'Język zastępczy'
@@ -48,6 +51,7 @@ pl:
       many: 'Języków zastępczych {count}'
       other: 'Język zastępczy {count}'
     SINGULARNAME: 'Język zastępczy'
+    has_one_Locale: Język
   TractorCow\Fluent\Model\Locale:
     DEFAULT_NONE: (brak)
     DOMAIN: Domena
@@ -70,6 +74,9 @@ pl:
     PERMISSION: 'Lokalizacja, język'
     USE_X_DEFAULT: 'Użyj {code} jako kodu języka SEO (traktuj jako globalny)'
     USE_X_DEFAULT_DESCRIPTION: 'Użycie tego kodu wskazuje wyszukiwarkom, że jest to nie-określona globalna strona docelowa'
+    db_Locale: Język
+    db_Title: Tytuł
+    has_one_Domain: Domena
   SilverStripe\CMS\Controllers\CMSMain:
     ARCHIVE: Archiwum
   SilverStripe\CMS\Model\SiteTree:
@@ -104,3 +111,10 @@ pl:
     UnpublishNotice: 'Nieopublikowany „{title}” we wszystkich językach.'
     ArchiveNotice: 'Zarchiwizowany „{title}” i wszystkie jego lokalizacje.'
     PublishNotice: 'Opublikowano „{title}” we wszystkich lokalizacjach.'
+    Localisation: 'Lokalizacja, język'
+  TractorCow\Fluent\Extension\FluentIsolatedExtension:
+    has_one_Locale: Język
+  TractorCow\Fluent\Extension\Traits\FluentBadgeTrait:
+    BadgeLocalised: 'Przetłumaczono w {locale}'
+  TractorCow\Fluent\Extension\Traits\FluentObjectTrait:
+    TAB_LOCALISATION: 'Lokalizacja, język'

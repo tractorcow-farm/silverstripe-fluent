@@ -38,6 +38,9 @@ it:
       other: '{count} Domini'
     SINGULARNAME: Dominio
     UnsavedNotice: 'Puoi aggiungere lingue una volta salvato il dominio.'
+    db_Domain: Dominio
+    has_many_Locales: Lingue
+    has_one_DefaultLocale: 'Lingua predefinita'
   TractorCow\Fluent\Model\FallbackLocale:
     LOCALE: Lingua
     PLURALNAME: 'Lingue Alternative'
@@ -46,6 +49,7 @@ it:
       many: '{count} Lingue Alternative'
       other: '{count} Lingue Alternative'
     SINGULARNAME: 'Lingua Alternativa'
+    has_one_Locale: Lingua
   TractorCow\Fluent\Model\Locale:
     DEFAULT_NONE: (nessuna)
     DOMAIN: Dominio
@@ -67,6 +71,9 @@ it:
     PERMISSION: Localizzazione
     USE_X_DEFAULT: 'Usare {code} come codice lingua SEO (da considerare globale)'
     USE_X_DEFAULT_DESCRIPTION: 'L''uso di questo codice suggerisce ai motori di ricerca che questa è una pagina di destinazione globale non localizzata'
+    db_Locale: Lingua
+    db_Title: Titolo
+    has_one_Domain: Dominio
   SilverStripe\CMS\Controllers\CMSMain:
     ARCHIVE: Archivia
   SilverStripe\CMS\Model\SiteTree:
@@ -101,3 +108,10 @@ it:
     UnpublishNotice: '''{title}'' nascosto in tutte le lingue.'
     ArchiveNotice: 'Archiviato ''{title}'' e tutte le sue traduzioni.'
     PublishNotice: '''{title}'' pubblicato in tutte le lingue.'
+    Localisation: Localizzazione
+  TractorCow\Fluent\Extension\FluentIsolatedExtension:
+    has_one_Locale: Lingua
+  TractorCow\Fluent\Extension\Traits\FluentBadgeTrait:
+    BadgeLocalised: 'Tradotto in {locale}'
+  TractorCow\Fluent\Extension\Traits\FluentObjectTrait:
+    TAB_LOCALISATION: Localizzazione

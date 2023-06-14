@@ -39,6 +39,9 @@ sl:
       other: '{count} domen'
     SINGULARNAME: Domena
     UnsavedNotice: 'Lokalizacije boste lahko dodajali, ko boste shranili domeno.'
+    db_Domain: Domena
+    has_many_Locales: Lokalizacije
+    has_one_DefaultLocale: 'Privzeta lokalizacija'
   TractorCow\Fluent\Model\FallbackLocale:
     LOCALE: Lokalizacija
     PLURALNAME: 'Nadomestne lokalizacije'
@@ -48,6 +51,7 @@ sl:
       few: '{count} nadomestnih lokalizacij'
       other: '{count} nadomestnih lokalizacij'
     SINGULARNAME: 'Nadomestna lokalizacija'
+    has_one_Locale: Lokalizacija
   TractorCow\Fluent\Model\Locale:
     DEFAULT_NONE: (brez)
     DOMAIN: Domena
@@ -70,6 +74,9 @@ sl:
     PERMISSION: Lokalizacija
     USE_X_DEFAULT: 'Uporabi kot privzeto ({code}) jezikovno kodo za SEO'
     USE_X_DEFAULT_DESCRIPTION: 'S to izbiro boste iskalnikom nakazali, da je izbrana lokalizacija privzeta za vse situacije, ko specifična lokalizacija ni na voljo'
+    db_Locale: Lokalizacija
+    db_Title: Naziv
+    has_one_Domain: Domena
   SilverStripe\CMS\Controllers\CMSMain:
     ARCHIVE: Arhiv
   SilverStripe\CMS\Model\SiteTree:
@@ -104,3 +111,10 @@ sl:
     UnpublishNotice: 'Vse lokalizacije strani ''{title}'' so umaknjene iz objave.'
     ArchiveNotice: 'Stran ''{title}'' in njene lokalizacije so arhivirane.'
     PublishNotice: 'Vse lokalizacije strani ''{title}'' so objavljene.'
+    Localisation: Lokalizacija
+  TractorCow\Fluent\Extension\FluentIsolatedExtension:
+    has_one_Locale: Lokalizacija
+  TractorCow\Fluent\Extension\Traits\FluentBadgeTrait:
+    BadgeLocalised: 'Lokalizirano v {locale}'
+  TractorCow\Fluent\Extension\Traits\FluentObjectTrait:
+    TAB_LOCALISATION: Lokalizacija
