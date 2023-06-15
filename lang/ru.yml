@@ -9,10 +9,14 @@ ru:
     PLURALNAME: Домены
     SINGULARNAME: Домен
     UnsavedNotice: 'Вы можете добавить языки для домена как только его сохраните.'
+    db_Domain: Домен
+    has_many_Locales: Языки
+    has_one_DefaultLocale: 'Стандартный язык'
   TractorCow\Fluent\Model\FallbackLocale:
     LOCALE: Язык
     PLURALNAME: 'Резервные Языки'
     SINGULARNAME: 'Резервный Язык'
+    has_one_Locale: Язык
   TractorCow\Fluent\Model\Locale:
     DEFAULT_NONE: '(не выбран)'
     DOMAIN: Домен
@@ -24,6 +28,9 @@ ru:
     LOCALE_URL: URL-адрес
     PLURALNAME: Языки
     SINGULARNAME: Язык
+    db_Locale: Язык
+    db_Title: Название
+    has_one_Domain: Домен
   TractorCow\Fluent\Extension\FluentSiteTreeExtension:
     LOCALECOPYTODRAFT: 'Скопировать в Черновик'
     LOCALECOPYANDPUBLISH: 'Скопировать и опубликовать'
@@ -39,3 +46,5 @@ ru:
     TAB_LOCALES: Языки
   TractorCow\Fluent\Forms\VisibleLocalesColumn:
     LocalesTitle: Языки
+  TractorCow\Fluent\Extension\FluentIsolatedExtension:
+    has_one_Locale: Язык

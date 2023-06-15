@@ -37,6 +37,9 @@ nl:
       other: '{count} domeinnamen'
     SINGULARNAME: Domeinnaam
     UnsavedNotice: 'Na het opslaan van de taal kunnen er domeinnamen toegevoegd worden'
+    db_Domain: Domeinnaam
+    has_many_Locales: Talen
+    has_one_DefaultLocale: 'Standaard taal'
   TractorCow\Fluent\Model\FallbackLocale:
     LOCALE: Talen
     PLURALNAME: Terugval-taal
@@ -44,6 +47,7 @@ nl:
       one: Terugval-taal
       other: '{count} terugval-talen'
     SINGULARNAME: Terugval-taal
+    has_one_Locale: Talen
   TractorCow\Fluent\Model\Locale:
     DEFAULT_NONE: (geen)
     DOMAIN: Domeinnaam
@@ -53,7 +57,7 @@ nl:
     LOCALE: Talen
     LOCALE_TITLE: Titel
     LOCALE_URL: 'URL segment'
-    PLURALNAME: Vertalingen
+    PLURALNAME: Talen
     PLURALS:
       one: Taal
       other: '{count} Talen'
@@ -64,6 +68,9 @@ nl:
     PERMISSION: Vertalingen
     USE_X_DEFAULT: 'Gebruik {code} als SEO taalcode (als site-standaard)'
     USE_X_DEFAULT_DESCRIPTION: 'Het gebruik van deze code geeft aan zoekmachines aan dat dit een niet-vertaalde landingspagina is'
+    db_Locale: Talen
+    db_Title: Titel
+    has_one_Domain: Domeinnaam
   SilverStripe\CMS\Controllers\CMSMain:
     ARCHIVE: Archiveer
   SilverStripe\CMS\Model\SiteTree:
@@ -98,3 +105,10 @@ nl:
     UnpublishNotice: '''{title}'' is ge-depubliceerd bij alle talen.'
     ArchiveNotice: '''{title}'' is gearchiveerd bij alle talen'
     PublishNotice: '''{title}'' is gepubliceerd in alle talen.'
+    Localisation: Vertalingen
+  TractorCow\Fluent\Extension\FluentIsolatedExtension:
+    has_one_Locale: Talen
+  TractorCow\Fluent\Extension\Traits\FluentBadgeTrait:
+    BadgeLocalised: 'Vertaald in {locale}'
+  TractorCow\Fluent\Extension\Traits\FluentObjectTrait:
+    TAB_LOCALISATION: Vertalingen
