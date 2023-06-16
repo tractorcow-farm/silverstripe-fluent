@@ -1012,4 +1012,51 @@ SQL;
         // Internally store nulls as 0
         $this->versionsCache[$class][$stage][$locale][$key] = $value ?: 0;
     }
+    
+        /**
+     * If an object is duplicated also duplicate existing localised values from original to new object.
+     */
+    public function onAfterDuplicate($original, $doWrite, $relations): void
+    {
+        parent::onAfterDuplicate($original, $doWrite, $relations);
+
+        $localisedTables = $this->owner->getLocalisedTables();
+        foreach ($localisedTables as $tableName => $fields) {
+            // Target IDs
+            $fromID = $original->ID;
+            $toID = $this->owner->ID;
+
+            // Get localised table
+            $localisedTable = $this->getLocalisedTable($tableName) . self::SUFFIX_VERSIONS;
+
+            // Remove existing translation versions from duplicated object
+            DB::prepared_query("DELETE FROM \"$localisedTable\" WHERE \"RecordID\" = ?", [$toID]);
+
+            // Copy translations to duplicated object
+            $localisedFields = array_merge(['Locale', 'Version'], $fields);
+            $fields_str = '"' . implode('","', $localisedFields) . '"';
+
+            // Copy all versions of localised object
+            DB::prepared_query("INSERT INTO \"$localisedTable\" ( \"RecordID\", $fields_str)
+                    SELECT ? AS \"RecordID\", $fields_str
+                    FROM \"$localisedTable\"
+                    WHERE \"RecordID\" = ?", [$toID, $fromID]);
+
+            // Also copy versions of base record
+            $versionsTableName = $tableName . self::SUFFIX_VERSIONS;
+
+            // Remove existing versions from duplicated object, created by onBeforeWrite
+            DB::prepared_query("DELETE FROM \"$versionsTableName\" WHERE \"RecordID\" = ?", [$toID]);
+
+            // Copy all versions of base record, todo: optimize to only copy needed versions
+            $fields = DB::query("SELECT \"COLUMN_NAME\" FROM \"INFORMATION_SCHEMA\".\"COLUMNS\" WHERE \"TABLE_NAME\" = '$versionsTableName' AND \"COLUMN_NAME\" NOT IN('ID','RecordID')");
+            $fields_str = '"' . implode('","', $fields->column()) . '"';
+            DB::prepared_query("INSERT INTO \"$versionsTableName\" ( \"RecordID\", $fields_str)
+                    SELECT ? AS \"RecordID\", $fields_str
+                    FROM \"$versionsTableName\"
+                    WHERE \"RecordID\" = ?", [$toID, $fromID]);
+
+        }
+    }
+    
 }
