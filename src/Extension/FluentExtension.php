@@ -629,6 +629,32 @@ class FluentExtension extends DataExtension
     {
         $this->handleClassChanged();
     }
+    
+    /**
+     * If an object is duplicated also duplicate existing localised values from original to new object.
+     */
+    public function onAfterDuplicate($original, $doWrite, $relations): void
+    {
+        $localisedTables = $this->owner->getLocalisedTables();
+        foreach ($localisedTables as $tableName => $fields) {
+            // Target IDs
+            $fromID = $original->ID;
+            $toID = $this->owner->ID;
+
+            // Get localised table
+            $localisedTable = $this->getLocalisedTable($tableName);
+
+            // Remove existing translations from duplicated object
+            DB::prepared_query("DELETE FROM \"$localisedTable\" WHERE \"RecordID\" = ?", [$toID]);
+
+            // Copy translations to duplicated object
+            $fields_str = '"' . implode('","', $fields) . '"';
+            DB::prepared_query("INSERT INTO \"$localisedTable\" ( \"RecordID\", \"Locale\", $fields_str)
+                    SELECT ? AS \"RecordID\", \"Locale\", $fields_str
+                    FROM \"$localisedTable\"
+                    WHERE \"RecordID\" = ?", [$toID, $fromID]);
+        }
+    }
 
     /**
      * If an object is changed to another class, we should trigger localised copy
