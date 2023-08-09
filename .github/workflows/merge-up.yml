@@ -1,0 +1,17 @@
+name: Merge-up
+
+on:
+  # At 12:05 AM UTC, only on Tuesday
+  schedule:
+    - cron: '5 0 * * 2'
+  workflow_dispatch:
+
+jobs:
+  merge-up:
+    name: Merge-up
+    # Only run cron on the tractorcow-farm account
+    if: (github.event_name == 'schedule' && github.repository_owner == 'tractorcow-farm') || (github.event_name != 'schedule')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Merge-up
+        uses: silverstripe/gha-merge-up@v1

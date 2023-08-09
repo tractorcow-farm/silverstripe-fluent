@@ -1,0 +1,17 @@
+name: Keepalive
+
+on:
+  # At 12:05 AM UTC, on day 20 of the month
+  schedule:
+    - cron: '5 0 20 * *'
+  workflow_dispatch:
+
+jobs:
+  keepalive:
+    name: Keepalive
+    # Only run cron on the tractorcow-farm account
+    if: (github.event_name == 'schedule' && github.repository_owner == 'tractorcow-farm') || (github.event_name != 'schedule')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Keepalive
+        uses: silverstripe/gha-keepalive@v1
