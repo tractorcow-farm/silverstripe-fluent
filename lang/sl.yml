@@ -1,4 +1,9 @@
 sl:
+  SilverStripe\CMS\Controllers\CMSMain:
+    ARCHIVE: Arhiv
+  SilverStripe\CMS\Model\SiteTree:
+    BUTTONPUBLISHED: Objavljeno
+    BUTTONSAVEPUBLISH: Objavi
   TractorCow\Fluent\Control\LocaleAdmin:
     MENUTITLE: Lokalizacije
   TractorCow\Fluent\Extension\FluentBadgeExtension:
@@ -6,9 +11,9 @@ sl:
     BadgeInvisible: 'Lokalizirano v {locale}'
     BadgeLocalised: 'Tip {type} je skrit za to lokalizacijo'
   TractorCow\Fluent\Extension\FluentExtension:
-    FLUENT_ICON_TOOLTIP: 'Lokalizirano polje'
     COPY_FROM: 'Kopiraj v {locale} iz: '
     COPY_TO: 'Kopiraj iz {locale} v:'
+    FLUENT_ICON_TOOLTIP: 'Lokalizirano polje'
     LOCALISED: Lokalizirano
     Localise: Lokaliziraj
     NOSOURCE: (brez)
@@ -19,6 +24,8 @@ sl:
     FILTERED_LOCALES: 'Prikaži te lokalizacije'
     LOCALEFILTEREDHELP: 'Stran za to lokalizacijo ni vidna'
     TAB_LOCALES: Lokalizacije
+  TractorCow\Fluent\Extension\FluentIsolatedExtension:
+    has_one_Locale: Lokalizacija
   TractorCow\Fluent\Extension\FluentSiteTreeExtension:
     LOCALECOPYANDPUBLISH: 'Kopiraj in objavi'
     LOCALECOPYTODRAFT: 'Kopiraj v osnutek'
@@ -26,62 +33,6 @@ sl:
     LOCALESTATUSFLUENTINHERITED: 'Stran lahko prevzema vsebino iz druge lokalizacije. Če želite ustvariti nepovezano kopijo strani, uporabite eno od akcij kopiranja, ki so na voljo.'
     LOCALESTATUSFLUENTINVISIBLE: 'Stran ne bo vidna dokler ne bo objavljena za to lokalizacijo.'
     LOCALESTATUSFLUENTUNKNOWN: 'Vsebina za to stran ne obstaja. Lokalizirajte vsebino ali definirajte nadomestno lokalizacijo.'
-  TractorCow\Fluent\Model\Domain:
-    DEFAULT: 'Privzeta lokalizacija'
-    DEFAULT_NONE: (brez)
-    DOMAIN_HOSTNAME: 'Domensko ime gostitelja / hostname'
-    DOMAIN_LOCALES: Lokalizacije
-    PLURALNAME: Domene
-    PLURALS:
-      one: Domena
-      two: '{count} domeni'
-      few: '{count} domen'
-      other: '{count} domen'
-    SINGULARNAME: Domena
-    UnsavedNotice: 'Lokalizacije boste lahko dodajali, ko boste shranili domeno.'
-    db_Domain: Domena
-    has_many_Locales: Lokalizacije
-    has_one_DefaultLocale: 'Privzeta lokalizacija'
-  TractorCow\Fluent\Model\FallbackLocale:
-    LOCALE: Lokalizacija
-    PLURALNAME: 'Nadomestne lokalizacije'
-    PLURALS:
-      one: 'Nadomestna lokalizacija'
-      two: '{count} nadomestni lokalizaciji'
-      few: '{count} nadomestnih lokalizacij'
-      other: '{count} nadomestnih lokalizacij'
-    SINGULARNAME: 'Nadomestna lokalizacija'
-    has_one_Locale: Lokalizacija
-  TractorCow\Fluent\Model\Locale:
-    DEFAULT_NONE: (brez)
-    DOMAIN: Domena
-    FALLBACKS: 'Nadomestne lokalizacije'
-    IS_DEFAULT: 'Privzeta (osnovna) lokalizacija'
-    IS_DEFAULT_DESCRIPTION: 'Nastavitev, ki je z izbirnikom ''Domena'' vezana na posamezno domeno, bo za tisto domeno prevladala nad splošno.'
-    LOCALE: Lokalizacija
-    LOCALE_TITLE: Naziv
-    LOCALE_URL: 'URL predpona'
-    PLURALNAME: Lokalizacije
-    PLURALS:
-      one: Lokalizacija
-      two: '{count} lokalizaciji'
-      few: '{count} lokalizacij/e'
-      other: '{count} lokalizacij/e'
-    SINGULARNAME: Lokalizacija
-    UnsavedNotice: 'Nadomestne lokalizacije boste lahko dodali, ko boste shranili trenutno lokalizacijo.'
-    EDIT_LOCALE: 'Dostop do "{title}" ({locale})'
-    MULTI_LOCALE: 'Dostop do paketnega urejanja lokalizacij, npr. shrani vse lokalizacije.'
-    PERMISSION: Lokalizacija
-    USE_X_DEFAULT: 'Uporabi kot privzeto ({code}) jezikovno kodo za SEO'
-    USE_X_DEFAULT_DESCRIPTION: 'S to izbiro boste iskalnikom nakazali, da je izbrana lokalizacija privzeta za vse situacije, ko specifična lokalizacija ni na voljo'
-    db_Locale: Lokalizacija
-    db_Title: Naziv
-    has_one_Domain: Domena
-  SilverStripe\CMS\Controllers\CMSMain:
-    ARCHIVE: Arhiv
-  SilverStripe\CMS\Model\SiteTree:
-    BUTTONPUBLISHED: Objavljeno
-    BUTTONSAVEPUBLISH: Objavi
   TractorCow\Fluent\Extension\FluentVersionedExtension:
     DRAFT: Osnutek
     LIVENO: Ne
@@ -90,6 +41,18 @@ sl:
     NOSOURCE: (brez)
     NOTLOCALISED: 'Ni lokalizirano'
     PUBLISHED: Objavljeno
+  TractorCow\Fluent\Extension\Traits\FluentAdminTrait:
+    ArchiveNotice: 'Stran ''{title}'' in njene lokalizacije so arhivirane.'
+    ClearAllNotice: 'Vse lokalizacije strani ''{title}'' so odstranjene.'
+    CopyNotice: 'Stran ''{title}'' je skopirana v vse ostale lokalizacije.'
+    DeleteNotice: 'Stran ''{title}'' je izbrisana in vse lokalizacije odstranjene.'
+    Localisation: Lokalizacija
+    PublishNotice: 'Vse lokalizacije strani ''{title}'' so objavljene.'
+    UnpublishNotice: 'Vse lokalizacije strani ''{title}'' so umaknjene iz objave.'
+  TractorCow\Fluent\Extension\Traits\FluentBadgeTrait:
+    BadgeLocalised: 'Lokalizirano v {locale}'
+  TractorCow\Fluent\Extension\Traits\FluentObjectTrait:
+    TAB_LOCALISATION: Lokalizacija
   TractorCow\Fluent\Forms\DeleteAllLocalesAction:
     Delete: 'Izbriši zapise v vseh lokalizacijah'
   TractorCow\Fluent\Forms\DeleteLocaleAction:
@@ -104,17 +67,54 @@ sl:
     UNPUBLISH: 'Umakni iz objave'
   TractorCow\Fluent\Forms\VisibleLocalesColumn:
     LocalesTitle: Lokalizacije
-  TractorCow\Fluent\Extension\Traits\FluentAdminTrait:
-    ClearAllNotice: 'Vse lokalizacije strani ''{title}'' so odstranjene.'
-    CopyNotice: 'Stran ''{title}'' je skopirana v vse ostale lokalizacije.'
-    DeleteNotice: 'Stran ''{title}'' je izbrisana in vse lokalizacije odstranjene.'
-    UnpublishNotice: 'Vse lokalizacije strani ''{title}'' so umaknjene iz objave.'
-    ArchiveNotice: 'Stran ''{title}'' in njene lokalizacije so arhivirane.'
-    PublishNotice: 'Vse lokalizacije strani ''{title}'' so objavljene.'
-    Localisation: Lokalizacija
-  TractorCow\Fluent\Extension\FluentIsolatedExtension:
+  TractorCow\Fluent\Model\Domain:
+    DEFAULT: 'Privzeta lokalizacija'
+    DEFAULT_NONE: (brez)
+    DOMAIN_HOSTNAME: 'Domensko ime gostitelja / hostname'
+    DOMAIN_LOCALES: Lokalizacije
+    PLURALNAME: Domene
+    PLURALS:
+      few: '{count} domen'
+      one: Domena
+      other: '{count} domen'
+      two: '{count} domeni'
+    SINGULARNAME: Domena
+    UnsavedNotice: 'Lokalizacije boste lahko dodajali, ko boste shranili domeno.'
+    db_Domain: Domena
+    has_many_Locales: Lokalizacije
+    has_one_DefaultLocale: 'Privzeta lokalizacija'
+  TractorCow\Fluent\Model\FallbackLocale:
+    LOCALE: Lokalizacija
+    PLURALNAME: 'Nadomestne lokalizacije'
+    PLURALS:
+      few: '{count} nadomestnih lokalizacij'
+      one: 'Nadomestna lokalizacija'
+      other: '{count} nadomestnih lokalizacij'
+      two: '{count} nadomestni lokalizaciji'
+    SINGULARNAME: 'Nadomestna lokalizacija'
     has_one_Locale: Lokalizacija
-  TractorCow\Fluent\Extension\Traits\FluentBadgeTrait:
-    BadgeLocalised: 'Lokalizirano v {locale}'
-  TractorCow\Fluent\Extension\Traits\FluentObjectTrait:
-    TAB_LOCALISATION: Lokalizacija
+  TractorCow\Fluent\Model\Locale:
+    DEFAULT_NONE: (brez)
+    DOMAIN: Domena
+    EDIT_LOCALE: 'Dostop do "{title}" ({locale})'
+    FALLBACKS: 'Nadomestne lokalizacije'
+    IS_DEFAULT: 'Privzeta (osnovna) lokalizacija'
+    IS_DEFAULT_DESCRIPTION: 'Nastavitev, ki je z izbirnikom ''Domena'' vezana na posamezno domeno, bo za tisto domeno prevladala nad splošno.'
+    LOCALE: Lokalizacija
+    LOCALE_TITLE: Naziv
+    LOCALE_URL: 'URL predpona'
+    MULTI_LOCALE: 'Dostop do paketnega urejanja lokalizacij, npr. shrani vse lokalizacije.'
+    PERMISSION: Lokalizacija
+    PLURALNAME: Lokalizacije
+    PLURALS:
+      few: '{count} lokalizacij/e'
+      one: Lokalizacija
+      other: '{count} lokalizacij/e'
+      two: '{count} lokalizaciji'
+    SINGULARNAME: Lokalizacija
+    USE_X_DEFAULT: 'Uporabi kot privzeto ({code}) jezikovno kodo za SEO'
+    USE_X_DEFAULT_DESCRIPTION: 'S to izbiro boste iskalnikom nakazali, da je izbrana lokalizacija privzeta za vse situacije, ko specifična lokalizacija ni na voljo'
+    UnsavedNotice: 'Nadomestne lokalizacije boste lahko dodali, ko boste shranili trenutno lokalizacijo.'
+    db_Locale: Lokalizacija
+    db_Title: Naziv
+    has_one_Domain: Domena
