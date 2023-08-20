@@ -1,6 +1,23 @@
 ru:
   TractorCow\Fluent\Control\LocaleAdmin:
     MENUTITLE: Языки
+  TractorCow\Fluent\Extension\FluentBadgeExtension:
+    BadgeDefault: 'Стандартный язык'
+  TractorCow\Fluent\Extension\FluentFilteredExtension:
+    TAB_LOCALES: Языки
+  TractorCow\Fluent\Extension\FluentIsolatedExtension:
+    has_one_Locale: Язык
+  TractorCow\Fluent\Extension\FluentSiteTreeExtension:
+    LOCALECOPYANDPUBLISH: 'Скопировать и опубликовать'
+    LOCALECOPYTODRAFT: 'Скопировать в Черновик'
+    LOCALEDRAFTEDHELP: 'Черновая редакция перевода не опубликована'
+    LOCALEDRAFTEDSHORT: 'Язык в черновиках'
+    LOCALEINHERITEDHELP: 'Данные страницы унаследованы от резевного языка'
+    LOCALEINHERITEDSHORT: Унаследовано
+    LOCALESTATUSDRAFT: 'Черновая версия перевода была создана для этого языка, однако, опубликованное содержимое всё ещё на другом языке. Для публикации этого языка воспользуйтесь кнопкой "Сохранить и Опубликовать".'
+    LOCALESTATUSINHERITED: 'Данные страницы унаследованы от резевного языка. Если вы хотите сделать независимую копию страницы. Пожалуйста воскользуйтесь одной из кнопок "Скопировать".'
+  TractorCow\Fluent\Forms\VisibleLocalesColumn:
+    LocalesTitle: Языки
   TractorCow\Fluent\Model\Domain:
     DEFAULT: 'Стандартный язык'
     DEFAULT_NONE: '(не выбран)'
@@ -31,20 +48,3 @@ ru:
     db_Locale: Язык
     db_Title: Название
     has_one_Domain: Домен
-  TractorCow\Fluent\Extension\FluentSiteTreeExtension:
-    LOCALECOPYTODRAFT: 'Скопировать в Черновик'
-    LOCALECOPYANDPUBLISH: 'Скопировать и опубликовать'
-    LOCALEDRAFTEDSHORT: 'Язык в черновиках'
-    LOCALEDRAFTEDHELP: 'Черновая редакция перевода не опубликована'
-    LOCALEINHERITEDSHORT: Унаследовано
-    LOCALEINHERITEDHELP: 'Данные страницы унаследованы от резевного языка'
-    LOCALESTATUSINHERITED: 'Данные страницы унаследованы от резевного языка. Если вы хотите сделать независимую копию страницы. Пожалуйста воскользуйтесь одной из кнопок "Скопировать".'
-    LOCALESTATUSDRAFT: 'Черновая версия перевода была создана для этого языка, однако, опубликованное содержимое всё ещё на другом языке. Для публикации этого языка воспользуйтесь кнопкой "Сохранить и Опубликовать".'
-  TractorCow\Fluent\Extension\FluentBadgeExtension:
-    BadgeDefault: 'Стандартный язык'
-  TractorCow\Fluent\Extension\FluentFilteredExtension:
-    TAB_LOCALES: Языки
-  TractorCow\Fluent\Forms\VisibleLocalesColumn:
-    LocalesTitle: Языки
-  TractorCow\Fluent\Extension\FluentIsolatedExtension:
-    has_one_Locale: Язык

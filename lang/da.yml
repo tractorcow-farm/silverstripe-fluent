@@ -9,10 +9,14 @@ da:
     FILTERED_LOCALES: 'Vis i følgende sprog'
     LOCALEFILTEREDHELP: 'Denne side er ikke synlig på dette sprog'
     TAB_LOCALES: Sprog
+  TractorCow\Fluent\Extension\FluentIsolatedExtension:
+    has_one_Locale: Sprog
   TractorCow\Fluent\Extension\FluentSiteTreeExtension:
     LOCALECOPYANDPUBLISH: 'Kopier & udgiv'
     LOCALECOPYTODRAFT: 'Kopier til kladde'
     LOCALESTATUSFLUENTINVISIBLE: 'Denne side er ikke synlig på dette sprog indtil den er tilføjet og udgivet.'
+  TractorCow\Fluent\Forms\VisibleLocalesColumn:
+    LocalesTitle: Sprog
   TractorCow\Fluent\Model\Domain:
     DEFAULT: 'Standard sprog'
     DEFAULT_NONE: (ingen)
@@ -53,7 +57,3 @@ da:
     db_Locale: Sprog
     db_Title: Titel
     has_one_Domain: Domæne
-  TractorCow\Fluent\Forms\VisibleLocalesColumn:
-    LocalesTitle: Sprog
-  TractorCow\Fluent\Extension\FluentIsolatedExtension:
-    has_one_Locale: Sprog
