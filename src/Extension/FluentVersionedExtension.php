@@ -1012,8 +1012,8 @@ SQL;
         // Internally store nulls as 0
         $this->versionsCache[$class][$stage][$locale][$key] = $value ?: 0;
     }
-    
-        /**
+
+    /**
      * If an object is duplicated also duplicate existing localised values from original to new object.
      */
     public function onAfterDuplicate($original, $doWrite, $relations): void
@@ -1055,8 +1055,6 @@ SQL;
                     SELECT ? AS \"RecordID\", $fields_str
                     FROM \"$versionsTableName\"
                     WHERE \"RecordID\" = ?", [$toID, $fromID]);
-
         }
     }
-    
 }
