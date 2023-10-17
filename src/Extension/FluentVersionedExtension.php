@@ -928,11 +928,11 @@ SQL;
             ? sprintf(' AND "BaseTable"."RecordID" IN (%s)', DB::placeholders($ids))
             : '';
 
-        $sql = 'SELECT "BaseTable"."RecordID" as "LatestID", MAX("%1$s"."Version") as "LatestVersion" FROM "%2$s" AS "BaseTable"'
+        $sql = 'SELECT "BaseTable"."RecordID", MAX("%1$s"."Version") as "LatestVersion" FROM "%2$s" AS "BaseTable"'
             . ' INNER JOIN "%1$s" ON "BaseTable"."RecordID" = "%1$s"."RecordID" AND "%1$s"."Locale" = ?'
             . ' INNER JOIN "%3$s" ON "%3$s"."RecordID" = "%1$s"."RecordID" AND "%3$s"."Version" = "%1$s"."Version"'
             . ' WHERE "BaseTable"."Locale" = ?%4$s%5$s'
-            . ' GROUP BY "LatestID"';
+            . ' GROUP BY "BaseTable"."RecordID"';
 
         $query = sprintf(
             $sql,
@@ -950,7 +950,7 @@ SQL;
         $versions = [];
 
         foreach ($results as $result) {
-            $id = (int) $result['LatestID'];
+            $id = (int) $result['RecordID'];
             $version = (int) $result['LatestVersion'];
 
             $versions[$id] = $version;
