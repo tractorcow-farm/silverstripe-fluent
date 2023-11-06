@@ -5,7 +5,7 @@ nl:
     BUTTONPUBLISHED: Gepubliceerd
     BUTTONSAVEPUBLISH: Publiceer
   TractorCow\Fluent\Control\LocaleAdmin:
-    MENUTITLE: Vertalingen
+    MENUTITLE: Talen
   TractorCow\Fluent\Extension\FluentBadgeExtension:
     BadgeDefault: 'Standaard taal'
     BadgeInvisible: 'Vertaald in {locale}'
