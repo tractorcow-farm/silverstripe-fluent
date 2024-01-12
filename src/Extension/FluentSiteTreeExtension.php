@@ -27,7 +27,7 @@ if (!class_exists(SiteTree::class)) {
 /**
  * Fluent extension for SiteTree
  *
- * @property FluentSiteTreeExtension|SiteTree $owner
+ * @extends FluentVersionedExtension<SiteTree&static>
  */
 class FluentSiteTreeExtension extends FluentVersionedExtension
 {

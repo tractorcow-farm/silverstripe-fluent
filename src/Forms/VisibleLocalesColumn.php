@@ -68,7 +68,6 @@ class VisibleLocalesColumn implements GridField_ColumnProvider
         }
 
         $label = '';
-        /** @var Locale $locale */
         foreach (Locale::getLocales() as $locale) {
             $label .= $this->generateBadgeHTML($record, $locale);
         }

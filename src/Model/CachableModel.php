@@ -15,9 +15,8 @@ use SilverStripe\ORM\DB;
  */
 trait CachableModel
 {
-
     /**
-     * @return ArrayList|static[]
+     * @return ArrayList<static>
      */
     public static function getCached()
     {

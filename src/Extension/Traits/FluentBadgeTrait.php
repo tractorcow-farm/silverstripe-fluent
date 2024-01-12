@@ -42,7 +42,6 @@ trait FluentBadgeTrait
      */
     public function getBadge(DataObject $record)
     {
-        /** @var Locale $currentLocale */
         $currentLocale = Locale::getCurrentLocale();
         if (!$currentLocale) {
             return null;

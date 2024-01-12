@@ -14,7 +14,7 @@ use TractorCow\Fluent\Model\Locale;
 /**
  * Fluent extension for {@link \SilverStripe\Control\Director} to apply routing rules for locales
  *
- * @property Director $owner
+ * @extends Extension<Director>
  */
 class FluentDirectorExtension extends Extension
 {
@@ -138,7 +138,6 @@ class FluentDirectorExtension extends Extension
     {
         $queryParam = static::config()->get('query_param');
         $rules = [];
-        /** @var Locale $localeObj */
         foreach (Locale::getCached() as $localeObj) {
             $locale = $localeObj->getLocale();
             $url = $localeObj->getURLSegment();

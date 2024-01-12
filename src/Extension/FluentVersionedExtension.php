@@ -24,7 +24,8 @@ use TractorCow\Fluent\State\FluentState;
  * Important: If adding this to a custom object, this extension must be added AFTER the versioned extension.
  * Use yaml `after` to enforce this
  *
- * @property DataObject|FluentVersionedExtension $owner
+ * @template T of DataObject&Versioned
+ * @extends FluentExtension<T&static>
  */
 class FluentVersionedExtension extends FluentExtension implements Resettable
 {
@@ -156,7 +157,6 @@ class FluentVersionedExtension extends FluentExtension implements Resettable
      */
     public function augmentSQL(SQLSelect $query, DataQuery $dataQuery = null)
     {
-        /** @var Locale|null $locale */
         $locale = $this->getDataQueryLocale($dataQuery);
         if (!$locale) {
             return;
@@ -228,7 +228,6 @@ class FluentVersionedExtension extends FluentExtension implements Resettable
         $baseTable = $this->owner->baseTable();
 
         foreach ($locale->getChain() as $joinLocale) {
-            /** @var Locale $joinLocale */
             $joinAlias = $this->getLocalisedTable($tableName, $joinLocale->Locale);
             $versionTable = $baseTable . self::SUFFIX_VERSIONS;
 
@@ -386,7 +385,6 @@ class FluentVersionedExtension extends FluentExtension implements Resettable
      */
     public function stagesDifferInLocale($locale = null): bool
     {
-        /** @var DataObject|Versioned|FluentExtension|FluentVersionedExtension $record */
         $record = $this->owner;
         $id = $record->ID ?: $record->OldID;
         $class = get_class($record);
@@ -518,7 +516,6 @@ SQL;
     {
         static::$idsInLocaleCache = [];
 
-        /** @var FluentVersionedExtension $singleton */
         $singleton = singleton(static::class);
         $singleton->flushVersionsCache();
     }
@@ -575,7 +572,6 @@ SQL;
 
         // Populate both the draft and live stages
         foreach ($tables as $table) {
-            /** @var SQLSelect $select */
             $select = SQLSelect::create(
                 ['"RecordID"'],
                 '"' . $table . '"',

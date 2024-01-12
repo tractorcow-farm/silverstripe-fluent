@@ -17,8 +17,9 @@ use TractorCow\Fluent\Model\Locale;
 use TractorCow\Fluent\State\FluentState;
 
 /**
- * @property FluentFilteredExtension|DataObject $owner
  * @method DataList|Locale[] FilteredLocales()
+ *
+ * @extends DataExtension<DataObject&static>
  */
 class FluentFilteredExtension extends DataExtension
 {

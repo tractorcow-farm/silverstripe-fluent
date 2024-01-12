@@ -14,7 +14,7 @@ use TractorCow\Fluent\Extension\Traits\FluentAdminTrait;
 use TractorCow\Fluent\Extension\Traits\FluentBadgeTrait;
 
 /**
- * @property LeftAndMain $owner
+ * @extends Extension<LeftAndMain>
  */
 class FluentLeftAndMainExtension extends Extension
 {

@@ -130,8 +130,6 @@ class ConvertTranslatableTask extends BuildTask
                         ));
 
                         foreach ($instances as $instance) {
-                            /** @var DataObject $instance */
-
                             // Get the Locale column directly from the base table, since the SS ORM will not include it
                             $instanceLocale = SQLSelect::create()
                                 ->setFrom("\"{$baseTable}\"")

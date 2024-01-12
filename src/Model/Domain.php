@@ -83,7 +83,6 @@ class Domain extends DataObject
 
         // Don't show "Is Default" column, as this is not locale-specific default
         $localeConfig = GridFieldConfig_RelationEditor::create();
-        /** @var GridFieldDataColumns $detailRow */
         $detailRow = $localeConfig->getComponentByType(GridFieldDataColumns::class);
         $detailRow->setDisplayFields([
             'Title' => 'Title',
@@ -184,7 +183,7 @@ class Domain extends DataObject
     /**
      * Get locales for this domain
      *
-     * @return ArrayList|Locale[]
+     * @return ArrayList<Locale>
      */
     public function getLocales()
     {
