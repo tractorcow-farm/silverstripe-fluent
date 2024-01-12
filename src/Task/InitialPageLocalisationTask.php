@@ -37,7 +37,6 @@ class InitialPageLocalisationTask extends BuildTask
         $publish = (bool) $request->getVar('publish');
         $limit = (int) $request->getVar('limit');
 
-        /** @var Locale $globalLocale */
         $globalLocale = Locale::get()
             ->filter(['IsGlobalDefault' => 1])
             ->sort('ID', 'ASC')

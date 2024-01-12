@@ -16,8 +16,6 @@ use TractorCow\Fluent\State\FluentState;
 
 /**
  * Shared functionality between both FluentExtension and FluentFilteredExtension
- *
- * @property DataObject $owner
  */
 trait FluentObjectTrait
 {
@@ -41,7 +39,7 @@ trait FluentObjectTrait
     /**
      * Gets list of all Locale dataobjects, linked to this record
      *
-     * @return ArrayList|Locale[]
+     * @return ArrayList<Locale>
      * @see Locale::RecordLocale()
      */
     public function LinkedLocales()
@@ -90,7 +88,9 @@ trait FluentObjectTrait
      */
     protected function updateFluentCMSFields(FieldList $fields)
     {
-        if (!$this->owner->ID) {
+        /** @var DataObject $owner */
+        $owner = $this->owner;
+        if (!$owner->ID) {
             return;
         }
 
@@ -102,7 +102,6 @@ trait FluentObjectTrait
         // Generate gridfield for handling localisations
         $config = GridFieldConfig_Base::create();
 
-        /** @var GridFieldDataColumns $columns */
         $columns = $config->getComponentByType(GridFieldDataColumns::class);
         $summaryColumns = [
             'Title' => 'Title',
@@ -110,11 +109,11 @@ trait FluentObjectTrait
         ];
 
         // Let extensions override columns
-        $this->owner->extend('updateLocalisationTabColumns', $summaryColumns);
+        $owner->extend('updateLocalisationTabColumns', $summaryColumns);
         $columns->setDisplayFields($summaryColumns);
 
         // Let extensions override components
-        $this->owner->extend('updateLocalisationTabConfig', $config);
+        $owner->extend('updateLocalisationTabConfig', $config);
 
         // Add gridfield to tab / fields
         $gridField = GridField::create(

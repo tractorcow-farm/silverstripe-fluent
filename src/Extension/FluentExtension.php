@@ -46,7 +46,8 @@ use TractorCow\Fluent\State\FluentState;
  * - data_exclude
  * - data_include
  *
- * @property FluentExtension|DataObject $owner
+ * @template T of DataObject
+ * @extends DataExtension<T&static>
  */
 class FluentExtension extends DataExtension
 {
@@ -998,13 +999,12 @@ class FluentExtension extends DataExtension
     /**
      * Templatable list of all locale information for this record
      *
-     * @return ArrayList|RecordLocale[]
+     * @return ArrayList<RecordLocale>
      */
     public function Locales()
     {
         $data = [];
         foreach (Locale::getCached() as $localeObj) {
-            /** @var Locale $localeObj */
             $data[] = $this->owner->LocaleInformation($localeObj->getLocale());
         }
         return ArrayList::create($data);

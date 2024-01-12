@@ -60,7 +60,6 @@ class BrowserLocaleDetector implements LocaleDetector
         foreach ($prioritisedLocales as $priority => $parsedLocales) {
             foreach ($parsedLocales as $browserLocale) {
                 foreach ($locales as $localeObj) {
-                    /** @var Locale $localeObj */
                     if ($localeObj->isLocale($browserLocale)) {
                         return $localeObj;
                     }

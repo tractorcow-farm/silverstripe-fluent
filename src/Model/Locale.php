@@ -43,8 +43,8 @@ use TractorCow\Fluent\State\FluentState;
  * @property int $DomainID
  * @property bool $UseDefaultCode
  * @property string $Timezone
- * @method HasManyList|FallbackLocale[] FallbackLocales()
- * @method ManyManyList|Locale[] Fallbacks()
+ * @method HasManyList<FallbackLocale> FallbackLocales()
+ * @method ManyManyList<Locale> Fallbacks()
  * @method Domain Domain() Raw SQL Domain (unfiltered by domain mode)
  */
 class Locale extends DataObject implements PermissionProvider
@@ -128,7 +128,7 @@ class Locale extends DataObject implements PermissionProvider
     ];
 
     /**
-     * @var ArrayList
+     * @var ArrayList<Locale>
      */
     protected $chain = null;
 
@@ -486,7 +486,7 @@ class Locale extends DataObject implements PermissionProvider
      *
      * @param string|null|true $domain If provided, locales for the given domain will be returned.
      *                                 If true, then the current state domain will be used (if in domain mode).
-     * @return ArrayList|Locale[]
+     * @return ArrayList<Locale>
      */
     public static function getLocales($domain = null)
     {
@@ -516,7 +516,7 @@ class Locale extends DataObject implements PermissionProvider
     /**
      * Get chain of all locales that should be preferred when this locale is current
      *
-     * @return ArrayList
+     * @return ArrayList<Locale>
      */
     public function getChain()
     {
@@ -589,7 +589,7 @@ class Locale extends DataObject implements PermissionProvider
     /**
      * Get other locales that appear alongside this (including self)
      *
-     * @return ArrayList
+     * @return ArrayList<Locale>
      */
     public function getSiblingLocales()
     {

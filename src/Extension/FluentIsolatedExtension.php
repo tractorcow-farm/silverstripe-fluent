@@ -17,8 +17,9 @@ use TractorCow\Fluent\State\FluentState;
  * Note: You cannot use this extension on any object with the other fluent extensions
  *
  * @property int $LocaleID
- * @property FluentIsolatedExtension|DataObject $owner
  * @method Locale Locale()
+ *
+ * @extends DataExtension<DataObject&static>
  */
 class FluentIsolatedExtension extends DataExtension
 {

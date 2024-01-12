@@ -30,7 +30,6 @@ trait UsesDeletePolicy
         }
         $queriedTables = [];
 
-        /** @var DeletePolicy $policy */
         $policy = Injector::inst()->create(DeletePolicy::class, $this->owner);
         $policy->delete($this->owner);
     }

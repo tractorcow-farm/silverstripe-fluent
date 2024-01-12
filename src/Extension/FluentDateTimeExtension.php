@@ -8,7 +8,7 @@ use TractorCow\Fluent\Model\LocalDateTime;
 use TractorCow\Fluent\Model\Locale;
 
 /**
- * @property DBDatetime $owner
+ * @extends Extension<DBDatetime>
  */
 class FluentDateTimeExtension extends Extension
 {

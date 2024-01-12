@@ -12,7 +12,7 @@ use TractorCow\Fluent\State\FluentState;
 /**
  * Available since SilverStripe 4.3.x
  *
- * @property ReadVersions $owner
+ * @extends Extension<ReadVersions>
  */
 class FluentReadVersionsExtension extends Extension
 {

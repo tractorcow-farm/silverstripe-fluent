@@ -372,7 +372,6 @@ class RecordLocale extends ViewableData
             return $this->getLocaleObject();
         }
 
-        /** @var Locale $fallback */
         foreach ($this->getLocaleObject()->Fallbacks() as $fallback) {
             if (!$record->existsInLocale($fallback->Locale)) {
                 continue;

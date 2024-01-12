@@ -22,7 +22,8 @@ use TractorCow\Fluent\Forms\CopyLocaleAction;
  *
  * @see FluentSiteTreeExtension::updateSavePublishActions()
  * @see CopyLocaleAction::handleAction()
- * @property CMSMain $owner
+ *
+ * @extends Extension<CMSMain>
  */
 class FluentCMSMainExtension extends Extension
 {

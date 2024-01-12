@@ -8,7 +8,7 @@ use SilverStripe\Versioned\ChangeSetItem;
 /**
  * Adds locale-specific extensions to ChangeSet
  *
- * @property ChangeSetItem $owner
+ * @extends DataExtension<ChangeSetItem>
  */
 class FluentChangesExtension extends DataExtension
 {
@@ -26,7 +26,6 @@ class FluentChangesExtension extends DataExtension
         }
 
         // Mark any fluent object as modified if otherwise treated as null
-        /** @var ChangeSetItem $owner */
         $owner = $this->owner;
         foreach ($owner->Object()->getExtensionInstances() as $extension) {
             if ($extension instanceof FluentExtension) {

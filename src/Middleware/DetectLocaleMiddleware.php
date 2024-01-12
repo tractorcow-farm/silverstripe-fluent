@@ -286,7 +286,6 @@ class DetectLocaleMiddleware implements HTTPMiddleware
         // If the current domain has exactly one locale, the locale is non-ambiguous
         $locales = Locale::getCached()->filter('DomainID', $domainObj->ID);
         if ($locales->count() == 1) {
-            /** @var Locale $localeObject */
             $localeObject = $locales->first();
             if ($localeObject) {
                 return $localeObject->getLocale();
@@ -313,7 +312,6 @@ class DetectLocaleMiddleware implements HTTPMiddleware
             return null;
         }
 
-        /** @var LocaleDetector $detector */
         $detector = Injector::inst()->get(LocaleDetector::class);
         $localeObj = $detector->detectLocale($request);
         if ($localeObj) {
@@ -358,7 +356,6 @@ class DetectLocaleMiddleware implements HTTPMiddleware
         // If limited to one or more locales, check that the current locale is in
         // this list
         $allowedLocales = $member->getCMSAccessLocales();
-        /** @var Locale $firstAllowedLocale */
         $firstAllowedLocale = $allowedLocales->first();
         if ($firstAllowedLocale && !$allowedLocales->find('Locale', $state->getLocale())) {
             // Force state to the first allowed locale

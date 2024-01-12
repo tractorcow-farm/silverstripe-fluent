@@ -116,7 +116,6 @@ class CopyLocaleAction extends BaseAction
             throw new LogicException("Error loading locale");
         }
 
-        /** @var RecordLocale $fromRecordLocale */
         $fromRecordLocale = RecordLocale::create($record, $fromLocale);
         return $fromRecordLocale->IsDraft();
     }

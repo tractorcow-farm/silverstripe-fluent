@@ -5,11 +5,15 @@ namespace TractorCow\Fluent\Extension;
 use SilverStripe\ORM\ArrayList;
 use SilverStripe\ORM\DataExtension;
 use SilverStripe\Security\Group;
+use SilverStripe\Security\Member;
 use SilverStripe\Security\Member_GroupSet;
 use SilverStripe\Security\Permission;
 use TractorCow\Fluent\Model\Locale;
 use TractorCow\Fluent\State\FluentState;
 
+/**
+ * @extends DataExtension<Member>
+ */
 class FluentMemberExtension extends DataExtension
 {
     /**
@@ -46,7 +50,7 @@ class FluentMemberExtension extends DataExtension
     /**
      * Get list of locales that the user has CMS access in
      *
-     * @return Locale[]|ArrayList
+     * @return ArrayList<Locale>
      */
     public function getCMSAccessLocales()
     {
@@ -74,7 +78,6 @@ class FluentMemberExtension extends DataExtension
     protected function getLocalePermissionsForGroup(Group $group)
     {
         $localePermissions = [];
-        /** @var Permission $permission */
         foreach ($group->Permissions() as $permission) {
             $prefix = Locale::CMS_ACCESS_FLUENT_LOCALE;
             $begin = substr($permission->Code, 0, strlen($prefix));

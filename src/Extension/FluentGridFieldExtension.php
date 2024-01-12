@@ -18,7 +18,7 @@ use TractorCow\Fluent\Extension\Traits\FluentBadgeTrait;
 /**
  * Supports GridFieldDetailForm_ItemRequest with extra actions
  *
- * @property GridFieldDetailForm_ItemRequest $owner
+ * @extends Extension<GridFieldDetailForm_ItemRequest>
  */
 class FluentGridFieldExtension extends Extension
 {
