@@ -1,17 +1,16 @@
-name: Merge-up
+name: Dispatch CI
 
 on:
-  # At 8:40 PM UTC, only on Wednesday
+  # At 8:40 PM UTC, only on Saturday and Sunday
   schedule:
-    - cron: '40 20 * * 3'
-  workflow_dispatch:
+    - cron: '40 20 * * 6,0'
 
 jobs:
-  merge-up:
-    name: Merge-up
+  dispatch-ci:
+    name: Dispatch CI
     # Only run cron on the tractorcow-farm account
     if: (github.event_name == 'schedule' && github.repository_owner == 'tractorcow-farm') || (github.event_name != 'schedule')
     runs-on: ubuntu-latest
     steps:
-      - name: Merge-up
-        uses: silverstripe/gha-merge-up@v1
+      - name: Dispatch CI
+        uses: silverstripe/gha-dispatch-ci@v1

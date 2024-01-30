@@ -42,7 +42,9 @@
         "silverstripe/cms": "Localise pages"
     },
     "require-dev": {
-        "silverstripe/recipe-testing": "^3"
+        "silverstripe/recipe-testing": "^3",
+        "silverstripe/standards": "^1",
+        "phpstan/extension-installer": "^1.3"
     },
     "extra": {
         "branch-alias": {
