@@ -5,9 +5,9 @@ namespace TractorCow\Fluent\Extension;
 use SilverStripe\Forms\FieldList;
 use SilverStripe\Forms\GridField\GridFieldConfig;
 use SilverStripe\ORM\DataExtension;
-use SilverStripe\ORM\DataList;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\DataQuery;
+use SilverStripe\ORM\ManyManyList;
 use SilverStripe\ORM\Queries\SQLSelect;
 use SilverStripe\Versioned\Versioned;
 use TractorCow\Fluent\Extension\Traits\FluentObjectTrait;
@@ -17,7 +17,7 @@ use TractorCow\Fluent\Model\Locale;
 use TractorCow\Fluent\State\FluentState;
 
 /**
- * @method DataList|Locale[] FilteredLocales()
+ * @method ManyManyList<Locale> FilteredLocales()
  *
  * @extends DataExtension<DataObject&static>
  */
