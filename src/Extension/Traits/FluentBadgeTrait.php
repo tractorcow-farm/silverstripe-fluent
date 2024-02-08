@@ -76,7 +76,7 @@ trait FluentBadgeTrait
             // If the object has been localised in the current locale, show a "localised" state
             $badgeClasses[] = 'fluent-badge--default';
             $tooltip = _t(
-                __TRAIT__ . '.BadgeLocalised',
+                'FluentBadgeTrait.BadgeLocalised',
                 'Localised in {locale}',
                 [
                     'locale' => $locale->getTitle()
@@ -86,7 +86,7 @@ trait FluentBadgeTrait
             // If object is inheriting content from another locale show the source
             $badgeClasses[] = 'fluent-badge--localised';
             $tooltip = _t(
-                __TRAIT__ . '.BadgeInherited',
+                'FluentBadgeTrait.BadgeInherited',
                 'Inherited from {locale}',
                 [
                     'locale' => $info->getSourceLocale()->getTitle()
@@ -97,7 +97,7 @@ trait FluentBadgeTrait
             // by either localising or seting up a locale fallback
             $badgeClasses[] = 'fluent-badge--invisible';
             $tooltip = _t(
-                __TRAIT__ . '.BaggeInvisible',
+                'FluentBadgeTrait.BaggeInvisible',
                 '{type} has no available content in {locale}, localise the {type} or provide a locale fallback',
                 [
                     'type' => $record->i18n_singular_name(),
