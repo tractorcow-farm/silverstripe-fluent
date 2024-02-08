@@ -24,13 +24,14 @@ sl:
     FILTERED_LOCALES: 'Prikaži te lokalizacije'
     LOCALEFILTEREDHELP: 'Stran za to lokalizacijo ni vidna'
     TAB_LOCALES: Lokalizacije
+    many_many_FilteredLocales: 'Pofiltrirane lokalizacije'
   TractorCow\Fluent\Extension\FluentIsolatedExtension:
     has_one_Locale: Lokalizacija
   TractorCow\Fluent\Extension\FluentSiteTreeExtension:
     LOCALECOPYANDPUBLISH: 'Kopiraj in objavi'
     LOCALECOPYTODRAFT: 'Kopiraj v osnutek'
     LOCALESTATUSFLUENTDRAFT: 'Ustvarili smo osnutek strani za izbrano lokalizacijo, a je na strani lahko še vedno objavljena vsebina iz izvorne lokalizacije. Za objavo vsebine iz te lokalizacije kliknite "Kopiraj in objavi".'
-    LOCALESTATUSFLUENTINHERITED: 'Stran lahko prevzema vsebino iz druge lokalizacije. Če želite ustvariti nepovezano kopijo strani, uporabite eno od akcij kopiranja, ki so na voljo.'
+    LOCALESTATUSFLUENTINHERITED: 'Lahko, da je stran prevzela vsebino iz druge lokalizacije. Če želite ustvariti nepovezano kopijo strani, uporabite eno od akcij kopiranja, ki so na voljo.'
     LOCALESTATUSFLUENTINVISIBLE: 'Stran ne bo vidna dokler ne bo objavljena za to lokalizacijo.'
     LOCALESTATUSFLUENTUNKNOWN: 'Vsebina za to stran ne obstaja. Lokalizirajte vsebino ali definirajte nadomestno lokalizacijo.'
   TractorCow\Fluent\Extension\FluentVersionedExtension:
@@ -46,11 +47,23 @@ sl:
     ClearAllNotice: 'Vse lokalizacije strani ''{title}'' so odstranjene.'
     CopyNotice: 'Stran ''{title}'' je skopirana v vse ostale lokalizacije.'
     DeleteNotice: 'Stran ''{title}'' je izbrisana in vse lokalizacije odstranjene.'
+    HideNotice: 'Zapis ''{title}'' je sedaj skrit v {locale}'
+    Label_archiveFluent: 'Umakni iz objave in arhiviraj (vse lokalizacije)'
+    Label_clearFluent: 'Počisti iz vseh, razen iz ''{title}'''
+    Label_copyFluent: 'Skopiraj ''{title}'' v ostale lokalizacije'
+    Label_deleteFluent: 'Izbriši (vse lokalizacije)'
+    Label_hideFluent: 'Skrij iz ''{title}'''
+    Label_publishFluent: 'Shrani in objavi (vse lokalizacije)'
+    Label_showFluent: 'Prikazano v ''{title}'''
+    Label_unpublishFluent: 'Umakni iz objave (vse lokalizacije)'
     Localisation: Lokalizacija
     PublishNotice: 'Vse lokalizacije strani ''{title}'' so objavljene.'
+    ShowNotice: 'Zapis ''{title}'' je sedaj viden v {locale}'
     UnpublishNotice: 'Vse lokalizacije strani ''{title}'' so umaknjene iz objave.'
   TractorCow\Fluent\Extension\Traits\FluentBadgeTrait:
+    BadgeInherited: 'Preneseno iz {locale}'
     BadgeLocalised: 'Lokalizirano v {locale}'
+    BaggeInvisible: '{type} je brez vsebine v {locale}. Lokalizirajte {type} ali zagotovite nadomestno lokalizacijo.'
   TractorCow\Fluent\Extension\Traits\FluentObjectTrait:
     TAB_LOCALISATION: Lokalizacija
   TractorCow\Fluent\Forms\DeleteAllLocalesAction:
@@ -92,7 +105,9 @@ sl:
       other: '{count} nadomestnih lokalizacij'
       two: '{count} nadomestni lokalizaciji'
     SINGULARNAME: 'Nadomestna lokalizacija'
+    db_Sort: Razvrsti
     has_one_Locale: Lokalizacija
+    has_one_Parent: Nadrejena
   TractorCow\Fluent\Model\Locale:
     DEFAULT_NONE: (brez)
     DOMAIN: Domena
@@ -102,7 +117,7 @@ sl:
     IS_DEFAULT_DESCRIPTION: 'Nastavitev, ki je z izbirnikom ''Domena'' vezana na posamezno domeno, bo za tisto domeno prevladala nad splošno.'
     LOCALE: Lokalizacija
     LOCALE_TITLE: Naziv
-    LOCALE_URL: 'URL predpona'
+    LOCALE_URL: 'Predpona URL'
     MULTI_LOCALE: 'Dostop do paketnega urejanja lokalizacij, npr. shrani vse lokalizacije.'
     PERMISSION: Lokalizacija
     PLURALNAME: Lokalizacije
@@ -112,9 +127,17 @@ sl:
       other: '{count} lokalizacij/e'
       two: '{count} lokalizaciji'
     SINGULARNAME: Lokalizacija
+    TIMEZONE: 'Časovni pas'
     USE_X_DEFAULT: 'Uporabi kot privzeto ({code}) jezikovno kodo za SEO'
     USE_X_DEFAULT_DESCRIPTION: 'S to izbiro boste iskalnikom nakazali, da je izbrana lokalizacija privzeta za vse situacije, ko specifična lokalizacija ni na voljo'
     UnsavedNotice: 'Nadomestne lokalizacije boste lahko dodali, ko boste shranili trenutno lokalizacijo.'
+    db_IsGlobalDefault: 'Privzeta (globalna)'
     db_Locale: Lokalizacija
+    db_Sort: Razvrsti
+    db_Timezone: 'Časovni pas'
     db_Title: Naziv
+    db_URLSegment: 'Predpona URL'
+    db_UseDefaultCode: 'Uporabi privzeto kodo'
+    has_many_FallbackLocales: 'Nadomestne lokalizacije'
     has_one_Domain: Domena
+    many_many_Fallbacks: Nadomestne
