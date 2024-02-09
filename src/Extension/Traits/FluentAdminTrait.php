@@ -107,7 +107,7 @@ trait FluentAdminTrait
         // Add menu button
         $moreOptions = Tab::create(
             'FluentMenuOptions',
-            _t('FluentAdminTrait.Localisation', 'Localisation')
+            _t('TractorCow\Fluent\Extension\Traits\FluentAdminTrait.Localisation', 'Localisation')
         );
         $moreOptions->addExtraClass('popover-actions-simulate');
         $rootTabSet->push($moreOptions);
@@ -117,7 +117,7 @@ trait FluentAdminTrait
             FormAction::create(
                 'clearFluent',
                 _t(
-                    'FluentAdminTrait.Label_clearFluent',
+                    'TractorCow\Fluent\Extension\Traits\FluentAdminTrait.Label_clearFluent',
                     "Clear from all except '{title}'",
                     [
                         'title' => $locale->getTitle()
@@ -129,7 +129,7 @@ trait FluentAdminTrait
             FormAction::create(
                 'copyFluent',
                 _t(
-                    'FluentAdminTrait.Label_copyFluent',
+                    'TractorCow\Fluent\Extension\Traits\FluentAdminTrait.Label_copyFluent',
                     "Copy '{title}' to other locales",
                     [
                         'title' => $locale->getTitle()
@@ -144,7 +144,7 @@ trait FluentAdminTrait
                 FormAction::create(
                     'unpublishFluent',
                     _t(
-                        'FluentAdminTrait.Label_unpublishFluent',
+                        'TractorCow\Fluent\Extension\Traits\FluentAdminTrait.Label_unpublishFluent',
                         'Unpublish (all locales)'
                     )
                 )->addExtraClass('btn-secondary')
@@ -153,7 +153,7 @@ trait FluentAdminTrait
                 FormAction::create(
                     'archiveFluent',
                     _t(
-                        'FluentAdminTrait.Label_archiveFluent',
+                        'TractorCow\Fluent\Extension\Traits\FluentAdminTrait.Label_archiveFluent',
                         'Unpublish and Archive (all locales)'
                     )
                 )->addExtraClass('btn-outline-danger')
@@ -162,7 +162,7 @@ trait FluentAdminTrait
                 FormAction::create(
                     'publishFluent',
                     _t(
-                        'FluentAdminTrait.Label_publishFluent',
+                        'TractorCow\Fluent\Extension\Traits\FluentAdminTrait.Label_publishFluent',
                         'Save & Publish (all locales)'
                     )
                 )->addExtraClass('btn-primary')
@@ -172,7 +172,7 @@ trait FluentAdminTrait
                 FormAction::create(
                     'deleteFluent',
                     _t(
-                        'FluentAdminTrait.Label_deleteFluent',
+                        'TractorCow\Fluent\Extension\Traits\FluentAdminTrait.Label_deleteFluent',
                         'Delete (all locales)'
                     )
                 )->addExtraClass('btn-outline-danger')
@@ -187,7 +187,7 @@ trait FluentAdminTrait
                     FormAction::create(
                         'hideFluent',
                         _t(
-                            'FluentAdminTrait.Label_hideFluent',
+                            'TractorCow\Fluent\Extension\Traits\FluentAdminTrait.Label_hideFluent',
                             "Hide from '{title}'",
                             [
                                 'title' => $locale->getTitle()
@@ -200,7 +200,7 @@ trait FluentAdminTrait
                     FormAction::create(
                         'showFluent',
                         _t(
-                            'FluentAdminTrait.Label_showFluent',
+                            'TractorCow\Fluent\Extension\Traits\FluentAdminTrait.Label_showFluent',
                             "Show in '{title}'",
                             [
                                 'title' => $locale->getTitle()
@@ -256,7 +256,7 @@ trait FluentAdminTrait
         });
 
         $message = _t(
-            'FluentAdminTrait.ClearAllNotice',
+            'TractorCow\Fluent\Extension\Traits\FluentAdminTrait.ClearAllNotice',
             "All localisations have been cleared for '{title}'.",
             ['title' => $record->Title]
         );
@@ -302,7 +302,7 @@ trait FluentAdminTrait
         });
 
         $message = _t(
-            'FluentAdminTrait.CopyNotice',
+            'TractorCow\Fluent\Extension\Traits\FluentAdminTrait.CopyNotice',
             "Copied '{title}' to all other locales.",
             ['title' => $record->Title]
         );
@@ -336,7 +336,7 @@ trait FluentAdminTrait
         });
 
         $message = _t(
-            'FluentAdminTrait.UnpublishNotice',
+            'TractorCow\Fluent\Extension\Traits\FluentAdminTrait.UnpublishNotice',
             "Unpublished '{title}' from all locales.",
             ['title' => $record->Title]
         );
@@ -386,7 +386,7 @@ trait FluentAdminTrait
         $policy->delete($record);
 
         $message = _t(
-            'FluentAdminTrait.ArchiveNotice',
+            'TractorCow\Fluent\Extension\Traits\FluentAdminTrait.ArchiveNotice',
             "Archived '{title}' and all of its localisations.",
             ['title' => $record->Title]
         );
@@ -434,7 +434,7 @@ trait FluentAdminTrait
         $policy->delete($record);
 
         $message = _t(
-            'FluentAdminTrait.DeleteNotice',
+            'TractorCow\Fluent\Extension\Traits\FluentAdminTrait.DeleteNotice',
             "Deleted '{title}' and all of its localisations.",
             ['title' => $record->Title]
         );
@@ -478,7 +478,7 @@ trait FluentAdminTrait
         });
 
         $message = _t(
-            'FluentAdminTrait.PublishNotice',
+            'TractorCow\Fluent\Extension\Traits\FluentAdminTrait.PublishNotice',
             "Published '{title}' across all locales.",
             ['title' => $record->Title]
         );
@@ -508,7 +508,7 @@ trait FluentAdminTrait
         $record->FilteredLocales()->add($locale);
 
         $message = _t(
-            'FluentAdminTrait.ShowNotice',
+            'TractorCow\Fluent\Extension\Traits\FluentAdminTrait.ShowNotice',
             "Record '{title}' is now visible in {locale}",
             [
                 'title'  => $record->Title,
@@ -541,7 +541,7 @@ trait FluentAdminTrait
         $record->FilteredLocales()->remove($locale);
 
         $message = _t(
-            'FluentAdminTrait.HideNotice',
+            'TractorCow\Fluent\Extension\Traits\FluentAdminTrait.HideNotice',
             "Record '{title}' is now hidden in {locale}",
             [
                 'title'  => $record->Title,
