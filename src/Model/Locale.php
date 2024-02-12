@@ -23,7 +23,7 @@ use SilverStripe\ORM\ArrayList;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\DB;
 use SilverStripe\ORM\HasManyList;
-use SilverStripe\ORM\ManyManyList;
+use SilverStripe\ORM\ManyManyThroughList;
 use SilverStripe\Security\Member;
 use SilverStripe\Security\Permission;
 use SilverStripe\Security\PermissionProvider;
@@ -44,7 +44,7 @@ use TractorCow\Fluent\State\FluentState;
  * @property bool $UseDefaultCode
  * @property string $Timezone
  * @method HasManyList<FallbackLocale> FallbackLocales()
- * @method ManyManyList<Locale> Fallbacks()
+ * @method ManyManyThroughList<Locale> Fallbacks()
  * @method Domain Domain() Raw SQL Domain (unfiltered by domain mode)
  */
 class Locale extends DataObject implements PermissionProvider

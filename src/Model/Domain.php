@@ -21,7 +21,7 @@ use TractorCow\Fluent\State\FluentState;
 /**
  * @property string $Domain
  * @property int $DefaultLocaleID
- * @method HasManyList Locales()
+ * @method HasManyList<Locale> Locales()
  */
 class Domain extends DataObject
 {
