@@ -128,7 +128,7 @@ trait FluentObjectTrait
 
             $fields
                 ->fieldByName('Root.Locales')
-                ->setTitle(_t(__TRAIT__ . '.TAB_LOCALISATION', 'Localisation'));
+                ->setTitle(_t('TractorCow\Fluent\Extension\Traits\FluentObjectTrait.TAB_LOCALISATION', 'Localisation'));
         } else {
             $fields->push($gridField);
         }
