@@ -582,7 +582,11 @@ class FluentExtension extends DataExtension
 
             // Apply substitutions
             $localisedPredicate = str_replace($conditionSearch, $conditionReplace, $predicate);
-
+            
+            if (empty($localisedPredicate)) {
+                continue;
+            }
+            
             $where[$index] = [
                 $localisedPredicate => $parameters
             ];
