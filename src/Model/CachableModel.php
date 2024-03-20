@@ -9,6 +9,7 @@ use SilverStripe\ORM\ArrayList;
 use SilverStripe\ORM\Connect\DatabaseException;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\DB;
+use SilverStripe\Core\Environment;
 
 /**
  * Allows you to cache a full list of objects without multiple DB queries
@@ -76,6 +77,11 @@ trait CachableModel
             return false;
         }
 
+        // For performance reason, we may want to return early and not make a SHOW FULL FIELDS query
+        if (Environment::getEnv('SS_FLUENT_IGNORE_MISSING_FIELDS')) {
+            return true;
+        }
+        
         // if any of the tables don't have all fields mapped as table columns
         $dbFields = DB::field_list($table);
         if (!$dbFields) {
