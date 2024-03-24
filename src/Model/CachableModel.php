@@ -2,6 +2,7 @@
 
 namespace TractorCow\Fluent\Model;
 
+use SilverStripe\Control\HTTPRequest;
 use SilverStripe\Core\ClassInfo;
 use SilverStripe\Core\Config\Config;
 use SilverStripe\Core\Injector\Injector;
@@ -69,6 +70,13 @@ trait CachableModel
      */
     protected static function databaseIsReady()
     {
+        // Outside of dev/ don't actually do any checks, assume ready
+        /** @var HTTPRequest $request */
+        $request = Injector::inst()->get(HTTPRequest::class);
+        if (stripos($request->getURL(false), 'dev/') !== 0) {
+            return true;
+        }
+
         $object = DataObject::singleton(static::class);
 
         // if any of the tables aren't created in the database
