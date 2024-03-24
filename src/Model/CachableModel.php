@@ -71,10 +71,12 @@ trait CachableModel
     protected static function databaseIsReady()
     {
         // Outside of dev/ don't actually do any checks, assume ready
-        /** @var HTTPRequest $request */
-        $request = Injector::inst()->get(HTTPRequest::class);
-        if (stripos($request->getURL(false), 'dev/') !== 0) {
-            return true;
+        if (Injector::inst()->has(HTTPRequest::class)) {
+            /** @var HTTPRequest $request */
+            $request = Injector::inst()->get(HTTPRequest::class);
+            if (stripos($request->getURL(false), 'dev/') !== 0) {
+                return true;
+            }
         }
 
         $object = DataObject::singleton(static::class);
