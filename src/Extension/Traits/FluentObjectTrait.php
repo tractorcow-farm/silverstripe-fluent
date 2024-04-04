@@ -2,6 +2,10 @@
 
 namespace TractorCow\Fluent\Extension\Traits;
 
+use SilverStripe\Admin\CMSEditLinkExtension;
+use SilverStripe\Control\Controller;
+use SilverStripe\Control\Director;
+use SilverStripe\Core\Convert;
 use SilverStripe\Forms\FieldList;
 use SilverStripe\Forms\GridField\GridField;
 use SilverStripe\Forms\GridField\GridFieldConfig;
@@ -10,6 +14,7 @@ use SilverStripe\Forms\GridField\GridFieldDataColumns;
 use SilverStripe\ORM\ArrayList;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\DataQuery;
+use SilverStripe\ORM\FieldType\DBField;
 use SilverStripe\ORM\Queries\SQLSelect;
 use TractorCow\Fluent\Model\Locale;
 use TractorCow\Fluent\State\FluentState;
@@ -88,7 +93,7 @@ trait FluentObjectTrait
      */
     protected function updateFluentCMSFields(FieldList $fields)
     {
-        /** @var DataObject $owner */
+        /** @var DataObject|CMSEditLinkExtension $owner */
         $owner = $this->owner;
         if (!$owner->ID) {
             return;
@@ -107,6 +112,37 @@ trait FluentObjectTrait
             'Title' => 'Title',
             'Locale' => 'Locale'
         ];
+
+        // Augment Localisation tab with clickable locale links to allow easy navigation between model localisations
+        if ($owner->hasExtension(CMSEditLinkExtension::class)) {
+            $controller = Controller::has_curr() ? Controller::curr() : null;
+            $request = $controller?->getRequest();
+
+            // Pass getVars separately so we can process them later
+            $params = $request?->getVars() ?? [];
+
+            // This is to get URL only, getVars are not part of the URL
+            $url = $owner->CMSEditLink();
+            $url = Director::makeRelative($url);
+
+            $summaryColumns['Title'] = [
+                'title' => 'Title',
+                'callback' => function (Locale $object) use ($url, $params): ?DBField {
+                    if (!$object->RecordLocale()) {
+                        return null;
+                    }
+
+                    $recordLocale = $object->RecordLocale();
+                    $locale = $recordLocale->getLocale();
+                    $params['l'] = $locale;
+                    $localeLink = Controller::join_links($url, '?' . http_build_query($params));
+                    $localeTitle = Convert::raw2xml($recordLocale->getTitle());
+                    $render = sprintf('<a href="%s" target="_top">%s</a>', $localeLink, $localeTitle);
+
+                    return DBField::create_field('HTMLVarchar', $render);
+                }
+            ];
+        }
 
         // Let extensions override columns
         $owner->extend('updateLocalisationTabColumns', $summaryColumns);
