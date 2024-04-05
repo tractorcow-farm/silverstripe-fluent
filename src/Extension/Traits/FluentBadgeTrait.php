@@ -9,6 +9,7 @@ use TractorCow\Fluent\Extension\FluentExtension;
 use TractorCow\Fluent\Extension\FluentFilteredExtension;
 use TractorCow\Fluent\Model\Locale;
 use TractorCow\Fluent\Model\RecordLocale;
+use TractorCow\Fluent\State\FluentState;
 
 trait FluentBadgeTrait
 {
@@ -68,6 +69,15 @@ trait FluentBadgeTrait
         $extraProperties = []
     ) {
         $info = RecordLocale::create($record, $locale);
+        $sourceLocale = FluentState::singleton()->withState(
+            static function (FluentState $state) use ($info): ?Locale {
+                // We are currently in the CMS context, but we want to show to the content author
+                // what the data state is in the frontend context
+                $state->setIsFrontend(true);
+
+                return $info->getSourceLocale();
+            }
+        );
 
         // Build new badge
         $badgeClasses = ['badge', 'fluent-badge'];
@@ -81,14 +91,14 @@ trait FluentBadgeTrait
                     'locale' => $locale->getTitle()
                 ]
             );
-        } elseif ($info->getSourceLocale()) {
+        } elseif ($sourceLocale) {
             // If object is inheriting content from another locale show the source
             $badgeClasses[] = 'fluent-badge--localised';
             $tooltip = _t(
                 __TRAIT__ . '.BadgeInherited',
                 'Inherited from {locale}',
                 [
-                    'locale' => $info->getSourceLocale()->getTitle()
+                    'locale' => $sourceLocale->getTitle()
                 ]
             );
         } else {

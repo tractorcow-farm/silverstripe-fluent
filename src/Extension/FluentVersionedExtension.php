@@ -616,11 +616,21 @@ SQL;
         $summaryColumns['Source'] = [
             'title' => 'Source',
             'callback' => function (Locale $object) {
-                if (!$object->RecordLocale()) {
+                $localeInformation = $object->RecordLocale();
+
+                if (!$localeInformation) {
                     return '';
                 }
 
-                $sourceLocale = $object->RecordLocale()->getSourceLocale();
+                $sourceLocale = FluentState::singleton()->withState(
+                    static function (FluentState $state) use ($localeInformation): ?Locale {
+                        // We are currently in the CMS context, but we want to show to the content author
+                        // what the data state is in the frontend context
+                        $state->setIsFrontend(true);
+
+                        return $localeInformation->getSourceLocale();
+                    }
+                );
 
                 if ($sourceLocale) {
                     return $sourceLocale->getLongTitle();

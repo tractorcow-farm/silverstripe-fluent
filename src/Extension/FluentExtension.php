@@ -24,7 +24,6 @@ use SilverStripe\ORM\FieldType\DBVarchar;
 use SilverStripe\ORM\Queries\SQLConditionGroup;
 use SilverStripe\ORM\Queries\SQLSelect;
 use SilverStripe\ORM\ValidationException;
-use SilverStripe\Security\Permission;
 use SilverStripe\Versioned\Versioned;
 use SilverStripe\View\HTML;
 use TractorCow\Fluent\Extension\Traits\FluentObjectTrait;
@@ -582,11 +581,11 @@ class FluentExtension extends DataExtension
 
             // Apply substitutions
             $localisedPredicate = str_replace($conditionSearch, $conditionReplace, $predicate);
-            
+
             if (empty($localisedPredicate)) {
                 continue;
             }
-            
+
             $where[$index] = [
                 $localisedPredicate => $parameters
             ];
@@ -965,19 +964,24 @@ class FluentExtension extends DataExtension
         return Locale::getCurrentLocale();
     }
 
-
     /**
      * Returns the source locale that will display the content for this record
      *
      * @return Locale|null
      */
-    public function getSourceLocale()
+    public function getSourceLocale(): ?Locale
     {
-        $sourceLocale = $this->owner->getField('SourceLocale');
-        if ($sourceLocale) {
-            return Locale::getByLocale($sourceLocale);
+        $currentLocale = FluentState::singleton()->getLocale();
+
+        // We do not have any locales set up yet, so there is no source locale to find
+        if (!$currentLocale) {
+            return null;
         }
-        return Locale::getDefault();
+
+        $owner = $this->owner;
+        $localeInformation = $owner->LocaleInformation($currentLocale);
+
+        return $localeInformation->getSourceLocale();
     }
 
     /**
@@ -1265,11 +1269,21 @@ class FluentExtension extends DataExtension
         $summaryColumns['Source'] = [
             'title'    => 'Source',
             'callback' => function (Locale $object) {
-                if (!$object->RecordLocale()) {
+                $localeInformation = $object->RecordLocale();
+
+                if (!$localeInformation) {
                     return '';
                 }
 
-                $sourceLocale = $object->RecordLocale()->getSourceLocale();
+                $sourceLocale = FluentState::singleton()->withState(
+                    static function (FluentState $state) use ($localeInformation): ?Locale {
+                        // We are currently in the CMS context, but we want to show to the content author
+                        // what the data state is in the frontend context
+                        $state->setIsFrontend(true);
+
+                        return $localeInformation->getSourceLocale();
+                    }
+                );
 
                 if ($sourceLocale) {
                     return $sourceLocale->getLongTitle();

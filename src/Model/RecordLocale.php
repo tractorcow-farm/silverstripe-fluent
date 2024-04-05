@@ -276,7 +276,15 @@ class RecordLocale extends ViewableData
         // If frontend publishing is not required for localisation,
         // we need to check if record is published in the source locale
         if (!$inLocale && $record->config()->get('frontend_publish_required') !== FluentExtension::INHERITANCE_MODE_EXACT) {
-            $sourceLocale = $this->getSourceLocale();
+            $sourceLocale = FluentState::singleton()->withState(
+                function (FluentState $state): ?Locale {
+                    // We are currently in the CMS context, but we want to show to the content author
+                    // what the data state is in the frontend context
+                    $state->setIsFrontend(true);
+
+                    return $this->getSourceLocale();
+                }
+            );
 
             if (!$sourceLocale) {
                 // No source locale available
@@ -367,9 +375,23 @@ class RecordLocale extends ViewableData
     {
         /** @var DataObject|FluentExtension $record */
         $record = $this->getOriginalRecord();
+        $config = $record->config();
 
+        $isFrontend = FluentState::singleton()->getIsFrontend();
+        $inheritanceMode = $isFrontend
+            ? $config->get('frontend_publish_required')
+            : $config->get('cms_localisation_required');
+
+        // This model has localised data in the current locale so the current locale is also the source locale
         if ($record->existsInLocale($this->getLocale())) {
             return $this->getLocaleObject();
+        }
+
+        // This model requires localisation so fallback of any kind is not allowed
+        // hence the content can't come from another locale
+        // We don't have a source locale for such case
+        if ($inheritanceMode === FluentExtension::INHERITANCE_MODE_EXACT) {
+            return null;
         }
 
         foreach ($this->getLocaleObject()->Fallbacks() as $fallback) {
@@ -377,6 +399,7 @@ class RecordLocale extends ViewableData
                 continue;
             }
 
+            // We found a locale to fall back to, so this will be our source locale
             return $fallback;
         }
 
