@@ -125,23 +125,25 @@ trait FluentObjectTrait
             $url = $owner->CMSEditLink();
             $url = Director::makeRelative($url);
 
-            $summaryColumns['Title'] = [
-                'title' => 'Title',
-                'callback' => function (Locale $object) use ($url, $params): ?DBField {
-                    if (!$object->RecordLocale()) {
-                        return null;
+            if ($url) {
+                $summaryColumns['Title'] = [
+                    'title' => 'Title',
+                    'callback' => function (Locale $object) use ($url, $params): ?DBField {
+                        if (!$object->RecordLocale()) {
+                            return null;
+                        }
+
+                        $recordLocale = $object->RecordLocale();
+                        $locale = $recordLocale->getLocale();
+                        $params['l'] = $locale;
+                        $localeLink = Controller::join_links($url, '?' . http_build_query($params));
+                        $localeTitle = Convert::raw2xml($recordLocale->getTitle());
+                        $render = sprintf('<a href="%s" target="_top">%s</a>', $localeLink, $localeTitle);
+
+                        return DBField::create_field('HTMLVarchar', $render);
                     }
-
-                    $recordLocale = $object->RecordLocale();
-                    $locale = $recordLocale->getLocale();
-                    $params['l'] = $locale;
-                    $localeLink = Controller::join_links($url, '?' . http_build_query($params));
-                    $localeTitle = Convert::raw2xml($recordLocale->getTitle());
-                    $render = sprintf('<a href="%s" target="_top">%s</a>', $localeLink, $localeTitle);
-
-                    return DBField::create_field('HTMLVarchar', $render);
-                }
-            ];
+                ];
+            }
         }
 
         // Let extensions override columns
