@@ -34,6 +34,14 @@ class FluentFilteredExtension extends DataExtension
      */
     const SUFFIX = 'FilteredLocales';
 
+    /**
+     * Allow the filtered locale behaviour to be skipped for draft stage only
+     *
+     * @var bool
+     * @config
+     */
+    private static bool $apply_filtered_locales_to_stage = false;
+
     private static $many_many = [
         'FilteredLocales' => Locale::class,
     ];
