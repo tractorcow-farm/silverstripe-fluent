@@ -969,7 +969,7 @@ class FluentExtension extends DataExtension
      *
      * @return Locale|null
      */
-    public function getSourceLocale(): ?Locale
+    public function getSourceLocale()
     {
         $currentLocale = FluentState::singleton()->getLocale();
 
