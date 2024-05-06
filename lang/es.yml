@@ -1,0 +1,140 @@
+es:
+  SilverStripe\CMS\Controllers\CMSMain:
+    ARCHIVE: Archivar
+  SilverStripe\CMS\Model\SiteTree:
+    BUTTONPUBLISHED: Publicado
+    BUTTONSAVEPUBLISH: Publicar
+  TractorCow\Fluent\Control\LocaleAdmin:
+    MENUTITLE: 'Configuraciones regionales'
+  TractorCow\Fluent\Extension\FluentBadgeExtension:
+    BadgeDefault: 'Configuración regional por defecto'
+    BadgeInvisible: 'Localizado en {locale}'
+    BadgeLocalised: '{type} no es visible en esta configuración regional'
+  TractorCow\Fluent\Extension\FluentExtension:
+    COPY_FROM: 'Copiar a {locale} desde:'
+    COPY_TO: 'Copiar desde {locale} a:'
+    FLUENT_ICON_TOOLTIP: 'Campo traducible'
+    LOCALISED: Localizado
+    Localise: Localizar
+    NOSOURCE: 'Sin fuentes'
+    NOTLOCALISED: 'No localizado'
+    Unlocalise: Deslocalizar
+    UnlocaliseTooltip: 'Remover {name} de la configuración regional actual'
+  TractorCow\Fluent\Extension\FluentFilteredExtension:
+    FILTERED_LOCALES: 'Mostrar en las siguientes configuraciones regionales'
+    LOCALEFILTEREDHELP: 'Esta página no es visible en esta configuración regional'
+    TAB_LOCALES: 'Configuraciones regionales'
+    many_many_FilteredLocales: 'Configuraciones regionales filtradas'
+  TractorCow\Fluent\Extension\FluentIsolatedExtension:
+    has_one_Locale: 'Configuración regional'
+  TractorCow\Fluent\Extension\FluentSiteTreeExtension:
+    LOCALECOPYANDPUBLISH: 'Copiar y publicar'
+    LOCALECOPYTODRAFT: 'Copiar a borrador'
+    LOCALESTATUSFLUENTDRAFT: 'Un borrador ha sido creado para esta configuración local, sin embargo, el contenido publicado puede seguir siendo heredado de otra configuración regional. Para publicar este contenido para esta configuración regional, usa la acción "Guardar y publicar".'
+    LOCALESTATUSFLUENTINHERITED: 'El contenido de esta página puede estar heredando desde otra configuración regional. Si desea hacer una copia independiente de esta página, por favor use un de las acciones "Copiar" que se dan.'
+    LOCALESTATUSFLUENTINVISIBLE: 'Esta página no será visible en esta configuración local hasta que sea publicada.'
+    LOCALESTATUSFLUENTUNKNOWN: 'No hay contenido disponible para esta página. Por favor localize esta página o provea una configuración regional de respaldo.'
+  TractorCow\Fluent\Extension\FluentVersionedExtension:
+    DRAFT: Borrador
+    LIVENO: 'No'
+    LIVEYES: Sí
+    MODIFIED: Modificado
+    NOSOURCE: 'Sin fuentes'
+    NOTLOCALISED: 'No localizado'
+    PUBLISHED: Publicado
+  TractorCow\Fluent\Extension\Traits\FluentAdminTrait:
+    ArchiveNotice: '"{title}" y todas sus configuraciones regionales fueron archivadas.'
+    ClearAllNotice: "Todas las configuraciones regionales se han limpiado para '{title}'."
+    CopyNotice: "Copiar '{title}' a todas las demás configuraciones regionales."
+    DeleteNotice: "'{title}' y todas sus configuraciones regionales se borraron."
+    HideNotice: "El registro '{title}' ahora está oculto en {locale}"
+    Label_archiveFluent: 'Despublicar y Archivar (todas las configuraciones regionales)'
+    Label_clearFluent: "Limpiar de todos exceptos '{title}'"
+    Label_copyFluent: "Copiar '{title}' a otras configuraciones locales"
+    Label_deleteFluent: 'Borrar (todas las configuraciones locales)'
+    Label_hideFluent: "Esconder de '{title}'"
+    Label_publishFluent: 'Guardar y Publicar (todas las configuraciones locales)'
+    Label_showFluent: "Mostrar en '{title}'"
+    Label_unpublishFluent: 'Despublicar (todas las configuraciones locales)'
+    Localisation: Localización
+    PublishNotice: "Publicado '{title}' para todas las configuraciones regionales."
+    ShowNotice: "El registro '{title}' es ahora visible en {locale}"
+    UnpublishNotice: "Se despublicó '{title}' de todas las configuraciones regionales"
+  TractorCow\Fluent\Extension\Traits\FluentBadgeTrait:
+    BadgeInherited: 'Heredado de {locale}'
+    BadgeLocalised: 'Localizado en {locale}'
+    BaggeInvisible: '{type} no tiene contenido disponible en {locale}, localizar el {type} o proveer una configuración regional de respaldo'
+  TractorCow\Fluent\Extension\Traits\FluentObjectTrait:
+    TAB_LOCALISATION: Localización
+  TractorCow\Fluent\Forms\DeleteAllLocalesAction:
+    Delete: 'Borrar registro de todas las configuraciones locales'
+  TractorCow\Fluent\Forms\DeleteLocaleAction:
+    DELETE: 'Borrar en esta configuración local'
+  TractorCow\Fluent\Forms\LocaleToggleColumn:
+    DISPLAY_IN: '¿Es visible?'
+  TractorCow\Fluent\Forms\PublishAction:
+    PUBLISH: 'Publicar en esta configuración regional'
+  TractorCow\Fluent\Forms\SaveLocaleAction:
+    SAVE: 'Guardar en esta configuración regional'
+  TractorCow\Fluent\Forms\UnpublishAction:
+    UNPUBLISH: 'Despublicar de esta configuración regional'
+  TractorCow\Fluent\Forms\VisibleLocalesColumn:
+    LocalesTitle: 'Configuraciones regionales'
+  TractorCow\Fluent\Model\Domain:
+    DEFAULT: 'Configuración regional por defecto'
+    DEFAULT_NONE: (ninguno)
+    DOMAIN_HOSTNAME: 'Nombre del host de dominio'
+    DOMAIN_LOCALES: 'Configuraciones regionales'
+    PLURALNAME: Dominios
+    PLURALS:
+      many: '{count} dominios'
+      one: 'Un dominio'
+      other: '{count} dominios'
+    SINGULARNAME: Dominio
+    UnsavedNotice: 'Puede agregar configuraciones regionales una vez que guarde el dominio.'
+    db_Domain: Dominio
+    has_many_Locales: 'Configuraciones regionales'
+    has_one_DefaultLocale: 'Configuración regional por defecto'
+  TractorCow\Fluent\Model\FallbackLocale:
+    LOCALE: 'Configuración regional'
+    PLURALNAME: 'Configuraciones regionales de respaldo'
+    PLURALS:
+      many: '{} configuraciones regionales de respaldo'
+      one: 'Una configuración regional de respaldo'
+      other: '{} configuraciones regionales de respaldo'
+    SINGULARNAME: 'Configuración regional de respaldo'
+    db_Sort: Ordenar
+    has_one_Locale: 'Configuración regional'
+    has_one_Parent: Padre
+  TractorCow\Fluent\Model\Locale:
+    DEFAULT_NONE: (ninguno)
+    DOMAIN: Dominio
+    EDIT_LOCALE: 'Acceder "{title}" ({locale})'
+    FALLBACKS: 'Configuraciones regionales de respaldo'
+    IS_DEFAULT: 'Esta es la configuración regional por defecto global'
+    IS_DEFAULT_DESCRIPTION: 'Nota: la configuración regional específica por dominio puede ser asignada en la pestaña Configuraciones regionales y sobreescribirá este valor para dominios específicos.'
+    LOCALE: 'Configuración regional'
+    LOCALE_TITLE: Título
+    LOCALE_URL: 'Segmento de URL'
+    MULTI_LOCALE: 'Acceso a acciones en múltiples configuraciones regionales (Ejemplo: guardar en todas las configuraciones regionales)'
+    PERMISSION: Localización
+    PLURALNAME: 'Configuraciones regionales'
+    PLURALS:
+      many: '{count} configuraciones regionales'
+      one: 'Una configuración regional'
+      other: '{count} configuraciones regionales'
+    SINGULARNAME: 'Configuración regional'
+    TIMEZONE: 'Huso horario'
+    USE_X_DEFAULT: 'Usar {code} como código de lenguaje SEO (tratar como global)'
+    USE_X_DEFAULT_DESCRIPTION: 'El uso de este código indica a los motores de búsqueda que esta es una página de destino global sin localizar'
+    UnsavedNotice: 'Puede agregar respaldos una vez que guarde la configuración regional.'
+    db_IsGlobalDefault: 'Es por defecto global'
+    db_Locale: 'Configuración regional'
+    db_Sort: Ordenar
+    db_Timezone: 'Huso horario'
+    db_Title: Título
+    db_URLSegment: 'Segmento de URL'
+    db_UseDefaultCode: 'Usar código por defecto'
+    has_many_FallbackLocales: 'Configuraciones regionales de respaldo'
+    has_one_Domain: Dominio
+    many_many_Fallbacks: Respaldos
