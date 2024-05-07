@@ -2,9 +2,7 @@ da:
   TractorCow\Fluent\Control\LocaleAdmin:
     MENUTITLE: Sprog
   TractorCow\Fluent\Extension\FluentBadgeExtension:
-    BadgeDefault: ''
-    BadgeInvisible: ''
-    BadgeLocalised: ''
+    BadgeDefault: 'Standard sprog'
   TractorCow\Fluent\Extension\FluentExtension:
     FLUENT_ICON_TOOLTIP: 'Dette felt kan oversættes'
   TractorCow\Fluent\Extension\FluentFilteredExtension:
@@ -12,12 +10,14 @@ da:
     LOCALEFILTEREDHELP: 'Denne side er ikke synlig på dette sprog'
     LOCALEFILTEREDSHORT: Filteret
     TAB_LOCALES: Sprog
+  TractorCow\Fluent\Extension\FluentIsolatedExtension:
+    has_one_Locale: Sprog
   TractorCow\Fluent\Extension\FluentSiteTreeExtension:
     LOCALECOPYANDPUBLISH: 'Kopier & udgiv'
     LOCALECOPYTODRAFT: 'Kopier til kladde'
     LOCALESTATUSFLUENTINVISIBLE: 'Denne side er ikke synlig på dette sprog indtil den er tilføjet og udgivet.'
-    LOCALESTATUSFLUENTDRAFT: ''
-    LOCALESTATUSFLUENTINHERITED: ''
+  TractorCow\Fluent\Forms\VisibleLocalesColumn:
+    LocalesTitle: Sprog
   TractorCow\Fluent\Model\Domain:
     DEFAULT: 'Standard sprog'
     DEFAULT_NONE: (ingen)
@@ -29,6 +29,9 @@ da:
       other: '{count} domæner'
     SINGULARNAME: Domæne
     UnsavedNotice: 'Du kan tilføje sprog efter du har gemt domænet.'
+    db_Domain: Domæne
+    has_many_Locales: Sprog
+    has_one_DefaultLocale: 'Standard sprog'
   TractorCow\Fluent\Model\FallbackLocale:
     LOCALE: Sprog
     PLURALNAME: 'Fald-tilbage sprog'
@@ -36,18 +39,20 @@ da:
       one: 'Et fald-tilbage sprog'
       other: '{count} fald-tilbage sprog'
     SINGULARNAME: 'Fald-tilbage sprog'
+    has_one_Locale: Sprog
   TractorCow\Fluent\Model\Locale:
-    DEFAULT_NONE: (none)
     DOMAIN: Domæne
     FALLBACKS: 'Sprog at falde tilbage til'
     IS_DEFAULT: 'Dette er det globale standard sprog'
     IS_DEFAULT_DESCRIPTION: 'Bemærk: Per-domæne specifikke sprog can gives på Sprog fanen, og vil overskrive denne værdi for specifikke domæner.'
     LOCALE: Sprog
     LOCALE_TITLE: Titel
-    LOCALE_URL: 'URL Segment'
     PLURALNAME: Sprog
     PLURALS:
       one: 'Et sprog'
       other: '{count} sprog'
     SINGULARNAME: Sprog
     UnsavedNotice: 'Du kan tilføje fald-tilbage sprog når du har gemt dette sprog.'
+    db_Locale: Sprog
+    db_Title: Titel
+    has_one_Domain: Domæne
