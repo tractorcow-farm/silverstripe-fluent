@@ -78,7 +78,7 @@ use TractorCow\Fluent\Extension\FluentExtension;
 
 class PlayerExtension extends FluentExtension
 {
-    public function updateCMSFields(FieldList $fields)
+    protected function updateCMSFields(FieldList $fields)
     {
         $fields->removeByName('SomeIrrelevantField');
         parent::updateCMSFields($fields);
