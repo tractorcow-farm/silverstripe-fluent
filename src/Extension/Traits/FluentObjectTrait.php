@@ -25,14 +25,14 @@ trait FluentObjectTrait
      * @param $summaryColumns
      * @see FluentObjectTrait::updateFluentCMSFields()
      */
-    abstract public function updateLocalisationTabColumns(&$summaryColumns);
+    abstract protected function updateLocalisationTabColumns(&$summaryColumns);
 
     /**
      * Add additional configs to localisation table
      *
      * @param GridFieldConfig $config
      */
-    abstract public function updateLocalisationTabConfig(
+    abstract protected function updateLocalisationTabConfig(
         GridFieldConfig $config
     );
 
@@ -70,7 +70,7 @@ trait FluentObjectTrait
      * @param SQLSelect $query
      * @param DataQuery $dataQuery
      */
-    public function augmentDataQueryCreation(
+    protected function augmentDataQueryCreation(
         SQLSelect $query,
         DataQuery $dataQuery
     ) {

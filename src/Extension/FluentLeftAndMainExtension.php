@@ -31,7 +31,7 @@ class FluentLeftAndMainExtension extends Extension
      * @param ArrayList $breadcrumbs
      * @see CMSMain::Breadcrumbs()
      */
-    public function updateBreadcrumbs(ArrayList $breadcrumbs)
+    protected function updateBreadcrumbs(ArrayList $breadcrumbs)
     {
         $record = $this->owner->currentPage();
         if (!$record) {

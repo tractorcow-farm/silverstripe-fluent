@@ -200,7 +200,7 @@ class Domain extends DataObject
         return implode(', ', $this->getLocales()->column('Locale'));
     }
 
-    public function onBeforeWrite()
+    protected function onBeforeWrite()
     {
         parent::onBeforeWrite();
 

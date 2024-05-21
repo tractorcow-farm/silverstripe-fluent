@@ -230,7 +230,7 @@ class Locale extends DataObject implements PermissionProvider
      *
      * For example, you may want to display the full locale badge:
      * <code>
-     * public function updateBadgeLabel(&$badgeLabel)
+     * protected function updateBadgeLabel(&$badgeLabel)
      * {
      *     $badgeLabel = $this->owner->Locale;
      * }
@@ -499,7 +499,7 @@ class Locale extends DataObject implements PermissionProvider
         return Locale::getCached();
     }
 
-    public function onAfterWrite()
+    protected function onAfterWrite()
     {
         parent::onAfterWrite();
 

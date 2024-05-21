@@ -16,7 +16,7 @@ trait UsesDeletePolicy
      *
      * @param array $queriedTables
      */
-    public function updateDeleteTables(&$queriedTables)
+    protected function updateDeleteTables(&$queriedTables)
     {
         // Ensure a locale exists
         $locale = Locale::getCurrentLocale();

@@ -31,13 +31,13 @@ class FluentGridFieldExtension extends Extension
      * @param DBField|null $badgeField
      * @see VersionedGridFieldItemRequest::Breadcrumbs()
      */
-    public function updateBadge(&$badgeField)
+    protected function updateBadge(&$badgeField)
     {
         $record = $this->owner->getRecord();
         $badgeField = $this->addFluentBadge($badgeField, $record);
     }
 
-    public function updateFormActions(FieldList $actions)
+    protected function updateFormActions(FieldList $actions)
     {
         $this->updateFluentActions($actions, $this->owner->getRecord());
     }

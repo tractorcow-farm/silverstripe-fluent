@@ -164,7 +164,7 @@ class FluentSiteTreeExtension extends FluentVersionedExtension
      *
      * @param array $flags
      */
-    public function updateStatusFlags(&$flags)
+    protected function updateStatusFlags(&$flags)
     {
         // If there is no current FluentState, then we shouldn't update.
         if (!FluentState::singleton()->getLocale()) {
@@ -187,7 +187,7 @@ class FluentSiteTreeExtension extends FluentVersionedExtension
     /**
      * @param FieldList $fields
      */
-    public function updateCMSFields(FieldList $fields)
+    protected function updateCMSFields(FieldList $fields)
     {
         // If there is no current FluentState, then we shouldn't update.
         if (!FluentState::singleton()->getLocale()) {
@@ -202,7 +202,7 @@ class FluentSiteTreeExtension extends FluentVersionedExtension
     /**
      * @param FieldList $actions
      */
-    public function updateCMSActions(FieldList $actions)
+    protected function updateCMSActions(FieldList $actions)
     {
         // If there is no current FluentState, then we shouldn't update.
         if (!FluentState::singleton()->getLocale()) {
@@ -535,7 +535,7 @@ class FluentSiteTreeExtension extends FluentVersionedExtension
      * @param $summaryColumns
      * @see FluentExtension::updateFluentCMSFields()
      */
-    public function updateLocalisationTabColumns(&$summaryColumns)
+    protected function updateLocalisationTabColumns(&$summaryColumns)
     {
         parent::updateLocalisationTabColumns($summaryColumns);
 

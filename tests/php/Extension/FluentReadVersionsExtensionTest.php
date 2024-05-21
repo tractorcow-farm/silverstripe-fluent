@@ -7,6 +7,7 @@ use SilverStripe\Dev\SapphireTest;
 use TractorCow\Fluent\Extension\FluentReadVersionsExtension;
 use TractorCow\Fluent\Extension\FluentSiteTreeExtension;
 use TractorCow\Fluent\State\FluentState;
+use ReflectionMethod;
 
 class FluentReadVersionsExtensionTest extends SapphireTest
 {
@@ -25,7 +26,11 @@ class FluentReadVersionsExtensionTest extends SapphireTest
             $list = SiteTree::get();
 
             $extension = new FluentReadVersionsExtension();
-            $extension->updateList($list);
+            $method = new ReflectionMethod(FluentReadVersionsExtension::class, 'updateList');
+            $method->setAccessible(true);
+            // Note this MUST be passed by reference, it cannot be changed not be passed by reference
+            // in the extension method as the reference to the list is updated in the method
+            $method->invokeArgs($extension, [&$list]);
 
             $this->assertContains(
                 ['"SourceLocale" = ?' => ['en_NZ']],
