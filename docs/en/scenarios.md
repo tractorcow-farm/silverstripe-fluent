@@ -128,7 +128,7 @@ class SiteTreeFluentExtension extends SiteTreeExtension
      * @param SQLSelect $query
      * @param DataQuery|null $dataQuery
      */
-    public function augmentSQL(SQLSelect $query, DataQuery $dataQuery = null)
+    protected function augmentSQL(SQLSelect $query, DataQuery $dataQuery = null)
     {
         // We only want to apply this logic on the frontend.
         if (!FluentState::singleton()->getIsFrontend()) {

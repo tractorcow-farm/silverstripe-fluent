@@ -22,7 +22,7 @@ class FluentReadVersionsExtension extends Extension
      *
      * @param DataList &$list
      */
-    public function updateList(DataList &$list)
+    protected function updateList(DataList &$list)
     {
         /** @var DataObject $singleton */
         $singleton = Injector::inst()->get($list->dataClass());
