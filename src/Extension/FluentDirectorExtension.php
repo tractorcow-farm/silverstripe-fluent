@@ -74,7 +74,7 @@ class FluentDirectorExtension extends Extension
      * @param array &$rules
      * @throws Exception
      */
-    public function updateRules(&$rules)
+    protected function updateRules(&$rules)
     {
         $request = Injector::inst()->get(HTTPRequest::class);
         if (!$request) {

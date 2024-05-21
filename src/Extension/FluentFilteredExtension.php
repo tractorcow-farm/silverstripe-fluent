@@ -38,7 +38,7 @@ class FluentFilteredExtension extends DataExtension
         'FilteredLocales' => Locale::class,
     ];
 
-    public function updateCMSFields(FieldList $fields)
+    protected function updateCMSFields(FieldList $fields)
     {
         $locales = Locale::getCached();
 
@@ -58,7 +58,7 @@ class FluentFilteredExtension extends DataExtension
      *
      * @param array $flags
      */
-    public function updateStatusFlags(&$flags)
+    protected function updateStatusFlags(&$flags)
     {
         // If there is no current FluentState, then we shouldn't update.
         if (!FluentState::singleton()->getLocale()) {
@@ -101,7 +101,7 @@ class FluentFilteredExtension extends DataExtension
      * @param SQLSelect      $query
      * @param DataQuery|null $dataQuery
      */
-    public function augmentSQL(SQLSelect $query, DataQuery $dataQuery = null)
+    protected function augmentSQL(SQLSelect $query, DataQuery $dataQuery = null)
     {
         // We don't want this logic applied in the CMS.
         if (!FluentState::singleton()->getIsFrontend()) {
@@ -170,13 +170,13 @@ class FluentFilteredExtension extends DataExtension
         return substr_compare($readingMode, $draft, strlen($readingMode) - strlen($draft), strlen($draft)) === 0;
     }
 
-    public function updateLocalisationTabConfig(GridFieldConfig $config)
+    protected function updateLocalisationTabConfig(GridFieldConfig $config)
     {
         // Add inline toggle on/off to gridfield
         $config->addComponent(LocaleToggleColumn::create());
     }
 
-    public function updateLocalisationTabColumns(&$summaryColumns)
+    protected function updateLocalisationTabColumns(&$summaryColumns)
     {
         // no-op
     }

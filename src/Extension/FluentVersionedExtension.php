@@ -108,7 +108,7 @@ class FluentVersionedExtension extends FluentExtension implements Resettable
      */
     private static $prepopulate_localecontent_cache = true;
 
-    public function augmentDatabase()
+    protected function augmentDatabase()
     {
         // Safety check: This extension is added AFTER versioned
         $seenVersioned = false;
@@ -155,7 +155,7 @@ class FluentVersionedExtension extends FluentExtension implements Resettable
      *
      * @throws InvalidArgumentException if an invalid versioned mode is provided
      */
-    public function augmentSQL(SQLSelect $query, DataQuery $dataQuery = null)
+    protected function augmentSQL(SQLSelect $query, DataQuery $dataQuery = null)
     {
         $locale = $this->getDataQueryLocale($dataQuery);
         if (!$locale) {
@@ -281,7 +281,7 @@ class FluentVersionedExtension extends FluentExtension implements Resettable
      *
      * @param array $manipulation
      */
-    public function augmentWrite(&$manipulation)
+    protected function augmentWrite(&$manipulation)
     {
         parent::augmentWrite($manipulation);
 
@@ -527,7 +527,7 @@ SQL;
      * @param array          $options    A map of hints about what should be cached. "numChildrenMethod" and
      *                                   "childrenMethod" are allowed keys.
      */
-    public function onPrepopulateTreeDataCache($recordList = null, array $options = [])
+    protected function onPrepopulateTreeDataCache($recordList = null, array $options = [])
     {
         if (!Config::inst()->get(self::class, 'prepopulate_localecontent_cache')) {
             return;
@@ -586,7 +586,7 @@ SQL;
         }
     }
 
-    public function updateLocalisationTabColumns(&$summaryColumns)
+    protected function updateLocalisationTabColumns(&$summaryColumns)
     {
         $summaryColumns['Status'] = [
             'title' => 'Status',
@@ -649,7 +649,7 @@ SQL;
      *
      * @param GridFieldConfig $config
      */
-    public function updateLocalisationTabConfig(GridFieldConfig $config)
+    protected function updateLocalisationTabConfig(GridFieldConfig $config)
     {
         parent::updateLocalisationTabConfig($config);
 
@@ -665,7 +665,7 @@ SQL;
      *
      * @param bool $stagesDiffer
      */
-    public function updateStagesDiffer(bool &$stagesDiffer): void
+    protected function updateStagesDiffer(bool &$stagesDiffer): void
     {
         $locale = FluentState::singleton()->getLocale();
 
@@ -682,7 +682,7 @@ SQL;
      *
      * @param bool $isArchived
      */
-    public function updateIsArchived(bool &$isArchived): void
+    protected function updateIsArchived(bool &$isArchived): void
     {
         $locale = FluentState::singleton()->getLocale();
 
@@ -816,7 +816,7 @@ SQL;
      * @param string $stage
      * @param array|null $idList
      */
-    public function updatePrePopulateVersionNumberCache(array $versions, $class, string $stage, ?array $idList): void
+    protected function updatePrePopulateVersionNumberCache(array $versions, $class, string $stage, ?array $idList): void
     {
         $locale = FluentState::singleton()->getLocale();
 
@@ -850,7 +850,7 @@ SQL;
      * @param int $id
      * @param bool $cache
      */
-    public function updateGetVersionNumberByStage(?int &$version, $class, string $stage, int $id, bool $cache): void
+    protected function updateGetVersionNumberByStage(?int &$version, $class, string $stage, int $id, bool $cache): void
     {
         $locale = FluentState::singleton()->getLocale();
 

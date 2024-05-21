@@ -21,7 +21,7 @@ class FluentMemberExtension extends DataExtension
      *
      * @param Member_GroupSet $groups
      */
-    public function updateGroups(Member_GroupSet &$groups)
+    protected function updateGroups(Member_GroupSet &$groups)
     {
         // Filter groups by those that either have no locales selected (same as selected for all),
         // or groups that have the current locale selected.

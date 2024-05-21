@@ -360,7 +360,7 @@ class FluentExtension extends DataExtension
         return false;
     }
 
-    public function augmentDatabase()
+    protected function augmentDatabase()
     {
         // Build _Localisation table
         $class = get_class($this->owner);
@@ -462,7 +462,7 @@ class FluentExtension extends DataExtension
         DB::require_table($localisedTable, $fields, $indexes, false);
     }
 
-    public function augmentSQL(SQLSelect $query, DataQuery $dataQuery = null)
+    protected function augmentSQL(SQLSelect $query, DataQuery $dataQuery = null)
     {
         $locale = $this->getDataQueryLocale($dataQuery);
         if (!$locale) {
@@ -599,7 +599,7 @@ class FluentExtension extends DataExtension
      * loading a page in a different locale and pressing "save" won't actually make the record available in
      * this locale.
      */
-    public function onBeforeWrite(): void
+    protected function onBeforeWrite(): void
     {
         $owner = $this->owner;
         $currentLocale = FluentState::singleton()->getLocale();
@@ -625,7 +625,7 @@ class FluentExtension extends DataExtension
     /**
      * @throws ValidationException
      */
-    public function onAfterWrite(): void
+    protected function onAfterWrite(): void
     {
         $this->handleClassChanged();
     }
@@ -728,7 +728,7 @@ class FluentExtension extends DataExtension
      *
      * @throws LogicException if the manipulation table's ID is missing
      */
-    public function augmentWrite(&$manipulation)
+    protected function augmentWrite(&$manipulation)
     {
         $locale = Locale::getCurrentLocale();
         if (!$locale) {
@@ -1068,7 +1068,7 @@ class FluentExtension extends DataExtension
      *
      * @return string
      */
-    public function cacheKeyComponent()
+    protected function cacheKeyComponent()
     {
         return 'fluentlocale-' . FluentState::singleton()->getLocale();
     }
@@ -1076,7 +1076,7 @@ class FluentExtension extends DataExtension
     /**
      * @param FieldList $fields
      */
-    public function updateCMSFields(FieldList $fields)
+    protected function updateCMSFields(FieldList $fields)
     {
         // If there is no current FluentState, then we shouldn't update.
         if (!FluentState::singleton()->getLocale()) {
@@ -1245,7 +1245,7 @@ class FluentExtension extends DataExtension
      * @param $summaryColumns
      * @see FluentObjectTrait::updateFluentCMSFields()
      */
-    public function updateLocalisationTabColumns(&$summaryColumns)
+    protected function updateLocalisationTabColumns(&$summaryColumns)
     {
         $summaryColumns['Status'] = [
             'title'    => 'Status',
@@ -1286,7 +1286,7 @@ class FluentExtension extends DataExtension
      *
      * @param GridFieldConfig $config
      */
-    public function updateLocalisationTabConfig(GridFieldConfig $config)
+    protected function updateLocalisationTabConfig(GridFieldConfig $config)
     {
         // Add locale copy actions
         $config->addComponents([

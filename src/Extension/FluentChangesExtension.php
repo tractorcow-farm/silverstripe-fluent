@@ -19,7 +19,7 @@ class FluentChangesExtension extends DataExtension
      * @param int    $draftVersion
      * @param int    $liveVersion
      */
-    public function updateChangeType(&$type, $draftVersion, $liveVersion)
+    protected function updateChangeType(&$type, $draftVersion, $liveVersion)
     {
         if ($type !== ChangeSetItem::CHANGE_NONE) {
             return;

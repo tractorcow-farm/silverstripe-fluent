@@ -27,7 +27,7 @@ class FluentIsolatedExtension extends DataExtension
         'Locale' => Locale::class,
     ];
 
-    public function onBeforeWrite()
+    protected function onBeforeWrite()
     {
         if (empty($this->owner->LocaleID)) {
             $locale = Locale::getCurrentLocale();
@@ -43,7 +43,7 @@ class FluentIsolatedExtension extends DataExtension
      * @param SQLSelect $query
      * @param DataQuery $dataQuery
      */
-    public function augmentDataQueryCreation(SQLSelect $query, DataQuery $dataQuery)
+    protected function augmentDataQueryCreation(SQLSelect $query, DataQuery $dataQuery)
     {
         $state = FluentState::singleton();
         $dataQuery
@@ -56,7 +56,7 @@ class FluentIsolatedExtension extends DataExtension
      *
      * @throws LogicException
      */
-    public function augmentDatabase()
+    protected function augmentDatabase()
     {
         // Safety check: This extension cannot be added with fluent or filtered extensions
         if ($this->owner->hasExtension(FluentFilteredExtension::class)
@@ -79,7 +79,7 @@ class FluentIsolatedExtension extends DataExtension
      * @param SQLSelect $query
      * @param DataQuery|null $dataQuery
      */
-    public function augmentSQL(SQLSelect $query, DataQuery $dataQuery = null)
+    protected function augmentSQL(SQLSelect $query, DataQuery $dataQuery = null)
     {
         $locale = $this->getDataQueryLocale($dataQuery);
         if (!$locale) {
