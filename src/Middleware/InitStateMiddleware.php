@@ -86,6 +86,11 @@ class InitStateMiddleware implements HTTPMiddleware
      */
     public function getIsDomainMode(HTTPRequest $request)
     {
+        // Check environment for a ignored override
+        if (Environment::getEnv('SS_FLUENT_IGNORE_DOMAIN')) {
+            return false;
+        }
+
         // Don't act in domain mode if none exist
         if (!Domain::getCached()->exists()) {
             return false;
