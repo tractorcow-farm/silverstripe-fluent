@@ -586,7 +586,7 @@ class FluentExtension extends DataExtension
             if (empty($localisedPredicate)) {
                 continue;
             }
-            
+
             $where[$index] = [
                 $localisedPredicate => $parameters
             ];
@@ -629,7 +629,7 @@ class FluentExtension extends DataExtension
     {
         $this->handleClassChanged();
     }
-    
+
     /**
      * If an object is duplicated also duplicate existing localised values from original to new object.
      */
