@@ -3,14 +3,8 @@
 namespace TractorCow\Fluent\Task;
 
 use SilverStripe\CMS\Model\SiteTree;
-use SilverStripe\Control\HTTPRequest;
-use SilverStripe\Dev\BuildTask;
-use SilverStripe\Versioned\Versioned;
-use TractorCow\Fluent\Extension\FluentSiteTreeExtension;
-use TractorCow\Fluent\Model\Locale;
-use TractorCow\Fluent\State\FluentState;
 
-class InitialPageLocalisationTask extends BuildTask
+class InitialPageLocalisationTask extends InitialDataObjectLocalisationTask
 {
     /**
      * @var string
@@ -20,93 +14,34 @@ class InitialPageLocalisationTask extends BuildTask
     /**
      * @var string
      */
-    protected $title = 'Initial page localisation';
+    protected $title = 'Initial SiteTree localisation';
 
     /**
      * @var string
      */
-    protected $description = 'Intended for projects which already have some pages when Fluent module is added.' .
-    ' This dev task will localise / publish all pages in the default locale. Locale setup has to be done before running this task.' .
-    ' Pages which are not published will not be published, only localised. Pages which are already localised will be skipped.';
+    protected $description = 'Intended for projects which already have some Pages when Fluent module is added.' .
+    ' This dev task will localise / publish all Pages in the default locale. Locale setup has to be done before running this task.' .
+    ' Pass limit=N to limit number of records to localise. Pass publish=1 to force publishing of localised Pages.' .
+    ' Regardless, Pages which were not already published will not be published, only localised. Pages which were already localised will always be skipped.';
 
     /**
-     * @param HTTPRequest $request
+     * @var string[]
      */
-    public function run($request)
+    protected $include_only_classes = [
+        SiteTree::class
+    ];
+
+    /**
+     * @var string[]
+     */
+    protected $exclude_classes = [];
+
+    /**
+     * Soft dependency on CMS module
+     * @return bool
+     */
+    function isEnabled(): bool
     {
-        $publish = (bool) $request->getVar('publish');
-        $limit = (int) $request->getVar('limit');
-
-        $globalLocale = Locale::get()
-            ->filter(['IsGlobalDefault' => 1])
-            ->sort('ID', 'ASC')
-            ->first();
-
-        if (!$globalLocale) {
-            echo 'Please set global locale first!' . PHP_EOL;
-
-            return;
-        }
-
-        $pageIds = FluentState::singleton()->withState(static function (FluentState $state) use ($limit): array {
-            $state->setLocale(null);
-            $pages = SiteTree::get()->sort('ID', 'ASC');
-
-            if ($limit > 0) {
-                $pages = $pages->limit($limit);
-            }
-
-            return $pages->column('ID');
-        });
-
-        $localised = FluentState::singleton()->withState(
-            static function (FluentState $state) use ($globalLocale, $pageIds, $publish): int {
-                $state->setLocale($globalLocale->Locale);
-                $localised = 0;
-
-                foreach ($pageIds as $pageId) {
-                    /** @var SiteTree|FluentSiteTreeExtension $page */
-                    $page = SiteTree::get()->byID($pageId);
-
-                    if ($page->isDraftedInLocale()) {
-                        continue;
-                    }
-
-                    $page->writeToStage(Versioned::DRAFT);
-                    $localised += 1;
-
-                    if (!$publish) {
-                        continue;
-                    }
-
-                    // Check if the base record was published - if not then we don't need to publish
-                    // as this would leak draft content, we only want to publish pages which were published
-                    // before Fluent module was added
-                    $pageId = $page->ID;
-                    $isBaseRecordPublished = FluentState::singleton()->withState(
-                        static function (FluentState $state) use ($pageId): bool {
-                            $state->setLocale(null);
-                            $page = SiteTree::get_by_id($pageId);
-
-                            if ($page === null) {
-                                return false;
-                            }
-
-                            return $page->isPublished();
-                        }
-                    );
-
-                    if (!$isBaseRecordPublished) {
-                        continue;
-                    }
-
-                    $page->publishRecursive();
-                }
-
-                return $localised;
-            }
-        );
-
-        echo sprintf('Localised %d pages.', $localised) . PHP_EOL;
+        return class_exists(SiteTree::class) && parent::isEnabled();
     }
 }
