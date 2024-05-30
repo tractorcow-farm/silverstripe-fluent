@@ -587,6 +587,16 @@ class Locale extends DataObject implements PermissionProvider
     }
 
     /**
+     * Absolute base url
+     *
+     * @return false|string
+     */
+    public function getAbsoluteBaseURL()
+    {
+        return Director::absoluteURL($this->getBaseURL());
+    }
+
+    /**
      * Get other locales that appear alongside this (including self)
      *
      * @return ArrayList<Locale>

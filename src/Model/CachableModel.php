@@ -2,7 +2,6 @@
 
 namespace TractorCow\Fluent\Model;
 
-use SilverStripe\Control\Director;
 use SilverStripe\Control\HTTPRequest;
 use SilverStripe\Core\ClassInfo;
 use SilverStripe\Core\Config\Config;

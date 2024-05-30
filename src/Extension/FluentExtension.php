@@ -582,11 +582,11 @@ class FluentExtension extends DataExtension
 
             // Apply substitutions
             $localisedPredicate = str_replace($conditionSearch, $conditionReplace, $predicate);
-            
+
             if (empty($localisedPredicate)) {
                 continue;
             }
-            
+
             $where[$index] = [
                 $localisedPredicate => $parameters
             ];
@@ -628,6 +628,32 @@ class FluentExtension extends DataExtension
     public function onAfterWrite(): void
     {
         $this->handleClassChanged();
+    }
+
+    /**
+     * If an object is duplicated also duplicate existing localised values from original to new object.
+     */
+    public function onAfterDuplicate($original, $doWrite, $relations): void
+    {
+        $localisedTables = $this->owner->getLocalisedTables();
+        foreach ($localisedTables as $tableName => $fields) {
+            // Target IDs
+            $fromID = $original->ID;
+            $toID = $this->owner->ID;
+
+            // Get localised table
+            $localisedTable = $this->getLocalisedTable($tableName);
+
+            // Remove existing translations from duplicated object
+            DB::prepared_query("DELETE FROM \"$localisedTable\" WHERE \"RecordID\" = ?", [$toID]);
+
+            // Copy translations to duplicated object
+            $fields_str = '"' . implode('","', $fields) . '"';
+            DB::prepared_query("INSERT INTO \"$localisedTable\" ( \"RecordID\", \"Locale\", $fields_str)
+                    SELECT ? AS \"RecordID\", \"Locale\", $fields_str
+                    FROM \"$localisedTable\"
+                    WHERE \"RecordID\" = ?", [$toID, $fromID]);
+        }
     }
 
     /**
@@ -1113,6 +1139,22 @@ class FluentExtension extends DataExtension
 
         $field->addExtraClass('fluent__localised-field');
         $field->setTitle($tooltip);
+    }
+
+    /**
+     * Update preview link to null if the object isn't in the current locale
+     * and we can't fallback cleanly.
+     *
+     * @param ?string $link
+     */
+    public function updatePreviewLink(&$link): void
+    {
+        $owner = $this->owner;
+        $info = $owner->LocaleInformation(FluentState::singleton()->getLocale());
+
+        if (!$info->getSourceLocale()) {
+            $link = null;
+        }
     }
 
     /**
