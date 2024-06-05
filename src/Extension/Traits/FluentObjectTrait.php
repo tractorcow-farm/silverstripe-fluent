@@ -23,7 +23,7 @@ trait FluentObjectTrait
      * Add additional columns to localisation table
      *
      * @param $summaryColumns
-     * @see FluentObjectTrait::updateFluentCMSFields()
+     * @see self::updateFluentCMSFields()
      */
     abstract public function updateLocalisationTabColumns(&$summaryColumns);
 
