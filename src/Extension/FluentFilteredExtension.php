@@ -119,7 +119,7 @@ class FluentFilteredExtension extends DataExtension
         }
 
         $table = $this->owner->baseTable();
-        $filteredLocalesTable = $table . '_' . self::SUFFIX;
+        $filteredLocalesTable = $table . '_' . FluentFilteredExtension::SUFFIX;
 
         $query->addInnerJoin(
             $filteredLocalesTable,

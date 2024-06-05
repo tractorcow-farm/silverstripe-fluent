@@ -26,7 +26,7 @@ class LocaleToggleColumn implements GridField_SaveHandler, GridField_ColumnProvi
     public function augmentColumns($gridField, &$columns)
     {
         // Add "enabled in" column
-        if (in_array(self::COLUMN_NAME, $columns)) {
+        if (in_array(LocaleToggleColumn::COLUMN_NAME, $columns)) {
             return;
         }
 
@@ -37,10 +37,10 @@ class LocaleToggleColumn implements GridField_SaveHandler, GridField_ColumnProvi
                 $columns,
                 $localeIndex + 1,
                 0,
-                [self::COLUMN_NAME]
+                [LocaleToggleColumn::COLUMN_NAME]
             );
         } else {
-            $columns[] = self::COLUMN_NAME;
+            $columns[] = LocaleToggleColumn::COLUMN_NAME;
         }
     }
 
@@ -49,7 +49,7 @@ class LocaleToggleColumn implements GridField_SaveHandler, GridField_ColumnProvi
      */
     public function getColumnsHandled($gridField)
     {
-        return [self::COLUMN_NAME];
+        return [LocaleToggleColumn::COLUMN_NAME];
     }
 
     /**
@@ -60,7 +60,7 @@ class LocaleToggleColumn implements GridField_SaveHandler, GridField_ColumnProvi
      */
     public function getColumnContent($gridField, $locale, $columnName)
     {
-        if ($columnName !== self::COLUMN_NAME) {
+        if ($columnName !== LocaleToggleColumn::COLUMN_NAME) {
             return null;
         }
 
@@ -96,8 +96,8 @@ class LocaleToggleColumn implements GridField_SaveHandler, GridField_ColumnProvi
         $value = $gridField->Value();
 
         // Keys for this value will be list of locales to enable
-        $enabledLocales = isset($value[self::COLUMN_NAME])
-            ? array_keys($value[self::COLUMN_NAME])
+        $enabledLocales = isset($value[LocaleToggleColumn::COLUMN_NAME])
+            ? array_keys($value[LocaleToggleColumn::COLUMN_NAME])
             : [];
 
         /** @var DataObject|FluentFilteredExtension $record */
@@ -112,7 +112,7 @@ class LocaleToggleColumn implements GridField_SaveHandler, GridField_ColumnProvi
         return sprintf(
             '%s[%s][%s]',
             $grid->getName(),
-            self::COLUMN_NAME,
+            LocaleToggleColumn::COLUMN_NAME,
             $locale->ID
         );
     }

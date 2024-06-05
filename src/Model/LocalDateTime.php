@@ -40,7 +40,7 @@ class LocalDateTime extends DBDatetime
      * @param string|null $timezone
      * @return $this
      */
-    public function setTimezone(?string $timezone): self
+    public function setTimezone(?string $timezone): LocalDateTime
     {
         if ($timezone && !in_array($timezone, timezone_identifiers_list())) {
             throw new InvalidArgumentException("Invalid timezone {$timezone}");
@@ -90,7 +90,7 @@ class LocalDateTime extends DBDatetime
      */
     public function getLocalValue(): string
     {
-        return $this->Format(self::ISO_DATETIME);
+        return $this->Format(LocalDateTime::ISO_DATETIME);
     }
 
     /** Assign a value that's already in the current locale
