@@ -3,6 +3,7 @@
 namespace TractorCow\Fluent\Extension;
 
 use LogicException;
+use SilverStripe\i18n\i18n;
 use SilverStripe\Core\ClassInfo;
 use SilverStripe\Core\Config\Config;
 use SilverStripe\Core\Convert;
@@ -1053,6 +1054,15 @@ class FluentExtension extends DataExtension
             $localeObj = Locale::getByLocale($locale);
         } else {
             $localeObj = Locale::getDefault();
+        }
+
+        if (!$localeObj) {
+            // There is no default locale, this can happen if no locales have been setup
+            // This will happen when doing integration unit testing, though can also happen during regular
+            // website operation
+            // This temporary Locale is created to prevent a invalid argument exception in
+            // RecordLocale::__construct()
+            $localeObj = Locale::create(['Locale' => i18n::get_locale()]);
         }
 
         return RecordLocale::create($this->owner, $localeObj);
