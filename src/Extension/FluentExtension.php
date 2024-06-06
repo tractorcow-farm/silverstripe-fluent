@@ -1055,6 +1055,14 @@ class FluentExtension extends DataExtension
             $localeObj = Locale::getDefault();
         }
 
+        if (!$locale && !$localeObj) {
+            // There is no default locale, this can happen when if fluent is installed though locales have been setup
+            // This will happen when doing integration unit testing, though can also happen during
+            // regular website operation
+            // This temporary Locale is created to prevent a invalid argument exception in RecordLocale::__construct()
+            $localeObj = Locale::create(['Title' => 'Temp locale']);
+        }
+
         return RecordLocale::create($this->owner, $localeObj);
     }
 
