@@ -1160,8 +1160,11 @@ class FluentExtension extends DataExtension
     public function updatePreviewLink(&$link): void
     {
         $owner = $this->owner;
-        $info = $owner->LocaleInformation(FluentState::singleton()->getLocale());
-
+        $locale = FluentState::singleton()->getLocale();
+        if ($locale === null || $locale === '') {
+            return;
+        }
+        $info = $owner->LocaleInformation($locale);
         if (!$info->getSourceLocale()) {
             $link = null;
         }
