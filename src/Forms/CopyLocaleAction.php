@@ -166,7 +166,7 @@ class CopyLocaleAction extends BaseAction
     {
         $hasGroup = parent::getGroup($gridField, $record, $columnName);
         if ($hasGroup) {
-            return $this->isTo ? self::COPY_TO : self::COPY_FROM;
+            return $this->isTo ? CopyLocaleAction::COPY_TO : CopyLocaleAction::COPY_FROM;
         }
         return null;
     }

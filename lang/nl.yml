@@ -1,0 +1,113 @@
+nl:
+  SilverStripe\CMS\Controllers\CMSMain:
+    ARCHIVE: Archiveer
+  SilverStripe\CMS\Model\SiteTree:
+    BUTTONPUBLISHED: Gepubliceerd
+    BUTTONSAVEPUBLISH: Publiceer
+  TractorCow\Fluent\Control\LocaleAdmin:
+    MENUTITLE: Talen
+  TractorCow\Fluent\Extension\FluentBadgeExtension:
+    BadgeDefault: 'Standaard taal'
+    BadgeInvisible: 'Vertaald in {locale}'
+    BadgeLocalised: '{type} is niet zichtbaar in deze taal'
+  TractorCow\Fluent\Extension\FluentExtension:
+    COPY_FROM: 'Kopieer naar {locale} vanuit:'
+    COPY_TO: 'Kopieer vanuit {locale} naar:'
+    FLUENT_ICON_TOOLTIP: 'Vertaalbaar veld'
+    LOCALISED: Vertaald
+    Localise: Vertaal
+    NOSOURCE: 'Geen bron'
+    NOTLOCALISED: 'Niet vertaald'
+    Unlocalise: Niet-vertaalbaar
+    UnlocaliseTooltip: 'Verwijder {name} van huidige taal'
+  TractorCow\Fluent\Extension\FluentFilteredExtension:
+    FILTERED_LOCALES: 'Toon in de volgende talen'
+    LOCALEFILTEREDHELP: 'Deze pagina is niet zichtbaar in deze taal'
+    TAB_LOCALES: Vertalingen
+  TractorCow\Fluent\Extension\FluentIsolatedExtension:
+    has_one_Locale: Talen
+  TractorCow\Fluent\Extension\FluentSiteTreeExtension:
+    LOCALECOPYANDPUBLISH: 'Kopieer en publiceer'
+    LOCALECOPYTODRAFT: 'Kopieer naar concept'
+    LOCALESTATUSFLUENTDRAFT: 'Er is een concept klaargezet voor deze taal, maar de live inhoud kan nog steeds worden overgenomen van een andere. Gebruik de actie "Opslaan en publiceren" om deze vertaling te publiceren.'
+    LOCALESTATUSFLUENTINVISIBLE: 'Deze pagina is pas zichtbaar in deze taal, als deze gepubliceerd is.'
+    LOCALESTATUSFLUENTUNKNOWN: 'Er is geen inhoud beschikbaar voor deze pagina. Vertaal deze pagina of stel een taal in waarop teruggevallen kan worden.'
+  TractorCow\Fluent\Extension\FluentVersionedExtension:
+    DRAFT: Concept
+    LIVENO: Nee
+    LIVEYES: Ja
+    MODIFIED: Aangepast
+    NOSOURCE: 'Geen bron'
+    NOTLOCALISED: 'Niet vertaald'
+    PUBLISHED: Gepubliceerd
+  TractorCow\Fluent\Extension\Traits\FluentAdminTrait:
+    ArchiveNotice: "'{title}' is gearchiveerd bij alle talen"
+    ClearAllNotice: "Alle vertalingen zijn verwijderd voor '{title}'."
+    CopyNotice: "'{title}' is gekopieerd naar alle talen."
+    DeleteNotice: "'{title}' is verwijderd van alle talen"
+    Localisation: Vertalingen
+    PublishNotice: "'{title}' is gepubliceerd in alle talen."
+    UnpublishNotice: "'{title}' is ge-depubliceerd bij alle talen."
+  TractorCow\Fluent\Extension\Traits\FluentBadgeTrait:
+    BadgeLocalised: 'Vertaald in {locale}'
+  TractorCow\Fluent\Extension\Traits\FluentObjectTrait:
+    TAB_LOCALISATION: Vertalingen
+  TractorCow\Fluent\Forms\DeleteAllLocalesAction:
+    Delete: 'Verwijder item in alle talen'
+  TractorCow\Fluent\Forms\DeleteLocaleAction:
+    DELETE: 'Verwijder in deze taal'
+  TractorCow\Fluent\Forms\LocaleToggleColumn:
+    DISPLAY_IN: 'Zichtbaar?'
+  TractorCow\Fluent\Forms\PublishAction:
+    PUBLISH: 'Publiceer in deze taal'
+  TractorCow\Fluent\Forms\SaveLocaleAction:
+    SAVE: 'Opslaan in deze taal'
+  TractorCow\Fluent\Forms\UnpublishAction:
+    UNPUBLISH: 'Publicatie intrekken voor deze taal'
+  TractorCow\Fluent\Forms\VisibleLocalesColumn:
+    LocalesTitle: Vertalingen
+  TractorCow\Fluent\Model\Domain:
+    DEFAULT: 'Standaard taal'
+    DEFAULT_NONE: (geen)
+    DOMAIN_HOSTNAME: Domeinnaam
+    DOMAIN_LOCALES: Vertalingen
+    PLURALNAME: Domeinnamen
+    PLURALS:
+      one: 'Een domeinnaam'
+      other: '{count} domeinnamen'
+    SINGULARNAME: Domeinnaam
+    UnsavedNotice: 'Na het opslaan van de taal kunnen er domeinnamen toegevoegd worden'
+    db_Domain: Domeinnaam
+    has_many_Locales: Talen
+    has_one_DefaultLocale: 'Standaard taal'
+  TractorCow\Fluent\Model\FallbackLocale:
+    LOCALE: Talen
+    PLURALNAME: Terugval-taal
+    PLURALS:
+      one: Terugval-taal
+      other: '{count} terugval-talen'
+    SINGULARNAME: Terugval-taal
+    has_one_Locale: Talen
+  TractorCow\Fluent\Model\Locale:
+    DEFAULT_NONE: (geen)
+    DOMAIN: Domeinnaam
+    EDIT_LOCALE: 'Toegang "{title}" ({locale})'
+    FALLBACKS: Terugval-taal
+    IS_DEFAULT: 'Dit is de standaard taal'
+    IS_DEFAULT_DESCRIPTION: 'Let op: Per domein kan een taal worden gekozen (op het tabblad Talen) en overschrijft deze waarde voor dat specifieke domein.'
+    LOCALE: Talen
+    LOCALE_TITLE: Titel
+    LOCALE_URL: 'URL segment'
+    MULTI_LOCALE: 'Toegang tot multi-taal-mogelijkheden (zoals opslaan in alle talen)'
+    PERMISSION: Vertalingen
+    PLURALNAME: Talen
+    PLURALS:
+      one: Taal
+      other: '{count} Talen'
+    SINGULARNAME: Talen
+    USE_X_DEFAULT: 'Gebruik {code} als SEO taalcode (als site-standaard)'
+    USE_X_DEFAULT_DESCRIPTION: 'Het gebruik van deze code geeft aan zoekmachines aan dat dit een niet-vertaalde landingspagina is'
+    UnsavedNotice: 'Een terugval-taal kan ingesteld worden na het opslaan'
+    db_Locale: Talen
+    db_Title: Titel
+    has_one_Domain: Domeinnaam
