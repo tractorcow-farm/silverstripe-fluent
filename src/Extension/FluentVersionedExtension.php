@@ -93,7 +93,7 @@ class FluentVersionedExtension extends FluentExtension implements Resettable
      * This is different from the above cache which caches the result per object - each array (keyed by locale & table)
      * will have ALL object IDs for that locale & table.
      *
-     * static::$idsInLocaleCache[ $locale ][ $table(.self::SUFFIX_LIVE) ][ $objectId ] = $objectId
+     * static::$idsInLocaleCache[ $locale ][ $table(.FluentVersionedExtension::SUFFIX_LIVE) ][ $objectId ] = $objectId
      *
      * @var int[][][]
      */
@@ -116,7 +116,7 @@ class FluentVersionedExtension extends FluentExtension implements Resettable
             // Must see versioned
             if ($extension instanceof Versioned) {
                 $seenVersioned = true;
-            } elseif ($extension instanceof self) {
+            } elseif ($extension instanceof FluentVersionedExtension) {
                 if (!$seenVersioned) {
                     throw new LogicException(
                         "FluentVersionedExtension must be added AFTER Versioned extension. Check "
@@ -132,8 +132,8 @@ class FluentVersionedExtension extends FluentExtension implements Resettable
     protected function augmentDatabaseDontRequire($localisedTable)
     {
         DB::dont_require_table($localisedTable);
-        DB::dont_require_table($localisedTable . self::SUFFIX_LIVE);
-        DB::dont_require_table($localisedTable . self::SUFFIX_VERSIONS);
+        DB::dont_require_table($localisedTable . FluentVersionedExtension::SUFFIX_LIVE);
+        DB::dont_require_table($localisedTable . FluentVersionedExtension::SUFFIX_VERSIONS);
     }
 
     protected function augmentDatabaseRequireTable($localisedTable, $fields, $indexes)
@@ -141,13 +141,13 @@ class FluentVersionedExtension extends FluentExtension implements Resettable
         DB::require_table($localisedTable, $fields, $indexes, false);
 
         // _Live record
-        DB::require_table($localisedTable . self::SUFFIX_LIVE, $fields, $indexes, false);
+        DB::require_table($localisedTable . FluentVersionedExtension::SUFFIX_LIVE, $fields, $indexes, false);
 
         // Merge fields and indexes with Fluent defaults
         $versionsFields = array_merge($this->defaultVersionsFields, $fields);
         $versionsIndexes = array_merge($indexes, $this->defaultVersionsIndexes);
 
-        DB::require_table($localisedTable . self::SUFFIX_VERSIONS, $versionsFields, $versionsIndexes, false);
+        DB::require_table($localisedTable . FluentVersionedExtension::SUFFIX_VERSIONS, $versionsFields, $versionsIndexes, false);
     }
 
     /**
@@ -209,7 +209,7 @@ class FluentVersionedExtension extends FluentExtension implements Resettable
         foreach ($tables as $tableName => $fields) {
             // Rename to _Versions suffixed versions
             $localisedTable = $this->getLocalisedTable($tableName);
-            $query->renameTable($localisedTable, $localisedTable . self::SUFFIX_VERSIONS);
+            $query->renameTable($localisedTable, $localisedTable . FluentVersionedExtension::SUFFIX_VERSIONS);
 
             // Add the chain of locale fallbacks
             $this->addLocaleFallbackChain($query, $tableName, $locale);
@@ -229,7 +229,7 @@ class FluentVersionedExtension extends FluentExtension implements Resettable
 
         foreach ($locale->getChain() as $joinLocale) {
             $joinAlias = $this->getLocalisedTable($tableName, $joinLocale->Locale);
-            $versionTable = $baseTable . self::SUFFIX_VERSIONS;
+            $versionTable = $baseTable . FluentVersionedExtension::SUFFIX_VERSIONS;
 
             $query->setJoinFilter(
                 $joinAlias,
@@ -250,7 +250,7 @@ class FluentVersionedExtension extends FluentExtension implements Resettable
     {
         foreach ($tables as $table => $fields) {
             $localisedTable = $this->getLocalisedTable($table);
-            $query->renameTable($localisedTable, $localisedTable . self::SUFFIX_LIVE);
+            $query->renameTable($localisedTable, $localisedTable . FluentVersionedExtension::SUFFIX_LIVE);
         }
     }
 
@@ -295,13 +295,13 @@ class FluentVersionedExtension extends FluentExtension implements Resettable
         $includedTables = $this->getLocalisedTables();
         foreach ($includedTables as $table => $localisedFields) {
             // Localise both _Versions and _Live writes
-            foreach ([self::SUFFIX_LIVE, self::SUFFIX_VERSIONS] as $suffix) {
+            foreach ([FluentVersionedExtension::SUFFIX_LIVE, FluentVersionedExtension::SUFFIX_VERSIONS] as $suffix) {
                 $versionedTable = $table . $suffix;
                 $localisedTable = $this->getLocalisedTable($table) . $suffix;
 
                 // Add extra case for "Version" column when localising Versions
                 $localisedVersionFields = $localisedFields;
-                if ($suffix === self::SUFFIX_VERSIONS) {
+                if ($suffix === FluentVersionedExtension::SUFFIX_VERSIONS) {
                     $localisedVersionFields = array_merge(
                         $localisedVersionFields,
                         array_keys($this->defaultVersionsFields)
@@ -332,7 +332,7 @@ class FluentVersionedExtension extends FluentExtension implements Resettable
         // Rewrite to _Live when deleting from live / unpublishing
         $table = parent::getDeleteTableTarget($tableName, $locale);
         if (Versioned::get_stage() === Versioned::LIVE) {
-            $table .= self::SUFFIX_LIVE;
+            $table .= FluentVersionedExtension::SUFFIX_LIVE;
         }
         return $table;
     }
@@ -482,7 +482,7 @@ SQL;
         $baseTable = $this->owner->baseTable();
         $table = $this->getLocalisedTable($baseTable);
         if ($stage === Versioned::LIVE) {
-            $table .= self::SUFFIX_LIVE;
+            $table .= FluentVersionedExtension::SUFFIX_LIVE;
         }
 
         // Check for a cached item in the full list of all objects. These are populated optimistically.
@@ -529,7 +529,7 @@ SQL;
      */
     public function onPrepopulateTreeDataCache($recordList = null, array $options = [])
     {
-        if (!Config::inst()->get(self::class, 'prepopulate_localecontent_cache')) {
+        if (!Config::inst()->get(FluentVersionedExtension::class, 'prepopulate_localecontent_cache')) {
             return;
         }
 
@@ -539,7 +539,7 @@ SQL;
             return;
         }
 
-        self::prepoulateIdsInLocale(FluentState::singleton()->getLocale(), $this->owner->baseClass());
+        FluentVersionedExtension::prepoulateIdsInLocale(FluentState::singleton()->getLocale(), $this->owner->baseClass());
     }
 
     /**
@@ -558,7 +558,7 @@ SQL;
         $table = $dataObject->getLocalisedTable($dataObject->baseTable());
 
         // If we already have items then we've been here before...
-        if (isset(self::$idsInLocaleCache[$locale][$table])) {
+        if (isset(FluentVersionedExtension::$idsInLocaleCache[$locale][$table])) {
             return;
         }
 
@@ -567,7 +567,7 @@ SQL;
             $tables[] = $table;
         }
         if ($populateLive) {
-            $tables[] = $table . self::SUFFIX_LIVE;
+            $tables[] = $table . FluentVersionedExtension::SUFFIX_LIVE;
         }
 
         // Populate both the draft and live stages
@@ -581,8 +581,8 @@ SQL;
             $ids = $result->column('RecordID');
 
             // We need to execute ourselves as the param is lost from the subSelect
-            self::$idsInLocaleCache[$locale][$table] = array_combine($ids, $ids);
-            self::$idsInLocaleCache[$locale][$table][static::CACHE_COMPLETE] = true;
+            FluentVersionedExtension::$idsInLocaleCache[$locale][$table] = array_combine($ids, $ids);
+            FluentVersionedExtension::$idsInLocaleCache[$locale][$table][static::CACHE_COMPLETE] = true;
         }
     }
 
@@ -598,18 +598,18 @@ SQL;
                 $recordLocale = $object->RecordLocale();
 
                 if ($recordLocale->getStagesDiffer()) {
-                    return _t(self::class . '.MODIFIED', 'Modified');
+                    return _t(FluentVersionedExtension::class . '.MODIFIED', 'Modified');
                 }
 
                 if ($recordLocale->IsPublished(true)) {
-                    return _t(self::class . '.PUBLISHED', 'Published');
+                    return _t(FluentVersionedExtension::class . '.PUBLISHED', 'Published');
                 }
 
                 if ($recordLocale->IsDraft()) {
-                    return _t(self::class . '.DRAFT', 'Draft');
+                    return _t(FluentVersionedExtension::class . '.DRAFT', 'Draft');
                 }
 
-                return _t(self::class . '.NOTLOCALISED', 'Not localised');
+                return _t(FluentVersionedExtension::class . '.NOTLOCALISED', 'Not localised');
             }
         ];
 
@@ -626,7 +626,7 @@ SQL;
                     return $sourceLocale->getLongTitle();
                 }
 
-                return _t(self::class . '.NOSOURCE', 'No source');
+                return _t(FluentVersionedExtension::class . '.NOSOURCE', 'No source');
             }
         ];
 
@@ -638,8 +638,8 @@ SQL;
                 }
 
                 return $object->RecordLocale()->IsPublished()
-                    ? _t(self::class . '.LIVEYES', 'Yes')
-                    : _t(self::class . '.LIVENO', 'No');
+                    ? _t(FluentVersionedExtension::class . '.LIVEYES', 'Yes')
+                    : _t(FluentVersionedExtension::class . '.LIVENO', 'No');
             }
         ];
     }
