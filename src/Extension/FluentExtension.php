@@ -1056,15 +1056,6 @@ class FluentExtension extends DataExtension
             $localeObj = Locale::getDefault();
         }
 
-        if (!$localeObj) {
-            // There is no default locale, this can happen if no locales have been setup
-            // This will happen when doing integration unit testing, though can also happen during regular
-            // website operation
-            // This temporary Locale is created to prevent a invalid argument exception in
-            // RecordLocale::__construct()
-            $localeObj = Locale::create(['Locale' => i18n::get_locale()]);
-        }
-
         return RecordLocale::create($this->owner, $localeObj);
     }
 
@@ -1160,8 +1151,11 @@ class FluentExtension extends DataExtension
     public function updatePreviewLink(&$link): void
     {
         $owner = $this->owner;
-        $info = $owner->LocaleInformation(FluentState::singleton()->getLocale());
-
+        $locale = FluentState::singleton()->getLocale();
+        if ($locale === null || $locale === '') {
+            return;
+        }
+        $info = $owner->LocaleInformation($locale);
         if (!$info->getSourceLocale()) {
             $link = null;
         }
