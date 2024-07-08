@@ -20,7 +20,7 @@ class DeletePolicyFactory implements Factory
      * @param array  $params  The constructor parameters.
      * @return DeletePolicy The created service instances.
      */
-    public function create($service, array $params = [])
+    public function create(string $service, array $params = []): DeletePolicy
     {
         /** @var DataObject $object */
         $object = reset($params);
