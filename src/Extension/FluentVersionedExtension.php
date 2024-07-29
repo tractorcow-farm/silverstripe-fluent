@@ -1023,7 +1023,7 @@ SQL;
             $toID = $this->owner->ID;
 
             // Get localised table
-            $localisedTable = $this->getLocalisedTable($tableName) . self::SUFFIX_VERSIONS;
+            $localisedTable = $this->getLocalisedTable($tableName) . FluentVersionedExtension::SUFFIX_VERSIONS;
 
             // Remove existing translation versions from duplicated object
             DB::prepared_query("DELETE FROM \"$localisedTable\" WHERE \"RecordID\" = ?", [$toID]);
@@ -1039,7 +1039,7 @@ SQL;
                     WHERE \"RecordID\" = ?", [$toID, $fromID]);
 
             // Also copy versions of base record
-            $versionsTableName = $tableName . self::SUFFIX_VERSIONS;
+            $versionsTableName = $tableName . FluentVersionedExtension::SUFFIX_VERSIONS;
 
             // Remove existing versions from duplicated object, created by onBeforeWrite
             DB::prepared_query("DELETE FROM \"$versionsTableName\" WHERE \"RecordID\" = ?", [$toID]);
