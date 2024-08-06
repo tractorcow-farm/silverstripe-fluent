@@ -15,12 +15,15 @@ de:
     COPY_TO: 'Von {locale} in kopieren:'
     FLUENT_ICON_TOOLTIP: 'Übersetzbares Feld'
     LOCALISED: Lokalisiert
+    Localise: Lokalisieren
+    NOSOURCE: 'Keine Quelle'
     NOTLOCALISED: 'Nicht lokalisiert'
     UnlocaliseTooltip: '{Name} aus dem aktuellen Gebietsschema entfernen'
   TractorCow\Fluent\Extension\FluentFilteredExtension:
     FILTERED_LOCALES: 'Wird in folgenden Gebietsschemata angezeigt'
     LOCALEFILTEREDHELP: 'Diese Seite ist nicht sichbar in diesem Gebietsschema'
     TAB_LOCALES: Gebietsschemata
+    many_many_FilteredLocales: 'Gefilterte Sprachen'
   TractorCow\Fluent\Extension\FluentIsolatedExtension:
     has_one_Locale: Standardgebietsschema
   TractorCow\Fluent\Extension\FluentSiteTreeExtension:
@@ -34,6 +37,7 @@ de:
     LIVENO: Nein
     LIVEYES: Ja
     MODIFIED: Geändert
+    NOSOURCE: 'Keine Quelle'
     NOTLOCALISED: 'Nicht lokalisiert'
     PUBLISHED: Veröffentlicht
   TractorCow\Fluent\Extension\Traits\FluentAdminTrait:
@@ -42,12 +46,12 @@ de:
     CopyNotice: "'{title}' wurde in alle anderen Gebietsschemas kopiert."
     DeleteNotice: '"{title}" und alle seine Lokalisierungen wurden gelöscht.'
     HideNotice: "'{title}' wird in {locale} nicht mehr angezeigt."
-    Label_archiveFluent: 'Veröffentlichungen zurücknehmen und archivieren (alle Sprachen)'
+    Label_archiveFluent: 'Veröffentlichung zurücknehmen und archivieren (alle Sprachen)'
     Label_clearFluent: "Alle ausser '{title}' löschen"
     Label_copyFluent: "'{title}' in alle anderen Sprachen kopieren"
     Label_deleteFluent: 'Löschen (alle Sprachen)'
     Label_hideFluent: "In '{title}' verstecken"
-    Label_publishFluent: 'Speichern & veröffentlichen (alle Sprachen)'
+    Label_publishFluent: 'Speichern & Veröffentlichen (alle Sprachen)'
     Label_showFluent: "In '{title}' anzeigen"
     Label_unpublishFluent: 'Veröffentlichung zurücknehmen (alle Sprachen)'
     Localisation: Übersetzungen
@@ -61,8 +65,18 @@ de:
     BaggeInvisible: '{type} ist in dieser Sprache nicht sichtbar'
   TractorCow\Fluent\Extension\Traits\FluentObjectTrait:
     TAB_LOCALISATION: Übersetzungen
+  TractorCow\Fluent\Forms\DeleteAllLocalesAction:
+    Delete: 'Eintrag in allen Sprachen löschen'
+  TractorCow\Fluent\Forms\DeleteLocaleAction:
+    DELETE: 'In dieser Sprache löschen'
   TractorCow\Fluent\Forms\LocaleToggleColumn:
     DISPLAY_IN: 'Sichtbar?'
+  TractorCow\Fluent\Forms\PublishAction:
+    PUBLISH: 'In dieser Sprache veröffentlichen'
+  TractorCow\Fluent\Forms\SaveLocaleAction:
+    SAVE: 'In dieser Sprache speichern'
+  TractorCow\Fluent\Forms\UnpublishAction:
+    UNPUBLISH: 'In dieser Sprache die Veröffentlichung zurücknehmen'
   TractorCow\Fluent\Forms\VisibleLocalesColumn:
     LocalesTitle: Gebietsschemata
   TractorCow\Fluent\Model\Domain:
@@ -82,6 +96,7 @@ de:
       one: Fallback-Gebietsschema
       other: '{count} Fallback-Gebietsschemata'
     SINGULARNAME: Fallback-Gebietsschema
+    db_Sort: Sortierung
     has_one_Locale: Standardgebietsschema
   TractorCow\Fluent\Model\Locale:
     DEFAULT_NONE: (keine)
@@ -91,11 +106,16 @@ de:
     LOCALE: Gebietsschema
     LOCALE_TITLE: Titel
     LOCALE_URL: URL-Segment
+    MULTI_LOCALE: 'Zugriff auf Mehr-Sprachen Aktionen (z.B. in allen Sprachen speichern)'
     PLURALNAME: Gebietsschemata
     PLURALS:
       one: Gebietsschema
       other: '{count} Gebietsschemata'
     SINGULARNAME: Gebietsschema
+    TIMEZONE: Zeitzone
     UnsavedNotice: 'Sie können Fallbacks hinzufügen, sobald Sie das Gebietsschema gespeichert haben.'
     db_Locale: Standardgebietsschema
+    db_Sort: Sortierung
+    db_Timezone: Zeitzone
     db_Title: Titel
+    db_URLSegment: URL-Segment
