@@ -580,8 +580,13 @@ class Locale extends DataObject implements PermissionProvider
 
         if ($append) {
             // Append locale url segment
-            $base = Controller::join_links($base, $this->getURLSegment(), '/');
+            $base = Controller::join_links($base, $this->getURLSegment());
         }
+
+        // Normalise trailing slash
+        // Can't use Controller::normaliseTrailingSlash() because that doesn't
+        // take locale domains into account
+        $base = rtrim($base, '/') . (Controller::config()->get('add_trailing_slash') ? '/' : '');
 
         return $base;
     }
