@@ -153,7 +153,10 @@ class FluentSiteTreeExtension extends FluentVersionedExtension
             return;
         }
 
-        // Prefix with domain
+        // Prefix with domain, making sure trailing slash is normalised correctly.
+        if ($link === '/' || $link === '') {
+            $link = Controller::config()->get('add_trailing_slash') ? '/' : '';
+        }
         $link = Controller::join_links($domain->Link(), $link);
     }
 

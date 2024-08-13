@@ -75,8 +75,8 @@ class FluentSiteTreeExtensionTest extends SapphireTest
             $this->assertEquals('English (New Zealand)', $result->getTitle());
             $this->assertEquals('English', $result->getLanguageNative());
             $this->assertEquals('en', $result->getLanguage());
-            $this->assertEquals(Controller::normaliseTrailingSlash('/newzealand/a-page/'), $result->getLink());
-            $this->assertEquals(Controller::normaliseTrailingSlash('http://mocked/newzealand/a-page/'), $result->getAbsoluteLink());
+            $this->assertEquals($this->normaliseTrailingSlash('/newzealand/a-page/'), $result->getLink());
+            $this->assertEquals($this->normaliseTrailingSlash('http://mocked/newzealand/a-page/'), $result->getAbsoluteLink());
             $this->assertEquals('link', $result->getLinkingMode());
             $this->assertEquals('newzealand', $result->getURLSegment());
         });
@@ -180,7 +180,7 @@ class FluentSiteTreeExtensionTest extends SapphireTest
 
                 /** @var Page|FluentSiteTreeExtension $page */
                 $page = $this->objFromFixture(Page::class, $pageName);
-                $this->assertEquals(Controller::normaliseTrailingSlash($url), $page->Link());
+                $this->assertEquals($this->normaliseTrailingSlash($url), $page->Link());
             }
         );
     }
@@ -561,5 +561,18 @@ class FluentSiteTreeExtensionTest extends SapphireTest
                 0,
             ],
         ];
+    }
+
+    /**
+     * Normalises a test URL's trailing slash, but ignores complexities
+     * such as whether the domain host in the UR matches Director::host()
+     */
+    private function normaliseTrailingSlash(string $testURL): string
+    {
+        if ($testURL === '/' || $testURL === '') {
+            return '/';
+        }
+        $slash = Controller::config()->get('add_trailing_slash') ? '/' : '';
+        return (rtrim($testURL, '/')) . $slash;
     }
 }
