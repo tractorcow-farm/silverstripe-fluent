@@ -502,7 +502,7 @@ SQL;
     /**
      * Clear internal static property caches
      */
-    public function flushCache()
+    protected function onFlushCache()
     {
         static::reset();
     }

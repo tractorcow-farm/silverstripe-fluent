@@ -69,7 +69,7 @@ class FluentIsolatedExtension extends DataExtension
         }
     }
 
-    public function requireDefaultRecords()
+    protected function onRequireDefaultRecords()
     {
         // Migrate records that used to be FluentFilteredExtension
         $this->migrateFromFilteredExtension();
