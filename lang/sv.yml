@@ -1,0 +1,137 @@
+sv:
+  SilverStripe\CMS\Controllers\CMSMain:
+    ARCHIVE: Arkiv
+  SilverStripe\CMS\Model\SiteTree:
+    BUTTONPUBLISHED: Publicerad
+    BUTTONSAVEPUBLISH: Publicera
+  TractorCow\Fluent\Control\LocaleAdmin:
+    MENUTITLE: Språk
+  TractorCow\Fluent\Extension\FluentBadgeExtension:
+    BadgeDefault: 'Standard språk'
+    BadgeInvisible: 'Översatt till {locale}'
+    BadgeLocalised: '{type} är inte synligt på detta språk'
+  TractorCow\Fluent\Extension\FluentExtension:
+    COPY_FROM: 'Kopiera till {locale} från:'
+    COPY_TO: 'Kopiera från {locale} till:'
+    FLUENT_ICON_TOOLTIP: 'Översättningsbart fält'
+    LOCALISED: Översatt
+    Localise: Översätt
+    NOSOURCE: 'Ingen källa'
+    NOTLOCALISED: 'Inte översatt'
+    Unlocalise: 'Ta bort översättning'
+    UnlocaliseTooltip: 'Ta bort {name} från detta språk'
+  TractorCow\Fluent\Extension\FluentFilteredExtension:
+    FILTERED_LOCALES: 'Visa i följande språk'
+    LOCALEFILTEREDHELP: 'Denna sida är inte synlig på detta språk'
+    TAB_LOCALES: Språk
+    many_many_FilteredLocales: 'Filtrerade språk'
+  TractorCow\Fluent\Extension\FluentIsolatedExtension:
+    has_one_Locale: Språk
+  TractorCow\Fluent\Extension\FluentSiteTreeExtension:
+    LOCALECOPYANDPUBLISH: 'Kopiera & publicera'
+    LOCALECOPYTODRAFT: 'Kopiera till utkast'
+    LOCALESTATUSFLUENTDRAFT: 'Ett utkast hat skapats för detta språk, publicerat innehåll kan ändå vara ärvd från annat innehåll. Använd knappen "Spara & publicera" för att publicera innehållet för detta språk.'
+    LOCALESTATUSFLUENTINHERITED: 'Innehåll för denna sida kan vara ärvd från ett annat språk. Var god använd knappen "Kopiera" om du vill kopiera denna sida.'
+    LOCALESTATUSFLUENTINVISIBLE: 'Denna sida kommer inte att vara synlig på detta språk förrän den har publicerats.'
+    LOCALESTATUSFLUENTUNKNOWN: 'Inget innehåll tillgängligt för denna sida. Var god översätt denna sida eller ange ett språk som reserv.'
+  TractorCow\Fluent\Extension\FluentVersionedExtension:
+    DRAFT: Utkast
+    LIVENO: Nej
+    LIVEYES: Ja
+    MODIFIED: Ändrad
+    NOSOURCE: 'Ingen källa'
+    NOTLOCALISED: 'Inte översatt'
+    PUBLISHED: Publicerad
+  TractorCow\Fluent\Extension\Traits\FluentAdminTrait:
+    ArchiveNotice: "Arkiverade '{title}' och alla dess översättningar."
+    ClearAllNotice: "Alla översättningar har tömts för '{title}'."
+    CopyNotice: "Kopierade '{title}' till alla andra språk."
+    DeleteNotice: "Raderade '{title}' och alla dess översättningar."
+    HideNotice: "Raden '{title}' är nu gömd för språk {locale}"
+    Label_archiveFluent: 'Avpublicera och arkivera (alla språk)'
+    Label_clearFluent: "Töm från alla förutom '{title}'"
+    Label_copyFluent: "Kopiera '{title}' till andra språk"
+    Label_deleteFluent: 'Radera (alla språk)'
+    Label_hideFluent: "Göm från '{title}'"
+    Label_publishFluent: 'Spara och publicera (alla språk)'
+    Label_showFluent: "Visa i '{title}'"
+    Label_unpublishFluent: 'Avpublicera (alla språk)'
+    Localisation: Översättning
+    PublishNotice: "Publicerade '{title}' för alla språk."
+    ShowNotice: "Rad '{title}' är nu synlig i {locale}"
+    UnpublishNotice: "Avpublicerade '{title}' från alla språk."
+  TractorCow\Fluent\Extension\Traits\FluentBadgeTrait:
+    BadgeInherited: 'Ärvd från {locale}'
+    BadgeLocalised: 'Översatt till {locale}'
+    BaggeInvisible: '{type} har inget innehåll i {locale}, översätt {type} eller ange ett språk som reserv'
+  TractorCow\Fluent\Extension\Traits\FluentObjectTrait:
+    TAB_LOCALISATION: Översättning
+  TractorCow\Fluent\Forms\DeleteAllLocalesAction:
+    Delete: 'Radera rad i alla språk'
+  TractorCow\Fluent\Forms\DeleteLocaleAction:
+    DELETE: 'Radera i detta språk'
+  TractorCow\Fluent\Forms\LocaleToggleColumn:
+    DISPLAY_IN: 'Synlig?'
+  TractorCow\Fluent\Forms\PublishAction:
+    PUBLISH: 'Publicera i detta språk'
+  TractorCow\Fluent\Forms\SaveLocaleAction:
+    SAVE: 'Spara i detta språk'
+  TractorCow\Fluent\Forms\UnpublishAction:
+    UNPUBLISH: 'Avpublicera i detta språk'
+  TractorCow\Fluent\Forms\VisibleLocalesColumn:
+    LocalesTitle: Språk
+  TractorCow\Fluent\Model\Domain:
+    DEFAULT: 'Standard språk'
+    DEFAULT_NONE: (ingen)
+    DOMAIN_HOSTNAME: 'Domän Hostnamn'
+    DOMAIN_LOCALES: Språk
+    PLURALNAME: Domäner
+    PLURALS:
+      one: 'En Domän'
+      other: '{count} Domäner'
+    SINGULARNAME: Domän
+    UnsavedNotice: 'Du kan lägga till språk efter att du sparat domänen.'
+    db_Domain: Domän
+    has_many_Locales: Språk
+    has_one_DefaultLocale: 'Standard språk'
+  TractorCow\Fluent\Model\FallbackLocale:
+    LOCALE: Språk
+    PLURALNAME: 'Reserv språk'
+    PLURALS:
+      one: 'Standard språk'
+      other: '{count} Reserv språk'
+    SINGULARNAME: 'Reserv språk'
+    db_Sort: Sortera
+    has_one_Locale: Språk
+    has_one_Parent: Förälder
+  TractorCow\Fluent\Model\Locale:
+    DEFAULT_NONE: (ingen)
+    DOMAIN: Domän
+    EDIT_LOCALE: 'Öppna "{title}" ({locale})'
+    FALLBACKS: 'Reserv språk'
+    IS_DEFAULT: 'Detta är det globala standard språket'
+    IS_DEFAULT_DESCRIPTION: 'Notera: Domän specifika språl kan tilldelas via Språk tabben och ersätter detta värde för specifika domäner.'
+    LOCALE: Språk
+    LOCALE_TITLE: Titel
+    LOCALE_URL: 'URL Värde'
+    MULTI_LOCALE: 'Åtkomst till multi-språk åtgärder (t.ex. spara i alla språk)'
+    PERMISSION: Översättning
+    PLURALNAME: Språk
+    PLURALS:
+      one: 'Ett språk'
+      other: '{count} Språk'
+    SINGULARNAME: Språk
+    TIMEZONE: Tidszon
+    USE_X_DEFAULT: 'Använd {code} som SEO språkkod (använd som global)'
+    USE_X_DEFAULT_DESCRIPTION: 'Användning av denna kod berättar för sökmotorer att detta är en språkneutral global startsida'
+    UnsavedNotice: 'Du kan lägga till reserv språk efter att du sparat språket.'
+    db_IsGlobalDefault: 'Är global standard'
+    db_Locale: Språk
+    db_Sort: Sortera
+    db_Timezone: Tidszon
+    db_Title: Titel
+    db_URLSegment: 'URL värde'
+    db_UseDefaultCode: 'Använd standardkod'
+    has_many_FallbackLocales: 'Reserv språk'
+    has_one_Domain: Domän
+    many_many_Fallbacks: Reserv
