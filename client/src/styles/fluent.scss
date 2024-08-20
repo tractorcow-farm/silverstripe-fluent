@@ -51,7 +51,7 @@ $fluent-color-localised: rgb(102, 15, 242);
   position: relative;
 
   &:before {
-    color: white;
+    color: #fff;
     position: absolute;
     top: 50%;
     line-height: 0;
@@ -72,7 +72,7 @@ $fluent-color-localised: rgb(102, 15, 242);
     background-size: 12px;
     border-radius: 5px;
     border: 0 none;
-    color: white;
+    color: #fff;
     padding: 5px 21px 5px 24px;
     width: 100%;
 
@@ -82,7 +82,7 @@ $fluent-color-localised: rgb(102, 15, 242);
       padding: 2px;
 
       > option {
-        color: white;
+        color: #fff;
       }
     }
   }
@@ -146,7 +146,7 @@ $fluent-color-localised: rgb(102, 15, 242);
       line-height: 1em;
       display: block !important;// sass-lint:disable-line no-important
       margin: 0;
-      padding: 0 11px 8px 11px;
+      padding: 0 11px 8px;
       border-bottom: 1px solid #ccc;
       color: #999;
 

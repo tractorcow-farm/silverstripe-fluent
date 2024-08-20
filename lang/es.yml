@@ -36,7 +36,6 @@ es:
     LOCALESTATUSFLUENTUNKNOWN: 'No hay contenido disponible para esta página. Por favor localize esta página o provea una configuración regional de respaldo.'
   TractorCow\Fluent\Extension\FluentVersionedExtension:
     DRAFT: Borrador
-    LIVENO: 'No'
     LIVEYES: Sí
     MODIFIED: Modificado
     NOSOURCE: 'Sin fuentes'
