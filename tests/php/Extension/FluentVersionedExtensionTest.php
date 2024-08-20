@@ -102,7 +102,7 @@ class FluentVersionedExtensionTest extends SapphireTest
                 ->setIsDomainMode(false);
 
             // Read from the locale that the page exists in already
-            /** @var Page $page */
+            /** @var Page|FluentSiteTreeExtension $page */
             $page = $this->objFromFixture(Page::class, 'home');
 
             $this->assertEquals('en_NZ', $page->getSourceLocale()->Locale);

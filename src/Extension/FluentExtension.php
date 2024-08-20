@@ -25,7 +25,6 @@ use SilverStripe\ORM\FieldType\DBVarchar;
 use SilverStripe\ORM\Queries\SQLConditionGroup;
 use SilverStripe\ORM\Queries\SQLSelect;
 use SilverStripe\ORM\ValidationException;
-use SilverStripe\Security\Permission;
 use SilverStripe\Versioned\Versioned;
 use SilverStripe\View\HTML;
 use TractorCow\Fluent\Extension\Traits\FluentObjectTrait;
@@ -49,6 +48,7 @@ use TractorCow\Fluent\State\FluentState;
  *
  * @template T of DataObject
  * @extends DataExtension<T&static>
+ * @property DataObject|$this $owner
  */
 class FluentExtension extends DataExtension
 {
@@ -85,6 +85,22 @@ class FluentExtension extends DataExtension
      * current locale, fallback locale, base record
      */
     const INHERITANCE_MODE_ANY = 'any';
+
+    /**
+     * Fluent inheritance mode for CMS context
+     *
+     * @var string
+     * @config
+     */
+    private static string $cms_localisation_required = self::INHERITANCE_MODE_ANY;
+
+    /**
+     * Fluent inheritance mode for frontend context
+     *
+     * @var string
+     * @config
+     */
+    private static string $frontend_publish_required = self::INHERITANCE_MODE_FALLBACK;
 
     /**
      * DB fields to be used added in when creating a localised version of the owner's table
