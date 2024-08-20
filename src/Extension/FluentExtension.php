@@ -1068,7 +1068,7 @@ class FluentExtension extends DataExtension
     {
         $locales = [];
         foreach ($this->owner->Locales() as $info) {
-            if ($info->IsDraft()) {
+            if (method_exists($info, 'IsDraft') && $info->IsDraft()) {
                 $locales[] = $info->getLocaleObject();
             }
         }
