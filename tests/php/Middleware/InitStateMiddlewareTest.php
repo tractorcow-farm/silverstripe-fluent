@@ -35,7 +35,8 @@ class InitStateMiddlewareTest extends SapphireTest
             ['/', [], true],
             ['foo', [], true],
             ['my-blog/my-post', [], true],
-            ['my-blog/my-post', ['CMSPreview' => 1], false],
+            // CMS preview is front-end, and if there's no localised copy the PreviewLink will be null
+            ['my-blog/my-post', ['CMSPreview' => 1], true],
         ];
     }
 }

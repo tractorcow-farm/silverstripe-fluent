@@ -253,7 +253,7 @@ class Locale extends DataObject implements PermissionProvider
     public function getHrefLang()
     {
         if ($this->UseDefaultCode) {
-            return self::X_DEFAULT;
+            return Locale::X_DEFAULT;
         }
         return strtolower(i18n::convert_rfc1766($this->Locale));
     }
@@ -307,7 +307,7 @@ class Locale extends DataObject implements PermissionProvider
                     )),
                 CheckboxField::create(
                     'UseDefaultCode',
-                    _t(__CLASS__ . '.USE_X_DEFAULT', 'Use {code} as SEO language code (treat as global)', ['code' => self::X_DEFAULT])
+                    _t(__CLASS__ . '.USE_X_DEFAULT', 'Use {code} as SEO language code (treat as global)', ['code' => Locale::X_DEFAULT])
                 )
                     ->setDescription(_t(
                         __CLASS__ . '.USE_X_DEFAULT_DESCRIPTION',
@@ -580,10 +580,25 @@ class Locale extends DataObject implements PermissionProvider
 
         if ($append) {
             // Append locale url segment
-            $base = Controller::join_links($base, $this->getURLSegment(), '/');
+            $base = Controller::join_links($base, $this->getURLSegment());
         }
 
+        // Normalise trailing slash
+        // Can't use Controller::normaliseTrailingSlash() because that doesn't
+        // take locale domains into account
+        $base = rtrim($base, '/') . (Controller::config()->get('add_trailing_slash') ? '/' : '');
+
         return $base;
+    }
+
+    /**
+     * Absolute base url
+     *
+     * @return false|string
+     */
+    public function getAbsoluteBaseURL()
+    {
+        return Director::absoluteURL($this->getBaseURL());
     }
 
     /**
@@ -630,7 +645,7 @@ class Locale extends DataObject implements PermissionProvider
      */
     public function getLocaleEditPermission()
     {
-        $prefix = self::CMS_ACCESS_FLUENT_LOCALE;
+        $prefix = Locale::CMS_ACCESS_FLUENT_LOCALE;
         return "{$prefix}{$this->Locale}";
     }
 
@@ -640,7 +655,7 @@ class Locale extends DataObject implements PermissionProvider
         $category = _t(__CLASS__ . '.PERMISSION', 'Localisation');
         $permissions = [
             // @todo - Actually implement this check on those actions
-            self::CMS_ACCESS_MULTI_LOCALE => [
+            Locale::CMS_ACCESS_MULTI_LOCALE => [
                 'name'     => _t(
                     __CLASS__ . '.MULTI_LOCALE',
                     'Access to multi-locale actions (E.g. save in all locales)'

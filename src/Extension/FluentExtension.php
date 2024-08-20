@@ -3,6 +3,7 @@
 namespace TractorCow\Fluent\Extension;
 
 use LogicException;
+use SilverStripe\i18n\i18n;
 use SilverStripe\Core\ClassInfo;
 use SilverStripe\Core\Config\Config;
 use SilverStripe\Core\Convert;
@@ -247,7 +248,7 @@ class FluentExtension extends DataExtension
         // List of DB fields
         $fields = DataObject::getSchema()->databaseFields($class, false);
         $filter = Config::inst()->get($class, 'translate', Config::UNINHERITED);
-        if ($filter === self::TRANSLATE_NONE || empty($fields)) {
+        if ($filter === FluentExtension::TRANSLATE_NONE || empty($fields)) {
             return $this->localisedFields[$class] = [];
         }
 
@@ -273,7 +274,7 @@ class FluentExtension extends DataExtension
     {
         // Explicit per-table filter
         $filter = Config::inst()->get($class, 'translate', Config::UNINHERITED);
-        if ($filter === self::TRANSLATE_NONE) {
+        if ($filter === FluentExtension::TRANSLATE_NONE) {
             return false;
         }
         if ($filter && is_array($filter)) {
@@ -405,7 +406,7 @@ class FluentExtension extends DataExtension
         $fluents = 0;
         $extensions = $this->owner->get_extensions();
         foreach ($extensions as $extension) {
-            if (is_a($extension, self::class, true)) {
+            if (is_a($extension, FluentExtension::class, true)) {
                 $fluents++;
             }
         }
@@ -433,7 +434,7 @@ class FluentExtension extends DataExtension
         $extensions = array_filter(array_values($extensions));
         foreach ($extensions as $extension) {
             $extensionClass = Extension::get_classname_without_arguments($extension);
-            if (is_a($extensionClass, self::class, true)) {
+            if (is_a($extensionClass, FluentExtension::class, true)) {
                 $name = get_class($this->owner);
                 DB::alteration_message(
                     "Invalid config: {$name} has FluentExtension, but this should be applied only on the base class",
@@ -491,11 +492,11 @@ class FluentExtension extends DataExtension
 
         // Resolve content inheritance (this drives what content is shown)
         $inheritanceMode = $this->getInheritanceMode();
-        if ($inheritanceMode === self::INHERITANCE_MODE_EXACT) {
+        if ($inheritanceMode === FluentExtension::INHERITANCE_MODE_EXACT) {
             $joinAlias = $this->getLocalisedTable($this->owner->baseTable(), $locale->Locale);
             $where = sprintf('"%s"."ID" IS NOT NULL', $joinAlias);
             $query->addWhereAny($where);
-        } elseif ($inheritanceMode === self::INHERITANCE_MODE_FALLBACK) {
+        } elseif ($inheritanceMode === FluentExtension::INHERITANCE_MODE_FALLBACK) {
             $conditions = [];
 
             foreach ($locale->getChain() as $joinLocale) {
@@ -582,11 +583,11 @@ class FluentExtension extends DataExtension
 
             // Apply substitutions
             $localisedPredicate = str_replace($conditionSearch, $conditionReplace, $predicate);
-            
+
             if (empty($localisedPredicate)) {
                 continue;
             }
-            
+
             $where[$index] = [
                 $localisedPredicate => $parameters
             ];
@@ -628,6 +629,32 @@ class FluentExtension extends DataExtension
     protected function onAfterWrite(): void
     {
         $this->handleClassChanged();
+    }
+
+    /**
+     * If an object is duplicated also duplicate existing localised values from original to new object.
+     */
+    public function onAfterDuplicate($original, $doWrite, $relations): void
+    {
+        $localisedTables = $this->owner->getLocalisedTables();
+        foreach ($localisedTables as $tableName => $fields) {
+            // Target IDs
+            $fromID = $original->ID;
+            $toID = $this->owner->ID;
+
+            // Get localised table
+            $localisedTable = $this->getLocalisedTable($tableName);
+
+            // Remove existing translations from duplicated object
+            DB::prepared_query("DELETE FROM \"$localisedTable\" WHERE \"RecordID\" = ?", [$toID]);
+
+            // Copy translations to duplicated object
+            $fields_str = '"' . implode('","', $fields) . '"';
+            DB::prepared_query("INSERT INTO \"$localisedTable\" ( \"RecordID\", \"Locale\", $fields_str)
+                    SELECT ? AS \"RecordID\", \"Locale\", $fields_str
+                    FROM \"$localisedTable\"
+                    WHERE \"RecordID\" = ?", [$toID, $fromID]);
+        }
     }
 
     /**
@@ -809,7 +836,7 @@ class FluentExtension extends DataExtension
      */
     public function getLocalisedTable($tableName, $locale = '')
     {
-        $localisedTable = $tableName . '_' . self::SUFFIX;
+        $localisedTable = $tableName . '_' . FluentExtension::SUFFIX;
         if ($locale) {
             $localisedTable .= '_' . $locale;
         }
@@ -1116,6 +1143,25 @@ class FluentExtension extends DataExtension
     }
 
     /**
+     * Update preview link to null if the object isn't in the current locale
+     * and we can't fallback cleanly.
+     *
+     * @param ?string $link
+     */
+    public function updatePreviewLink(&$link): void
+    {
+        $owner = $this->owner;
+        $locale = FluentState::singleton()->getLocale();
+        if ($locale === null || $locale === '') {
+            return;
+        }
+        $info = $owner->LocaleInformation($locale);
+        if (!$info->getSourceLocale()) {
+            $link = null;
+        }
+    }
+
+    /**
      * Require that this record is saved in the given locale for it to be visible
      *
      * @return string
@@ -1130,17 +1176,17 @@ class FluentExtension extends DataExtension
         // Detect legacy type
         if (is_bool($inheritanceMode)) {
             $inheritanceMode = $inheritanceMode
-                ? self::INHERITANCE_MODE_EXACT
-                : self::INHERITANCE_MODE_ANY;
+                ? FluentExtension::INHERITANCE_MODE_EXACT
+                : FluentExtension::INHERITANCE_MODE_ANY;
         }
 
         if (!in_array($inheritanceMode, [
-            self::INHERITANCE_MODE_EXACT,
-            self::INHERITANCE_MODE_FALLBACK,
-            self::INHERITANCE_MODE_ANY,
+            FluentExtension::INHERITANCE_MODE_EXACT,
+            FluentExtension::INHERITANCE_MODE_FALLBACK,
+            FluentExtension::INHERITANCE_MODE_ANY,
         ])) {
             // Default mode
-            $inheritanceMode = self::INHERITANCE_MODE_ANY;
+            $inheritanceMode = FluentExtension::INHERITANCE_MODE_ANY;
         }
 
         return $inheritanceMode;
@@ -1255,10 +1301,10 @@ class FluentExtension extends DataExtension
                 }
 
                 if ($object->RecordLocale()->IsDraft()) {
-                    return _t(self::class . '.LOCALISED', 'Localised');
+                    return _t(FluentExtension::class . '.LOCALISED', 'Localised');
                 }
 
-                return _t(self::class . '.NOTLOCALISED', 'Not localised');
+                return _t(FluentExtension::class . '.NOTLOCALISED', 'Not localised');
             }
         ];
 
@@ -1275,7 +1321,7 @@ class FluentExtension extends DataExtension
                     return $sourceLocale->getLongTitle();
                 }
 
-                return _t(self::class . '.NOSOURCE', 'No source');
+                return _t(FluentExtension::class . '.NOSOURCE', 'No source');
             }
         ];
     }

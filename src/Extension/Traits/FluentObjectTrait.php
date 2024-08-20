@@ -28,7 +28,7 @@ trait FluentObjectTrait
      * Add additional columns to localisation table
      *
      * @param $summaryColumns
-     * @see FluentObjectTrait::updateFluentCMSFields()
+     * @see self::updateFluentCMSFields()
      */
     abstract protected function updateLocalisationTabColumns(&$summaryColumns);
 
@@ -165,7 +165,7 @@ trait FluentObjectTrait
 
             $fields
                 ->fieldByName('Root.Locales')
-                ->setTitle(_t(__TRAIT__ . '.TAB_LOCALISATION', 'Localisation'));
+                ->setTitle(_t('TractorCow\Fluent\Extension\Traits\FluentObjectTrait.TAB_LOCALISATION', 'Localisation'));
         } else {
             $fields->push($gridField);
         }

@@ -1,0 +1,119 @@
+pl:
+  SilverStripe\CMS\Controllers\CMSMain:
+    ARCHIVE: Archiwum
+  SilverStripe\CMS\Model\SiteTree:
+    BUTTONPUBLISHED: Opublikowano
+    BUTTONSAVEPUBLISH: Publikuj
+  TractorCow\Fluent\Control\LocaleAdmin:
+    MENUTITLE: Języki
+  TractorCow\Fluent\Extension\FluentBadgeExtension:
+    BadgeDefault: 'Domyślny język'
+    BadgeInvisible: 'Przetłumaczono w {locale}'
+    BadgeLocalised: '{type} nie jest widoczny w tym języku'
+  TractorCow\Fluent\Extension\FluentExtension:
+    COPY_FROM: 'Skopiuj do {locale} z:'
+    COPY_TO: 'Skopiuj z {locale} do:'
+    FLUENT_ICON_TOOLTIP: 'Pole do przetłumaczenia'
+    LOCALISED: Przetłumaczone
+    Localise: Lokalizacja
+    NOSOURCE: 'Brak źródła'
+    NOTLOCALISED: 'Brak lokalizacji'
+    Unlocalise: Niezlokalizuj
+    UnlocaliseTooltip: 'Usuń {name} z bieżącego języka'
+  TractorCow\Fluent\Extension\FluentFilteredExtension:
+    FILTERED_LOCALES: 'Wyświetlaj w następujących lokalizacjach'
+    LOCALEFILTEREDHELP: 'Ta strona nie jest widoczna w tym języku'
+    TAB_LOCALES: Lokalizacje
+  TractorCow\Fluent\Extension\FluentIsolatedExtension:
+    has_one_Locale: Język
+  TractorCow\Fluent\Extension\FluentSiteTreeExtension:
+    LOCALECOPYANDPUBLISH: 'Kopiuj i publikuj'
+    LOCALECOPYTODRAFT: Kopiuj
+    LOCALESTATUSFLUENTDRAFT: 'Utworzono wersję roboczą dla tego języka, jednak opublikowana treść może nadal być dziedziczona z innej. Aby opublikować tę treść dla tej lokalizacji, użyj udostępnionej akcji „Zapisz i opublikuj”.'
+    LOCALESTATUSFLUENTINVISIBLE: 'Ta strona nie będzie widoczna w tej lokalizacji, dopóki nie zostanie opublikowana.'
+    LOCALESTATUSFLUENTUNKNOWN: 'Brak treści dla tej strony. Zlokalizuj tę stronę lub podaj zastępczą wersję regionalną.'
+  TractorCow\Fluent\Extension\FluentVersionedExtension:
+    DRAFT: Szkic
+    LIVENO: Nie
+    LIVEYES: Tak
+    MODIFIED: Zmodyfikowano
+    NOSOURCE: 'Brak źródła'
+    NOTLOCALISED: 'Nie określono'
+    PUBLISHED: Opublikowano
+  TractorCow\Fluent\Extension\Traits\FluentAdminTrait:
+    ArchiveNotice: 'Zarchiwizowany „{title}” i wszystkie jego lokalizacje.'
+    ClearAllNotice: 'Wszystkie lokalizacje zostały wyczyszczone dla „{title}”.'
+    CopyNotice: 'Skopiowano „{title}” do wszystkich innych lokalizacji.'
+    DeleteNotice: 'Usunięto „{title}” i wszystkie jego lokalizacje.'
+    Localisation: 'Lokalizacja, język'
+    PublishNotice: 'Opublikowano „{title}” we wszystkich lokalizacjach.'
+    UnpublishNotice: 'Nieopublikowany „{title}” we wszystkich językach.'
+  TractorCow\Fluent\Extension\Traits\FluentBadgeTrait:
+    BadgeLocalised: 'Przetłumaczono w {locale}'
+  TractorCow\Fluent\Extension\Traits\FluentObjectTrait:
+    TAB_LOCALISATION: 'Lokalizacja, język'
+  TractorCow\Fluent\Forms\DeleteAllLocalesAction:
+    Delete: 'Usuń wszędzie'
+  TractorCow\Fluent\Forms\DeleteLocaleAction:
+    DELETE: 'Usuń ten język'
+  TractorCow\Fluent\Forms\LocaleToggleColumn:
+    DISPLAY_IN: 'Widoczny?'
+  TractorCow\Fluent\Forms\PublishAction:
+    PUBLISH: 'Opublikuj w tym języku'
+  TractorCow\Fluent\Forms\SaveLocaleAction:
+    SAVE: 'Zapisz w tym języku'
+  TractorCow\Fluent\Forms\UnpublishAction:
+    UNPUBLISH: 'Cofnij publikację w tym języku'
+  TractorCow\Fluent\Forms\VisibleLocalesColumn:
+    LocalesTitle: Języki
+  TractorCow\Fluent\Model\Domain:
+    DEFAULT: 'Domyślny język'
+    DEFAULT_NONE: (brak)
+    DOMAIN_HOSTNAME: 'Nazwa hosta domeny'
+    DOMAIN_LOCALES: Języki
+    PLURALNAME: Domeny
+    PLURALS:
+      few: 'Domen {count}'
+      many: 'Domen {count}'
+      one: Domena
+      other: 'Domeny {count}'
+    SINGULARNAME: Domena
+    UnsavedNotice: 'Po zapisaniu domeny możesz dodać języki.'
+    db_Domain: Domena
+    has_many_Locales: Języki
+    has_one_DefaultLocale: 'Domyślny język'
+  TractorCow\Fluent\Model\FallbackLocale:
+    LOCALE: Język
+    PLURALNAME: 'Język zastępczy'
+    PLURALS:
+      few: 'Języków zastępczych {count}'
+      many: 'Języków zastępczych {count}'
+      one: 'Język zastępczy'
+      other: 'Język zastępczy {count}'
+    SINGULARNAME: 'Język zastępczy'
+    has_one_Locale: Język
+  TractorCow\Fluent\Model\Locale:
+    DEFAULT_NONE: (brak)
+    DOMAIN: Domena
+    EDIT_LOCALE: 'Uzyskaj dostęp do „{title}” ({locale})'
+    FALLBACKS: 'Języki zastępcze'
+    IS_DEFAULT: 'To jest globalne domyślne ustawienie regionalne'
+    IS_DEFAULT_DESCRIPTION: 'Uwaga: ustawienia regionalne dla poszczególnych domen można przypisać na karcie Ustawienia regionalne i zastąpią one tę wartość dla określonych domen.'
+    LOCALE: Język
+    LOCALE_TITLE: Tytuł
+    LOCALE_URL: URL
+    MULTI_LOCALE: 'Dostęp do działań w wielu lokalizacjach (np. zapisywanie we wszystkich lokalizacjach)'
+    PERMISSION: 'Lokalizacja, język'
+    PLURALNAME: Języki
+    PLURALS:
+      few: 'Lokalizacje, języki {count}'
+      many: 'Lokalizacji, języków {count}'
+      one: 'Lokalizacja, język'
+      other: 'Lokalizacje, języki {count}'
+    SINGULARNAME: Język
+    USE_X_DEFAULT: 'Użyj {code} jako kodu języka SEO (traktuj jako globalny)'
+    USE_X_DEFAULT_DESCRIPTION: 'Użycie tego kodu wskazuje wyszukiwarkom, że jest to nie-określona globalna strona docelowa'
+    UnsavedNotice: 'Po zapisaniu domeny możesz dodać języki.'
+    db_Locale: Język
+    db_Title: Tytuł
+    has_one_Domain: Domena
