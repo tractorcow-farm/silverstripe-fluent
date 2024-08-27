@@ -21,7 +21,7 @@ class FluentLeftAndMainExtension extends Extension
     use FluentAdminTrait;
     use FluentBadgeTrait;
 
-    public function init()
+    protected function onInit()
     {
         Requirements::javascript("tractorcow/silverstripe-fluent:client/dist/js/fluent.js");
         Requirements::css("tractorcow/silverstripe-fluent:client/dist/styles/fluent.css");

@@ -44,7 +44,7 @@ class FluentSiteTreeExtension extends FluentVersionedExtension
      *
      * @param string &$tags
      */
-    public function MetaTags(&$tags)
+    protected function updateMetaTags(&$tags)
     {
         $tags .= $this->owner->renderWith('FluentSiteTree_MetaTags');
     }
@@ -80,7 +80,7 @@ class FluentSiteTreeExtension extends FluentVersionedExtension
      * @param string &$base
      * @param string &$action
      */
-    public function updateRelativeLink(&$base, &$action)
+    protected function updateRelativeLink(&$base, &$action)
     {
 
         if ($this->owner->hasMethod('disablePrependLocaleURLSegmentToLink') && $this->owner->disablePrependLocaleURLSegmentToLink()) {
@@ -132,7 +132,7 @@ class FluentSiteTreeExtension extends FluentVersionedExtension
      * @param string $action
      * @param string $relativeLink
      */
-    public function updateLink(&$link, &$action, &$relativeLink)
+    protected function updateLink(&$link, &$action, &$relativeLink)
     {
         // Get appropriate locale for this record
         $localeObj = $this->getRecordLocale();
