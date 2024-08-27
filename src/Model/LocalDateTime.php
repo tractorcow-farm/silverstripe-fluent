@@ -8,6 +8,7 @@ use Exception;
 use IntlDateFormatter;
 use InvalidArgumentException;
 use SilverStripe\ORM\FieldType\DBDatetime;
+use SilverStripe\View\ViewableData;
 
 /**
  * Stores dates in the same timezone as DBDateTime, but will format them
@@ -18,17 +19,14 @@ use SilverStripe\ORM\FieldType\DBDatetime;
  */
 class LocalDateTime extends DBDatetime
 {
-    protected $timezone = null;
+    protected ?string $timezone = null;
 
-    public function __construct($name = null, $options = [], $timezone = null)
+    public function __construct(?string $name = null, array $options = [], ?string $timezone = null)
     {
         $this->setTimezone($timezone);
         parent::__construct($name, $options);
     }
 
-    /**
-     * @return string|null
-     */
     public function getTimezone(): ?string
     {
         return $this->timezone;
@@ -50,11 +48,11 @@ class LocalDateTime extends DBDatetime
     }
 
     public function getCustomFormatter(
-        $locale = null,
-        $pattern = null,
-        $dateLength = IntlDateFormatter::MEDIUM,
-        $timeLength = IntlDateFormatter::MEDIUM
-    ) {
+        ?string $locale = null,
+        ?string $pattern = null,
+        int $dateLength = IntlDateFormatter::MEDIUM,
+        int $timeLength = IntlDateFormatter::MEDIUM
+    ): IntlDateFormatter {
         $formatter = parent::getCustomFormatter($locale, $pattern, $dateLength, $timeLength);
         $timezone = $this->getTimezone();
         if ($timezone) {
@@ -65,13 +63,8 @@ class LocalDateTime extends DBDatetime
 
     /**
      * Assign value in server timezone
-     *
-     * @param mixed $value
-     * @param string $record
-     * @param bool $markChanged
-     * @return $this
      */
-    public function setValue($value, $record = null, $markChanged = true)
+    public function setValue(mixed $value, null|array|ViewableData $record = null, bool $markChanged = true): static
     {
         // Disable timezone when setting value (always stored in server timezone)
         $timezone = $this->getTimezone();
@@ -85,8 +78,6 @@ class LocalDateTime extends DBDatetime
 
     /**
      * Get ISO local value
-     *
-     * @return string
      */
     public function getLocalValue(): string
     {
@@ -95,12 +86,10 @@ class LocalDateTime extends DBDatetime
 
     /** Assign a value that's already in the current locale
      *
-     * @param string $value
-     * @param string $timezone Timezone to assign to this date (defaults to current assigned timezone)
-     * @return $this
+     * @param string|null $timezone Timezone to assign to this date (defaults to current assigned timezone)
      * @throws Exception
      */
-    public function setLocalValue($value, $timezone = null)
+    public function setLocalValue(string $value, ?string $timezone = null): static
     {
         // If assigning timezone, set first
         if (func_num_args() >= 2) {
