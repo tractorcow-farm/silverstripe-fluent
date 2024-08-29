@@ -2,15 +2,15 @@
 
 namespace TractorCow\Fluent\Extension;
 
-use SilverStripe\ORM\DataExtension;
+use SilverStripe\Core\Extension;
 use SilverStripe\Versioned\ChangeSetItem;
 
 /**
  * Adds locale-specific extensions to ChangeSet
  *
- * @extends DataExtension<ChangeSetItem>
+ * @extends Extension<ChangeSetItem>
  */
-class FluentChangesExtension extends DataExtension
+class FluentChangesExtension extends Extension
 {
     /**
      * @see ChangeSetItem::getChangeType()

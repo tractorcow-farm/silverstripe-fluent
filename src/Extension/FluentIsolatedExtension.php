@@ -3,7 +3,7 @@
 namespace TractorCow\Fluent\Extension;
 
 use LogicException;
-use SilverStripe\ORM\DataExtension;
+use SilverStripe\Core\Extension;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\DataQuery;
 use SilverStripe\ORM\DB;
@@ -19,9 +19,9 @@ use TractorCow\Fluent\State\FluentState;
  * @property int $LocaleID
  * @method Locale Locale()
  *
- * @extends DataExtension<DataObject&static>
+ * @extends Extension<DataObject&static>
  */
-class FluentIsolatedExtension extends DataExtension
+class FluentIsolatedExtension extends Extension
 {
     private static $has_one = [
         'Locale' => Locale::class,

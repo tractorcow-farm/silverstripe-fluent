@@ -109,7 +109,7 @@ If you don't want to use the Filtered Locales Extension, then we can instead add
 
 namespace MySite\Extension\SiteTree;
 
-use SilverStripe\CMS\Model\SiteTreeExtension;
+use SilverStripe\Core\Extension;
 use SilverStripe\ORM\DataQuery;
 use SilverStripe\ORM\Queries\SQLSelect;
 use TractorCow\Fluent\State\FluentState;
@@ -122,7 +122,7 @@ use TractorCow\Fluent\Model\Locale;
  * @property SiteTree|$this $owner
  * @mixin FluentExtension
  */
-class SiteTreeFluentExtension extends SiteTreeExtension
+class SiteTreeFluentExtension extends Extension
 {
     /**
      * @param SQLSelect $query

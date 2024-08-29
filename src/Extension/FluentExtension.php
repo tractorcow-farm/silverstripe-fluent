@@ -13,7 +13,6 @@ use SilverStripe\Forms\FormField;
 use SilverStripe\Forms\GridField\GridField_ActionMenuItem;
 use SilverStripe\Forms\GridField\GridFieldConfig;
 use SilverStripe\ORM\ArrayList;
-use SilverStripe\ORM\DataExtension;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\DataQuery;
 use SilverStripe\ORM\DB;
@@ -48,9 +47,9 @@ use TractorCow\Fluent\State\FluentState;
  * - data_include
  *
  * @template T of DataObject
- * @extends DataExtension<T&static>
+ * @extends Extension<T&static>
  */
-class FluentExtension extends DataExtension
+class FluentExtension extends Extension
 {
     /**
      * Deletions are managed via DeletePolicy

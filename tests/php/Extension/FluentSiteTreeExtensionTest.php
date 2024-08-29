@@ -50,7 +50,7 @@ class FluentSiteTreeExtensionTest extends SapphireTest
         // Clear cache
         Locale::clearCached();
         Domain::clearCached();
-        (new FluentVersionedExtension)->flushCache();
+        FluentVersionedExtension::reset();
 
         FluentState::singleton()
             ->setLocale('de_DE')
