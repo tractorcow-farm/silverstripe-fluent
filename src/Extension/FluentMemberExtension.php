@@ -3,7 +3,7 @@
 namespace TractorCow\Fluent\Extension;
 
 use SilverStripe\ORM\ArrayList;
-use SilverStripe\ORM\DataExtension;
+use SilverStripe\Core\Extension;
 use SilverStripe\Security\Group;
 use SilverStripe\Security\Member;
 use SilverStripe\Security\Member_GroupSet;
@@ -12,9 +12,9 @@ use TractorCow\Fluent\Model\Locale;
 use TractorCow\Fluent\State\FluentState;
 
 /**
- * @extends DataExtension<Member>
+ * @extends Extension<Member>
  */
-class FluentMemberExtension extends DataExtension
+class FluentMemberExtension extends Extension
 {
     /**
      * Update groups
