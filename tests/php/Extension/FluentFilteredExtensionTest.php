@@ -7,6 +7,7 @@ use SilverStripe\CMS\Model\SiteTree;
 use SilverStripe\Core\Config\Config;
 use SilverStripe\Dev\SapphireTest;
 use SilverStripe\Forms\GridField\GridField;
+use SilverStripe\Forms\GridField\GridFieldFilterHeader;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\Versioned\Versioned;
 use TractorCow\Fluent\Extension\FluentFilteredExtension;
@@ -151,6 +152,7 @@ class FluentFilteredExtensionTest extends SapphireTest
                 LocaleToggleColumn::class,
                 $config->getComponentByType(LocaleToggleColumn::class)
             );
+            $this->assertNull($config->getComponentByType(GridFieldFilterHeader::class));
         });
     }
 
