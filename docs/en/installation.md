@@ -7,7 +7,7 @@ with composer.
 composer require tractorcow/silverstripe-fluent ^5
 ```
 
- * Run a `dev/build` to ensure all additional table fields have been generated
+ * Run `sake db:build --flush` to ensure all additional table fields have been generated
  * Configure your locales in the `/admin/locales` section
  * Publish pages in each of the locales you want them to be visible in
 
