@@ -307,7 +307,7 @@ class FluentExtensionTest extends SapphireTest
     /**
      * @return array[] Keys: Locale, sorting arguments, expected titles in result
      */
-    public function sortRecordProvider()
+    public static function sortRecordProvider()
     {
         return [
             /**

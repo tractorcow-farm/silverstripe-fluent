@@ -24,7 +24,7 @@ class InitStateMiddlewareTest extends SapphireTest
     /**
      * @return array[]
      */
-    public function isFrontendProvider()
+    public static function isFrontendProvider()
     {
         return [
             ['admin', [], false],

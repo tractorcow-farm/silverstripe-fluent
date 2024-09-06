@@ -82,7 +82,7 @@ class LocalDateTimeTest extends SapphireTest
         });
     }
 
-    public function provideTestSwitchLocales()
+    public static function provideTestSwitchLocales()
     {
         return [
             [

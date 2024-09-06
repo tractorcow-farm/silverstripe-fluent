@@ -217,7 +217,7 @@ class LocalisedVersionsTest extends SapphireTest
         });
     }
 
-    public function latestVersionsProvider(): array
+    public static function latestVersionsProvider(): array
     {
         return [
             [null, 6],
@@ -227,7 +227,7 @@ class LocalisedVersionsTest extends SapphireTest
         ];
     }
 
-    public function listVersionsProvider(): array
+    public static function listVersionsProvider(): array
     {
         return [
             [

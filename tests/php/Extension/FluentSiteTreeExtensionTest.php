@@ -116,7 +116,7 @@ class FluentSiteTreeExtensionTest extends SapphireTest
      *  - page id
      *  - expected link
      */
-    public function provideURLTests()
+    public static function provideURLTests()
     {
         return [
             // Non-domain tests
@@ -473,7 +473,7 @@ class FluentSiteTreeExtensionTest extends SapphireTest
     /**
      * @return array[]
      */
-    public function localePrefixUrlProvider()
+    public static function localePrefixUrlProvider()
     {
         return [
             'locale_with_domain'            => ['en_US', 'about', 'http://www.example.com/usa/'],
@@ -521,7 +521,7 @@ class FluentSiteTreeExtensionTest extends SapphireTest
         });
     }
 
-    public function localeFallbackProvider(): array
+    public static function localeFallbackProvider(): array
     {
         return [
             'Frontend / no inheritance' => [

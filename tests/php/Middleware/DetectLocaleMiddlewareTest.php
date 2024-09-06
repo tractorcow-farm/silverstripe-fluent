@@ -88,7 +88,7 @@ class DetectLocaleMiddlewareTest extends SapphireTest
     /**
      * @return array[] List of tests with arguments: $url, $routeParams, $queryParams, $persisted, $header, $expected
      */
-    public function localePriorityProvider()
+    public static function localePriorityProvider()
     {
         return [/*
             // First priority: controller routing params
