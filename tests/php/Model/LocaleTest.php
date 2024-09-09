@@ -79,7 +79,7 @@ class LocaleTest extends SapphireTest
     /**
      * @return array[]
      */
-    public function isLocaleProvider()
+    public static function isLocaleProvider()
     {
         return [
             ['en_NZ', 'en_NZ', true],

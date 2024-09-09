@@ -238,7 +238,7 @@ class DuplicationTest extends SapphireTest
         });
     }
 
-    public function localesProvider(): array
+    public static function localesProvider(): array
     {
         return [
             ['en_NZ', false, true],
@@ -248,7 +248,7 @@ class DuplicationTest extends SapphireTest
         ];
     }
 
-    public function copyStateProvider(): array
+    public static function copyStateProvider(): array
     {
         return [
             [false],

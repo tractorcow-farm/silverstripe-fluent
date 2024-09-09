@@ -105,7 +105,7 @@ class InitialPageLocalisationTaskTest extends SapphireTest
         $this->assertEquals($published, $pages);
     }
 
-    public function publishStateProvider(): array
+    public static function publishStateProvider(): array
     {
         return [
             [
