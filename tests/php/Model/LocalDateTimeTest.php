@@ -10,6 +10,7 @@ use TractorCow\Fluent\Model\Domain;
 use TractorCow\Fluent\Model\LocalDateTime;
 use TractorCow\Fluent\Model\Locale;
 use TractorCow\Fluent\State\FluentState;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 class LocalDateTimeTest extends SapphireTest
 {
@@ -69,9 +70,9 @@ class LocalDateTimeTest extends SapphireTest
     /**
      * Test all DB locales
      *
-     * @dataProvider provideTestSwitchLocales
      * @param $locales
      */
+    #[DataProvider('provideTestSwitchLocales')]
     public function testSwitchLocales($locale, $expectedTime)
     {
         /** @var DBDatetime|FluentDateTimeExtension $date */

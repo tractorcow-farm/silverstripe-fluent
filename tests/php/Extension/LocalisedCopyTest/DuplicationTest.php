@@ -5,6 +5,7 @@ namespace TractorCow\Fluent\Tests\Extension\LocalisedCopyTest;
 use SilverStripe\Dev\SapphireTest;
 use TractorCow\Fluent\Extension\FluentExtension;
 use TractorCow\Fluent\State\FluentState;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 class DuplicationTest extends SapphireTest
 {
@@ -47,8 +48,8 @@ class DuplicationTest extends SapphireTest
      * desired outcome: no additional changes
      *
      * @param bool $active
-     * @dataProvider copyStateProvider
      */
+    #[DataProvider('copyStateProvider')]
     public function testCreateWithDefinedRelation(bool $active): void
     {
         FluentState::singleton()->withState(function (FluentState $state) use ($active): void {
@@ -89,8 +90,8 @@ class DuplicationTest extends SapphireTest
      * @param string $locale
      * @param bool $duplicated
      * @param bool $active
-     * @dataProvider localesProvider
      */
+    #[DataProvider('localesProvider')]
     public function testEditWithDefinedRelation(string $locale, bool $duplicated, bool $active): void
     {
         FluentState::singleton()->withState(function (FluentState $state) use ($locale, $duplicated, $active): void {
@@ -132,8 +133,8 @@ class DuplicationTest extends SapphireTest
      * desired outcome: no additional changes
      *
      * @param bool $active
-     * @dataProvider copyStateProvider
      */
+    #[DataProvider('copyStateProvider')]
     public function testCreateWithInheritedRelation(bool $active): void
     {
         FluentState::singleton()->withState(function (FluentState $state) use ($active): void {
@@ -185,8 +186,8 @@ class DuplicationTest extends SapphireTest
      * @param string $locale
      * @param bool $duplicated
      * @param bool $active
-     * @dataProvider localesProvider
      */
+    #[DataProvider('localesProvider')]
     public function testEditWithInheritedRelation(string $locale, bool $duplicated, bool $active): void
     {
         FluentState::singleton()->withState(function (FluentState $state) use ($locale, $duplicated, $active): void {

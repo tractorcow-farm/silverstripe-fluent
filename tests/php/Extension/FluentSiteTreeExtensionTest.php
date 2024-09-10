@@ -24,6 +24,7 @@ use TractorCow\Fluent\Model\Domain;
 use TractorCow\Fluent\Model\Locale;
 use TractorCow\Fluent\Model\RecordLocale;
 use TractorCow\Fluent\State\FluentState;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 // Skip if pages module not installed
 if (!class_exists(SiteTree::class)) {
@@ -158,13 +159,13 @@ class FluentSiteTreeExtensionTest extends SapphireTest
     /**
      * Test that URLS for pages are generated correctly
      *
-     * @dataProvider provideURLTests
      * @param string $domain
      * @param string $locale
      * @param bool $prefixDisabled
      * @param string $pageName
      * @param string $url
      */
+    #[DataProvider('provideURLTests')]
     public function testFluentURLs(?string $domain, string $locale, bool $prefixDisabled, string $pageName, string $url)
     {
         FluentState::singleton()->withState(
@@ -313,8 +314,8 @@ class FluentSiteTreeExtensionTest extends SapphireTest
      * @param string $localeCode
      * @param string $fixture
      * @param string $expected
-     * @dataProvider localePrefixUrlProvider
      */
+    #[DataProvider('localePrefixUrlProvider')]
     public function testAddLocalePrefixToUrlSegment(string $localeCode, string $fixture, string $expected)
     {
         FluentState::singleton()->withState(
@@ -488,8 +489,8 @@ class FluentSiteTreeExtensionTest extends SapphireTest
      * @param bool $isFrontend
      * @param int $expected
      * @throws ValidationException
-     * @dataProvider localeFallbackProvider
      */
+    #[DataProvider('localeFallbackProvider')]
     public function testPageVisibilityWithFallback($cmsMode, $frontendMode, bool $isFrontend, int $expected)
     {
         Config::modify()

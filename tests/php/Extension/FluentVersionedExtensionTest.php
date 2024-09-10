@@ -116,7 +116,7 @@ class FluentVersionedExtensionTest extends SapphireTest
 
         /** @var FluentVersionedExtension $extension */
         $extension = $this->getMockBuilder(FluentVersionedExtension::class)
-            ->setMethods(['findRecordInLocale'])
+            ->onlyMethods(['findRecordInLocale'])
             ->getMock();
         $extension->setOwner($page);
 
@@ -142,7 +142,7 @@ class FluentVersionedExtensionTest extends SapphireTest
 
         /** @var FluentVersionedExtension $extension */
         $extension = $this->getMockBuilder(FluentVersionedExtension::class)
-            ->setMethods(['findRecordInLocale'])
+            ->onlyMethods(['findRecordInLocale'])
             ->getMock();
         $extension->setOwner($page);
 

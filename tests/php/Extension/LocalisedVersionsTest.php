@@ -7,6 +7,7 @@ use SilverStripe\Versioned\Versioned;
 use TractorCow\Fluent\Extension\FluentVersionedExtension;
 use TractorCow\Fluent\State\FluentState;
 use TractorCow\Fluent\Tests\Extension\Stub\FluentDataObject;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 /**
  * Class LocalisedVersionsTest
@@ -94,8 +95,8 @@ class LocalisedVersionsTest extends SapphireTest
     /**
      * @param string|null $locale
      * @param int $expected
-     * @dataProvider latestVersionsProvider
      */
+    #[DataProvider('latestVersionsProvider')]
     public function testGetLatestVersion(?string $locale, int $expected): void
     {
         FluentState::singleton()->withState(function (FluentState $state) use ($locale, $expected): void {
@@ -114,8 +115,8 @@ class LocalisedVersionsTest extends SapphireTest
     /**
      * @param string|null $locale
      * @param int $expected
-     * @dataProvider latestVersionsProvider
      */
+    #[DataProvider('latestVersionsProvider')]
     public function testGetVersionNumberByStage(?string $locale, int $expected): void
     {
         FluentState::singleton()->withState(function (FluentState $state) use ($locale, $expected): void {
@@ -134,8 +135,8 @@ class LocalisedVersionsTest extends SapphireTest
     /**
      * @param string|null $locale
      * @param int $expected
-     * @dataProvider listVersionsProvider
      */
+    #[DataProvider('listVersionsProvider')]
     public function testGetAllVersions(?string $locale, array $expected): void
     {
         FluentState::singleton()->withState(function (FluentState $state) use ($locale, $expected): void {

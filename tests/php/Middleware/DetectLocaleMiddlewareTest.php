@@ -14,6 +14,7 @@ use TractorCow\Fluent\Middleware\DetectLocaleMiddleware;
 use TractorCow\Fluent\Model\Domain;
 use TractorCow\Fluent\Model\Locale;
 use TractorCow\Fluent\State\FluentState;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 class DetectLocaleMiddlewareTest extends SapphireTest
 {
@@ -60,7 +61,6 @@ class DetectLocaleMiddlewareTest extends SapphireTest
     }
 
     /**
-     * @dataProvider localePriorityProvider
      * @param string $url
      * @param array  $routeParams
      * @param array  $queryParams
@@ -68,6 +68,7 @@ class DetectLocaleMiddlewareTest extends SapphireTest
      * @param string $header
      * @param string $expected
      */
+    #[DataProvider('localePriorityProvider')]
     public function testGetLocalePriority($url, $routeParams, $queryParams, $persisted, $header, $expected)
     {
         $request = new HTTPRequest('GET', $url, $queryParams);
@@ -113,7 +114,7 @@ class DetectLocaleMiddlewareTest extends SapphireTest
 
             /** @var DetectLocaleMiddleware|PHPUnit_Framework_MockObject_MockObject $middleware */
             $middleware = $this->getMockBuilder(DetectLocaleMiddleware::class)
-                ->setMethods(['getLocale', 'setPersistLocale'])
+                ->onlyMethods(['getLocale', 'setPersistLocale'])
                 ->getMock();
 
             $middleware->expects($this->never())->method('getLocale');
@@ -134,7 +135,7 @@ class DetectLocaleMiddlewareTest extends SapphireTest
 
         /** @var DetectLocaleMiddleware|PHPUnit_Framework_MockObject_MockObject $middleware */
         $middleware = $this->getMockBuilder(DetectLocaleMiddleware::class)
-            ->setMethods(['getLocale', 'setPersistLocale'])
+            ->onlyMethods(['getLocale', 'setPersistLocale'])
             ->getMock();
 
         $middleware->expects($this->once())->method('getLocale')->willReturn(null);
@@ -154,7 +155,7 @@ class DetectLocaleMiddlewareTest extends SapphireTest
 
         $sessionData = [];
         $sessionMock = $this->getMockBuilder(Session::class)
-            ->setMethods(['set', 'getAll'])
+            ->onlyMethods(['set', 'getAll'])
             ->setConstructorArgs([$sessionData])
             ->getMock();
         $sessionMock->expects($this->once())->method('set')->with($key, $newLocale);
@@ -180,7 +181,7 @@ class DetectLocaleMiddlewareTest extends SapphireTest
 
         $sessionData = [$key => $newLocale];
         $sessionMock = $this->getMockBuilder(Session::class)
-            ->setMethods(['set', 'isStarted'])
+            ->onlyMethods(['set', 'isStarted'])
             ->setConstructorArgs([$sessionData])
             ->getMock();
 
@@ -206,7 +207,7 @@ class DetectLocaleMiddlewareTest extends SapphireTest
 
         $sessionData = [$key => $newLocale];
         $sessionMock = $this->getMockBuilder(Session::class)
-            ->setMethods(['set', 'isStarted'])
+            ->onlyMethods(['set', 'isStarted'])
             ->setConstructorArgs([$sessionData])
             ->getMock();
 
@@ -237,7 +238,7 @@ class DetectLocaleMiddlewareTest extends SapphireTest
         //
         // $sessionData = [$key => $newLocale];
         // $sessionMock = $this->getMockBuilder(Session::class)
-        //     ->setMethods(['set'])
+        //     ->onlyMethods(['set'])
         //     ->setConstructorArgs([$sessionData])
         //     ->getMock();
         // $sessionMock->expects($this->once())->method('set')->with($key, $this->globalDefaultLocale);

@@ -5,15 +5,16 @@ namespace TractorCow\Fluent\Tests\Middleware;
 use SilverStripe\Dev\SapphireTest;
 use SilverStripe\Control\HTTPRequest;
 use TractorCow\Fluent\Middleware\InitStateMiddleware;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 class InitStateMiddlewareTest extends SapphireTest
 {
     /**
-     * @dataProvider isFrontendProvider
      * @param string $url
      * @param array $getVars
      * @param string $expected
      */
+    #[DataProvider('isFrontendProvider')]
     public function testGetIsFrontend($url, $getVars, $expected)
     {
         $request = new HTTPRequest('GET', $url, $getVars);

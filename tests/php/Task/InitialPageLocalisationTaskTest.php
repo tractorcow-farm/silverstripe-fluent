@@ -10,6 +10,7 @@ use TractorCow\Fluent\Extension\FluentSiteTreeExtension;
 use TractorCow\Fluent\Model\Locale;
 use TractorCow\Fluent\State\FluentState;
 use TractorCow\Fluent\Task\InitialPageLocalisationTask;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 class InitialPageLocalisationTaskTest extends SapphireTest
 {
@@ -30,8 +31,8 @@ class InitialPageLocalisationTaskTest extends SapphireTest
      * @param int $limit
      * @param array $localised
      * @param array $published
-     * @dataProvider publishStateProvider
      */
+    #[DataProvider('publishStateProvider')]
     public function testInitialPageLocalisation(bool $publish, int $limit, array $localised, array $published): void
     {
         // Check base records
