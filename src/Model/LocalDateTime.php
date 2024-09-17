@@ -8,7 +8,7 @@ use Exception;
 use IntlDateFormatter;
 use InvalidArgumentException;
 use SilverStripe\ORM\FieldType\DBDatetime;
-use SilverStripe\View\ViewableData;
+use SilverStripe\Model\ModelData;
 
 /**
  * Stores dates in the same timezone as DBDateTime, but will format them
@@ -64,7 +64,7 @@ class LocalDateTime extends DBDatetime
     /**
      * Assign value in server timezone
      */
-    public function setValue(mixed $value, null|array|ViewableData $record = null, bool $markChanged = true): static
+    public function setValue(mixed $value, null|array|ModelData $record = null, bool $markChanged = true): static
     {
         // Disable timezone when setting value (always stored in server timezone)
         $timezone = $this->getTimezone();

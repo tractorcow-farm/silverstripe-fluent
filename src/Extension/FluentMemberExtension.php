@@ -2,7 +2,7 @@
 
 namespace TractorCow\Fluent\Extension;
 
-use SilverStripe\ORM\ArrayList;
+use SilverStripe\Model\List\ArrayList;
 use SilverStripe\Core\Extension;
 use SilverStripe\Security\Group;
 use SilverStripe\Security\Member;

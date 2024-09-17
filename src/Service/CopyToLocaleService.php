@@ -4,7 +4,7 @@ namespace TractorCow\Fluent\Service;
 
 use SilverStripe\Core\Injector\Injectable;
 use SilverStripe\ORM\DataObject;
-use SilverStripe\ORM\ValidationException;
+use SilverStripe\Core\Validation\ValidationException;
 use SilverStripe\Versioned\Versioned;
 use TractorCow\Fluent\Model\Locale;
 use TractorCow\Fluent\State\FluentState;
