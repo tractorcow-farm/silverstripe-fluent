@@ -12,7 +12,7 @@ class Exception extends \Exception
     public function __construct()
     {
         parent::__construct();
-        Deprecation::withNoReplacement(function () {
+        Deprecation::withSuppressedWarning(function () {
             Deprecation::notice(
                 '7.3.0',
                 'Will be removed without equivalent functionality to replace it',
