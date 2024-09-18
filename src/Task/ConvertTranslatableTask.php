@@ -46,7 +46,7 @@ class ConvertTranslatableTask extends BuildTask
     public function __construct()
     {
         parent::__construct();
-        Deprecation::withSuppressedWarning(function () {
+        Deprecation::withSuppressedNotice(function () {
             Deprecation::notice(
                 '7.3.0',
                 'Will be removed without equivalent functionality to replace it',
