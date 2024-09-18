@@ -11,6 +11,7 @@ use SilverStripe\Forms\GridField\GridField;
 use SilverStripe\Forms\GridField\GridFieldConfig;
 use SilverStripe\Forms\GridField\GridFieldConfig_Base;
 use SilverStripe\Forms\GridField\GridFieldDataColumns;
+use SilverStripe\Forms\GridField\GridFieldFilterHeader;
 use SilverStripe\ORM\ArrayList;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\DataQuery;
@@ -106,6 +107,8 @@ trait FluentObjectTrait
 
         // Generate gridfield for handling localisations
         $config = GridFieldConfig_Base::create();
+        // Remove filters as the displayed data is in ArrayList format
+        $config->removeComponentsByType(GridFieldFilterHeader::class);
 
         $columns = $config->getComponentByType(GridFieldDataColumns::class);
         $summaryColumns = [

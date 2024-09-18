@@ -6,6 +6,7 @@ use SilverStripe\Core\ClassInfo;
 use SilverStripe\Core\Convert;
 use SilverStripe\Dev\BuildTask;
 use SilverStripe\Dev\Debug;
+use SilverStripe\Dev\Deprecation;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\DB;
 use SilverStripe\ORM\Queries\SQLSelect;
@@ -31,6 +32,8 @@ use TractorCow\Fluent\Task\ConvertTranslatableTask\Exception;
  * 3. Log into the CMS and set up the locales you want to use
  * 4. Back up your DB again
  * 5. Log into the CMS and check everything
+ *
+ * @deprecated 7.3.0 Will be removed without equivalent functionality to replace it
  */
 class ConvertTranslatableTask extends BuildTask
 {
@@ -39,6 +42,18 @@ class ConvertTranslatableTask extends BuildTask
     protected $description = "Migrates site DB from SS3 Translatable DB format to SS4 Fluent.";
 
     private static $segment = 'ConvertTranslatableTask';
+
+    public function __construct()
+    {
+        parent::__construct();
+        Deprecation::withSuppressedWarning(function () {
+            Deprecation::notice(
+                '7.3.0',
+                'Will be removed without equivalent functionality to replace it',
+                Deprecation::SCOPE_CLASS
+            );
+        });
+    }
 
     /**
      * Checks that fluent is configured correctly
