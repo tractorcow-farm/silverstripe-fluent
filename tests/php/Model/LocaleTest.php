@@ -10,6 +10,7 @@ use TractorCow\Fluent\Extension\FluentDirectorExtension;
 use TractorCow\Fluent\Model\Domain;
 use TractorCow\Fluent\Model\Locale;
 use TractorCow\Fluent\State\FluentState;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 class LocaleTest extends SapphireTest
 {
@@ -65,11 +66,11 @@ class LocaleTest extends SapphireTest
     }
 
     /**
-     * @dataProvider isLocaleProvider
      * @param string $locale
      * @param string $input
      * @param bool   $expected
      */
+    #[DataProvider('isLocaleProvider')]
     public function testIsLocale($locale, $input, $expected)
     {
         $localeObj = Locale::create()->setField('Locale', $locale);

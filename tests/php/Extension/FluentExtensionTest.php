@@ -19,6 +19,7 @@ use TractorCow\Fluent\Tests\Extension\FluentExtensionTest\TestModel;
 use TractorCow\Fluent\Tests\Extension\FluentExtensionTest\TestRelationPage;
 use TractorCow\Fluent\Tests\Extension\FluentExtensionTest\UnlocalisedChild;
 use TractorCow\Fluent\Tests\Extension\Stub\FluentStubObject;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 class FluentExtensionTest extends SapphireTest
 {
@@ -283,12 +284,11 @@ class FluentExtensionTest extends SapphireTest
     /**
      * Ensure that records can be sorted in their locales
      *
-     * @dataProvider sortRecordProvider
      * @param string $locale
      * @param string[] $sortArgs
      * @param string[] $expected
-     * @group exclude-from-travis
      */
+    #[DataProvider('sortRecordProvider')]
     public function testLocalisedFieldsCanBeSorted($locale, array $sortArgs, $expected, $useOrderBy = false)
     {
         FluentState::singleton()->withState(function (FluentState $newState) use ($locale, $sortArgs, $expected, $useOrderBy) {
