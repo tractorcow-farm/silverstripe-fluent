@@ -32,7 +32,7 @@
     "require": {
         "php": "^8.1",
         "silverstripe/vendor-plugin": "^2",
-        "silverstripe/framework": "^5",
+        "silverstripe/framework": "^5.4",
         "silverstripe/admin": "^2",
         "silverstripe/versioned": "^2",
         "symbiote/silverstripe-gridfieldextensions": "^4",
