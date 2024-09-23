@@ -9,8 +9,8 @@ namespace TractorCow\Fluent\Search;
 
 use SilverStripe\CMS\Model\SiteTree;
 use SilverStripe\CMS\Search\SearchForm;
-use SilverStripe\ORM\ArrayList;
-use SilverStripe\ORM\PaginatedList;
+use SilverStripe\Model\List\ArrayList;
+use SilverStripe\Model\List\PaginatedList;
 use TractorCow\Fluent\State\FluentState;
 
 // Soft dependency on CMS module

@@ -5,7 +5,7 @@ namespace TractorCow\Fluent\Tests\Model\Delete;
 use SilverStripe\Core\Injector\Injector;
 use SilverStripe\Dev\SapphireTest;
 use SilverStripe\ORM\DB;
-use SilverStripe\ORM\ValidationException;
+use SilverStripe\Core\Validation\ValidationException;
 use TractorCow\Fluent\Model\Delete\DeletePolicy;
 use TractorCow\Fluent\Model\Delete\DeleteRecordPolicy;
 use TractorCow\Fluent\Model\Domain;

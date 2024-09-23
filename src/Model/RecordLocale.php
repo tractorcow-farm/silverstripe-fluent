@@ -6,7 +6,7 @@ use SilverStripe\Control\Director;
 use SilverStripe\i18n\i18n;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\Versioned\Versioned;
-use SilverStripe\View\ViewableData;
+use SilverStripe\Model\ModelData;
 use TractorCow\Fluent\Extension\FluentExtension;
 use TractorCow\Fluent\Extension\FluentFilteredExtension;
 use TractorCow\Fluent\Extension\FluentVersionedExtension;
@@ -15,7 +15,7 @@ use TractorCow\Fluent\State\FluentState;
 /**
  * Object that represents details of a specific dataobject in a specific locale
  */
-class RecordLocale extends ViewableData
+class RecordLocale extends ModelData
 {
     /**
      * @var Locale

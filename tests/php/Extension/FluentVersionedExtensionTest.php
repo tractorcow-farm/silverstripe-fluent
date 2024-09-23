@@ -5,7 +5,7 @@ namespace TractorCow\Fluent\Tests\Extension;
 use Page;
 use SilverStripe\CMS\Model\SiteTree;
 use SilverStripe\Dev\SapphireTest;
-use SilverStripe\ORM\ValidationException;
+use SilverStripe\Core\Validation\ValidationException;
 use TractorCow\Fluent\Extension\FluentSiteTreeExtension;
 use TractorCow\Fluent\Extension\FluentVersionedExtension;
 use TractorCow\Fluent\Model\Domain;

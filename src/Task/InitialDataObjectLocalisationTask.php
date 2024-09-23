@@ -54,7 +54,7 @@ class InitialDataObjectLocalisationTask extends BuildTask
      * @param HTTPRequest $request
      * @return void
      * @throws \ReflectionException
-     * @throws \SilverStripe\ORM\ValidationException
+     * @throws \SilverStripe\Core\Validation\ValidationException
      */
     public function run($request)
     {
@@ -135,7 +135,7 @@ class InitialDataObjectLocalisationTask extends BuildTask
      * @param $limit
      * @param $publish
      * @return array{localisable: int, localised: int, publishable: int, published: int}
-     * @throws \SilverStripe\ORM\ValidationException
+     * @throws \SilverStripe\Core\Validation\ValidationException
      */
     protected function doLocaliseClass($className, $globalLocale, $limit, $publish): array
     {

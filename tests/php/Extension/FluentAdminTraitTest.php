@@ -5,7 +5,7 @@ namespace TractorCow\Fluent\Tests\Extension;
 use SilverStripe\Dev\SapphireTest;
 use SilverStripe\Forms\Form;
 use SilverStripe\ORM\DB;
-use SilverStripe\ORM\ValidationException;
+use SilverStripe\Core\Validation\ValidationException;
 use SilverStripe\Versioned\Versioned;
 use TractorCow\Fluent\Extension\FluentVersionedExtension;
 use TractorCow\Fluent\Model\Locale;
