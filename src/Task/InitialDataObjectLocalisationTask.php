@@ -2,12 +2,16 @@
 
 namespace TractorCow\Fluent\Task;
 
+use SilverStripe\CMS\Model\SiteTree;
 use SilverStripe\Control\Director;
-use SilverStripe\Control\HTTPRequest;
 use SilverStripe\Core\ClassInfo;
 use SilverStripe\Dev\BuildTask;
+use SilverStripe\PolyExecution\PolyOutput;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\Versioned\Versioned;
+use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use TractorCow\Fluent\Extension\FluentExtension;
 use TractorCow\Fluent\Extension\FluentVersionedExtension;
 use TractorCow\Fluent\Model\Locale;
@@ -15,24 +19,11 @@ use TractorCow\Fluent\State\FluentState;
 
 class InitialDataObjectLocalisationTask extends BuildTask
 {
-    /**
-     * @var string
-     */
-    private static $segment = 'initial-dataobject-localisation-task';
+    protected static string $commandName = 'initial-dataobject-localisation-task';
 
-    /**
-     * @var string
-     */
-    protected $title = 'Initial DataObject localisation (excludes SiteTree)';
+    protected string $title = 'Initial DataObject localisation (excludes SiteTree)';
 
-    /**
-     * @var string
-     */
-    protected $description = 'Intended for projects which already have data when Fluent module is added.' .
-    ' This dev task will localise / publish all DataObjects in the default locale. Locale setup has to be done before running this task.' .
-    ' Pass limit=N to limit number of records to localise. Pass publish=1 to enable publishing of localised Versioned DataObjects.' .
-    ' Regardless, Versioned DataObjects which were not already published will not be published, only localised. DataObjects which were already localised will always be skipped.' .
-    ' This class may be extended to create custom initialization tasks targeting or excluding specific classes.';
+    protected static string $description = 'Intended for projects which already have data when Fluent module is added.';
 
     /**
      * When extending this class, you may choose to include only these specific classes.
@@ -51,19 +42,15 @@ class InitialDataObjectLocalisationTask extends BuildTask
     ];
 
     /**
-     * @param HTTPRequest $request
-     * @return void
      * @throws \ReflectionException
      * @throws \SilverStripe\Core\Validation\ValidationException
      */
-    public function run($request)
+    protected function execute(InputInterface $input, PolyOutput $output): int
     {
-        if (!Director::is_cli()) {
-            echo '<pre>' . PHP_EOL;
-        }
+        $output->writeForHtml('<pre>');
 
-        $publish = (bool)$request->getVar('publish');
-        $limit = (int)$request->getVar('limit');
+        $publish = $input->getOption('publish');
+        $limit = (int)$input->getOption('limit');
 
         $total_results = [
             'localisable' => 0,
@@ -79,16 +66,16 @@ class InitialDataObjectLocalisationTask extends BuildTask
             ->first();
 
         if (!$globalLocale) {
-            echo 'Please set global locale first!' . PHP_EOL;
-
-            return;
+            $output->writeln('<error>Please set global locale first!</>');
+            $output->writeForHtml('</pre>');
+            return Command::INVALID;
         }
 
         if ($this->include_only_classes && is_array($this->include_only_classes)) {
             $classesWithFluent = $this->include_only_classes;
             foreach ($this->include_only_classes as $key => $dataClass) {
                 if (!$this->isClassNamePermitted($dataClass)) {
-                    echo sprintf('ERROR: `%s` does not have FluentExtension installed. Continuing without it...', $dataClass) . PHP_EOL;
+                    $output->writeln(sprintf('ERROR: `%s` does not have FluentExtension installed. Continuing without it...', $dataClass));
                     unset($classesWithFluent[$key]);
                 }
             }
@@ -107,26 +94,33 @@ class InitialDataObjectLocalisationTask extends BuildTask
                 $total_results[$key] += $value;
             }
 
-            echo sprintf('Processing %s objects...', $classWithFluent) . PHP_EOL;
-            echo sprintf('└─ Localised %d of %d objects.', $results['localised'], $results['localisable']) . PHP_EOL;
+            $output->writeln(sprintf('Processing %s objects...', $classWithFluent));
+            $output->writeln(sprintf('└─ Localised %d of %d objects.', $results['localised'], $results['localisable']));
             if ($results['publishable']) {
-                echo sprintf('└─ Published %d of %d objects.', $results['published'], $results['publishable']) . PHP_EOL;
+                $output->writeln(sprintf('└─ Published %d of %d objects.', $results['published'], $results['publishable']));
             }
         }
 
-        echo PHP_EOL;
-        echo sprintf('Completed %d classes.', count($classesWithFluent)) . PHP_EOL;
-        echo sprintf('└─ Localised %d of %d objects in total.', $total_results['localised'], $total_results['localisable']) . PHP_EOL;
-        echo PHP_EOL;
+        $output->writeln('');
+        $output->writeln(sprintf('Completed %d classes.', count($classesWithFluent)));
+        $output->writeln(sprintf('└─ Localised %d of %d objects in total.', $total_results['localised'], $total_results['localisable']));
+        $output->writeln('');
 
         if ($total_results['publishable']) {
-            echo sprintf('└─ Published %d of %d objects in total.', $total_results['published'], $total_results['publishable']) . PHP_EOL;
-            echo PHP_EOL;
+            $output->writeln(sprintf('└─ Published %d of %d objects in total.', $total_results['published'], $total_results['publishable']));
+            $output->writeln('');
         }
 
-        if (!Director::is_cli()) {
-            echo '</pre>';
-        }
+        $output->writeForHtml('<pre>');
+        return Command::SUCCESS;
+    }
+
+    public function getOptions(): array
+    {
+        return [
+            new InputOption('publish', null, InputOption::VALUE_NONE, 'Publish pages after localising (if they were published beforehand)'),
+            new InputOption('limit', null, InputOption::VALUE_REQUIRED, 'Maximum number of records to localise at once', 1),
+        ];
     }
 
     /**
@@ -283,5 +277,18 @@ class InitialDataObjectLocalisationTask extends BuildTask
         }
 
         return $dataObject->hasExtension(FluentExtension::class);
+    }
+
+    public static function getHelp(): string
+    {
+        $isCli = Director::is_cli();
+        $limit = $isCli ? '--limit=N' : 'limit=N';
+        $publish = $isCli ? '--publish' : 'publish=1';
+        return <<<TXT
+        This dev task will localise / publish all DataObjects in the default locale. Locale setup has to be done before running this task.
+        Pass <info>$limit</> to limit number of records to localise. Pass <info>$publish</> to enable publishing of localised Versioned DataObjects.
+        Regardless, Versioned DataObjects which were not already published will not be published, only localised. DataObjects which were already localised will always be skipped.
+        This class may be extended to create custom initialization tasks targeting or excluding specific classes.
+        TXT;
     }
 }

@@ -3,11 +3,11 @@
 namespace TractorCow\Fluent\Tests\Task;
 
 use SilverStripe\CMS\Model\SiteTree;
-use SilverStripe\Control\HTTPRequest;
 use SilverStripe\Dev\SapphireTest;
-use SilverStripe\Core\Validation\ValidationException;
+use SilverStripe\PolyExecution\PolyOutput;
+use Symfony\Component\Console\Input\ArrayInput;
+use Symfony\Component\Console\Output\BufferedOutput;
 use TractorCow\Fluent\Extension\FluentSiteTreeExtension;
-use TractorCow\Fluent\Model\Locale;
 use TractorCow\Fluent\State\FluentState;
 use TractorCow\Fluent\Task\InitialPageLocalisationTask;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -75,7 +75,12 @@ class InitialPageLocalisationTaskTest extends SapphireTest
         ];
 
         // Localise pages
-        InitialPageLocalisationTask::singleton()->run(new HTTPRequest('GET', '/', $getParams));
+        $task = InitialPageLocalisationTask::singleton();
+        $buffer = new BufferedOutput();
+        $output = new PolyOutput(PolyOutput::FORMAT_ANSI, wrappedOutput: $buffer);
+        $input = new ArrayInput($getParams);
+        $input->setInteractive(false);
+        $task->run($input, $output);
 
         // Check localised records (should have all pages now)
         $pages = $this->getLocalisedPages();

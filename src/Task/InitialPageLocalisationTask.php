@@ -3,26 +3,15 @@
 namespace TractorCow\Fluent\Task;
 
 use SilverStripe\CMS\Model\SiteTree;
+use SilverStripe\Control\Director;
 
 class InitialPageLocalisationTask extends InitialDataObjectLocalisationTask
 {
-    /**
-     * @var string
-     */
-    private static $segment = 'initial-page-localisation-task';
+    protected static string $commandName = 'initial-page-localisation-task';
 
-    /**
-     * @var string
-     */
-    protected $title = 'Initial SiteTree localisation';
+    protected string $title = 'Initial SiteTree localisation';
 
-    /**
-     * @var string
-     */
-    protected $description = 'Intended for projects which already have some Pages when Fluent module is added.' .
-    ' This dev task will localise / publish all Pages in the default locale. Locale setup has to be done before running this task.' .
-    ' Pass limit=N to limit number of records to localise. Pass publish=1 to force publishing of localised Pages.' .
-    ' Regardless, Pages which were not already published will not be published, only localised. Pages which were already localised will always be skipped.';
+    protected static string $description = 'Intended for projects which already have some Pages when Fluent module is added';
 
     /**
      * @var string[]
@@ -43,5 +32,17 @@ class InitialPageLocalisationTask extends InitialDataObjectLocalisationTask
     function isEnabled(): bool
     {
         return class_exists(SiteTree::class) && parent::isEnabled();
+    }
+
+    public static function getHelp(): string
+    {
+        $isCli = Director::is_cli();
+        $limit = $isCli ? '--limit=N' : 'limit=N';
+        $publish = $isCli ? '--publish' : 'publish=1';
+        return <<<TXT
+        This dev task will localise / publish all Pages in the default locale. Locale setup has to be done before running this task.
+        Pass <info>$limit</> to limit number of records to localise. Pass <info>$publish</> to force publishing of localised Pages.
+        Regardless, Pages which were not already published will not be published, only localised. Pages which were already localised will always be skipped.
+        TXT;
     }
 }

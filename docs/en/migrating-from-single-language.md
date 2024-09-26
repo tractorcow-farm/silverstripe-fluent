@@ -33,7 +33,7 @@ TractorCow\Fluent\Model\Locale:
       URLSegment: en
 ```
 
-When you run `dev/build?flush` again, this adds the records to the database if the locales table is still empty.
+When you run `sake db:build --flush` again, this adds the records to the database if the locales table is still empty.
 
 ## Populating initial localised content for existing Pages and DataObjects in your default locale
 
@@ -63,32 +63,33 @@ publish your `Versioned` data (including Pages) from the commandline or queued a
 
 1. Example: Localise all Pages (default, without publishing)
 
-   ```
-   dev/tasks/initial-page-localisation-task
+   ```sh
+   sake tasks:initial-page-localisation-task
    ```
 
 2. Example: Localise &amp; publish all Pages
 
-    ```
-    dev/tasks/initial-page-localisation-task publish=1
+    ```sh
+    sake tasks:initial-page-localisation-task --publish
     ```
 
 3. Example: Localising Pages in batches can be done by using the `limit` option. 
    This will localise &amp; publish five pages on each run.
 
-    ```
-    dev/tasks/initial-page-localisation-task publish=1&limit=5
+    ```sh
+    sake tasks:initial-page-localisation-task --publish --limit=5
     ```
 
 4. Example: All the same functionality is available for localising all DataObjects, including `Versioned` and non-Versioned classes
 
+    ```sh
+    sake tasks:initial-dataobject-localisation-task
     ```
-    dev/tasks/initial-dataobject-localisation-task
-    ```
+
     or
 
-    ```
-    dev/tasks/initial-dataobject-localisation-task publish=1&limit=5
+    ```sh
+    sake tasks:initial-dataobject-localisation-task --publish --limit=5
     ```
 
 #### Customize your own initialisation dev task
