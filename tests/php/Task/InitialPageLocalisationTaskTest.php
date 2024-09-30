@@ -11,6 +11,7 @@ use TractorCow\Fluent\Extension\FluentSiteTreeExtension;
 use TractorCow\Fluent\State\FluentState;
 use TractorCow\Fluent\Task\InitialPageLocalisationTask;
 use PHPUnit\Framework\Attributes\DataProvider;
+use Symfony\Component\Console\Input\InputDefinition;
 
 class InitialPageLocalisationTaskTest extends SapphireTest
 {
@@ -69,17 +70,18 @@ class InitialPageLocalisationTaskTest extends SapphireTest
         $pages = $this->getLocalisedPages();
         $this->assertCount(0, $pages);
 
-        $getParams = [
-            'publish' => $publish,
-            'limit' => $limit,
+        $options = [
+            '--publish' => $publish,
+            '--limit' => $limit,
         ];
 
         // Localise pages
         $task = InitialPageLocalisationTask::singleton();
         $buffer = new BufferedOutput();
         $output = new PolyOutput(PolyOutput::FORMAT_ANSI, wrappedOutput: $buffer);
-        $input = new ArrayInput($getParams);
+        $input = new ArrayInput($options);
         $input->setInteractive(false);
+        $input->bind(new InputDefinition($task->getOptions()));
         $task->run($input, $output);
 
         // Check localised records (should have all pages now)
