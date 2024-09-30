@@ -88,19 +88,19 @@ class LocalDateTimeTest extends SapphireTest
         return [
             [
                 'locale'    => 'en_NZ',
-                'localTIme' => '2021-01-13 02:00:12',
+                'expectedTime' => '2021-01-13 02:00:12',
             ],
             [
                 'locale'    => 'en_AU',
-                'localTime' => '2021-01-12 23:00:12',
+                'expectedTime' => '2021-01-12 23:00:12',
             ],
             [
                 'locale'    => 'es_ES',
-                'localTime' => '2021-01-12 14:00:12',
+                'expectedTime' => '2021-01-12 14:00:12',
             ],
             [
                 'locale'    => 'es_US',
-                'localTime' => '2021-01-12 08:00:12',
+                'expectedTime' => '2021-01-12 08:00:12',
             ],
         ];
     }
