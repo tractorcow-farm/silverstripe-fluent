@@ -53,7 +53,7 @@ class LocaleAdmin extends ModelAdmin
         return $form;
     }
 
-    public function getClientConfig()
+    public function getClientConfig(): array
     {
         /** @var Member|FluentMemberExtension $member */
         $member = Security::getCurrentUser();
