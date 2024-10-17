@@ -33,7 +33,7 @@ class FluentLeftAndMainExtension extends Extension
      */
     protected function updateBreadcrumbs(ArrayList $breadcrumbs)
     {
-        $record = $this->owner->currentPage();
+        $record = $this->owner->currentRecord();
         if (!$record) {
             return;
         }
