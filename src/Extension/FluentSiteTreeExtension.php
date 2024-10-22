@@ -279,7 +279,7 @@ class FluentSiteTreeExtension extends FluentVersionedExtension
             $info = $owner->LocaleInformation($locale);
 
             // Our content hasn't been drafted or published.
-            if ($info->getSourceLocale()) {
+            if (method_exists($info, 'getSourceLocale') && $info->getSourceLocale()) {
                 // If this Locale has a Fallback, then content might be getting inherited from that Fallback.
                 return _t(
                     __CLASS__ . '.LOCALESTATUSFLUENTINHERITED',
@@ -506,7 +506,7 @@ class FluentSiteTreeExtension extends FluentVersionedExtension
         $owner = $this->owner;
         $info = $owner->LocaleInformation($locale);
 
-        if ($info->getSourceLocale()) {
+        if (method_exists($info, 'getSourceLocale') && $info->getSourceLocale()) {
             return;
         }
 
