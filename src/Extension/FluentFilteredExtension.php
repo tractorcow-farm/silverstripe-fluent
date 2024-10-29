@@ -9,7 +9,7 @@ use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\DataQuery;
 use SilverStripe\ORM\ManyManyList;
 use SilverStripe\ORM\Queries\SQLSelect;
-use SilverStripe\Versioned\Versioned;
+use SilverStripe\Versioned\Mode\Versioned;
 use TractorCow\Fluent\Extension\Traits\FluentObjectTrait;
 use TractorCow\Fluent\Forms\LocaleToggleColumn;
 use TractorCow\Fluent\Model\Delete\UsesDeletePolicy;

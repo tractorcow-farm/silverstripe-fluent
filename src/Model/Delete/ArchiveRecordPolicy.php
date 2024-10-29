@@ -5,7 +5,7 @@ namespace TractorCow\Fluent\Model\Delete;
 use InvalidArgumentException;
 use SilverStripe\Core\Injector\Injectable;
 use SilverStripe\ORM\DataObject;
-use SilverStripe\Versioned\Versioned;
+use SilverStripe\Versioned\Mode\Versioned;
 use TractorCow\Fluent\State\FluentState;
 
 /**

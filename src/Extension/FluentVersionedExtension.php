@@ -12,7 +12,7 @@ use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\DataQuery;
 use SilverStripe\ORM\DB;
 use SilverStripe\ORM\Queries\SQLSelect;
-use SilverStripe\Versioned\Versioned;
+use SilverStripe\Versioned\Mode\Versioned;
 use TractorCow\Fluent\Forms\PublishAction;
 use TractorCow\Fluent\Forms\UnpublishAction;
 use TractorCow\Fluent\Model\Locale;

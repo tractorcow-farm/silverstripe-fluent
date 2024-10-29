@@ -5,7 +5,7 @@ namespace TractorCow\Fluent\Model;
 use SilverStripe\Control\Director;
 use SilverStripe\i18n\i18n;
 use SilverStripe\ORM\DataObject;
-use SilverStripe\Versioned\Versioned;
+use SilverStripe\Versioned\Mode\Versioned;
 use SilverStripe\Model\ModelData;
 use TractorCow\Fluent\Extension\FluentExtension;
 use TractorCow\Fluent\Extension\FluentFilteredExtension;

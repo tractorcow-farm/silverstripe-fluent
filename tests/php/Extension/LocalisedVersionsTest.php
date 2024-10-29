@@ -3,7 +3,7 @@
 namespace TractorCow\Fluent\Tests\Extension;
 
 use SilverStripe\Dev\SapphireTest;
-use SilverStripe\Versioned\Versioned;
+use SilverStripe\Versioned\Mode\Versioned;
 use TractorCow\Fluent\Extension\FluentVersionedExtension;
 use TractorCow\Fluent\State\FluentState;
 use TractorCow\Fluent\Tests\Extension\Stub\FluentDataObject;

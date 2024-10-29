@@ -10,7 +10,7 @@ use SilverStripe\Core\Extension;
 use SilverStripe\Forms\Form;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\Core\Validation\ValidationException;
-use SilverStripe\Versioned\Versioned;
+use SilverStripe\Versioned\Mode\Versioned;
 use TractorCow\Fluent\Forms\CopyLocaleAction;
 
 /**

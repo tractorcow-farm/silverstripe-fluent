@@ -4,7 +4,7 @@ namespace TractorCow\Fluent\Tests\Extension\FluentAdminTraitTest;
 
 use SilverStripe\Dev\TestOnly;
 use SilverStripe\ORM\DataObject;
-use SilverStripe\Versioned\Versioned;
+use SilverStripe\Versioned\Mode\Versioned;
 use TractorCow\Fluent\Extension\FluentVersionedExtension;
 
 /**

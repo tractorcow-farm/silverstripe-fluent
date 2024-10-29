@@ -25,7 +25,7 @@ use SilverStripe\ORM\Queries\SQLConditionGroup;
 use SilverStripe\ORM\Queries\SQLSelect;
 use SilverStripe\Core\Validation\ValidationException;
 use SilverStripe\Security\Permission;
-use SilverStripe\Versioned\Versioned;
+use SilverStripe\Versioned\Mode\Versioned;
 use SilverStripe\View\HTML;
 use TractorCow\Fluent\Extension\Traits\FluentObjectTrait;
 use TractorCow\Fluent\Forms\CopyLocaleAction;

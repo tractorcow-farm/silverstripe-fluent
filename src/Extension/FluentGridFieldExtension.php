@@ -11,7 +11,7 @@ use SilverStripe\Forms\GridField\GridFieldDetailForm_ItemRequest;
 use SilverStripe\ORM\FieldType\DBField;
 use SilverStripe\ORM\FieldType\DBHTMLText;
 use SilverStripe\Core\Validation\ValidationResult;
-use SilverStripe\Versioned\VersionedGridFieldItemRequest;
+use SilverStripe\Versioned\Versioned\VersionedGridFieldItemRequest;
 use TractorCow\Fluent\Extension\Traits\FluentAdminTrait;
 use TractorCow\Fluent\Extension\Traits\FluentBadgeTrait;
 

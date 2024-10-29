@@ -6,7 +6,7 @@ use SilverStripe\Control\HTTPResponse_Exception;
 use SilverStripe\Forms\GridField\GridField;
 use SilverStripe\Forms\GridField\GridField_FormAction;
 use SilverStripe\ORM\DataObject;
-use SilverStripe\Versioned\RecursivePublishable;
+use SilverStripe\Versioned\Staged\RecursivePublishable;
 use TractorCow\Fluent\Extension\FluentFilteredExtension;
 use TractorCow\Fluent\Extension\FluentVersionedExtension;
 use TractorCow\Fluent\Model\Locale;
