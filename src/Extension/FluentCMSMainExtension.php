@@ -106,7 +106,7 @@ class FluentCMSMainExtension extends Extension
     protected function getRecordForLocalisedAction($data, $form): ?DataObject
     {
         $id = (int) $data['ID'];
-        $className = $this->owner->config()->get('tree_class');
+        $className = $this->owner->config()->get('model_class');
 
         if (!$id || !$className) {
             // Invalid inputs
