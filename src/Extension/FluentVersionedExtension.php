@@ -586,6 +586,76 @@ SQL;
         }
     }
 
+    /**
+     * Check whether the current record is exists in the current locale.
+     *
+     * If it is invisible then we add a class to show it slightly greyed out in the site tree.
+     *
+     * @param array $flags
+     */
+    protected function updateStatusFlags(array &$flags): void
+    {
+        // If there is no current FluentState, then we shouldn't update.
+        if (!FluentState::singleton()->getLocale()) {
+            return;
+        }
+
+        $this->updateModifiedFlag($flags);
+        $this->updateArchivedFlag($flags);
+        parent::updateStatusFlags($flags);
+
+        // If this page does not exist it should be "invisible"
+        if (!$this->isDraftedInLocale() && !$this->isPublishedInLocale()) {
+            $flags['fluentinvisible'] = [
+                'text'  => '',
+                'title' => '',
+            ];
+        }
+    }
+
+    /**
+     * Update modified flag to reflect localised record instead of base record
+     * It doesn't make sense to have modified flag if page is not localised in current locale
+     *
+     * @param array $flags
+     */
+    protected function updateModifiedFlag(array &$flags): void
+    {
+        if (!array_key_exists('modified', $flags)) {
+            return;
+        }
+
+        if ($this->owner->isDraftedInLocale()) {
+            return;
+        }
+
+        unset($flags['modified']);
+    }
+
+    /**
+     * Localise archived flag - remove archived flag if there is content on other locales
+     *
+     * @param array $flags
+     */
+    protected function updateArchivedFlag(array &$flags): void
+    {
+        if (!array_key_exists('archived', $flags)) {
+            return;
+        }
+
+        $locale = FluentState::singleton()->getLocale();
+
+        if (!$locale) {
+            return;
+        }
+
+        if (!$this->owner->getLocaleInstances()) {
+            return;
+        }
+
+        unset($flags['archived']);
+    }
+
     protected function updateLocalisationTabColumns(&$summaryColumns)
     {
         $summaryColumns['Status'] = [

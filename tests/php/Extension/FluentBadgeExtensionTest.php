@@ -2,84 +2,93 @@
 
 namespace TractorCow\Fluent\Tests\Extension;
 
-use SilverStripe\CMS\Model\SiteTree;
-use SilverStripe\Control\Controller;
 use SilverStripe\Dev\SapphireTest;
-use SilverStripe\ORM\FieldType\DBHTMLText;
-use TractorCow\Fluent\Extension\FluentLeftAndMainExtension;
-use TractorCow\Fluent\Extension\FluentSiteTreeExtension;
-use TractorCow\Fluent\Model\Locale;
+use TractorCow\Fluent\Extension\FluentExtension;
 use TractorCow\Fluent\State\FluentState;
-use TractorCow\Fluent\Tests\Extension\Stub\FluentStubController;
+use TractorCow\Fluent\Tests\Extension\Stub\FluentDataObject;
 
 class FluentBadgeExtensionTest extends SapphireTest
 {
     protected static $fixture_file = 'FluentBadgeExtensionTest.yml';
 
-    protected static $required_extensions = [
-        SiteTree::class => [
-            FluentSiteTreeExtension::class,
-        ],
+    protected static $extra_dataobjects = [
+        FluentDataObject::class,
     ];
 
-    /**
-     * @var SiteTree
-     */
-    protected $mockPage;
-
-    /**
-     * @var Controller
-     */
-    protected $mockController;
-
-    /**
-     * @var FluentLeftAndMainExtension
-     */
-    protected $extension;
+    protected static $required_extensions = [
+        FluentDataObject::class => [
+            FluentExtension::class,
+        ],
+    ];
 
     protected function setUp(): void
     {
         parent::setUp();
-
-        // Clear cache
-        Locale::clearCached();
-
         FluentState::singleton()->withState(function (FluentState $newState) {
             $newState->setLocale('en_NZ');
-
-            $this->mockPage = $this->objFromFixture(SiteTree::class, 'test_page');
-            $this->mockController = new FluentStubController($this->mockPage->ID);
-            $this->extension = new FluentLeftAndMainExtension();
-            $this->extension->setOwner($this->mockController);
+            $record = $this->objFromFixture(FluentDataObject::class, 'test_record');
+            // Ensure the record is written in this locale
+            $record->write();
         });
     }
 
+    /**
+     * Tests status flag added for the locale this is saved in
+     */
     public function testDefaultLocaleBadgeAdded()
     {
         // Publish the page in the default locale
         FluentState::singleton()->withState(function (FluentState $newState) {
             $newState->setLocale('en_NZ');
-            $this->mockPage->publishRecursive();
+            $record = $this->objFromFixture(FluentDataObject::class, 'test_record');
+            $flags = $record->getStatusFlags();
 
-            $result = $this->extension->getBadge($this->mockPage);
-            $this->assertInstanceOf(DBHTMLText::class, $result);
-            $this->assertStringContainsString('fluent-badge--default', $result->getValue());
-            $this->assertStringContainsString('Localised in', $result->getValue());
-            $this->assertStringContainsString('NZ', $result->getValue(), 'Badge shows owner locale');
+            $this->assertArrayHasKey('fluent fluent-badge fluent-badge--default', $flags);
+            $this->assertSame(
+                ['title' => 'Localised in English (NZ)', 'text' => 'en_NZ'],
+                $flags['fluent fluent-badge fluent-badge--default']
+            );
         });
     }
 
+    /**
+     * Tests status flag added for the fallback locale
+     */
+    public function testLocalisedLocaleBadgeAdded()
+    {
+        // Publish the page in the default locale
+        FluentState::singleton()->withState(function (FluentState $newState) {
+            $newState->setLocale('pt_PT');
+            $record = $this->objFromFixture(FluentDataObject::class, 'test_record');
+            $flags = $record->getStatusFlags();
+
+            $this->assertArrayHasKey('fluent fluent-badge fluent-badge--localised', $flags);
+            $this->assertSame(
+                ['title' => 'Localised in English (NZ)', 'text' => 'en_NZ'],
+                $flags['fluent fluent-badge fluent-badge--localised']
+            );
+        });
+    }
+
+    /**
+     * Tests status flag added to indicate this record is NOT saved in this locale
+     */
     public function testInvisibleLocaleBadgeWasAdded()
     {
         FluentState::singleton()->withState(function (FluentState $newState) {
             // Don't write the page in the non-default locale, then it shouldn't exist
             $newState->setLocale('de_DE');
+            $record = $this->objFromFixture(FluentDataObject::class, 'test_record');
+            $flags = $record->getStatusFlags();
 
-            $result = $this->extension->getBadge($this->mockPage);
-            $this->assertInstanceOf(DBHTMLText::class, $result);
-            $this->assertStringContainsString('fluent-badge--invisible', $result->getValue());
-            $this->assertStringContainsString('Page has no available content in', $result->getValue());
-            $this->assertStringContainsString('de_DE', $result->getValue(), 'Badge shows owner locale');
+            $this->assertArrayHasKey('fluent fluent-badge fluent-badge--invisible', $flags);
+            $this->assertSame(
+                [
+                    'title' => 'Fluent Data Object has no available content in German, localise the Fluent Data Object or provide a locale fallback',
+                    'text' => 'de_DE',
+                ],
+                $flags['fluent fluent-badge fluent-badge--invisible']
+            );
         });
     }
 }

@@ -27,6 +27,7 @@ use SilverStripe\Core\Validation\ValidationException;
 use SilverStripe\Security\Permission;
 use SilverStripe\Versioned\Versioned;
 use SilverStripe\View\HTML;
+use TractorCow\Fluent\Extension\Traits\FluentBadgeTrait;
 use TractorCow\Fluent\Extension\Traits\FluentObjectTrait;
 use TractorCow\Fluent\Forms\CopyLocaleAction;
 use TractorCow\Fluent\Forms\GroupActionMenu;
@@ -1284,6 +1285,114 @@ class FluentExtension extends Extension
         ]);
 
         return $query->firstRow()->execute()->value() !== null;
+    }
+
+    /**
+     * Remove fluent status flags from site tree display
+     */
+    protected function updateStatusFlagsForTreeTitle(array &$flags): void
+    {
+        foreach (array_keys($flags) as $key) {
+            if ($key === 'fluent' || str_starts_with($key, 'fluent ')) {
+                unset($flags[$key]);
+            }
+        }
+    }
+
+    /**
+     * Update status flags based on whether the current record is exists in the current locale.
+     */
+    protected function updateStatusFlags(array &$flags): void
+    {
+        // If there is no current FluentState, then we shouldn't update.
+        if (!FluentState::singleton()->getLocale()) {
+            return;
+        }
+        $this->addLocaleFlags($flags);
+        $this->updateNoSourceFlag($flags);
+    }
+
+    /**
+     * Add a flag based on the record's status in the current locale.
+     */
+    private function addLocaleFlags(array &$flags): void
+    {
+        $locale = Locale::getCurrentLocale();
+        $record = $this->getOwner();
+        $info = RecordLocale::create($record, $locale);
+
+        // Build new badge
+        if ($info->IsDraft()) {
+            // If the object has been localised in the current locale, show a "localised" state
+            $flags['fluent fluent-badge fluent-badge--default'] = [
+                'title' => _t(
+                    FluentBadgeTrait::class . '.BadgeLocalised',
+                    'Localised in {locale}',
+                    [
+                        'locale' => $locale->getTitle()
+                    ]
+                ),
+                'text' => $locale->getLocale(),
+            ];
+        } elseif ($info->getSourceLocale()) {
+            // If object is inheriting content from another locale show the source
+            $flags['fluent fluent-badge fluent-badge--localised'] = [
+                'title' => _t(
+                    FluentBadgeTrait::class . '.BadgeLocalised',
+                    'Localised in {locale}',
+                    [
+                        'locale' => $info->getSourceLocale()->getTitle()
+                    ]
+                ),
+                'text' => $info->getSourceLocale()->getLocale(),
+            ];
+        } else {
+            // Otherwise the object is missing a content source and needs to be remedied
+            // by either localising or seting up a locale fallback
+            $flags['fluent fluent-badge fluent-badge--invisible'] = [
+                'title' => _t(
+                    FluentBadgeTrait::class . '.BaggeInvisible',
+                    '{type} has no available content in {locale}, localise the {type} or provide a locale fallback',
+                    [
+                        'type' => $record->i18n_singular_name(),
+                        'locale' => $locale->getTitle(),
+                    ]
+                ),
+                'text' => $locale->getLocale(),
+            ];
+        }
+    }
+
+    /**
+     * Add a flag which indicates that a record has content in other locale but the content is not being inherited
+     */
+    protected function updateNoSourceFlag(array &$flags): void
+    {
+        if (array_key_exists('archived', $flags)) {
+            return;
+        }
+
+        $locale = FluentState::singleton()->getLocale();
+
+        if (!$locale) {
+            return;
+        }
+
+        $owner = $this->getOwner();
+        $info = $owner->LocaleInformation($locale);
+
+        if ($info->getSourceLocale()) {
+            return;
+        }
+
+        if (!$owner->getLocaleInstances()) {
+            return;
+        }
+
+        $flags['removedfromdraft'] = [
+            'text' => 'No source',
+            'title' => 'This page exists in a different locale but the content is not inherited',
+        ];
     }
 
     /**

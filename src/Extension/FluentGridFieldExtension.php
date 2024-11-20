@@ -8,12 +8,10 @@ use SilverStripe\Core\Extension;
 use SilverStripe\Forms\FieldList;
 use SilverStripe\Forms\Form;
 use SilverStripe\Forms\GridField\GridFieldDetailForm_ItemRequest;
-use SilverStripe\ORM\FieldType\DBField;
 use SilverStripe\ORM\FieldType\DBHTMLText;
 use SilverStripe\Core\Validation\ValidationResult;
 use SilverStripe\Versioned\VersionedGridFieldItemRequest;
 use TractorCow\Fluent\Extension\Traits\FluentAdminTrait;
-use TractorCow\Fluent\Extension\Traits\FluentBadgeTrait;
 
 /**
  * Supports GridFieldDetailForm_ItemRequest with extra actions
@@ -23,19 +21,6 @@ use TractorCow\Fluent\Extension\Traits\FluentBadgeTrait;
 class FluentGridFieldExtension extends Extension
 {
     use FluentAdminTrait;
-    use FluentBadgeTrait;
-
-    /**
-     * Push a badge to indicate the language that owns the current item
-     *
-     * @param DBField|null $badgeField
-     * @see VersionedGridFieldItemRequest::Breadcrumbs()
-     */
-    protected function updateBadge(&$badgeField)
-    {
-        $record = $this->owner->getRecord();
-        $badgeField = $this->addFluentBadge($badgeField, $record);
-    }
 
     protected function updateFormActions(FieldList $actions)
     {
