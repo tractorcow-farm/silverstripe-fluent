@@ -95,6 +95,11 @@ trait FluentAdminTrait
             return;
         }
 
+        // check if actions menu already exist
+        if ($actions->fieldByName('FluentMenu')) {
+            return;
+        }
+
         // Build root tabset that makes up the menu
         $rootTabSet = TabSet::create('FluentMenu')->setTemplate(
             'FluentAdminTabSet'
