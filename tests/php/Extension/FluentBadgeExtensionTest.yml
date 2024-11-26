@@ -8,9 +8,17 @@ TractorCow\Fluent\Model\Locale:
     Title: German
     Locale: de_DE
     URLSegment: de_DE
+  pt_PT:
+    Title: Portuguese
+    Locale: pt_PT
+    URLSegment: pt_PT
 
-SilverStripe\CMS\Model\SiteTree:
-  test_page:
+TractorCow\Fluent\Model\FallbackLocale:
+  en_NZ:
+    Locale: =>TractorCow\Fluent\Model\Locale.en_NZ
+    Parent: =>TractorCow\Fluent\Model\Locale.pt_PT
+
+TractorCow\Fluent\Tests\Extension\Stub\FluentDataObject:
+  test_record:
     Title: Test page
-    URLSegment: test-page
-    Content: Test content
+    Description: Test content

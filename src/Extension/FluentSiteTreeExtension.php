@@ -159,33 +159,6 @@ class FluentSiteTreeExtension extends FluentVersionedExtension
     }
 
     /**
-     * Check whether the current page is exists in the current locale.
-     *
-     * If it is invisible then we add a class to show it slightly greyed out in the site tree.
-     *
-     * @param array $flags
-     */
-    protected function updateStatusFlags(&$flags)
-    {
-        // If there is no current FluentState, then we shouldn't update.
-        if (!FluentState::singleton()->getLocale()) {
-            return;
-        }
-
-        $this->updateModifiedFlag($flags);
-        $this->updateArchivedFlag($flags);
-        $this->updateNoSourceFlag($flags);
-
-        // If this page does not exist it should be "invisible"
-        if (!$this->isDraftedInLocale() && !$this->isPublishedInLocale()) {
-            $flags['fluentinvisible'] = [
-                'text'  => '',
-                'title' => '',
-            ];
-        }
-    }
-
-    /**
      * @param FieldList $fields
      */
     protected function updateCMSFields(FieldList $fields)
@@ -441,83 +414,6 @@ class FluentSiteTreeExtension extends FluentVersionedExtension
         }
 
         $actions->removeByName('action_restore');
-    }
-
-    /**
-     * Update modified flag to reflect localised record instead of base record
-     * It doesn't make sense to have modified flag if page is not localised in current locale
-     *
-     * @param array $flags
-     */
-    protected function updateModifiedFlag(array &$flags): void
-    {
-        if (!array_key_exists('modified', $flags)) {
-            return;
-        }
-
-        if ($this->owner->isDraftedInLocale()) {
-            return;
-        }
-
-        unset($flags['modified']);
-    }
-
-    /**
-     * Localise archived flag - remove archived flag if there is content on other locales
-     *
-     * @param array $flags
-     */
-    protected function updateArchivedFlag(array &$flags): void
-    {
-        if (!array_key_exists('archived', $flags)) {
-            return;
-        }
-
-        $locale = FluentState::singleton()->getLocale();
-
-        if (!$locale) {
-            return;
-        }
-
-        if (!$this->owner->getLocaleInstances()) {
-            return;
-        }
-
-        unset($flags['archived']);
-    }
-
-    /**
-     * Add a flag which indicates that a page has content in other locale but the content is not being inherited
-     *
-     * @param array $flags
-     */
-    protected function updateNoSourceFlag(array &$flags): void
-    {
-        if (array_key_exists('archived', $flags)) {
-            return;
-        }
-
-        $locale = FluentState::singleton()->getLocale();
-
-        if (!$locale) {
-            return;
-        }
-
-        $owner = $this->owner;
-        $info = $owner->LocaleInformation($locale);
-
-        if ($info->getSourceLocale()) {
-            return;
-        }
-
-        if (!$owner->getLocaleInstances()) {
-            return;
-        }
-
-        $flags['removedfromdraft'] = [
-            'text' => 'No source',
-            'title' => 'This page exists in a different locale but the content is not inherited',
-        ];
     }
 
     /**
