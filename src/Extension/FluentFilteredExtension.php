@@ -101,7 +101,7 @@ class FluentFilteredExtension extends Extension
      * @param SQLSelect      $query
      * @param DataQuery|null $dataQuery
      */
-    protected function augmentSQL(SQLSelect $query, DataQuery $dataQuery = null)
+    protected function augmentSQL(SQLSelect $query, ?DataQuery $dataQuery = null)
     {
         // We don't want this logic applied in the CMS.
         if (!FluentState::singleton()->getIsFrontend()) {
@@ -138,7 +138,7 @@ class FluentFilteredExtension extends Extension
      * @param DataQuery $dataQuery
      * @return Locale|null
      */
-    protected function getDataQueryLocale(DataQuery $dataQuery = null)
+    protected function getDataQueryLocale(?DataQuery $dataQuery = null)
     {
         if (!$dataQuery) {
             return null;
