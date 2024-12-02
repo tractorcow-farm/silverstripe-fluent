@@ -155,7 +155,7 @@ class FluentVersionedExtension extends FluentExtension implements Resettable
      *
      * @throws InvalidArgumentException if an invalid versioned mode is provided
      */
-    protected function augmentSQL(SQLSelect $query, DataQuery $dataQuery = null)
+    protected function augmentSQL(SQLSelect $query, ?DataQuery $dataQuery = null)
     {
         $locale = $this->getDataQueryLocale($dataQuery);
         if (!$locale) {
@@ -802,7 +802,7 @@ SQL;
      * @param string|null $locale
      * @return bool|null
      */
-    public function hasArchiveInLocale(string $locale = null): ?bool
+    public function hasArchiveInLocale(?string $locale = null): ?bool
     {
         $locale = $locale ?: FluentState::singleton()->getLocale();
 

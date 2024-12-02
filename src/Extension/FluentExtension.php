@@ -463,7 +463,7 @@ class FluentExtension extends Extension
         DB::require_table($localisedTable, $fields, $indexes, false);
     }
 
-    protected function augmentSQL(SQLSelect $query, DataQuery $dataQuery = null)
+    protected function augmentSQL(SQLSelect $query, ?DataQuery $dataQuery = null)
     {
         $locale = $this->getDataQueryLocale($dataQuery);
         if (!$locale) {
@@ -937,7 +937,7 @@ class FluentExtension extends Extension
      * @param DataQuery $dataQuery
      * @return Locale|null
      */
-    protected function getDataQueryLocale(DataQuery $dataQuery = null)
+    protected function getDataQueryLocale(?DataQuery $dataQuery = null)
     {
         if (!$dataQuery) {
             return null;
