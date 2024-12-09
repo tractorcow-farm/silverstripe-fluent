@@ -5,6 +5,7 @@ namespace TractorCow\Fluent\Extension\Traits;
 use SilverStripe\CMS\Model\SiteTree;
 use SilverStripe\Control\HTTPResponse;
 use SilverStripe\Control\HTTPResponse_Exception;
+use SilverStripe\Core\Convert;
 use SilverStripe\Forms\FieldList;
 use SilverStripe\Forms\Form;
 use SilverStripe\Forms\FormAction;
@@ -258,7 +259,7 @@ trait FluentAdminTrait
         $message = _t(
             'TractorCow\Fluent\Extension\Traits\FluentAdminTrait.ClearAllNotice',
             "All localisations have been cleared for '{title}'.",
-            ['title' => $record->Title]
+            ['title' => Convert::raw2xml($record->Title)]
         );
 
         $record->flushCache(true);
@@ -304,7 +305,7 @@ trait FluentAdminTrait
         $message = _t(
             'TractorCow\Fluent\Extension\Traits\FluentAdminTrait.CopyNotice',
             "Copied '{title}' to all other locales.",
-            ['title' => $record->Title]
+            ['title' => Convert::raw2xml($record->Title)]
         );
 
         $record->flushCache(true);
@@ -338,7 +339,7 @@ trait FluentAdminTrait
         $message = _t(
             'TractorCow\Fluent\Extension\Traits\FluentAdminTrait.UnpublishNotice',
             "Unpublished '{title}' from all locales.",
-            ['title' => $record->Title]
+            ['title' => Convert::raw2xml($record->Title)]
         );
 
         $record->flushCache(true);
@@ -388,7 +389,7 @@ trait FluentAdminTrait
         $message = _t(
             'TractorCow\Fluent\Extension\Traits\FluentAdminTrait.ArchiveNotice',
             "Archived '{title}' and all of its localisations.",
-            ['title' => $record->Title]
+            ['title' => Convert::raw2xml($record->Title)]
         );
 
         $record->flushCache(true);
@@ -436,7 +437,7 @@ trait FluentAdminTrait
         $message = _t(
             'TractorCow\Fluent\Extension\Traits\FluentAdminTrait.DeleteNotice',
             "Deleted '{title}' and all of its localisations.",
-            ['title' => $record->Title]
+            ['title' => Convert::raw2xml($record->Title)]
         );
 
         $record->flushCache(true);
@@ -480,7 +481,7 @@ trait FluentAdminTrait
         $message = _t(
             'TractorCow\Fluent\Extension\Traits\FluentAdminTrait.PublishNotice',
             "Published '{title}' across all locales.",
-            ['title' => $record->Title]
+            ['title' => Convert::raw2xml($record->Title)]
         );
 
         $record->flushCache(true);
@@ -511,8 +512,8 @@ trait FluentAdminTrait
             'TractorCow\Fluent\Extension\Traits\FluentAdminTrait.ShowNotice',
             "Record '{title}' is now visible in {locale}",
             [
-                'title'  => $record->Title,
-                'locale' => $locale->Title
+                'title'  => Convert::raw2xml($record->Title),
+                'locale' => Convert::raw2xml($locale->Title),
             ]
         );
 
@@ -544,8 +545,8 @@ trait FluentAdminTrait
             'TractorCow\Fluent\Extension\Traits\FluentAdminTrait.HideNotice',
             "Record '{title}' is now hidden in {locale}",
             [
-                'title'  => $record->Title,
-                'locale' => $locale->Title
+                'title'  => Convert::raw2xml($record->Title),
+                'locale' => Convert::raw2xml($locale->Title),
             ]
         );
 
