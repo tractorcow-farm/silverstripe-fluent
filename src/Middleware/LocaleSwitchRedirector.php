@@ -32,6 +32,7 @@ class LocaleSwitchRedirector implements HTTPMiddleware
         if ($response->getStatusCode() === 404
             && !$state->getIsFrontend()
             && $this->getParamLocale($request)
+            && !$request->getVar('CMSPreview')
         ) {
             // Redirect to the CMS home page if the requested page doesn't exist
             $response = new HTTPResponse();
