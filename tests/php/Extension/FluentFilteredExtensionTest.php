@@ -152,7 +152,10 @@ class FluentFilteredExtensionTest extends SapphireTest
                 LocaleToggleColumn::class,
                 $config->getComponentByType(LocaleToggleColumn::class)
             );
-            $this->assertNull($config->getComponentByType(GridFieldFilterHeader::class));
+            $this->assertInstanceOf(
+                GridFieldFilterHeader::class,
+                $config->getComponentByType(GridFieldFilterHeader::class)
+            );
         });
     }
 

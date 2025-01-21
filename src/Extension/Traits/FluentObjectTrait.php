@@ -16,7 +16,9 @@ use SilverStripe\ORM\ArrayList;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\DataQuery;
 use SilverStripe\ORM\FieldType\DBField;
+use SilverStripe\ORM\Filters\PartialMatchFilter;
 use SilverStripe\ORM\Queries\SQLSelect;
+use SilverStripe\ORM\Search\BasicSearchContext;
 use TractorCow\Fluent\Model\Locale;
 use TractorCow\Fluent\State\FluentState;
 
@@ -107,9 +109,8 @@ trait FluentObjectTrait
 
         // Generate gridfield for handling localisations
         $config = GridFieldConfig_Base::create();
-        // Remove filters as the displayed data is in ArrayList format
-        $config->removeComponentsByType(GridFieldFilterHeader::class);
 
+        /** @var GridFieldDataColumns $columns */
         $columns = $config->getComponentByType(GridFieldDataColumns::class);
         $summaryColumns = [
             'Title' => 'Title',
@@ -163,6 +164,38 @@ trait FluentObjectTrait
             $this->LinkedLocales(),
             $config
         );
+
+        /** @var GridFieldFilterHeader $filterHeader */
+        $filterHeader = $config->getComponentByType(GridFieldFilterHeader::class);
+
+        // Replace scaffolded filters as the displayed data is in ArrayList format so scaffolded filters do not work
+        if ($filterHeader) {
+            // Retrieve filters settings as these can be carried over as is
+            $defaultSearchContext = $filterHeader->getSearchContext($gridField);
+            $defaultSearchFields = $defaultSearchContext->getSearchFields();
+            $defaultFilters = $defaultSearchContext->getFilters();
+
+            /** @var ArrayList $list */
+            $list = $gridField->getList();
+
+            // Carry over any search form settings
+            $searchContext = BasicSearchContext::create($list->dataClass());
+            $searchContext->setFields($defaultSearchFields);
+
+            // Carry over filter configuration (make changes to filter classes so they work with ArrayList data)
+            foreach ($defaultFilters as $defaultFilter) {
+                $fieldFilter = PartialMatchFilter::create(
+                    // Use name instead of full name as this plain filter doesn't understand relations
+                    $defaultFilter->getName(),
+                    $defaultFilter->getValue(),
+                    $defaultFilter->getModifiers(),
+                );
+                $searchContext->addFilter($fieldFilter);
+            }
+
+            $filterHeader->setSearchContext($searchContext);
+        }
+
         if ($fields->hasTabSet()) {
             $fields->addFieldToTab('Root.Locales', $gridField);
 
