@@ -43,7 +43,7 @@ trait FluentObjectTrait
     );
 
     /**
-     * Gets list of all Locale dataobjects, linked to this record
+     * Gets list of all Locale data objects, linked to this record
      *
      * @return ArrayList<Locale>
      * @see Locale::RecordLocale()
