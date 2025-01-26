@@ -86,10 +86,9 @@ window.jQuery.entwine('ss', ($) => {
       if (typeof config.locales === 'undefined' || config.locales.length === 0) {
         return;
       }
-      // Note: Remove c-select once admin upgraded to bootstrap v4.0.0-alpha.6
       const selector = $(
         `<div class='cms-fluent-selector font-icon font-icon-caret-up-down'>
-          <select class='cms-fluent-selector-locales custom-select c-select'></select>
+          <select class='cms-fluent-selector-locales form-select'></select>
         </div>`
       );
 
