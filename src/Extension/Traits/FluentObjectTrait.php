@@ -161,7 +161,6 @@ trait FluentObjectTrait
             $this->LinkedLocales(),
             $config
         );
-
         if ($fields->hasTabSet()) {
             $fields->addFieldToTab('Root.Locales', $gridField);
 
