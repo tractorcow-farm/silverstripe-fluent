@@ -92,7 +92,7 @@ class FluentExtension extends DataExtension
      * @var string
      * @config
      */
-    private static string $cms_localisation_required = self::INHERITANCE_MODE_ANY;
+    private static string $cms_localisation_required = FluentExtension::INHERITANCE_MODE_ANY;
 
     /**
      * Fluent inheritance mode for frontend context
@@ -100,7 +100,7 @@ class FluentExtension extends DataExtension
      * @var string
      * @config
      */
-    private static string $frontend_publish_required = self::INHERITANCE_MODE_FALLBACK;
+    private static string $frontend_publish_required = FluentExtension::INHERITANCE_MODE_FALLBACK;
 
     /**
      * DB fields to be used added in when creating a localised version of the owner's table
