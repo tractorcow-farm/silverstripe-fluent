@@ -36,11 +36,8 @@ class FluentFilteredExtension extends DataExtension
 
     /**
      * Allow the filtered locale behaviour to be skipped for draft stage only
-     *
-     * @var bool
-     * @config
      */
-    private static bool $apply_filtered_locales_to_stage = false;
+    private static bool $apply_filtered_locales_to_stage = true;
 
     private static $many_many = [
         'FilteredLocales' => Locale::class,

@@ -48,7 +48,6 @@ use TractorCow\Fluent\State\FluentState;
  *
  * @template T of DataObject
  * @extends DataExtension<T&static>
- * @property DataObject|$this $owner
  */
 class FluentExtension extends DataExtension
 {
@@ -88,17 +87,11 @@ class FluentExtension extends DataExtension
 
     /**
      * Fluent inheritance mode for CMS context
-     *
-     * @var string
-     * @config
      */
     private static string $cms_localisation_required = FluentExtension::INHERITANCE_MODE_ANY;
 
     /**
      * Fluent inheritance mode for frontend context
-     *
-     * @var string
-     * @config
      */
     private static string $frontend_publish_required = FluentExtension::INHERITANCE_MODE_FALLBACK;
 
