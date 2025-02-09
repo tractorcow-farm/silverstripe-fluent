@@ -4,11 +4,9 @@ namespace TractorCow\Fluent\Tests\Extension;
 
 use Page;
 use SilverStripe\CMS\Model\SiteTree;
-use SilverStripe\Core\Config\Config;
 use SilverStripe\Dev\SapphireTest;
 use SilverStripe\Forms\GridField\GridField;
 use SilverStripe\Forms\GridField\GridFieldFilterHeader;
-use SilverStripe\ORM\DataObject;
 use SilverStripe\Versioned\Versioned;
 use TractorCow\Fluent\Extension\FluentFilteredExtension;
 use TractorCow\Fluent\Extension\FluentSiteTreeExtension;
@@ -45,14 +43,14 @@ class FluentFilteredExtensionTest extends SapphireTest
     public function testAugmentSQLFrontend()
     {
         // Specifically set this config value so that filtered locales ARE required in stage=Stage.
-        Config::modify()->set(DataObject::class, 'apply_filtered_locales_to_stage', true);
+        SiteTree::config()->set('apply_filtered_locales_to_stage', true);
 
         $currentStage = Versioned::get_stage();
 
         Versioned::set_stage(Versioned::DRAFT);
 
-        FluentState::singleton()->withState(function (FluentState $newState) {
-            $newState
+        FluentState::singleton()->withState(function (FluentState $state) {
+            $state
                 ->setLocale('en_NZ')
                 ->setIsFrontend(true)
                 ->setIsDomainMode(false);
@@ -73,14 +71,14 @@ class FluentFilteredExtensionTest extends SapphireTest
     public function testAugmentSQLFrontendLive()
     {
         // Specifically set this config value so that filtered locales ARE required in stage=Stage.
-        Config::modify()->set(DataObject::class, 'apply_filtered_locales_to_stage', true);
+        SiteTree::config()->set('apply_filtered_locales_to_stage', true);
 
         $currentStage = Versioned::get_stage();
 
         Versioned::set_stage(Versioned::LIVE);
 
-        FluentState::singleton()->withState(function (FluentState $newState) {
-            $newState
+        FluentState::singleton()->withState(function (FluentState $state) {
+            $state
                 ->setLocale('en_NZ')
                 ->setIsFrontend(true);
 
@@ -100,15 +98,15 @@ class FluentFilteredExtensionTest extends SapphireTest
     public function testAugmentSQLStage()
     {
         // Specifically set this config value so that filtered locales are NOT required in stage=Stage.
-        Config::modify()->set(DataObject::class, 'apply_filtered_locales_to_stage', false);
+        SiteTree::config()->set('apply_filtered_locales_to_stage', false);
 
         $currentStage = Versioned::get_stage();
 
         Versioned::set_stage(Versioned::DRAFT);
 
         // Run test
-        FluentState::singleton()->withState(function (FluentState $newState) {
-            $newState
+        FluentState::singleton()->withState(function (FluentState $state) {
+            $state
                 ->setLocale('en_NZ')
                 ->setIsFrontend(true);
 
