@@ -338,7 +338,7 @@ class FluentSiteTreeExtensionTest extends SapphireTest
      * @param bool $frontendContext
      * @param bool $expected
      * @return void
-     * @dataProvider localeInheritanceModeCasesProvider
+     * @dataProvider provideLocaleInheritanceMode
      */
     public function testLocaleInheritanceMode(
         string $cmsInheritanceMode,
@@ -368,56 +368,56 @@ class FluentSiteTreeExtensionTest extends SapphireTest
         });
     }
 
-    public function localeInheritanceModeCasesProvider(): array
+    public function provideLocaleInheritanceMode(): array
     {
         return [
             'cms with any mode, frontend with any mode, frontend context' => [
-                FluentExtension::INHERITANCE_MODE_ANY,
-                FluentExtension::INHERITANCE_MODE_ANY,
-                true,
-                true,
+                'cmsInheritanceMode' => FluentExtension::INHERITANCE_MODE_ANY,
+                'frontendInheritanceMode' => FluentExtension::INHERITANCE_MODE_ANY,
+                'frontendContext' => true,
+                'expected' => true,
             ],
             'cms with exact mode, frontend with any mode, frontend context' => [
-                FluentExtension::INHERITANCE_MODE_EXACT,
-                FluentExtension::INHERITANCE_MODE_ANY,
-                true,
-                true,
+                'cmsInheritanceMode' => FluentExtension::INHERITANCE_MODE_EXACT,
+                'frontendInheritanceMode' => FluentExtension::INHERITANCE_MODE_ANY,
+                'frontendContext' => true,
+                'expected' => true,
             ],
             'cms with exact mode, frontend with exact mode, frontend context' => [
-                FluentExtension::INHERITANCE_MODE_EXACT,
-                FluentExtension::INHERITANCE_MODE_EXACT,
-                true,
-                false,
+                'cmsInheritanceMode' => FluentExtension::INHERITANCE_MODE_EXACT,
+                'frontendInheritanceMode' => FluentExtension::INHERITANCE_MODE_EXACT,
+                'frontendContext' => true,
+                'expected' => false,
             ],
             'cms with any mode, frontend with exact mode, frontend context' => [
-                FluentExtension::INHERITANCE_MODE_ANY,
-                FluentExtension::INHERITANCE_MODE_EXACT,
-                true,
-                false,
+                'cmsInheritanceMode' => FluentExtension::INHERITANCE_MODE_ANY,
+                'frontendInheritanceMode' => FluentExtension::INHERITANCE_MODE_EXACT,
+                'frontendContext' => true,
+                'expected' => false,
             ],
             'cms with any mode, frontend with any mode, cms context' => [
-                FluentExtension::INHERITANCE_MODE_ANY,
-                FluentExtension::INHERITANCE_MODE_ANY,
-                false,
-                true,
+                'cmsInheritanceMode' => FluentExtension::INHERITANCE_MODE_ANY,
+                'frontendInheritanceMode' => FluentExtension::INHERITANCE_MODE_ANY,
+                'frontendContext' => false,
+                'expected' => true,
             ],
             'cms with any mode, frontend with exact mode, cms context' => [
-                FluentExtension::INHERITANCE_MODE_ANY,
-                FluentExtension::INHERITANCE_MODE_EXACT,
-                false,
-                true,
+                'cmsInheritanceMode' => FluentExtension::INHERITANCE_MODE_ANY,
+                'frontendInheritanceMode' => FluentExtension::INHERITANCE_MODE_EXACT,
+                'frontendContext' => false,
+                'expected' => true,
             ],
             'cms with exact mode, frontend with exact mode, cms context' => [
-                FluentExtension::INHERITANCE_MODE_EXACT,
-                FluentExtension::INHERITANCE_MODE_EXACT,
-                false,
-                false,
+                'cmsInheritanceMode' => FluentExtension::INHERITANCE_MODE_EXACT,
+                'frontendInheritanceMode' => FluentExtension::INHERITANCE_MODE_EXACT,
+                'frontendContext' => false,
+                'expected' => false,
             ],
             'cms with exact mode, frontend with any mode, cms context' => [
-                FluentExtension::INHERITANCE_MODE_EXACT,
-                FluentExtension::INHERITANCE_MODE_ANY,
-                false,
-                false,
+                'cmsInheritanceMode' => FluentExtension::INHERITANCE_MODE_EXACT,
+                'frontendInheritanceMode' => FluentExtension::INHERITANCE_MODE_ANY,
+                'frontendContext' => false,
+                'expected' => false,
             ],
         ];
     }
