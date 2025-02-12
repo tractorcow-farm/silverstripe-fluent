@@ -9,7 +9,6 @@ use SilverStripe\Forms\GridField\GridField;
 use SilverStripe\Forms\GridField\GridField_ColumnProvider;
 use SilverStripe\Forms\GridField\GridField_SaveHandler;
 use SilverStripe\ORM\DataObject;
-use SilverStripe\ORM\DataObjectInterface;
 use TractorCow\Fluent\Extension\FluentFilteredExtension;
 use TractorCow\Fluent\Model\Locale;
 use TractorCow\Fluent\Model\RecordLocale;
@@ -91,7 +90,7 @@ class LocaleToggleColumn implements GridField_SaveHandler, GridField_ColumnProvi
         ];
     }
 
-    public function handleSave(GridField $gridField, DataObjectInterface $record)
+    public function handleSave(GridField $gridField, DataObject $record)
     {
         $value = $gridField->getValue();
 
