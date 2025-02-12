@@ -93,7 +93,7 @@ class LocaleToggleColumn implements GridField_SaveHandler, GridField_ColumnProvi
 
     public function handleSave(GridField $gridField, DataObjectInterface $record)
     {
-        $value = $gridField->Value();
+        $value = $gridField->getValue();
 
         // Keys for this value will be list of locales to enable
         $enabledLocales = isset($value[LocaleToggleColumn::COLUMN_NAME])
