@@ -118,8 +118,7 @@ trait FluentObjectTrait
 
         // Augment Localisation tab with clickable locale links to allow easy navigation between model localisations
         if ($owner->hasExtension(CMSEditLinkExtension::class)) {
-            $controller = Controller::has_curr() ? Controller::curr() : null;
-            $request = $controller?->getRequest();
+            $request = Controller::curr()?->getRequest();
 
             // Pass getVars separately so we can process them later
             $params = $request?->getVars() ?? [];
