@@ -24,13 +24,14 @@ it:
     FILTERED_LOCALES: 'Mostrare nelle seguenti lingue'
     LOCALEFILTEREDHELP: 'Questa pagina non è visibile in questa lingua'
     TAB_LOCALES: Localizzazione
+    many_many_FilteredLocales: 'Localizzazioni filtrate'
   TractorCow\Fluent\Extension\FluentIsolatedExtension:
     has_one_Locale: Lingua
   TractorCow\Fluent\Extension\FluentSiteTreeExtension:
     LOCALECOPYANDPUBLISH: 'Salva e pubblica'
     LOCALECOPYTODRAFT: 'Copia nella bozza'
     LOCALESTATUSFLUENTDRAFT: 'Una bozza è stata creata per questa lingua ma il contenuto pubblicato può essere ancora quello di un''altra. Per pubblicare nuovo contenuto in questa lingua usare il pulsante "Salva e pubblica".'
-    LOCALESTATUSFLUENTINHERITED: 'Il contenuto di questa pagina potrebbe essere ereditato da un''altra lingua. Se desideri creare una copia indipendente di questa pagina, utilizza una delle azioni "Copia" fornite.'
+    LOCALESTATUSFLUENTINHERITED: 'Il contenuto di questa pagina può essere ereditato da un''altra lingua. Se vuoi una copia indipendente, puoi usare una delle azioni di "Copia" disponibili.'
     LOCALESTATUSFLUENTINVISIBLE: 'Questa pagina non sarà visibile in questa lingua fino a quando verrà pubblicata.'
     LOCALESTATUSFLUENTUNKNOWN: 'Contenuto non disponibile per questa pagina. Localizzare la pagina o fornire una lingua alternativa.'
   TractorCow\Fluent\Extension\FluentVersionedExtension:
@@ -45,11 +46,23 @@ it:
     ClearAllNotice: "Tutte le traduzioni sono state eliminate per '{title}'."
     CopyNotice: "'{title}' copiato in tutte le altre lingue."
     DeleteNotice: "Eliminato '{title}' e tutte le sue traduzioni."
+    HideNotice: "Il record '{title}' è ora nascosto in {locale}"
+    Label_archiveFluent: 'Nascondi e Archivia (tutte le lingue)'
+    Label_clearFluent: "Elimina da tutti tranne '{title}'"
+    Label_copyFluent: "Copia '{title}' nelle altre lingue"
+    Label_deleteFluent: 'Elimina (tutte le lingue)'
+    Label_hideFluent: "Nascondere da '{title}'"
+    Label_publishFluent: 'Salva & Pubblica (tutte le lingue)'
+    Label_showFluent: "Mostrare in '{title}'"
+    Label_unpublishFluent: 'Nascondi (tutte le lingue)'
     Localisation: Localizzazione
     PublishNotice: "'{title}' pubblicato in tutte le lingue."
+    ShowNotice: "Il record '{title}' è ora visibile in {locale}"
     UnpublishNotice: "'{title}' nascosto in tutte le lingue."
   TractorCow\Fluent\Extension\Traits\FluentBadgeTrait:
+    BadgeInherited: 'Ereditato da {locale}'
     BadgeLocalised: 'Tradotto in {locale}'
+    BaggeInvisible: '{type} non ha contenuto in {locale}, tradurre {type} o fornire una lingua alternativa'
   TractorCow\Fluent\Extension\Traits\FluentObjectTrait:
     TAB_LOCALISATION: Localizzazione
   TractorCow\Fluent\Forms\DeleteAllLocalesAction:
@@ -89,7 +102,9 @@ it:
       one: 'Una Lingua Alternativa'
       other: '{count} Lingue Alternative'
     SINGULARNAME: 'Lingua Alternativa'
+    db_Sort: Ordina
     has_one_Locale: Lingua
+    has_one_Parent: Genitore
   TractorCow\Fluent\Model\Locale:
     DEFAULT_NONE: (nessuna)
     DOMAIN: Dominio
@@ -108,9 +123,17 @@ it:
       one: 'Una Lingua'
       other: '{count} Lingue'
     SINGULARNAME: Lingua
+    TIMEZONE: 'Fuso orario'
     USE_X_DEFAULT: 'Usare {code} come codice lingua SEO (da considerare globale)'
     USE_X_DEFAULT_DESCRIPTION: "L'uso di questo codice suggerisce ai motori di ricerca che questa è una pagina di destinazione globale non localizzata"
     UnsavedNotice: 'Puoi aggiungere alternative una volta salvata la lingua.'
+    db_IsGlobalDefault: 'È default predefinito'
     db_Locale: Lingua
+    db_Sort: Ordina
+    db_Timezone: 'Fuso orario'
     db_Title: Titolo
+    db_URLSegment: 'Segmento URL'
+    db_UseDefaultCode: 'Usa codice di default'
+    has_many_FallbackLocales: 'Lingue alternative'
     has_one_Domain: Dominio
+    many_many_Fallbacks: Alternative
