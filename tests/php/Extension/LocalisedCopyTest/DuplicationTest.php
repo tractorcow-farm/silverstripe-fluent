@@ -238,6 +238,31 @@ class DuplicationTest extends SapphireTest
         });
     }
 
+    /**
+     * case: duplicate() called on localised record
+     * desired outcome: has_one duplication is copied correctly to localised table
+     */
+    public function testDuplicate(): void
+    {
+        FluentState::singleton()->withState(function (FluentState $state): void {
+            $state->setLocale('en_NZ');
+
+            /** @var Horse|FluentExtension $horse */
+            $horse = $this->objFromFixture(Horse::class, 'horse1');
+            $tail = $horse->Tail();
+            $originalTailID = $tail->ID;
+            $duplicateHorse = $horse->duplicate();
+
+            // Re-select both horses so we are getting what's in the DB not just what's in memory
+            $horse = Horse::get()->byID($horse->ID);
+            $duplicateHorse = Horse::get()->byID($duplicateHorse->ID);
+            $this->assertNotSame($horse, $duplicateHorse->TailID);
+            $this->assertNotSame($originalTailID, $duplicateHorse->TailID);
+            $this->assertNotSame($horse->TailID, $duplicateHorse->TailID);
+            $this->assertSame($originalTailID, $horse->TailID);
+        });
+    }
+
     public function localesProvider(): array
     {
         return [

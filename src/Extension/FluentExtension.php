@@ -636,11 +636,12 @@ class FluentExtension extends DataExtension
      */
     public function onAfterDuplicate($original, $doWrite, $relations): void
     {
-        $localisedTables = $this->owner->getLocalisedTables();
+        $owner = $this->owner;
+        $localisedTables = $owner->getLocalisedTables();
         foreach ($localisedTables as $tableName => $fields) {
             // Target IDs
             $fromID = $original->ID;
-            $toID = $this->owner->ID;
+            $toID = $owner->ID;
 
             // Get localised table
             $localisedTable = $this->getLocalisedTable($tableName);
@@ -655,6 +656,31 @@ class FluentExtension extends DataExtension
                     FROM \"$localisedTable\"
                     WHERE \"RecordID\" = ?", [$toID, $fromID]);
         }
+
+        // Localised copy is explicitly disabled
+        if (!$this->localisedCopyActive) {
+            return;
+        }
+
+        // Re-fetch a fresh model after the raw data update
+        /** @var DataObject|Versioned $model */
+        $model = DataObject::get($owner->ClassName)->byID($owner->ID);
+
+        // Something went wrong here - there is no model to update
+        if (!$model) {
+            return;
+        }
+
+        $this->performLocalisedCopy($model);
+
+        if ($model->hasExtension(Versioned::class)) {
+            // Avoid creating a new version as we're only adding some updates to the previously created version
+            $model->writeWithoutVersion();
+
+            return;
+        }
+
+        $model->write();
     }
 
     /**
@@ -1420,13 +1446,21 @@ class FluentExtension extends DataExtension
             return;
         }
 
-        $owner = $this->owner;
-        $relations = (array)$owner->config()->get('localised_copy');
+        $this->performLocalisedCopy($this->owner);
+    }
 
-        $owner->invokeWithExtensions('onBeforeLocalisedCopy');
+    /**
+     * Duplicate related objects based on configuration
+     * Provides an extension hook for custom duplication
+     */
+    protected function performLocalisedCopy(DataObject $model): void
+    {
+        $relations = (array)$model->config()->get('localised_copy');
+
+        $model->invokeWithExtensions('onBeforeLocalisedCopy');
 
         foreach ($relations as $relation) {
-            $original = $owner->{$relation}();
+            $original = $model->{$relation}();
 
             if (!$original instanceof DataObject) {
                 continue;
@@ -1438,12 +1472,12 @@ class FluentExtension extends DataExtension
 
             $duplicate = $original->duplicate();
 
-            $owner->invokeWithExtensions('onBeforeLocalisedCopyRelation', $relation, $original, $duplicate);
-            $owner->setComponent($relation, $duplicate);
-            $owner->invokeWithExtensions('onAfterLocalisedCopyRelation', $relation, $original, $duplicate);
+            $model->invokeWithExtensions('onBeforeLocalisedCopyRelation', $relation, $original, $duplicate);
+            $model->setComponent($relation, $duplicate);
+            $model->invokeWithExtensions('onAfterLocalisedCopyRelation', $relation, $original, $duplicate);
         }
 
-        $owner->invokeWithExtensions('onAfterLocalisedCopy');
+        $model->invokeWithExtensions('onAfterLocalisedCopy');
     }
 
     /**
