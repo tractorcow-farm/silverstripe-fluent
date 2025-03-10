@@ -24,6 +24,7 @@ use SilverStripe\ORM\FieldType\DBText;
 use SilverStripe\ORM\FieldType\DBVarchar;
 use SilverStripe\ORM\Queries\SQLConditionGroup;
 use SilverStripe\ORM\Queries\SQLSelect;
+use SilverStripe\ORM\Queries\SQLUpdate;
 use SilverStripe\ORM\ValidationException;
 use SilverStripe\Security\Permission;
 use SilverStripe\Versioned\Versioned;
@@ -636,7 +637,18 @@ class FluentExtension extends DataExtension
      */
     public function onAfterDuplicate($original, $doWrite, $relations): void
     {
+        $owner = $this->getOwner();
         $localisedTables = $this->owner->getLocalisedTables();
+        // Get the names of all has_one columns that will have new IDs
+        $copyRelations = (array) $owner->config()->get('localised_copy');
+        $hasOne = $owner->hasOne();
+        $copyHasOneRelations = [];
+        foreach ($copyRelations as $relationName) {
+            if (array_key_exists($relationName, $hasOne)) {
+                $copyHasOneRelations[] = $relationName . 'ID';
+            }
+        }
+        // Add row for new duplicated page in all relevant localised tables
         foreach ($localisedTables as $tableName => $fields) {
             // Target IDs
             $fromID = $original->ID;
@@ -654,6 +666,18 @@ class FluentExtension extends DataExtension
                     SELECT ? AS \"RecordID\", \"Locale\", $fields_str
                     FROM \"$localisedTable\"
                     WHERE \"RecordID\" = ?", [$toID, $fromID]);
+
+            // Make sure to update any has_one IDs - otherwise the new localised table entry will
+            // have the has_one ID from the original record.
+            // The current $owner (i.e. the newly duplicated record) may have already had its relation duplicated
+            // via cascade_duplicates prior to this extension hook being called.
+            $fieldsToUpdate = [];
+            foreach (array_intersect($fields, $copyHasOneRelations) as $copyFieldName) {
+                $fieldsToUpdate[$copyFieldName] = $owner->{$copyFieldName};
+            }
+            if (!empty($fieldsToUpdate)) {
+                SQLUpdate::create($localisedTable, $fieldsToUpdate, ['RecordID' => $toID])->execute();
+            }
         }
     }
 
