@@ -83,6 +83,11 @@ class DetectLocaleMiddleware implements HTTPMiddleware
     private static $persist_cookie_http_only = true;
 
     /**
+     * SameSite value for the locale cookie. Set to empty string to use the default.
+     */
+    private static string $persist_cookie_samesite = '';
+
+    /**
      * Whether cookies have already been set during {@link setPersistLocale()}
      *
      * @var bool
@@ -221,12 +226,13 @@ class DetectLocaleMiddleware implements HTTPMiddleware
                 && Session::config()->get('cookie_secure');
             Cookie::set(
                 $key,
-                $locale,
+                $locale ?? false,
                 static::config()->get('persist_cookie_expiry'),
                 static::config()->get('persist_cookie_path'),
                 static::config()->get('persist_cookie_domain'),
                 $secure,
-                static::config()->get('persist_cookie_http_only')
+                static::config()->get('persist_cookie_http_only'),
+                static::config()->get('persist_cookie_samesite')
             );
         }
 
