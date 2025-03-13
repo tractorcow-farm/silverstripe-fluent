@@ -107,8 +107,6 @@ trait FluentObjectTrait
 
         // Generate gridfield for handling localisations
         $config = GridFieldConfig_Base::create();
-        // Remove filters as the displayed data is in ArrayList format
-        $config->removeComponentsByType(GridFieldFilterHeader::class);
 
         $columns = $config->getComponentByType(GridFieldDataColumns::class);
         $summaryColumns = [

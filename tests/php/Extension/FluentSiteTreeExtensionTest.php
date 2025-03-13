@@ -10,10 +10,8 @@ use SilverStripe\Control\Director;
 use SilverStripe\Core\Config\Config;
 use SilverStripe\Dev\SapphireTest;
 use SilverStripe\Forms\CompositeField;
-use SilverStripe\Forms\FieldList;
 use SilverStripe\Forms\LiteralField;
 use SilverStripe\Model\List\ArrayList;
-use SilverStripe\ORM\DataObject;
 use SilverStripe\Core\Validation\ValidationException;
 use SilverStripe\Versioned\Versioned;
 use TractorCow\Fluent\Extension\FluentDirectorExtension;
@@ -335,140 +333,94 @@ class FluentSiteTreeExtensionTest extends SapphireTest
         );
     }
 
-    public function testHomeVisibleOnFrontendBothConfigAny()
-    {
-        Config::modify()->set(DataObject::class, 'cms_localisation_required', FluentExtension::INHERITANCE_MODE_ANY);
-        Config::modify()->set(DataObject::class, 'frontend_publish_required', FluentExtension::INHERITANCE_MODE_ANY);
+    /**
+     * @param string $cmsInheritanceMode
+     * @param string $frontendInheritanceMode
+     * @param bool $frontendContext
+     * @param bool $expected
+     * @return void
+     */
+    #[DataProvider('provideLocaleInheritanceMode')]
+    public function testLocaleInheritanceMode(
+        string $cmsInheritanceMode,
+        string $frontendInheritanceMode,
+        bool $frontendContext,
+        bool $expected
+    ): void {
+        Page::config()
+            ->set('cms_localisation_required', $cmsInheritanceMode)
+            ->set('frontend_publish_required', $frontendInheritanceMode);
 
-        FluentState::singleton()->withState(function (FluentState $newState) {
-            $newState
+        FluentState::singleton()->withState(function (FluentState $state) use ($frontendContext, $expected) {
+            $state
                 ->setLocale('de_DE')
                 ->setIsDomainMode(false)
-                ->setIsFrontend(true);
+                ->setIsFrontend($frontendContext);
 
-            $page = Page::get()->filter('URLSegment', 'home')->first();
+            $page = Page::get()->find('URLSegment', 'home');
 
-            $this->assertNotNull($page);
+            if ($expected) {
+                $this->assertNotNull($page, 'We expect the page model to have content available');
+
+                return;
+            }
+
+            $this->assertNull($page, 'We expect the page model to not have any content available');
         });
     }
 
-    public function testHomeVisibleOnFrontendOneConfigAny()
+    public static function provideLocaleInheritanceMode(): array
     {
-        Config::modify()->set(DataObject::class, 'cms_localisation_required', FluentExtension::INHERITANCE_MODE_EXACT);
-        Config::modify()->set(DataObject::class, 'frontend_publish_required', FluentExtension::INHERITANCE_MODE_ANY);
-
-        FluentState::singleton()->withState(function (FluentState $newState) {
-            $newState
-                ->setLocale('de_DE')
-                ->setIsDomainMode(false)
-                ->setIsFrontend(true);
-
-            $page = Page::get()->filter('URLSegment', 'home')->first();
-
-            $this->assertNotNull($page);
-        });
-    }
-
-    public function testHomeNotVisibleOnFrontendBothConfigExact()
-    {
-        Config::modify()->set(DataObject::class, 'cms_localisation_required', FluentExtension::INHERITANCE_MODE_EXACT);
-        Config::modify()->set(DataObject::class, 'frontend_publish_required', FluentExtension::INHERITANCE_MODE_EXACT);
-
-        FluentState::singleton()->withState(function (FluentState $newState) {
-            $newState
-                ->setLocale('de_DE')
-                ->setIsDomainMode(false)
-                ->setIsFrontend(true);
-
-            $page = Page::get()->filter('URLSegment', 'home')->first();
-
-            $this->assertNull($page);
-        });
-    }
-
-    public function testHomeNotVisibleOnFrontendOneConfigExact()
-    {
-        Config::modify()->set(DataObject::class, 'cms_localisation_required', FluentExtension::INHERITANCE_MODE_ANY);
-        Config::modify()->set(DataObject::class, 'frontend_publish_required', FluentExtension::INHERITANCE_MODE_EXACT);
-
-        FluentState::singleton()->withState(function (FluentState $newState) {
-            $newState
-                ->setLocale('de_DE')
-                ->setIsDomainMode(false)
-                ->setIsFrontend(true);
-
-            $page = Page::get()->filter('URLSegment', 'home')->first();
-
-            $this->assertNull($page);
-        });
-    }
-
-    public function testHomeVisibleInCMSBothConfigAny()
-    {
-        Config::modify()->set(DataObject::class, 'cms_localisation_required', FluentExtension::INHERITANCE_MODE_ANY);
-        Config::modify()->set(DataObject::class, 'frontend_publish_required', FluentExtension::INHERITANCE_MODE_ANY);
-
-        FluentState::singleton()->withState(function (FluentState $newState) {
-            $newState
-                ->setLocale('de_DE')
-                ->setIsDomainMode(false)
-                ->setIsFrontend(false);
-
-            $page = Page::get()->filter('URLSegment', 'home')->first();
-
-            $this->assertNotNull($page);
-        });
-    }
-
-    public function testHomeVisibleInCMSOneConfigAny()
-    {
-        Config::modify()->set(DataObject::class, 'cms_localisation_required', FluentExtension::INHERITANCE_MODE_ANY);
-        Config::modify()->set(DataObject::class, 'frontend_publish_required', FluentExtension::INHERITANCE_MODE_EXACT);
-
-        FluentState::singleton()->withState(function (FluentState $newState) {
-            $newState
-                ->setLocale('de_DE')
-                ->setIsDomainMode(false)
-                ->setIsFrontend(false);
-
-            $page = Page::get()->filter('URLSegment', 'home')->first();
-
-            $this->assertNotNull($page);
-        });
-    }
-
-    public function testHomeNotVisibleInCMSBothConfigExact()
-    {
-        Config::modify()->set(DataObject::class, 'cms_localisation_required', FluentExtension::INHERITANCE_MODE_EXACT);
-        Config::modify()->set(DataObject::class, 'frontend_publish_required', FluentExtension::INHERITANCE_MODE_EXACT);
-
-        FluentState::singleton()->withState(function (FluentState $newState) {
-            $newState
-                ->setLocale('de_DE')
-                ->setIsDomainMode(false)
-                ->setIsFrontend(false);
-
-            $page = Page::get()->filter('URLSegment', 'home')->first();
-
-            $this->assertNull($page);
-        });
-    }
-
-    public function testHomeNotVisibleInCMSOneConfigExact()
-    {
-        Config::modify()->set(DataObject::class, 'cms_localisation_required', FluentExtension::INHERITANCE_MODE_EXACT);
-        Config::modify()->set(DataObject::class, 'frontend_publish_required', FluentExtension::INHERITANCE_MODE_ANY);
-
-        FluentState::singleton()->withState(function (FluentState $newState) {
-            $newState
-                ->setLocale('de_DE')
-                ->setIsDomainMode(false)
-                ->setIsFrontend(false);
-
-            $page = Page::get()->filter('URLSegment', 'home')->first();
-
-            $this->assertNull($page);
-        });
+        return [
+            'cms with any mode, frontend with any mode, frontend context' => [
+                'cmsInheritanceMode' => FluentExtension::INHERITANCE_MODE_ANY,
+                'frontendInheritanceMode' => FluentExtension::INHERITANCE_MODE_ANY,
+                'frontendContext' => true,
+                'expected' => true,
+            ],
+            'cms with exact mode, frontend with any mode, frontend context' => [
+                'cmsInheritanceMode' => FluentExtension::INHERITANCE_MODE_EXACT,
+                'frontendInheritanceMode' => FluentExtension::INHERITANCE_MODE_ANY,
+                'frontendContext' => true,
+                'expected' => true,
+            ],
+            'cms with exact mode, frontend with exact mode, frontend context' => [
+                'cmsInheritanceMode' => FluentExtension::INHERITANCE_MODE_EXACT,
+                'frontendInheritanceMode' => FluentExtension::INHERITANCE_MODE_EXACT,
+                'frontendContext' => true,
+                'expected' => false,
+            ],
+            'cms with any mode, frontend with exact mode, frontend context' => [
+                'cmsInheritanceMode' => FluentExtension::INHERITANCE_MODE_ANY,
+                'frontendInheritanceMode' => FluentExtension::INHERITANCE_MODE_EXACT,
+                'frontendContext' => true,
+                'expected' => false,
+            ],
+            'cms with any mode, frontend with any mode, cms context' => [
+                'cmsInheritanceMode' => FluentExtension::INHERITANCE_MODE_ANY,
+                'frontendInheritanceMode' => FluentExtension::INHERITANCE_MODE_ANY,
+                'frontendContext' => false,
+                'expected' => true,
+            ],
+            'cms with any mode, frontend with exact mode, cms context' => [
+                'cmsInheritanceMode' => FluentExtension::INHERITANCE_MODE_ANY,
+                'frontendInheritanceMode' => FluentExtension::INHERITANCE_MODE_EXACT,
+                'frontendContext' => false,
+                'expected' => true,
+            ],
+            'cms with exact mode, frontend with exact mode, cms context' => [
+                'cmsInheritanceMode' => FluentExtension::INHERITANCE_MODE_EXACT,
+                'frontendInheritanceMode' => FluentExtension::INHERITANCE_MODE_EXACT,
+                'frontendContext' => false,
+                'expected' => false,
+            ],
+            'cms with exact mode, frontend with any mode, cms context' => [
+                'cmsInheritanceMode' => FluentExtension::INHERITANCE_MODE_EXACT,
+                'frontendInheritanceMode' => FluentExtension::INHERITANCE_MODE_ANY,
+                'frontendContext' => false,
+                'expected' => false,
+            ],
+        ];
     }
 
     /**
@@ -491,11 +443,15 @@ class FluentSiteTreeExtensionTest extends SapphireTest
      * @throws ValidationException
      */
     #[DataProvider('localeFallbackProvider')]
-    public function testPageVisibilityWithFallback($cmsMode, $frontendMode, bool $isFrontend, int $expected)
-    {
-        Config::modify()
-            ->set(DataObject::class, 'cms_localisation_required', $cmsMode)
-            ->set(DataObject::class, 'frontend_publish_required', $frontendMode);
+    public function testPageVisibilityWithFallback(
+        string|bool $cmsMode,
+        string|bool $frontendMode,
+        bool $isFrontend,
+        int $expected
+    ): void {
+        Page::config()
+            ->set('cms_localisation_required', $cmsMode)
+            ->set('frontend_publish_required', $frontendMode);
 
         $pageId = FluentState::singleton()->withState(function (FluentState $state): int {
             $state

@@ -239,6 +239,40 @@ class DuplicationTest extends SapphireTest
         });
     }
 
+    /**
+     * case: duplicate() called on localised record
+     * desired outcome: has_one duplication is copied correctly to localised table
+     */
+    public function testDuplicate(): void
+    {
+        FluentState::singleton()->withState(function (FluentState $state): void {
+            $state->setLocale('en_NZ');
+
+            /** @var Horse|FluentExtension $originalHorse */
+            $originalHorse = $this->objFromFixture(Horse::class, 'horse1');
+            $tail = $originalHorse->Tail();
+            $originalTailID = $tail->ID;
+            $horseCountBefore = Horse::get()->count();
+            $tailsCountBefore = Tail::get()->count();
+
+            // Duplicate the horse (and its tail by association)
+            $duplicateHorse = $originalHorse->duplicate();
+
+            $horseCountAfter = Horse::get()->count();
+            $tailsCountAfter = Tail::get()->count();
+            $this->assertEquals($horseCountBefore + 1, $horseCountAfter);
+            $this->assertEquals($tailsCountBefore + 1, $tailsCountAfter);
+
+            // Re-fetch both horses so we are asserting on what's in the DB not just what's in memory
+            $originalHorse = Horse::get()->byID($originalHorse->ID);
+            $duplicateHorse = Horse::get()->byID($duplicateHorse->ID);
+
+            $this->assertNotSame($originalHorse->ID, $duplicateHorse->ID);
+            $this->assertNotSame($originalHorse->TailID, $duplicateHorse->TailID);
+            $this->assertSame($originalTailID, $originalHorse->TailID);
+        });
+    }
+
     public static function localesProvider(): array
     {
         return [
