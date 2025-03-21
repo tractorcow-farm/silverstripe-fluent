@@ -185,6 +185,8 @@ class FluentVersionedExtension extends FluentExtension implements Resettable
                 break;
             // Return all version instances
             case 'archive':
+            case 'archive_only':
+            case 'removed_from_draft':
             case 'all_versions':
             case 'latest_versions':
             case 'latest_version_single':
