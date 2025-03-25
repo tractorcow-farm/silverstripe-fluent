@@ -250,7 +250,7 @@ class DuplicationTest extends SapphireTest
             /** @var Horse|FluentExtension $originalHorse */
             $originalHorse = $this->objFromFixture(Horse::class, 'horse1');
 
-            // We need a second locale to be present before duplication so we can cover alll cases
+            // We need a second locale to be present before duplication so we can cover all cases
             $originalHorse->copyToLocale('ja_JP');
 
             $tail = $originalHorse->Tail();
