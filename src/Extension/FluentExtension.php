@@ -737,7 +737,7 @@ class FluentExtension extends DataExtension
 
                     $localisedOwner = DataObject::get($owner->ClassName)->byID($owner->ID);
 
-                    // Couldn't find localised to to work with
+                    // Couldn't find localised data to work with
                     if (!$localisedOwner->exists()) {
                         return;
                     }
