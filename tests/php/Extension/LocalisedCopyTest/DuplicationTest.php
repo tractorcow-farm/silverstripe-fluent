@@ -249,6 +249,10 @@ class DuplicationTest extends SapphireTest
 
             /** @var Horse|FluentExtension $originalHorse */
             $originalHorse = $this->objFromFixture(Horse::class, 'horse1');
+
+            // We need a second locale to be present before duplication so we can cover alll cases
+            $originalHorse->copyToLocale('ja_JP');
+
             $tail = $originalHorse->Tail();
             $originalTailID = $tail->ID;
             $horseCountBefore = Horse::get()->count();
@@ -256,19 +260,48 @@ class DuplicationTest extends SapphireTest
 
             // Duplicate the horse (and its tail by association)
             $duplicateHorse = $originalHorse->duplicate();
+            $duplicateHorseID = $duplicateHorse->ID;
 
             $horseCountAfter = Horse::get()->count();
             $tailsCountAfter = Tail::get()->count();
+
             $this->assertEquals($horseCountBefore + 1, $horseCountAfter);
-            $this->assertEquals($tailsCountBefore + 1, $tailsCountAfter);
+            $locales = [
+                'en_NZ',
+                'ja_JP',
+            ];
+            $localesCount = count($locales);
+            $this->assertEquals(
+                $tailsCountBefore + $localesCount,
+                $tailsCountAfter,
+                'We expect a duplicate to be created for each locale'
+            );
 
             // Re-fetch both horses so we are asserting on what's in the DB not just what's in memory
             $originalHorse = Horse::get()->byID($originalHorse->ID);
-            $duplicateHorse = Horse::get()->byID($duplicateHorse->ID);
 
-            $this->assertNotSame($originalHorse->ID, $duplicateHorse->ID);
-            $this->assertNotSame($originalHorse->TailID, $duplicateHorse->TailID);
             $this->assertSame($originalTailID, $originalHorse->TailID);
+
+            $localisedTailIDs = [];
+
+            foreach ($locales as $locale) {
+                $localisedTailID = FluentState::singleton()->withState(
+                    function (FluentState $state) use ($locale, $originalHorse, $duplicateHorseID): int {
+                        $state->setLocale($locale);
+
+                        $duplicateHorse = Horse::get()->byID($duplicateHorseID);
+                        $this->assertNotSame($originalHorse->ID, $duplicateHorse->ID);
+                        $this->assertNotSame($originalHorse->TailID, $duplicateHorse->TailID);
+
+                        return $duplicateHorse->TailID;
+                    }
+                );
+
+                $localisedTailIDs[] = $localisedTailID;
+            }
+
+            $localisedTailIDs = array_unique($localisedTailIDs);
+            $this->assertCount($localesCount, $localisedTailIDs, 'We expect unique tail ID in each locale');
         });
     }
 

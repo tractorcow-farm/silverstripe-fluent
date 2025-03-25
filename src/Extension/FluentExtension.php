@@ -638,21 +638,26 @@ class FluentExtension extends DataExtension
     public function onAfterDuplicate($original, $doWrite, $relations): void
     {
         $owner = $this->getOwner();
-        $localisedTables = $this->owner->getLocalisedTables();
+        $localisedTables = $owner->getLocalisedTables();
+
         // Get the names of all has_one columns that will have new IDs
         $copyRelations = (array) $owner->config()->get('localised_copy');
         $hasOne = $owner->hasOne();
         $copyHasOneRelations = [];
+
         foreach ($copyRelations as $relationName) {
-            if (array_key_exists($relationName, $hasOne)) {
-                $copyHasOneRelations[] = $relationName . 'ID';
+            if (!array_key_exists($relationName, $hasOne)) {
+                continue;
             }
+
+            $copyHasOneRelations[] = $relationName . 'ID';
         }
+
         // Add row for new duplicated page in all relevant localised tables
         foreach ($localisedTables as $tableName => $fields) {
             // Target IDs
             $fromID = $original->ID;
-            $toID = $this->owner->ID;
+            $toID = $owner->ID;
 
             // Get localised table
             $localisedTable = $this->getLocalisedTable($tableName);
@@ -671,6 +676,7 @@ class FluentExtension extends DataExtension
             // have the has_one ID from the original record.
             // The current $owner (i.e. the newly duplicated record) may have already had its relation duplicated
             // via cascade_duplicates prior to this extension hook being called.
+            // This only covers the current locale though
             $fieldsToUpdate = [];
             foreach (array_intersect($fields, $copyHasOneRelations) as $copyFieldName) {
                 $fieldsToUpdate[$copyFieldName] = $owner->{$copyFieldName};
@@ -678,6 +684,86 @@ class FluentExtension extends DataExtension
             if (!empty($fieldsToUpdate)) {
                 SQLUpdate::create($localisedTable, $fieldsToUpdate, ['RecordID' => $toID])->execute();
             }
+        }
+
+        // We don't have any localised relations to cover
+        if (count($copyHasOneRelations) === 0) {
+            return;
+        }
+
+        $currentLocale = FluentState::singleton()->getLocale();
+
+        // We don't have a current locale which indicates that the Fluent setup is incomplete - bail out
+        if (!$currentLocale) {
+            return;
+        }
+
+        $locales = [];
+
+        /** @var RecordLocale $localeInformation */
+        foreach ($owner->Locales() as $localeInformation) {
+            $sourceLocale = $localeInformation->getSourceLocale();
+            $modelLocale = $localeInformation->getLocaleObject();
+
+            if (!$sourceLocale) {
+                // We don't have any source locale, so we can bail out
+                continue;
+            }
+
+            if ($modelLocale->Locale !== $sourceLocale->Locale) {
+                // Source of this locale is different from current locale, so we can skip it
+                // as this locale content is being inherited
+                continue;
+            }
+
+            if ($modelLocale->Locale === $currentLocale) {
+                // Current locale can be skipped as it was already handled correctly
+                continue;
+            }
+
+            // Add locale which uses current locale as a source to our list
+            $locales[] = $modelLocale->Locale;
+        }
+
+        // No locales need to be actioned
+        if (count($locales) === 0) {
+            return;
+        }
+
+        foreach ($locales as $locale) {
+            FluentState::singleton()->withState(
+                static function (FluentState $state) use ($owner, $locale, $copyRelations): void {
+                    $state->setLocale($locale);
+
+                    $localisedOwner = DataObject::get($owner->ClassName)->byID($owner->ID);
+
+                    // Couldn't find localised to to work with
+                    if (!$localisedOwner->exists()) {
+                        return;
+                    }
+
+                    // Duplicate all localised relations
+                    foreach ($copyRelations as $relation) {
+                        $original = $localisedOwner->{$relation}();
+
+                        if (!$original instanceof DataObject) {
+                            continue;
+                        }
+
+                        if (!$original->exists()) {
+                            continue;
+                        }
+
+                        $duplicate = $original->duplicate();
+                        $localisedOwner->setComponent($relation, $duplicate);
+                    }
+
+                    // Update localised data (without version as this is considered a part of the duplication action)
+                    $localisedOwner->hasExtension(Versioned::class)
+                        ? $localisedOwner->writeWithoutVersion()
+                        : $localisedOwner->write();
+                }
+            );
         }
     }
 
