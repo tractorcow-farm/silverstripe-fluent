@@ -712,19 +712,20 @@ class FluentExtension extends DataExtension
 
         foreach ($locales as $locale) {
             FluentState::singleton()->withState(
-                static function (FluentState $state) use ($owner, $ownerVersioned, $locale, $copyRelations): void {
+                static function (FluentState $state) use ($owner, $original, $ownerVersioned, $locale, $copyRelations): void {
                     $state->setLocale($locale);
 
                     $localisedOwner = DataObject::get($owner->ClassName)->byID($owner->ID);
+                    $localisedOriginal = DataObject::get($original->ClassName)->byID($original->ID);
 
                     // Couldn't find localised data to work with
-                    if (!$localisedOwner) {
+                    if (!$localisedOwner || !$localisedOriginal) {
                         return;
                     }
 
                     // Duplicate all localised relations
                     foreach ($copyRelations as $relation) {
-                        $originalRelation = $localisedOwner->getComponent($relation);
+                        $originalRelation = $localisedOriginal->getComponent($relation);
 
                         if (!$originalRelation instanceof DataObject) {
                             continue;
