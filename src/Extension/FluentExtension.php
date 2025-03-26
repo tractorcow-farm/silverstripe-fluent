@@ -646,11 +646,9 @@ class FluentExtension extends DataExtension
         $copyHasOneRelations = [];
 
         foreach ($copyRelations as $relationName) {
-            if (!array_key_exists($relationName, $hasOne)) {
-                continue;
+            if (array_key_exists($relationName, $hasOne)) {
+                $copyHasOneRelations[] = $relationName . 'ID';
             }
-
-            $copyHasOneRelations[] = $relationName . 'ID';
         }
 
         // Add row for new duplicated page in all relevant localised tables
@@ -676,7 +674,7 @@ class FluentExtension extends DataExtension
             // have the has_one ID from the original record.
             // The current $owner (i.e. the newly duplicated record) may have already had its relation duplicated
             // via cascade_duplicates prior to this extension hook being called.
-            // This only covers the current locale though
+            // This only covers the current locale - see below for handling additional locales.
             $fieldsToUpdate = [];
             foreach (array_intersect($fields, $copyHasOneRelations) as $copyFieldName) {
                 $fieldsToUpdate[$copyFieldName] = $owner->{$copyFieldName};
@@ -685,6 +683,8 @@ class FluentExtension extends DataExtension
                 SQLUpdate::create($localisedTable, $fieldsToUpdate, ['RecordID' => $toID])->execute();
             }
         }
+
+        // We need to handle duplicating relations in `localised_copy` into additional locales
 
         // We don't have any localised relations to cover
         if (count($copyHasOneRelations) === 0) {
@@ -730,38 +730,44 @@ class FluentExtension extends DataExtension
             return;
         }
 
+        $ownerVersioned = $owner->hasExtension(Versioned::class);
+
         foreach ($locales as $locale) {
             FluentState::singleton()->withState(
-                static function (FluentState $state) use ($owner, $locale, $copyRelations): void {
+                static function (FluentState $state) use ($owner, $ownerVersioned, $locale, $copyRelations): void {
                     $state->setLocale($locale);
 
                     $localisedOwner = DataObject::get($owner->ClassName)->byID($owner->ID);
 
                     // Couldn't find localised data to work with
-                    if (!$localisedOwner->exists()) {
+                    if (!$localisedOwner) {
                         return;
                     }
 
                     // Duplicate all localised relations
                     foreach ($copyRelations as $relation) {
-                        $original = $localisedOwner->{$relation}();
+                        $originalRelation = $localisedOwner->getComponent($relation);
 
-                        if (!$original instanceof DataObject) {
+                        if (!$originalRelation instanceof DataObject) {
                             continue;
                         }
 
-                        if (!$original->exists()) {
+                        if (!$originalRelation->isInDB()) {
                             continue;
                         }
 
-                        $duplicate = $original->duplicate();
+                        $duplicate = $originalRelation->duplicate(false);
                         $localisedOwner->setComponent($relation, $duplicate);
                     }
 
                     // Update localised data (without version as this is considered a part of the duplication action)
-                    $localisedOwner->hasExtension(Versioned::class)
-                        ? $localisedOwner->writeWithoutVersion()
-                        : $localisedOwner->write();
+                    $localisedOwner->withLocalisedCopyState(function () use ($ownerVersioned, $localisedOwner): void {
+                        // Prevent unintended interactions with localised copy feature
+                        $localisedOwner->setLocalisedCopyActive(false);
+                        $ownerVersioned
+                            ? $localisedOwner->writeWithoutVersion()
+                            : $localisedOwner->write();
+                    });
                 }
             );
         }
