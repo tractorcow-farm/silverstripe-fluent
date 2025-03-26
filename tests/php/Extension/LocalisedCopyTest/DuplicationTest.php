@@ -253,6 +253,16 @@ class DuplicationTest extends SapphireTest
 
             // We need a second locale to be present before duplication so we can cover all cases
             $originalHorse->copyToLocale('ja_JP');
+            FluentState::singleton()->withState(function (FluentState $state) use ($originalHorse): void {
+                $state->setLocale('en_NZ');
+
+                /** @var Horse $localisedHorse */
+                $localisedHorse = Horse::get()->byID($originalHorse->ID);
+                $ribbon = $localisedHorse->Tail()->Ribbon();
+                // Make sure we have a different title in JP locale so we can assert this later
+                $ribbon->Title .= ' JP';
+                $ribbon->write();
+            });
 
             $tail = $originalHorse->Tail();
             $originalTailID = $tail->ID;
@@ -292,11 +302,13 @@ class DuplicationTest extends SapphireTest
 
             $localisedTailIDs = [];
             $localisedRibbonIDs = [];
+            $localisedRibbonTitles = [];
 
             foreach ($locales as $locale) {
                 [
                     $localisedTailID,
                     $localisedRibbonID,
+                    $localisedRibbonTitle,
                 ] = FluentState::singleton()->withState(
                     function (FluentState $state) use ($locale, $originalHorse, $duplicateHorseID): array {
                         $state->setLocale($locale);
@@ -306,21 +318,27 @@ class DuplicationTest extends SapphireTest
                         $this->assertNotSame($originalHorse->TailID, $duplicateHorse->TailID);
                         $this->assertNotSame($originalHorse->Tail()->RibbonID, $duplicateHorse->Tail()->RibbonID);
 
+                        $tail = $duplicateHorse->Tail();
+                        $ribbon = $tail->Ribbon();
+
                         return [
                             $duplicateHorse->TailID,
-                            $duplicateHorse->Tail()->RibbonID,
+                            $ribbon->ID,
+                            $ribbon->Title,
                         ];
                     }
                 );
 
                 $localisedTailIDs[] = $localisedTailID;
                 $localisedRibbonIDs[] = $localisedRibbonID;
+                $localisedRibbonTitles[] = $localisedRibbonTitle;
             }
 
             $localisedTailIDs = array_unique($localisedTailIDs);
             $localisedRibbonIDs = array_unique($localisedRibbonIDs);
             $this->assertCount($localesCount, $localisedTailIDs, 'We expect unique tail ID in each locale');
             $this->assertCount($localesCount, $localisedRibbonIDs, 'We expect unique ribbon ID in each locale');
+            $this->assertCount($localesCount, $localisedRibbonTitles, 'We expect unique ribbon titles in each locale');
         });
     }
 
