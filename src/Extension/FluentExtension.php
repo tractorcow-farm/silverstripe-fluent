@@ -698,32 +698,10 @@ class FluentExtension extends DataExtension
             return;
         }
 
-        $locales = [];
+        $locales = $this->getLocaleCodesFormModel($owner);
 
-        /** @var RecordLocale $localeInformation */
-        foreach ($owner->Locales() as $localeInformation) {
-            $sourceLocale = $localeInformation->getSourceLocale();
-            $modelLocale = $localeInformation->getLocaleObject();
-
-            if (!$sourceLocale) {
-                // We don't have any source locale, so we can bail out
-                continue;
-            }
-
-            if ($modelLocale->Locale !== $sourceLocale->Locale) {
-                // Source of this locale is different from current locale, so we can skip it
-                // as this locale content is being inherited
-                continue;
-            }
-
-            if ($modelLocale->Locale === $currentLocale) {
-                // Current locale can be skipped as it was already handled correctly
-                continue;
-            }
-
-            // Add locale which uses current locale as a source to our list
-            $locales[] = $modelLocale->Locale;
-        }
+        // Current locale can be skipped as it was already handled correctly
+        $locales = array_diff($locales, [$currentLocale]);
 
         // No locales need to be actioned
         if (count($locales) === 0) {
@@ -1603,5 +1581,39 @@ class FluentExtension extends DataExtension
 
         // all other cases should not duplicate (normal edits)
         return false;
+    }
+
+    /**
+     * Get a list of locale codes that represent locales that the model is localised in
+     * TODO make this method public and use $owner instead as this is a useful utility method
+     *
+     * @param DataObject $model
+     * @return array
+     */
+    private function getLocaleCodesFormModel(DataObject $model): array
+    {
+        $locales = [];
+
+        /** @var RecordLocale $localeInformation */
+        foreach ($model->Locales() as $localeInformation) {
+            $sourceLocale = $localeInformation->getSourceLocale();
+            $modelLocale = $localeInformation->getLocaleObject();
+
+            if (!$sourceLocale) {
+                // We don't have any source locale, so we can bail out
+                continue;
+            }
+
+            if ($modelLocale->Locale !== $sourceLocale->Locale) {
+                // Source of this locale is different from current locale, so we can skip it
+                // as this locale content is being inherited
+                continue;
+            }
+
+            // Add locale which uses current locale as a source to our list
+            $locales[] = $modelLocale->Locale;
+        }
+
+        return $locales;
     }
 }
