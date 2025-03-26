@@ -21,6 +21,7 @@ class DuplicationTest extends SapphireTest
         Horse::class,
         Steed::class,
         Tail::class,
+        Ribbon::class,
         Saddle::class,
     ];
 
@@ -257,6 +258,7 @@ class DuplicationTest extends SapphireTest
             $originalTailID = $tail->ID;
             $horseCountBefore = Horse::get()->count();
             $tailsCountBefore = Tail::get()->count();
+            $ribbonCountBefore = Ribbon::get()->count();
 
             // Duplicate the horse (and its tail by association)
             $duplicateHorse = $originalHorse->duplicate();
@@ -264,6 +266,7 @@ class DuplicationTest extends SapphireTest
 
             $horseCountAfter = Horse::get()->count();
             $tailsCountAfter = Tail::get()->count();
+            $ribbonCountAfter = Ribbon::get()->count();
 
             $this->assertEquals($horseCountBefore + 1, $horseCountAfter);
             $locales = [
@@ -274,7 +277,12 @@ class DuplicationTest extends SapphireTest
             $this->assertEquals(
                 $tailsCountBefore + $localesCount,
                 $tailsCountAfter,
-                'We expect a duplicate to be created for each locale'
+                'We expect a duplicate to be created for each locale (Tail)'
+            );
+            $this->assertEquals(
+                $ribbonCountBefore + $localesCount,
+                $ribbonCountAfter,
+                'We expect a duplicate to be created for each locale (Ribbon)'
             );
 
             // Re-fetch both horses so we are asserting on what's in the DB not just what's in memory
@@ -283,25 +291,36 @@ class DuplicationTest extends SapphireTest
             $this->assertSame($originalTailID, $originalHorse->TailID);
 
             $localisedTailIDs = [];
+            $localisedRibbonIDs = [];
 
             foreach ($locales as $locale) {
-                $localisedTailID = FluentState::singleton()->withState(
-                    function (FluentState $state) use ($locale, $originalHorse, $duplicateHorseID): int {
+                [
+                    $localisedTailID,
+                    $localisedRibbonID,
+                ] = FluentState::singleton()->withState(
+                    function (FluentState $state) use ($locale, $originalHorse, $duplicateHorseID): array {
                         $state->setLocale($locale);
 
                         $duplicateHorse = Horse::get()->byID($duplicateHorseID);
                         $this->assertNotSame($originalHorse->ID, $duplicateHorse->ID);
                         $this->assertNotSame($originalHorse->TailID, $duplicateHorse->TailID);
+                        $this->assertNotSame($originalHorse->Tail()->RibbonID, $duplicateHorse->Tail()->RibbonID);
 
-                        return $duplicateHorse->TailID;
+                        return [
+                            $duplicateHorse->TailID,
+                            $duplicateHorse->Tail()->RibbonID,
+                        ];
                     }
                 );
 
                 $localisedTailIDs[] = $localisedTailID;
+                $localisedRibbonIDs[] = $localisedRibbonID;
             }
 
             $localisedTailIDs = array_unique($localisedTailIDs);
+            $localisedRibbonIDs = array_unique($localisedRibbonIDs);
             $this->assertCount($localesCount, $localisedTailIDs, 'We expect unique tail ID in each locale');
+            $this->assertCount($localesCount, $localisedRibbonIDs, 'We expect unique ribbon ID in each locale');
         });
     }
 
