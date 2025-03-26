@@ -698,7 +698,7 @@ class FluentExtension extends DataExtension
             return;
         }
 
-        $locales = $this->getLocaleCodesFormModel($owner);
+        $locales = $this->getLocaleCodesForModel($owner);
 
         // Current locale can be skipped as it was already handled correctly
         $locales = array_diff($locales, [$currentLocale]);
@@ -1590,7 +1590,7 @@ class FluentExtension extends DataExtension
      * @param DataObject $model
      * @return array
      */
-    private function getLocaleCodesFormModel(DataObject $model): array
+    private function getLocaleCodesForModel(DataObject $model): array
     {
         $locales = [];
 
