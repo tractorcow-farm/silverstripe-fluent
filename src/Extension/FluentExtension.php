@@ -725,6 +725,7 @@ class FluentExtension extends DataExtension
 
                     // Duplicate all localised relations
                     foreach ($copyRelations as $relation) {
+                        $localisedRelation = $localisedOwner->getComponent($relation);
                         $originalRelation = $localisedOriginal->getComponent($relation);
 
                         if (!$originalRelation instanceof DataObject) {
@@ -735,7 +736,24 @@ class FluentExtension extends DataExtension
                             continue;
                         }
 
-                        $duplicate = $originalRelation->duplicate(false);
+                        // Determine if Top page ID information is available
+                        $topPageID = (int) $localisedRelation->hasField('TopPageID')
+                            ? $localisedRelation->TopPageID
+                            : 0;
+
+                        // Elemental module compatibility
+                        if ($topPageID && $originalRelation->hasMethod('withFixedTopPage')) {
+                            $duplicate = $originalRelation->withFixedTopPage(
+                                $topPageID,
+                                static function () use ($originalRelation): DataObject {
+                                    // Duplicate needs to include write to store the top page data
+                                    return $originalRelation->duplicate();
+                                }
+                            );
+                        } else {
+                            $duplicate = $originalRelation->duplicate();
+                        }
+
                         $localisedOwner->setComponent($relation, $duplicate);
                     }
 
