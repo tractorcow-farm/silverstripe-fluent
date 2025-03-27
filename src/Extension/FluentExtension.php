@@ -715,7 +715,7 @@ class FluentExtension extends DataExtension
 
         foreach ($locales as $locale) {
             FluentState::singleton()->withState(
-                static function (FluentState $state) use ($owner, $original, $ownerIsVersioned, $locale, $copyRelations): void {
+                static function (FluentState $state) use ($owner, $original, $ownerIsVersioned, $locale, $copyHasOneRelations): void {
                     $state->setLocale($locale);
 
                     // This is model which was created by the duplication
@@ -730,7 +730,7 @@ class FluentExtension extends DataExtension
                     }
 
                     // Duplicate all localised relations
-                    foreach ($copyRelations as $relation => $relationIDField) {
+                    foreach ($copyHasOneRelations as $relation => $relationIDField) {
                         $localisedRelation = $localisedOwner->getComponent($relation);
                         $originalRelation = $localisedOriginal->getComponent($relation);
 
@@ -744,7 +744,7 @@ class FluentExtension extends DataExtension
                             : 0;
 
                         // Elemental module compatibility
-                        if ($topPageID && $originalRelation->hasMethod('withFixedTopPage')) {
+                        if ($topPageID && $originalRelation->hasExtension(\DNADesign\Elemental\TopPage\DataExtension::class)) {
                             $duplicate = $originalRelation->withFixedTopPage(
                                 $topPageID,
                                 static function () use ($originalRelation): DataObject {
