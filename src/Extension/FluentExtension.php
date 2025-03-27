@@ -642,12 +642,15 @@ class FluentExtension extends DataExtension
 
         // Get the names of all has_one columns that will have new IDs
         $copyRelations = (array) $owner->config()->get('localised_copy');
+        $cascadeDuplicates = (array) $owner->config()->get('cascade_duplicates');
         $hasOne = $owner->hasOne();
         $copyHasOneRelations = [];
 
         foreach ($copyRelations as $relationName) {
-            if (array_key_exists($relationName, $hasOne)) {
-                $copyHasOneRelations[] = $relationName . 'ID';
+            // We only need to process has_one relations which are covered in both localised_copy & cascade_duplicates
+            // because only such cases need special handling for duplication
+            if (array_key_exists($relationName, $hasOne) && in_array($relationName, $cascadeDuplicates)) {
+                $copyHasOneRelations[$relationName] = $relationName . 'ID';
             }
         }
 
@@ -708,14 +711,17 @@ class FluentExtension extends DataExtension
             return;
         }
 
-        $ownerVersioned = $owner->hasExtension(Versioned::class);
+        $ownerIsVersioned = $owner->hasExtension(Versioned::class);
 
         foreach ($locales as $locale) {
             FluentState::singleton()->withState(
-                static function (FluentState $state) use ($owner, $original, $ownerVersioned, $locale, $copyRelations): void {
+                static function (FluentState $state) use ($owner, $original, $ownerIsVersioned, $locale, $copyRelations): void {
                     $state->setLocale($locale);
 
+                    // This is model which was created by the duplication
                     $localisedOwner = DataObject::get($owner->ClassName)->byID($owner->ID);
+
+                    // This is the model that we were duplicating
                     $localisedOriginal = DataObject::get($original->ClassName)->byID($original->ID);
 
                     // Couldn't find localised data to work with
@@ -724,13 +730,9 @@ class FluentExtension extends DataExtension
                     }
 
                     // Duplicate all localised relations
-                    foreach ($copyRelations as $relation) {
+                    foreach ($copyRelations as $relation => $relationIDField) {
                         $localisedRelation = $localisedOwner->getComponent($relation);
                         $originalRelation = $localisedOriginal->getComponent($relation);
-
-                        if (!$originalRelation instanceof DataObject) {
-                            continue;
-                        }
 
                         if (!$originalRelation->isInDB()) {
                             continue;
@@ -751,17 +753,17 @@ class FluentExtension extends DataExtension
                                 }
                             );
                         } else {
-                            $duplicate = $originalRelation->duplicate();
+                            $duplicate = $originalRelation->duplicate(false);
                         }
 
                         $localisedOwner->setComponent($relation, $duplicate);
                     }
 
                     // Update localised data (without version as this is considered a part of the duplication action)
-                    $localisedOwner->withLocalisedCopyState(function () use ($ownerVersioned, $localisedOwner): void {
+                    $localisedOwner->withLocalisedCopyState(function () use ($ownerIsVersioned, $localisedOwner): void {
                         // Prevent unintended interactions with localised copy feature
                         $localisedOwner->setLocalisedCopyActive(false);
-                        $ownerVersioned
+                        $ownerIsVersioned
                             ? $localisedOwner->writeWithoutVersion()
                             : $localisedOwner->write();
                     });
@@ -1602,13 +1604,6 @@ class FluentExtension extends DataExtension
         return false;
     }
 
-    /**
-     * Get a list of locale codes that represent locales that the model is localised in
-     * TODO make this method public and use $owner instead as this is a useful utility method
-     *
-     * @param DataObject $model
-     * @return array
-     */
     private function getLocaleCodesForModel(DataObject $model): array
     {
         $locales = [];
