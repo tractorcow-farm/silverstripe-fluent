@@ -11,6 +11,7 @@ use TractorCow\Fluent\Model\Domain;
 use TractorCow\Fluent\Model\Locale;
 use TractorCow\Fluent\State\FluentState;
 use PHPUnit\Framework\Attributes\DataProvider;
+use SilverStripe\Forms\Form;
 
 class LocaleTest extends SapphireTest
 {
@@ -220,5 +221,38 @@ class LocaleTest extends SapphireTest
         $locale = Locale::getByLocale('es_US');
 
         $this->assertSame('US', $locale->getLocaleSuffix());
+    }
+
+    public static function provideDefaultValues(): array
+    {
+        return [
+            [
+                'locale' => 'en_US',
+                'title' => 'English (United States)',
+                'urlSegment' => 'en_US',
+            ],
+            [
+                'locale' => 'en_NZ',
+                'title' => 'English (New Zealand)',
+                'urlSegment' => 'en_NZ',
+            ],
+        ];
+    }
+
+    #[DataProvider('provideDefaultValues')]
+    public function testDefaultValues(string $locale, string $title, string $urlSegment): void
+    {
+        // Simulate creating a new record via the CMS
+        $localeObj = new Locale();
+        $form = new Form(fields: $localeObj->getCMSFields());
+        $form->loadDataFrom($localeObj);
+        $form->saveInto($localeObj);
+        // Setting this must be done after putting data into and out of the form.
+        // This ensures values weren't set into the form via getters that fetch a default value too early.
+        $localeObj->Locale = $locale;
+        $localeObj->write();
+
+        $this->assertSame($title, $localeObj->Title);
+        $this->assertSame($urlSegment, $localeObj->URLSegment);
     }
 }

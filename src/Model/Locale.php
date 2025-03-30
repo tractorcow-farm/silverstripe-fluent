@@ -8,6 +8,7 @@ use Exception;
 use SilverStripe\Control\Controller;
 use SilverStripe\Control\Director;
 use SilverStripe\Core\Config\Config;
+use SilverStripe\Dev\Deprecation;
 use SilverStripe\Forms\CheckboxField;
 use SilverStripe\Forms\DropdownField;
 use SilverStripe\Forms\FieldList;
@@ -156,20 +157,6 @@ class Locale extends DataObject implements PermissionProvider
     }
 
     /**
-     * Get internal title for this locale
-     *
-     * @return string
-     */
-    public function getTitle()
-    {
-        $title = $this->getField('Title');
-        if ($title) {
-            return $title;
-        }
-        return $this->getDefaultTitle();
-    }
-
-    /**
      * Long title (including locale code)
      *
      * @return string
@@ -262,16 +249,12 @@ class Locale extends DataObject implements PermissionProvider
      * Get URLSegment for this locale
      *
      * @return string
+     * @deprecated 8.1.0 Use `URLSegment` database field directly instead.
      */
     public function getURLSegment()
     {
-        $segment = $this->getField('URLSegment');
-        if ($segment) {
-            return $segment;
-        }
-
-        // Default to locale
-        return $this->getLocale();
+        Deprecation::notice('8.1.0', 'Use `URLSegment` database field directly instead.');
+        return $this->getField('URLSegment');
     }
 
     public function getCMSFields()
@@ -497,6 +480,19 @@ class Locale extends DataObject implements PermissionProvider
         }
 
         return Locale::getCached();
+    }
+
+    protected function onBeforeWrite()
+    {
+        parent::onBeforeWrite();
+
+        // Set Title and URLSegment to reflect the locale if not specified.
+        if (!$this->Title) {
+            $this->Title = $this->getDefaultTitle();
+        }
+        if (!$this->URLSegment) {
+            $this->URLSegment = $this->getLocale();
+        }
     }
 
     protected function onAfterWrite()
