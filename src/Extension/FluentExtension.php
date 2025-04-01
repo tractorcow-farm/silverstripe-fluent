@@ -3,7 +3,6 @@
 namespace TractorCow\Fluent\Extension;
 
 use LogicException;
-use SilverStripe\i18n\i18n;
 use SilverStripe\Core\ClassInfo;
 use SilverStripe\Core\Config\Config;
 use SilverStripe\Core\Convert;
@@ -26,7 +25,6 @@ use SilverStripe\ORM\Queries\SQLConditionGroup;
 use SilverStripe\ORM\Queries\SQLSelect;
 use SilverStripe\ORM\Queries\SQLUpdate;
 use SilverStripe\ORM\ValidationException;
-use SilverStripe\Security\Permission;
 use SilverStripe\Versioned\Versioned;
 use SilverStripe\View\HTML;
 use TractorCow\Fluent\Extension\Traits\FluentObjectTrait;
@@ -725,28 +723,18 @@ class FluentExtension extends DataExtension
 
                     // Duplicate all localised relations
                     foreach ($copyHasOneRelations as $relation => $relationIDField) {
-                        $localisedRelation = $localisedOwner->getComponent($relation);
                         $originalRelation = $localisedOriginal->getComponent($relation);
 
                         if (!$originalRelation->isInDB()) {
                             continue;
                         }
 
-                        // Determine if Top page ID information is available
-                        $topPageID = (int) $localisedRelation->hasField('TopPageID')
-                            ? $localisedRelation->TopPageID
-                            : 0;
+                        // Allow an extension point to populate the duplicate first
+                        $duplicate = null;
+                        $originalRelation->extend('onBeforeDuplicateToLocale', $relation, $relationIDField, $localisedOwner, $duplicate);
 
-                        // Elemental module compatibility
-                        if ($topPageID && $originalRelation->hasExtension(\DNADesign\Elemental\TopPage\DataExtension::class)) {
-                            $duplicate = $originalRelation->withFixedTopPage(
-                                $topPageID,
-                                static function () use ($originalRelation): DataObject {
-                                    // Duplicate needs to include write to store the top page data
-                                    return $originalRelation->duplicate();
-                                }
-                            );
-                        } else {
+                        // If extension point fails to provide a duplicate, fall back to the default duplication
+                        if (!$duplicate instanceof DataObject) {
                             $duplicate = $originalRelation->duplicate(false);
                         }
 
