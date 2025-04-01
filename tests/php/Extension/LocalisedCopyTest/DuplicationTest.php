@@ -242,10 +242,11 @@ class DuplicationTest extends SapphireTest
     /**
      * case: duplicate() called on localised record
      * desired outcome: has_one duplication is copied correctly to localised table
+     * @dataProvider duplicationCasesProvider
      */
-    public function testDuplicate(): void
+    public function testDuplicate(?array $relations): void
     {
-        FluentState::singleton()->withState(function (FluentState $state): void {
+        FluentState::singleton()->withState(function (FluentState $state) use ($relations): void {
             $state->setLocale('en_NZ');
 
             /** @var Horse|FluentExtension $originalHorse */
@@ -271,7 +272,7 @@ class DuplicationTest extends SapphireTest
             $ribbonCountBefore = Ribbon::get()->count();
 
             // Duplicate the horse (and its tail by association)
-            $duplicateHorse = $originalHorse->duplicate();
+            $duplicateHorse = $originalHorse->duplicate(true, $relations);
             $duplicateHorseID = $duplicateHorse->ID;
 
             $horseCountAfter = Horse::get()->count();
@@ -283,6 +284,23 @@ class DuplicationTest extends SapphireTest
                 'en_NZ',
                 'ja_JP',
             ];
+
+            // In case we explicitly chose to not duplicate relations we do not expect duplicated models to be present
+            if ($relations === []) {
+                $this->assertEquals(
+                    $tailsCountBefore,
+                    $tailsCountAfter,
+                    'We do not expect a duplicate to be created (Tail)'
+                );
+                $this->assertEquals(
+                    $ribbonCountBefore,
+                    $ribbonCountAfter,
+                    'We do not expect a duplicate to be created (Ribbon)'
+                );
+
+                return;
+            }
+
             $localesCount = count($locales);
             $this->assertEquals(
                 $tailsCountBefore + $localesCount,
@@ -340,6 +358,23 @@ class DuplicationTest extends SapphireTest
             $this->assertCount($localesCount, $localisedRibbonIDs, 'We expect unique ribbon ID in each locale');
             $this->assertCount($localesCount, $localisedRibbonTitles, 'We expect unique ribbon titles in each locale');
         });
+    }
+
+    public function duplicationCasesProvider(): array
+    {
+        return [
+            'default duplicaton' => [
+                null,
+            ],
+            'explicit duplicaton (specific relation)' => [
+                [
+                    'Tail',
+                ],
+            ],
+            'explicit duplicaton (no relation)' => [
+                [],
+            ],
+        ];
     }
 
     public function localesProvider(): array

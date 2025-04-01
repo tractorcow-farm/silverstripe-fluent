@@ -642,14 +642,13 @@ class FluentExtension extends DataExtension
 
         // Get the names of all has_one columns that will have new IDs
         $copyRelations = (array) $owner->config()->get('localised_copy');
-        $cascadeDuplicates = (array) $owner->config()->get('cascade_duplicates');
         $hasOne = $owner->hasOne();
         $copyHasOneRelations = [];
 
         foreach ($copyRelations as $relationName) {
-            // We only need to process has_one relations which are covered in both localised_copy & cascade_duplicates
+            // We only need to process has_one relations which are covered in localised_copy and are part of this duplication
             // because only such cases need special handling for duplication
-            if (array_key_exists($relationName, $hasOne) && in_array($relationName, $cascadeDuplicates)) {
+            if (array_key_exists($relationName, $hasOne) && in_array($relationName, $relations)) {
                 $copyHasOneRelations[$relationName] = $relationName . 'ID';
             }
         }
@@ -718,16 +717,11 @@ class FluentExtension extends DataExtension
                 static function (FluentState $state) use ($owner, $original, $ownerIsVersioned, $locale, $copyHasOneRelations): void {
                     $state->setLocale($locale);
 
-                    // This is model which was created by the duplication
+                    // This is localised copy of the record which was created by the duplication
                     $localisedOwner = DataObject::get($owner->ClassName)->byID($owner->ID);
 
-                    // This is the model that we were duplicating
+                    // This is the localised copy of the original record that we were duplicating
                     $localisedOriginal = DataObject::get($original->ClassName)->byID($original->ID);
-
-                    // Couldn't find localised data to work with
-                    if (!$localisedOwner || !$localisedOriginal) {
-                        return;
-                    }
 
                     // Duplicate all localised relations
                     foreach ($copyHasOneRelations as $relation => $relationIDField) {
