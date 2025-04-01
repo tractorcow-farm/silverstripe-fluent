@@ -5,6 +5,7 @@ namespace TractorCow\Fluent\Extension;
 use SilverStripe\Control\Controller;
 use SilverStripe\Control\HTTPResponse;
 use SilverStripe\Core\Extension;
+use SilverStripe\Dev\Deprecation;
 use SilverStripe\Forms\FieldList;
 use SilverStripe\Forms\Form;
 use SilverStripe\Forms\GridField\GridFieldDetailForm_ItemRequest;
@@ -30,9 +31,14 @@ class FluentGridFieldExtension extends Extension
      *
      * @param DBField|null $badgeField
      * @see VersionedGridFieldItemRequest::Breadcrumbs()
+     * @deprecated 7.3.0 Will be replaced with TractorCow\Fluent\Extension\FluentExtension::updateStatusFlags()
      */
     public function updateBadge(&$badgeField)
     {
+        Deprecation::noticeWithNoReplacment(
+            '7.3.0',
+            'Will be replaced with TractorCow\Fluent\Extension\FluentExtension::updateStatusFlags()'
+        );
         $record = $this->owner->getRecord();
         $badgeField = $this->addFluentBadge($badgeField, $record);
     }

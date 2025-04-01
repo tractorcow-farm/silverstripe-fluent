@@ -6,6 +6,7 @@ use InvalidArgumentException;
 use LogicException;
 use SilverStripe\Core\Config\Config;
 use SilverStripe\Core\Resettable;
+use SilverStripe\Dev\Deprecation;
 use SilverStripe\Forms\GridField\GridFieldConfig;
 use SilverStripe\ORM\DataList;
 use SilverStripe\ORM\DataObject;
@@ -501,9 +502,11 @@ SQL;
 
     /**
      * Clear internal static property caches
+     * @deprecated 7.3.0 Will be renamed to onFlushCache()
      */
     public function flushCache()
     {
+        Deprecation::noticeWithNoReplacment('7.3.0', 'Will be renamed to onFlushCache()');
         static::reset();
     }
 
