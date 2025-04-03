@@ -212,7 +212,7 @@ class LocaleTest extends SapphireTest
 
         /** @var CheckboxField $checkbox */
         $checkbox = $fields->fieldByName('Root.Main.IsGlobalDefault');
-        $this->assertTrue((bool)$checkbox->Value());
+        $this->assertTrue((bool)$checkbox->getValue());
     }
 
     public function testGetLocaleSuffix()

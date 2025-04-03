@@ -107,8 +107,6 @@ trait FluentObjectTrait
 
         // Generate gridfield for handling localisations
         $config = GridFieldConfig_Base::create();
-        // Remove filters as the displayed data is in ArrayList format
-        $config->removeComponentsByType(GridFieldFilterHeader::class);
 
         $columns = $config->getComponentByType(GridFieldDataColumns::class);
         $summaryColumns = [
@@ -118,8 +116,7 @@ trait FluentObjectTrait
 
         // Augment Localisation tab with clickable locale links to allow easy navigation between model localisations
         if ($owner->hasExtension(CMSEditLinkExtension::class)) {
-            $controller = Controller::has_curr() ? Controller::curr() : null;
-            $request = $controller?->getRequest();
+            $request = Controller::curr()?->getRequest();
 
             // Pass getVars separately so we can process them later
             $params = $request?->getVars() ?? [];

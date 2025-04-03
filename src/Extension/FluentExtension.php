@@ -24,7 +24,7 @@ use SilverStripe\ORM\FieldType\DBVarchar;
 use SilverStripe\ORM\Queries\SQLConditionGroup;
 use SilverStripe\ORM\Queries\SQLSelect;
 use SilverStripe\Core\Validation\ValidationException;
-use SilverStripe\Security\Permission;
+use SilverStripe\ORM\Queries\SQLUpdate;
 use SilverStripe\Versioned\Versioned;
 use SilverStripe\View\HTML;
 use TractorCow\Fluent\Extension\Traits\FluentBadgeTrait;
@@ -85,6 +85,16 @@ class FluentExtension extends Extension
      * current locale, fallback locale, base record
      */
     const INHERITANCE_MODE_ANY = 'any';
+
+    /**
+     * Fluent inheritance mode for CMS context
+     */
+    private static string $cms_localisation_required = FluentExtension::INHERITANCE_MODE_ANY;
+
+    /**
+     * Fluent inheritance mode for frontend context
+     */
+    private static string $frontend_publish_required = FluentExtension::INHERITANCE_MODE_FALLBACK;
 
     /**
      * DB fields to be used added in when creating a localised version of the owner's table
@@ -636,7 +646,18 @@ class FluentExtension extends Extension
      */
     public function onAfterDuplicate($original, $doWrite, $relations): void
     {
+        $owner = $this->getOwner();
         $localisedTables = $this->owner->getLocalisedTables();
+        // Get the names of all has_one columns that will have new IDs
+        $copyRelations = (array) $owner->config()->get('localised_copy');
+        $hasOne = $owner->hasOne();
+        $copyHasOneRelations = [];
+        foreach ($copyRelations as $relationName) {
+            if (array_key_exists($relationName, $hasOne)) {
+                $copyHasOneRelations[] = $relationName . 'ID';
+            }
+        }
+        // Add row for new duplicated page in all relevant localised tables
         foreach ($localisedTables as $tableName => $fields) {
             // Target IDs
             $fromID = $original->ID;
@@ -654,6 +675,18 @@ class FluentExtension extends Extension
                     SELECT ? AS \"RecordID\", \"Locale\", $fields_str
                     FROM \"$localisedTable\"
                     WHERE \"RecordID\" = ?", [$toID, $fromID]);
+
+            // Make sure to update any has_one IDs - otherwise the new localised table entry will
+            // have the has_one ID from the original record.
+            // The current $owner (i.e. the newly duplicated record) may have already had its relation duplicated
+            // via cascade_duplicates prior to this extension hook being called.
+            $fieldsToUpdate = [];
+            foreach (array_intersect($fields, $copyHasOneRelations) as $copyFieldName) {
+                $fieldsToUpdate[$copyFieldName] = $owner->{$copyFieldName};
+            }
+            if (!empty($fieldsToUpdate)) {
+                SQLUpdate::create($localisedTable, $fieldsToUpdate, ['RecordID' => $toID])->execute();
+            }
         }
     }
 
@@ -992,7 +1025,6 @@ class FluentExtension extends Extension
         return Locale::getCurrentLocale();
     }
 
-
     /**
      * Returns the source locale that will display the content for this record
      *
@@ -1000,11 +1032,17 @@ class FluentExtension extends Extension
      */
     public function getSourceLocale()
     {
-        $sourceLocale = $this->owner->getField('SourceLocale');
-        if ($sourceLocale) {
-            return Locale::getByLocale($sourceLocale);
+        $currentLocale = FluentState::singleton()->getLocale();
+
+        // We do not have any locales set up yet, so there is no source locale to find
+        if (!$currentLocale) {
+            return null;
         }
-        return Locale::getDefault();
+
+        $owner = $this->owner;
+        $localeInformation = $owner->LocaleInformation($currentLocale);
+
+        return $localeInformation->getSourceLocale();
     }
 
     /**
@@ -1419,11 +1457,21 @@ class FluentExtension extends Extension
         $summaryColumns['Source'] = [
             'title'    => 'Source',
             'callback' => function (Locale $object) {
-                if (!$object->RecordLocale()) {
+                $localeInformation = $object->RecordLocale();
+
+                if (!$localeInformation) {
                     return '';
                 }
 
-                $sourceLocale = $object->RecordLocale()->getSourceLocale();
+                $sourceLocale = FluentState::singleton()->withState(
+                    static function (FluentState $state) use ($localeInformation): ?Locale {
+                        // We are currently in the CMS context, but we want to show to the content author
+                        // what the data state is in the frontend context
+                        $state->setIsFrontend(true);
+
+                        return $localeInformation->getSourceLocale();
+                    }
+                );
 
                 if ($sourceLocale) {
                     return $sourceLocale->getLongTitle();
