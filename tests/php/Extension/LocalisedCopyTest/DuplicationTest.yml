@@ -1,30 +1,35 @@
 TractorCow\Fluent\Model\Locale:
   nz:
-    Locale: en_NZ
+    Locale: 'en_NZ'
     Title: 'English NZ'
-    URLSegment: nz
+    URLSegment: 'nz'
   jp:
-    Locale: ja_JP
+    Locale: 'ja_JP'
     Title: 'Japan'
-    URLSegment: jp
+    URLSegment: 'jp'
+
+TractorCow\Fluent\Tests\Extension\LocalisedCopyTest\Ribbon:
+  ribbon1:
+    Title: 'Ribbon1'
 
 TractorCow\Fluent\Tests\Extension\LocalisedCopyTest\Tail:
   tail1:
-    Title: Tail1
+    Title: 'Tail1'
+    Ribbon: =>TractorCow\Fluent\Tests\Extension\LocalisedCopyTest\Ribbon.ribbon1
   tail2:
-    Title: Tail2
+    Title: 'Tail2'
 
 TractorCow\Fluent\Tests\Extension\LocalisedCopyTest\Saddle:
   saddle1:
-    Title: Saddle1
+    Title: 'Saddle1'
 
 TractorCow\Fluent\Tests\Extension\LocalisedCopyTest\Horse:
   horse1:
-    Title: Horse1
+    Title: 'Horse1'
     Tail: =>TractorCow\Fluent\Tests\Extension\LocalisedCopyTest\Tail.tail1
 
 TractorCow\Fluent\Tests\Extension\LocalisedCopyTest\Steed:
   steed1:
-    Title: Steed1
+    Title: 'Steed1'
     Tail: =>TractorCow\Fluent\Tests\Extension\LocalisedCopyTest\Tail.tail2
     Saddle: =>TractorCow\Fluent\Tests\Extension\LocalisedCopyTest\Saddle.saddle1
