@@ -14,6 +14,7 @@ use SilverStripe\ORM\ValidationResult;
 use SilverStripe\Versioned\VersionedGridFieldItemRequest;
 use TractorCow\Fluent\Extension\Traits\FluentAdminTrait;
 use TractorCow\Fluent\Extension\Traits\FluentBadgeTrait;
+use TractorCow\Fluent\State\FluentState;
 
 /**
  * Supports GridFieldDetailForm_ItemRequest with extra actions
@@ -39,6 +40,11 @@ class FluentGridFieldExtension extends Extension
 
     public function updateFormActions(FieldList $actions)
     {
+        // If there is no current FluentState, then we shouldn't update.
+        if (!FluentState::singleton()->getLocale()) {
+            return;
+        }
+        
         $this->updateFluentActions($actions, $this->owner->getRecord());
     }
 
