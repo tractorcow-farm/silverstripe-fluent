@@ -3,7 +3,6 @@
 namespace TractorCow\Fluent\Extension;
 
 use LogicException;
-use SilverStripe\i18n\i18n;
 use SilverStripe\Core\ClassInfo;
 use SilverStripe\Core\Config\Config;
 use SilverStripe\Core\Convert;
@@ -647,21 +646,26 @@ class FluentExtension extends Extension
     public function onAfterDuplicate($original, $doWrite, $relations): void
     {
         $owner = $this->getOwner();
-        $localisedTables = $this->owner->getLocalisedTables();
+        $localisedTables = $owner->getLocalisedTables();
+
         // Get the names of all has_one columns that will have new IDs
         $copyRelations = (array) $owner->config()->get('localised_copy');
         $hasOne = $owner->hasOne();
         $copyHasOneRelations = [];
+
         foreach ($copyRelations as $relationName) {
-            if (array_key_exists($relationName, $hasOne)) {
-                $copyHasOneRelations[] = $relationName . 'ID';
+            // We only need to process has_one relations which are covered in localised_copy and are part of this duplication
+            // because only such cases need special handling for duplication
+            if (array_key_exists($relationName, $hasOne) && in_array($relationName, $relations)) {
+                $copyHasOneRelations[$relationName] = $relationName . 'ID';
             }
         }
+
         // Add row for new duplicated page in all relevant localised tables
         foreach ($localisedTables as $tableName => $fields) {
             // Target IDs
             $fromID = $original->ID;
-            $toID = $this->owner->ID;
+            $toID = $owner->ID;
 
             // Get localised table
             $localisedTable = $this->getLocalisedTable($tableName);
@@ -680,6 +684,7 @@ class FluentExtension extends Extension
             // have the has_one ID from the original record.
             // The current $owner (i.e. the newly duplicated record) may have already had its relation duplicated
             // via cascade_duplicates prior to this extension hook being called.
+            // This only covers the current locale - see below for handling additional locales.
             $fieldsToUpdate = [];
             foreach (array_intersect($fields, $copyHasOneRelations) as $copyFieldName) {
                 $fieldsToUpdate[$copyFieldName] = $owner->{$copyFieldName};
@@ -687,6 +692,75 @@ class FluentExtension extends Extension
             if (!empty($fieldsToUpdate)) {
                 SQLUpdate::create($localisedTable, $fieldsToUpdate, ['RecordID' => $toID])->execute();
             }
+        }
+
+        // We need to handle duplicating relations in `localised_copy` into additional locales
+
+        // We don't have any localised relations to cover
+        if (count($copyHasOneRelations) === 0) {
+            return;
+        }
+
+        $currentLocale = FluentState::singleton()->getLocale();
+
+        // We don't have a current locale which indicates that the Fluent setup is incomplete - bail out
+        if (!$currentLocale) {
+            return;
+        }
+
+        $locales = $this->getLocaleCodesForModel($owner);
+
+        // Current locale can be skipped as it was already handled correctly
+        $locales = array_diff($locales, [$currentLocale]);
+
+        // No locales need to be actioned
+        if (count($locales) === 0) {
+            return;
+        }
+
+        $ownerIsVersioned = $owner->hasExtension(Versioned::class);
+
+        foreach ($locales as $locale) {
+            FluentState::singleton()->withState(
+                static function (FluentState $state) use ($owner, $original, $ownerIsVersioned, $locale, $copyHasOneRelations): void {
+                    $state->setLocale($locale);
+
+                    // This is localised copy of the record which was created by the duplication
+                    $localisedOwner = DataObject::get($owner->ClassName)->byID($owner->ID);
+
+                    // This is the localised copy of the original record that we were duplicating
+                    $localisedOriginal = DataObject::get($original->ClassName)->byID($original->ID);
+
+                    // Duplicate all localised relations
+                    foreach ($copyHasOneRelations as $relation => $relationIDField) {
+                        $originalRelation = $localisedOriginal->getComponent($relation);
+
+                        if (!$originalRelation->isInDB()) {
+                            continue;
+                        }
+
+                        // Allow an extension point to populate the duplicate first
+                        $duplicate = null;
+                        $originalRelation->extend('onBeforeDuplicateToLocale', $relation, $relationIDField, $localisedOwner, $duplicate);
+
+                        // If extension point fails to provide a duplicate, fall back to the default duplication
+                        if (!$duplicate instanceof DataObject) {
+                            $duplicate = $originalRelation->duplicate(false);
+                        }
+
+                        $localisedOwner->setComponent($relation, $duplicate);
+                    }
+
+                    // Update localised data (without version as this is considered a part of the duplication action)
+                    $localisedOwner->withLocalisedCopyState(function () use ($ownerIsVersioned, $localisedOwner): void {
+                        // Prevent unintended interactions with localised copy feature
+                        $localisedOwner->setLocalisedCopyActive(false);
+                        $ownerIsVersioned
+                            ? $localisedOwner->writeWithoutVersion()
+                            : $localisedOwner->write();
+                    });
+                }
+            );
         }
     }
 
@@ -1643,5 +1717,32 @@ class FluentExtension extends Extension
 
         // all other cases should not duplicate (normal edits)
         return false;
+    }
+
+    private function getLocaleCodesForModel(DataObject $model): array
+    {
+        $locales = [];
+
+        /** @var RecordLocale $localeInformation */
+        foreach ($model->Locales() as $localeInformation) {
+            $sourceLocale = $localeInformation->getSourceLocale();
+            $modelLocale = $localeInformation->getLocaleObject();
+
+            if (!$sourceLocale) {
+                // We don't have any source locale, so we can bail out
+                continue;
+            }
+
+            if ($modelLocale->Locale !== $sourceLocale->Locale) {
+                // Source of this locale is different from current locale, so we can skip it
+                // as this locale content is being inherited
+                continue;
+            }
+
+            // Add locale which uses current locale as a source to our list
+            $locales[] = $modelLocale->Locale;
+        }
+
+        return $locales;
     }
 }
