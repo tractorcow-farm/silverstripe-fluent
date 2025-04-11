@@ -8,6 +8,7 @@ use SilverStripe\CMS\Model\SiteTree;
 use SilverStripe\Control\Controller;
 use SilverStripe\Control\Director;
 use SilverStripe\Control\HTTPResponse;
+use SilverStripe\Dev\Deprecation;
 use SilverStripe\Forms\CompositeField;
 use SilverStripe\Forms\FieldList;
 use SilverStripe\Forms\Form;
@@ -43,9 +44,11 @@ class FluentSiteTreeExtension extends FluentVersionedExtension
      * Add alternate links to metatags
      *
      * @param string &$tags
+     * @deprecated 7.3.0 Will be renamed to updateMetaTags()
      */
     public function MetaTags(&$tags)
     {
+        Deprecation::noticeWithNoReplacment('7.3.0', 'Will be renamed to updateMetaTags()');
         $tags .= $this->owner->renderWith('FluentSiteTree_MetaTags');
     }
 

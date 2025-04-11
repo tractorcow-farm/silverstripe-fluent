@@ -21,6 +21,7 @@ class DuplicationTest extends SapphireTest
         Horse::class,
         Steed::class,
         Tail::class,
+        Ribbon::class,
         Saddle::class,
     ];
 
@@ -241,35 +242,139 @@ class DuplicationTest extends SapphireTest
     /**
      * case: duplicate() called on localised record
      * desired outcome: has_one duplication is copied correctly to localised table
+     * @dataProvider duplicationCasesProvider
      */
-    public function testDuplicate(): void
+    public function testDuplicate(?array $relations): void
     {
-        FluentState::singleton()->withState(function (FluentState $state): void {
+        FluentState::singleton()->withState(function (FluentState $state) use ($relations): void {
             $state->setLocale('en_NZ');
 
             /** @var Horse|FluentExtension $originalHorse */
             $originalHorse = $this->objFromFixture(Horse::class, 'horse1');
+
+            // We need a second locale to be present before duplication so we can cover all cases
+            $originalHorse->copyToLocale('ja_JP');
+            FluentState::singleton()->withState(function (FluentState $state) use ($originalHorse): void {
+                $state->setLocale('en_NZ');
+
+                /** @var Horse $localisedHorse */
+                $localisedHorse = Horse::get()->byID($originalHorse->ID);
+                $ribbon = $localisedHorse->Tail()->Ribbon();
+                // Make sure we have a different title in JP locale so we can assert this later
+                $ribbon->Title .= ' JP';
+                $ribbon->write();
+            });
+
             $tail = $originalHorse->Tail();
             $originalTailID = $tail->ID;
             $horseCountBefore = Horse::get()->count();
             $tailsCountBefore = Tail::get()->count();
+            $ribbonCountBefore = Ribbon::get()->count();
 
             // Duplicate the horse (and its tail by association)
-            $duplicateHorse = $originalHorse->duplicate();
+            $duplicateHorse = $originalHorse->duplicate(true, $relations);
+            $duplicateHorseID = $duplicateHorse->ID;
 
             $horseCountAfter = Horse::get()->count();
             $tailsCountAfter = Tail::get()->count();
+            $ribbonCountAfter = Ribbon::get()->count();
+
             $this->assertEquals($horseCountBefore + 1, $horseCountAfter);
-            $this->assertEquals($tailsCountBefore + 1, $tailsCountAfter);
+            $locales = [
+                'en_NZ',
+                'ja_JP',
+            ];
+
+            // In case we explicitly chose to not duplicate relations we do not expect duplicated models to be present
+            if ($relations === []) {
+                $this->assertEquals(
+                    $tailsCountBefore,
+                    $tailsCountAfter,
+                    'We do not expect a duplicate to be created (Tail)'
+                );
+                $this->assertEquals(
+                    $ribbonCountBefore,
+                    $ribbonCountAfter,
+                    'We do not expect a duplicate to be created (Ribbon)'
+                );
+
+                return;
+            }
+
+            $localesCount = count($locales);
+            $this->assertEquals(
+                $tailsCountBefore + $localesCount,
+                $tailsCountAfter,
+                'We expect a duplicate to be created for each locale (Tail)'
+            );
+            $this->assertEquals(
+                $ribbonCountBefore + $localesCount,
+                $ribbonCountAfter,
+                'We expect a duplicate to be created for each locale (Ribbon)'
+            );
 
             // Re-fetch both horses so we are asserting on what's in the DB not just what's in memory
             $originalHorse = Horse::get()->byID($originalHorse->ID);
-            $duplicateHorse = Horse::get()->byID($duplicateHorse->ID);
 
-            $this->assertNotSame($originalHorse->ID, $duplicateHorse->ID);
-            $this->assertNotSame($originalHorse->TailID, $duplicateHorse->TailID);
             $this->assertSame($originalTailID, $originalHorse->TailID);
+
+            $localisedTailIDs = [];
+            $localisedRibbonIDs = [];
+            $localisedRibbonTitles = [];
+
+            foreach ($locales as $locale) {
+                [
+                    $localisedTailID,
+                    $localisedRibbonID,
+                    $localisedRibbonTitle,
+                ] = FluentState::singleton()->withState(
+                    function (FluentState $state) use ($locale, $originalHorse, $duplicateHorseID): array {
+                        $state->setLocale($locale);
+
+                        $duplicateHorse = Horse::get()->byID($duplicateHorseID);
+                        $this->assertNotSame($originalHorse->ID, $duplicateHorse->ID);
+                        $this->assertNotSame($originalHorse->TailID, $duplicateHorse->TailID);
+                        $this->assertNotSame($originalHorse->Tail()->RibbonID, $duplicateHorse->Tail()->RibbonID);
+
+                        $tail = $duplicateHorse->Tail();
+                        $ribbon = $tail->Ribbon();
+
+                        return [
+                            $duplicateHorse->TailID,
+                            $ribbon->ID,
+                            $ribbon->Title,
+                        ];
+                    }
+                );
+
+                $localisedTailIDs[] = $localisedTailID;
+                $localisedRibbonIDs[] = $localisedRibbonID;
+                $localisedRibbonTitles[] = $localisedRibbonTitle;
+            }
+
+            $localisedTailIDs = array_unique($localisedTailIDs);
+            $localisedRibbonIDs = array_unique($localisedRibbonIDs);
+            $this->assertCount($localesCount, $localisedTailIDs, 'We expect unique tail ID in each locale');
+            $this->assertCount($localesCount, $localisedRibbonIDs, 'We expect unique ribbon ID in each locale');
+            $this->assertCount($localesCount, $localisedRibbonTitles, 'We expect unique ribbon titles in each locale');
         });
+    }
+
+    public function duplicationCasesProvider(): array
+    {
+        return [
+            'default duplicaton' => [
+                null,
+            ],
+            'explicit duplicaton (specific relation)' => [
+                [
+                    'Tail',
+                ],
+            ],
+            'explicit duplicaton (no relation)' => [
+                [],
+            ],
+        ];
     }
 
     public function localesProvider(): array

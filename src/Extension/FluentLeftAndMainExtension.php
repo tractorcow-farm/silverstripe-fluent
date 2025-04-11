@@ -6,6 +6,7 @@ use SilverStripe\Admin\LeftAndMain;
 use SilverStripe\Control\HTTPResponse;
 use SilverStripe\Control\HTTPResponse_Exception;
 use SilverStripe\Core\Extension;
+use SilverStripe\Dev\Deprecation;
 use SilverStripe\Forms\Form;
 use SilverStripe\ORM\ArrayList;
 use SilverStripe\ORM\FieldType\DBHTMLText;
@@ -21,8 +22,12 @@ class FluentLeftAndMainExtension extends Extension
     use FluentAdminTrait;
     use FluentBadgeTrait;
 
+    /**
+     * @deprecated 7.3.0 Will be renamed to onInit()
+     */
     public function init()
     {
+        Deprecation::noticeWithNoReplacment('7.3.0', 'Will be renamed to onInit()');
         Requirements::javascript("tractorcow/silverstripe-fluent:client/dist/js/fluent.js");
         Requirements::css("tractorcow/silverstripe-fluent:client/dist/styles/fluent.css");
     }
@@ -30,9 +35,11 @@ class FluentLeftAndMainExtension extends Extension
     /**
      * @param ArrayList $breadcrumbs
      * @see CMSMain::Breadcrumbs()
+     * @deprecated 7.3.0 Will be replaced with functionality in `silverstripe/admin`
      */
     public function updateBreadcrumbs(ArrayList $breadcrumbs)
     {
+        Deprecation::noticeWithNoReplacment('7.3.0', 'Will be replaced with functionality in `silverstripe/admin`');
         $record = $this->owner->currentPage();
         if (!$record) {
             return;

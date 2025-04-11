@@ -3,6 +3,7 @@
 namespace TractorCow\Fluent\Extension;
 
 use LogicException;
+use SilverStripe\Dev\Deprecation;
 use SilverStripe\ORM\DataExtension;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\DataQuery;
@@ -69,8 +70,12 @@ class FluentIsolatedExtension extends DataExtension
         }
     }
 
+    /**
+     * @deprecated 7.3.0 Will be renamed to onRequireDefaultRecords()
+     */
     public function requireDefaultRecords()
     {
+        Deprecation::noticeWithNoReplacment('7.3.0', 'Will be renamed to onRequireDefaultRecords()');
         // Migrate records that used to be FluentFilteredExtension
         $this->migrateFromFilteredExtension();
     }
