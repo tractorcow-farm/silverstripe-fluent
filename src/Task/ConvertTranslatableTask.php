@@ -33,7 +33,7 @@ use TractorCow\Fluent\Task\ConvertTranslatableTask\Exception;
  * 4. Back up your DB again
  * 5. Log into the CMS and check everything
  *
- * @deprecated 7.3.0 Will be removed without equivalent functionality to replace it
+ * @deprecated 7.3.0 Will be removed without equivalent functionality to replace it in a future major release
  */
 class ConvertTranslatableTask extends BuildTask
 {
@@ -49,7 +49,7 @@ class ConvertTranslatableTask extends BuildTask
         Deprecation::withSuppressedNotice(function () {
             Deprecation::notice(
                 '7.3.0',
-                'Will be removed without equivalent functionality to replace it',
+                'Will be removed without equivalent functionality to replace it in a future major release',
                 Deprecation::SCOPE_CLASS
             );
         });

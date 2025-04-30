@@ -5,7 +5,7 @@ namespace TractorCow\Fluent\Task\ConvertTranslatableTask;
 use SilverStripe\Dev\Deprecation;
 
 /**
- * @deprecated 7.3.0 Will be removed without equivalent functionality to replace it
+ * @deprecated 7.3.0 Will be removed without equivalent functionality to replace it in a future major release
  */
 class Exception extends \Exception
 {
@@ -15,7 +15,7 @@ class Exception extends \Exception
         Deprecation::withSuppressedNotice(function () {
             Deprecation::notice(
                 '7.3.0',
-                'Will be removed without equivalent functionality to replace it',
+                'Will be removed without equivalent functionality to replace it in a future major release',
                 Deprecation::SCOPE_CLASS
             );
         });
