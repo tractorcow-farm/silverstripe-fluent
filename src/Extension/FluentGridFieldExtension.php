@@ -31,13 +31,13 @@ class FluentGridFieldExtension extends Extension
      *
      * @param DBField|null $badgeField
      * @see VersionedGridFieldItemRequest::Breadcrumbs()
-     * @deprecated 7.3.0 Will be replaced with TractorCow\Fluent\Extension\FluentExtension::updateStatusFlags()
+     * @deprecated 7.3.0 Will be replaced with TractorCow\Fluent\Extension\FluentExtension::updateStatusFlags() in a future major release
      */
     public function updateBadge(&$badgeField)
     {
         Deprecation::noticeWithNoReplacment(
             '7.3.0',
-            'Will be replaced with TractorCow\Fluent\Extension\FluentExtension::updateStatusFlags()'
+            'Will be replaced with TractorCow\Fluent\Extension\FluentExtension::updateStatusFlags() in a future major release'
         );
         $record = $this->owner->getRecord();
         $badgeField = $this->addFluentBadge($badgeField, $record);

@@ -35,11 +35,11 @@ class FluentLeftAndMainExtension extends Extension
     /**
      * @param ArrayList $breadcrumbs
      * @see CMSMain::Breadcrumbs()
-     * @deprecated 7.3.0 Will be replaced with functionality in `silverstripe/admin`
+     * @deprecated 7.3.0 Will be replaced with functionality in `silverstripe/admin` in a future major release
      */
     public function updateBreadcrumbs(ArrayList $breadcrumbs)
     {
-        Deprecation::noticeWithNoReplacment('7.3.0', 'Will be replaced with functionality in `silverstripe/admin`');
+        Deprecation::noticeWithNoReplacment('7.3.0', 'Will be replaced with functionality in `silverstripe/admin` in a future major release');
         $record = $this->owner->currentPage();
         if (!$record) {
             return;
