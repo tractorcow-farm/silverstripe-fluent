@@ -256,7 +256,7 @@ class FluentSiteTreeExtension extends FluentVersionedExtension
                 // If this Locale has a Fallback, then content might be getting inherited from that Fallback.
                 return _t(
                     __CLASS__ . '.LOCALESTATUSFLUENTINHERITED',
-                    'Content for this page may be inherited from another locale. If you wish you make an ' .
+                    'Content for this page may be inherited from another locale. If you wish to make an ' .
                     'independent copy of this page, please use one of the "Copy" actions provided.'
                 );
             }
