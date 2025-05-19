@@ -24,12 +24,14 @@ nl:
     FILTERED_LOCALES: 'Toon in de volgende talen'
     LOCALEFILTEREDHELP: 'Deze pagina is niet zichtbaar in deze taal'
     TAB_LOCALES: Vertalingen
+    many_many_FilteredLocales: 'Gefilterde talen'
   TractorCow\Fluent\Extension\FluentIsolatedExtension:
     has_one_Locale: Talen
   TractorCow\Fluent\Extension\FluentSiteTreeExtension:
     LOCALECOPYANDPUBLISH: 'Kopieer en publiceer'
     LOCALECOPYTODRAFT: 'Kopieer naar concept'
     LOCALESTATUSFLUENTDRAFT: 'Er is een concept klaargezet voor deze taal, maar de live inhoud kan nog steeds worden overgenomen van een andere. Gebruik de actie "Opslaan en publiceren" om deze vertaling te publiceren.'
+    LOCALESTATUSFLUENTINHERITED: 'Teksten voor deze pagina vallen automatisch terug naar een andere vertaling. Als je een onafhankelijke versie van deze pagina wil maken, gebruik dan één van de kopieer-acties.'
     LOCALESTATUSFLUENTINVISIBLE: 'Deze pagina is pas zichtbaar in deze taal, als deze gepubliceerd is.'
     LOCALESTATUSFLUENTUNKNOWN: 'Er is geen inhoud beschikbaar voor deze pagina. Vertaal deze pagina of stel een taal in waarop teruggevallen kan worden.'
   TractorCow\Fluent\Extension\FluentVersionedExtension:
@@ -45,11 +47,23 @@ nl:
     ClearAllNotice: "Alle vertalingen zijn verwijderd voor '{title}'."
     CopyNotice: "'{title}' is gekopieerd naar alle talen."
     DeleteNotice: "'{title}' is verwijderd van alle talen"
+    HideNotice: "'{title}' is verborgen in {locale}"
+    Label_archiveFluent: 'Depubliceren en archiveren (alle talen)'
+    Label_clearFluent: "Leegmaken voor alle behalve '{title}'"
+    Label_copyFluent: "Kopieer '{title}' naar andere talen"
+    Label_deleteFluent: 'Verwijder (alle talen)'
+    Label_hideFluent: "Verberg van '{title}'"
+    Label_publishFluent: 'Opslaan & Publiceren (alle talen)'
+    Label_showFluent: "Toon in '{title}'"
+    Label_unpublishFluent: 'Publicatie intrekken (alle talen)'
     Localisation: Vertalingen
     PublishNotice: "'{title}' is gepubliceerd in alle talen."
+    ShowNotice: "'{title}' is nu zichtbaar in {locale}"
     UnpublishNotice: "'{title}' is ge-depubliceerd bij alle talen."
   TractorCow\Fluent\Extension\Traits\FluentBadgeTrait:
+    BadgeInherited: 'Overgenomen van {locale}'
     BadgeLocalised: 'Vertaald in {locale}'
+    BaggeInvisible: '{type} heeft geen teksten beschikbaar in {locale}, vertaal  {type} of stel een taal als terugvaloptie in'
   TractorCow\Fluent\Extension\Traits\FluentObjectTrait:
     TAB_LOCALISATION: Vertalingen
   TractorCow\Fluent\Forms\DeleteAllLocalesAction:
@@ -87,7 +101,9 @@ nl:
       one: Terugval-taal
       other: '{count} terugval-talen'
     SINGULARNAME: Terugval-taal
+    db_Sort: Sorteer
     has_one_Locale: Talen
+    has_one_Parent: Bovenliggend
   TractorCow\Fluent\Model\Locale:
     DEFAULT_NONE: (geen)
     DOMAIN: Domeinnaam
@@ -105,9 +121,16 @@ nl:
       one: Taal
       other: '{count} Talen'
     SINGULARNAME: Talen
+    TIMEZONE: Tijdzone
     USE_X_DEFAULT: 'Gebruik {code} als SEO taalcode (als site-standaard)'
     USE_X_DEFAULT_DESCRIPTION: 'Het gebruik van deze code geeft aan zoekmachines aan dat dit een niet-vertaalde landingspagina is'
     UnsavedNotice: 'Een terugval-taal kan ingesteld worden na het opslaan'
+    db_IsGlobalDefault: 'Is sitebrede standaard'
     db_Locale: Talen
+    db_Sort: Sorteer
+    db_Timezone: Tijdzone
     db_Title: Titel
+    db_UseDefaultCode: 'Gebruik standaard code'
+    has_many_FallbackLocales: Terugval-talen
     has_one_Domain: Domeinnaam
+    many_many_Fallbacks: Terugval-opties
