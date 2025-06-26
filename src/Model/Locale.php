@@ -388,7 +388,6 @@ class Locale extends DataObject implements PermissionProvider
     public static function getCurrentLocale(): ?Locale
     {
         $locale = FluentState::singleton()->getLocale();
-
         return static::getByLocale($locale);
     }
 
@@ -409,7 +408,7 @@ class Locale extends DataObject implements PermissionProvider
         }
 
         // Get filtered locale
-        return Locale::getCached()->find('Locale', $locale);
+        return Locale::get()->setUseCache(true)->find('Locale', $locale);
     }
 
     /**

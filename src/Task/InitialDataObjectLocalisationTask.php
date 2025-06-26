@@ -190,7 +190,7 @@ class InitialDataObjectLocalisationTask extends BuildTask
                     $isBaseRecordPublished = FluentState::singleton()->withState(
                         static function (FluentState $state) use ($className, $dataObjectID): bool {
                             $state->setLocale(null);
-                            $page = $className::get_by_id($dataObjectID);
+                            $page = $className::get()->setUseCache(true)->byID($dataObjectID);
 
                             if ($page === null) {
                                 return false;

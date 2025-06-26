@@ -31,7 +31,7 @@
     },
     "require": {
         "php": "^8.3",
-        "silverstripe/framework": "^6",
+        "silverstripe/framework": "^6.1",
         "silverstripe/admin": "^3",
         "silverstripe/versioned": "^3",
         "symbiote/silverstripe-gridfieldextensions": "^5",

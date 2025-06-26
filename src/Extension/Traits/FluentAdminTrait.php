@@ -720,7 +720,7 @@ trait FluentAdminTrait
         $liveRecord = Versioned::withVersionedMode(function () use ($record) {
             Versioned::set_stage(Versioned::LIVE);
 
-            return DataObject::get_by_id($record->ClassName, $record->ID);
+            return DataObject::get($record->ClassName)->setUseCache(true)->byID($record->ID);
         });
 
         $infoTemplate = SSViewer::get_templates_by_class(
