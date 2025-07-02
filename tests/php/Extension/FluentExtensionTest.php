@@ -170,6 +170,96 @@ class FluentExtensionTest extends SapphireTest
         });
     }
 
+    public function testDataListCacheBetweenLocales(): void
+    {
+        $obj = LocalisedParent::create();
+        $obj->Title = 'unLocalised';
+        $id = $obj->write();
+        FluentState::singleton()->withState(function (FluentState $newState) use ($id) {
+            $newState->setLocale('en_US');
+            $obj = LocalisedParent::get()->byID($id);
+            $obj->Title = 'US';
+            $obj->write();
+        });
+        FluentState::singleton()->withState(function (FluentState $newState) use ($id) {
+            $newState->setLocale('de_DE');
+            $obj = LocalisedParent::get()->byID($id);
+            $obj->Title = 'DE';
+            $obj->write();
+        });
+
+        $usCachedRecord = null;
+        FluentState::singleton()->withState(function (FluentState $newState) use ($id, &$usCachedRecord) {
+            $newState->setLocale('en_US');
+            $obj = LocalisedParent::get()->byID($id);
+            $usRecord = LocalisedParent::get()->setUseCache(true)->byID($obj->ID);
+            $usCachedRecord = LocalisedParent::get()->setUseCache(true)->byID($obj->ID);
+            // Records are identical instances, i.e. we're getting the cached record not fetching a new one
+            $this->assertSame($usRecord, $usCachedRecord);
+            $this->assertSame('US', $usCachedRecord->Title);
+        });
+
+        FluentState::singleton()->withState(function (FluentState $newState) use ($id, $usCachedRecord) {
+            $newState->setLocale('de_DE');
+            $obj = LocalisedParent::get()->byID($id);
+            $deRecord = LocalisedParent::get()->setUseCache(true)->byID($obj->ID);
+            $deCachedRecord = LocalisedParent::get()->setUseCache(true)->byID($obj->ID);
+            // Records are identical instances, i.e. we're getting the cached record not fetching a new one
+            $this->assertSame($deRecord, $deCachedRecord);
+            $this->assertSame('DE', $deCachedRecord->Title);
+            // Records between locales are NOT identical instances (i.e. it's a separate cache)
+            $this->assertNotSame($usCachedRecord, $deCachedRecord);
+        });
+
+        // Make sure the above worked because cache is segmented, NOT because changing locales invalidates cache
+        FluentState::singleton()->withState(function (FluentState $newState) use ($id, $usCachedRecord) {
+            $newState->setLocale('en_US');
+            $obj = LocalisedParent::get()->byID($id);
+            $newCachedRecord = LocalisedParent::get()->setUseCache(true)->byID($obj->ID);
+            $this->assertSame($usCachedRecord, $newCachedRecord);
+        });
+    }
+
+    public function testDataListCacheNotAffectedForUnlocalised(): void
+    {
+        $obj = TestModel::create();
+        $obj->Title = 'unLocalised';
+        $id = $obj->write();
+        FluentState::singleton()->withState(function (FluentState $newState) use ($id) {
+            $newState->setLocale('en_US');
+            $obj = TestModel::get()->byID($id);
+            $obj->Title = 'US';
+            $obj->write();
+        });
+        FluentState::singleton()->withState(function (FluentState $newState) use ($id) {
+            $newState->setLocale('de_DE');
+            $obj = TestModel::get()->byID($id);
+            $obj->Title = 'DE';
+            $obj->write();
+        });
+
+        $usCachedRecord = null;
+        FluentState::singleton()->withState(function (FluentState $newState) use ($id, &$usCachedRecord) {
+            $newState->setLocale('en_US');
+            $obj = TestModel::get()->byID($id);
+            $usRecord = TestModel::get()->setUseCache(true)->byID($obj->ID);
+            $usCachedRecord = TestModel::get()->setUseCache(true)->byID($obj->ID);
+            // Records are identical instances, i.e. we're getting the cached record not fetching a new one
+            $this->assertSame($usRecord, $usCachedRecord);
+            // Has the most recently-applied title - locales don't affect this model
+            $this->assertSame('DE', $usCachedRecord->Title);
+        });
+
+        FluentState::singleton()->withState(function (FluentState $newState) use ($id, $usCachedRecord) {
+            $newState->setLocale('de_DE');
+            $obj = TestModel::get()->byID($id);
+            $deCachedRecord = TestModel::get()->setUseCache(true)->byID($obj->ID);
+            // Records are identical instances, i.e. we're getting the cached record not fetching a new one
+            $this->assertSame($usCachedRecord, $deCachedRecord);
+            $this->assertSame('DE', $deCachedRecord->Title);
+        });
+    }
+
     public function testLocalisedMixSorting()
     {
         FluentState::singleton()->withState(function (FluentState $newState) {
