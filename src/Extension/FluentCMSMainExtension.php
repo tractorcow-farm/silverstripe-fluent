@@ -126,7 +126,7 @@ class FluentCMSMainExtension extends Extension
         }
 
         /** @var DataObject|FluentVersionedExtension $record */
-        $record = DataObject::get_by_id($className, $id);
+        $record = DataObject::get($className)->setUseCache(true)->byID($id);
 
         if ($record === null) {
             // No record
