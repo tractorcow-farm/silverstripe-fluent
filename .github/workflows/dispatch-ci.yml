@@ -10,8 +10,8 @@ permissions: {}
 jobs:
   dispatch-ci:
     name: Dispatch CI
-    # Only run cron on the tractorcow-farm account
-    if: (github.event_name == 'schedule' && github.repository_owner == 'tractorcow-farm') || (github.event_name != 'schedule')
+    # Only run cron on the tractorcow-farm or silverstripe account
+    if: (github.event_name == 'schedule' && (github.repository_owner == 'tractorcow-farm' || github.repository_owner == 'silverstripe')) || (github.event_name != 'schedule')
     runs-on: ubuntu-latest
     permissions:
       contents: read
