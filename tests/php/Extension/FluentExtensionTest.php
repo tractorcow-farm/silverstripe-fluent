@@ -20,6 +20,7 @@ use TractorCow\Fluent\Tests\Extension\FluentExtensionTest\TestRelationPage;
 use TractorCow\Fluent\Tests\Extension\FluentExtensionTest\UnlocalisedChild;
 use TractorCow\Fluent\Tests\Extension\Stub\FluentStubObject;
 use PHPUnit\Framework\Attributes\DataProvider;
+use TractorCow\Fluent\Tests\Extension\FluentExtensionTest\TestGeneratedColumns;
 
 class FluentExtensionTest extends SapphireTest
 {
@@ -33,6 +34,7 @@ class FluentExtensionTest extends SapphireTest
         UnlocalisedChild::class,
         TestRelationPage::class,
         TestModel::class,
+        TestGeneratedColumns::class,
     ];
 
     protected static $required_extensions = [
@@ -508,6 +510,45 @@ class FluentExtensionTest extends SapphireTest
                 true,
             ]
         ];
+    }
+
+    public function testLocalisedGeneratedColumns(): void
+    {
+        // Setup first localisation
+        $recordID = FluentState::singleton()->withState(function (FluentState $state): int {
+            $state->setLocale('en_US');
+
+            $record = new TestGeneratedColumns();
+            $record->BaseField = 'EN copy test';
+            return $record->write();
+        });
+
+        // Setup second localisation and make sure we have two localisations to work with
+        FluentState::singleton()->withState(function (FluentState $state) use ($recordID): void {
+            $state->setLocale('de_DE');
+
+            $record = TestGeneratedColumns::get()->byID($recordID);
+            $record->BaseField = 'DE copy test';
+            $record->write();
+        });
+
+        // Check the values of the generated columns in en_US
+        FluentState::singleton()->withState(function (FluentState $state) use ($recordID): void {
+            $state->setLocale('en_US');
+
+            $record = TestGeneratedColumns::get()->byID($recordID);
+            $this->assertSame('EN copy test_virtual', $record->GeneratedField1);
+            $this->assertSame('EN copy test_stored', $record->GeneratedField2);
+        });
+
+        // Check the values of the generated columns in de_DE
+        FluentState::singleton()->withState(function (FluentState $state) use ($recordID): void {
+            $state->setLocale('de_DE');
+
+            $record = TestGeneratedColumns::get()->byID($recordID);
+            $this->assertSame('DE copy test_virtual', $record->GeneratedField1);
+            $this->assertSame('DE copy test_stored', $record->GeneratedField2);
+        });
     }
 
     /**
