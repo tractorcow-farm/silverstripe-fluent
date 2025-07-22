@@ -1,4 +1,10 @@
-# Templating for Fluent
+---
+title: Templating
+summary: How to use templating features like the locale menu and partial caching
+icon: code
+---
+
+# Templating
 
 On the front end of the website you can include the `LocaleMenu.ss` template to provide
 a simple locale navigation.
@@ -11,8 +17,8 @@ If you are using partial caching then you will need to ensure the current locale
 
 ```html
 <% cached 'navigation', List(Page).max(LastEdited), $CurrentLocale %>
-	<% loop Menu(1) %>	  
-		<li class="$LinkingMode"><a href="$Link" title="$Title.XML">$MenuTitle.XML</a></li>
-	<% end_loop %>
+  <% loop Menu(1) %>    
+    <li class="$LinkingMode"><a href="$Link" title="$Title.XML">$MenuTitle.XML</a></li>
+  <% end_loop %>
 <% end_cached %>
 ```
