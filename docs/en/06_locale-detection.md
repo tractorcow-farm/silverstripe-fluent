@@ -1,23 +1,29 @@
+---
+title: Locale Detection
+summary: Configuring automatic locale detection for visitors based on browser headers or Cloudflare IP geolocation.
+icon: search-location
+---
+
 # Locale detection
 
 When a visitor lands on the home page for the first time,
 Fluent can also attempt to detect that user's locale based
-on the `Accept-Language` http headers sent.
+on the `Accept-Language` HTTP headers sent.
 
 This functionality can interfere with certain applications, such as Facebook Open Graph tools, so it
 is turned off by default. To turn it on set the below setting:
 
-```yaml
+```yml
 TractorCow\Fluent\Extension\FluentDirectorExtension:
   detect_locale: true
 ```
 
 ## Configuring detection mechanism
 
-The default detection mechanism is based on the Accept-Language header. However you can
+The default detection mechanism is based on the `Accept-Language` header. However you can
 inject a substitute detection logic below:
 
-```yaml
+```yml
 ---
 Name: myapp
 After:
@@ -29,18 +35,18 @@ SilverStripe\Core\Injector\Injector:
 ```
 
 Then make sure that your `App\Fluent\MyLocaleDetector` class implements the
-`TractorCow\Fluent\State\LocaleDetector` interface.
+[`LocaleDetector`](api:TractorCow\Fluent\State\LocaleDetector) interface.
 
 ## Cloudflare
 
 If your site uses cloudflare you can hook into its IP Detection mechanism.
 
-Follow the [Cloudflare documentation](https://support.cloudflare.com/hc/en-us/articles/200168236-Configuring-Cloudflare-IP-Geolocation)
+Follow the [Cloudflare documentation](https://developers.cloudflare.com/network/ip-geolocation/)
 to enable this feature before proceeding.
 
 Then you can turn on the detector in code using the below:
 
-```yaml
+```yml
 ---
 Name: myapp
 After:
