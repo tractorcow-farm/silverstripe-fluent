@@ -1,42 +1,43 @@
-# Scenarios
+---
+title: Localisation Scenarios
+summary: Solving common scenarios for content inheritance with configuration, extensions, and custom code
+icon: clipboard-list
+---
 
-[Setup](#setup)
-[Content inheritance for the frontend](#content-inheritance-for-the-frontend)
-More to come
+# Localisation scenarios
 
-Below are some common scenarios and how you can achieve the desired outcome using Fluent, it's configuration settings,
- and additional extensions.
+Below are some common scenarios and how you can achieve the desired outcome using Fluent, it's configuration settings, and additional extensions.
 
 ## Setup
 
 For all scenarios, we will be using the following Locale setup:
 
-#### International (default Locale)
+### International (default locale)
 
 | Fallback | Sort |
 | --- | ---: |
 | (none) | 0 |
 
-#### United States
+### United states
 
 | Fallback | Sort |
 | --- | ---: |
 | International | 1 |
 
-#### Canada
+### Canada
 
 | Fallback | Sort |
 | --- | ---: |
 | United States | 1 |
 | International | 2 |
 
-#### Australia
+### Australia
 
 | Fallback | Sort |
 | --- | ---: |
 | International | 1 |
 
-#### Japan
+### Japan
 
 | Fallback | Sort |
 | --- | ---: |
@@ -60,13 +61,15 @@ When a Localisation is created for United States, Canada should inherit this con
 By default, DataObjects must be Localised for them to display on the frontend (EG: for a `SiteTree` record, it must have a row in `SiteTree_Live` **and** a corresponding row in `SiteTree_Localised_Live`), however, we can change this behaviour by updating the `frontend_publish_required` configuration.
 
 **Globally:**
-```yaml
+
+```yml
 TractorCow\Fluent\Extension\FluentExtension:
   frontend_publish_required: any
 ```
 
 **For a specific DataObject:**
-```yaml
+
+```yml
 MySite\Model\MyModel:
   frontend_publish_required: any
 ```
@@ -83,37 +86,37 @@ Furthermore, when I create a Page for the United States, the Page correctly disp
 
 There are two ways that we can solve these issues.
 
-#### Solution one - Filtered Locales Extension
+#### Solution one - filtered locales extension
 
 For this example, we can apply the `TractorCow\Fluent\Extension\FluentFilteredExtension` extension to `SiteTree` to enable us to conditionally show or hide pages within specific locales. Now, when editing a page in the CMS, there will be a gridfield where you can assign visible Locales for this object.
 
-**Note:** This Extension can be applied to any DataObject that uses `FluentExtension`.
+> [!NOTE]
+> This Extension can be applied to any DataObject that uses `FluentExtension`.
 
-![Locale Filter](images/locale-filter.png "Locale filter")
+![Locale Filter](_images/locale-filter.png "Locale filter")
 
-**Note:** Although these objects will be filtered in the front end, this filter is disabled in the CMS in order to allow access by site administrators in all locales.
+> [!NOTE]
+> Although these objects will be filtered in the front end, this filter is disabled in the CMS in order to allow access by site administrators in all locales.
 
-#### Result
+#### Result {#result-1}
 
 Locales must now be explicately added to the "Locales" tab before they will display on the frontend. The assumption would be that a Content Author will localise the content before adding the Locale to the tab for it to display on the frontend.
 
-#### Solution two - Require localisation or Fallback localisation
+#### Solution two - require localisation or fallback localisation
 
 If you don't want to use the Filtered Locales Extension, then we can instead add an additional `augmentSQL` statement to require that a record has **either** a row in `SiteTree_Localised_Live`, or that at least one of it's Fallbacks has a row in `SiteTree_Localised_Live`.
 
-**Note:** This `augmentSQL` logic can be applied to any DataObject that uses `FluentExtension` (not just `SiteTree`). It can be particularly useful for DataObjects managed through a ModelAdmin, where you want to provide predictable frontend behaviour, but you don't want the additional complexity of a Filtered Locales tab.
+> [!NOTE]
+> This `augmentSQL` logic can be applied to any DataObject that uses `FluentExtension` (not just `SiteTree`). It can be particularly useful for DataObjects managed through a ModelAdmin, where you want to provide predictable frontend behaviour, but you don't want the additional complexity of a Filtered Locales tab.
 
-**SiteTreeFluentExtension.php**
 ```php
-<?php
-
 namespace MySite\Extension\SiteTree;
 
 use SilverStripe\CMS\Model\SiteTreeExtension;
 use SilverStripe\ORM\DataQuery;
 use SilverStripe\ORM\Queries\SQLSelect;
-use TractorCow\Fluent\State\FluentState;
 use TractorCow\Fluent\Model\Locale;
+use TractorCow\Fluent\State\FluentState;
 
 /**
  * Class SiteTreeFluentExtension
@@ -179,7 +182,7 @@ class SiteTreeFluentExtension extends SiteTreeExtension
 }
 ```
 
-#### Result
+#### Result {#result-2}
 
 Creating a Page anywhere down the International tree will not display on the frontend for Japan (until a localisation has been explicately created for Japan).
 
