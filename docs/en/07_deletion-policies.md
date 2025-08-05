@@ -1,6 +1,12 @@
+---
+title: Deletion Policies
+summary: The different deletion policies available, and how to override them.
+icon: trash-alt
+---
+
 # Deletion policies
 
-Fluent augments and replaces the default object deletion behaviour for objects. 
+Fluent augments and replaces the default object deletion behaviour for objects.
 Based on the extensions applied to each object, invoking "->delete()" (or pushing the
 delete button in gridfields) will trigger the policy.
 
@@ -8,31 +14,29 @@ delete button in gridfields) will trigger the policy.
 
 Each policy is described below
 
-### DeleteRecordPolicy
+### `DeleteRecordPolicy`
 
 This policy will delete the record from the current stage (e.g. live, draft).
 This policy supports the ability to inject dependent policies (listed below)
 which may conditionally suppress the base record being deleted.
 
-A DeleteRecordPolicy with no dependent policies acts as the default silverstripe
-deletion behaviour.
+A [`DeleteRecordPolicy`](api:TractorCow\Fluent\Model\Delete\DeleteRecordPolicy) with no dependent policies acts as the default Silverstripe CMS
 
-This policy is applied to any record with either `FluentExtension` or `FluentFilteredExtension`
-applied.
+This policy is applied to any record with either [`FluentExtension`](api:TractorCow\Fluent\Extension\FluentExtension) or [`FluentFilteredExtension`](api:TractorCow\Fluent\Extension\FluentFilteredExtension) applied.
 
-### DeleteLocalisationPolicy
+### `DeleteLocalisationPolicy`
 
 This policy will delete the localisation for the record in the current locale.
 E.g. if you have a locale in both EN and CN, pressing delete in the CN locale
 will delete only that locale, but not the EN (or base) record.
 
-Note that if you have set `frontend_publish_required` config to `fallback` or `any`, then the record
+Note that if you have set [`frontend_publish_required`](api:TractorCow\Fluent\Extension\FluentExtension->frontend_publish_required) config to `fallback` or `any`, then the record
 will still be available in that locale, but will instead fall back to the failover instead
 (depending on your configuration).
 
 This policy is applied only to records with `FluentExtension` applied.
 
-### DeleteFilterPolicy
+### `DeleteFilterPolicy`
 
 This policy will remove the selected item from being visible in the current locale.
 
@@ -45,14 +49,12 @@ You can modify the behaviour of any of these policies for one (or all) model typ
 For example, if you wish to restore legacy behaviour, and ensure that deleting a record
 removes records in all locales, you can either:
 
- - Implement a custom `DeletePolicyFactory`, and add only one policy per class.
- - Implement a custom policy altogether, and replace one or more of the default policies.   
+- Implement a custom [`DeletePolicyFactory`](api:TractorCow\Fluent\Model\Delete\DeletePolicyFactory), and add only one policy per class.
+- Implement a custom policy altogether, and replace one or more of the default policies.
 
+### Example use case: delete base record and ignore localisations / filters
 
-### Example use case: Delete base record and ignore localisations / filters
-
-
-```yaml
+```yml
 ---
 Name: my-fluentdelete
 After:
@@ -66,8 +68,6 @@ SilverStripe\Core\Injector\Injector:
 And your factory
 
 ```php
-<?php
-
 namespace App;
 
 use SilverStripe\Core\Injector\Factory;
@@ -82,8 +82,7 @@ class DeletePolicyFactory implements Factory
         return $policy;
     }
 }
-
 ```
 
-Note: You can access the object being deleted via `$params[0]` if you need to do inspection.
-
+> [!TIP]
+> You can access the object being deleted via `$params[0]` if you need to do inspection.
