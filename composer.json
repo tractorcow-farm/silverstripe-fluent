@@ -42,6 +42,7 @@
     },
     "require-dev": {
         "silverstripe/recipe-testing": "^4",
+        "silverstripe/documentation-lint": "^1",
         "silverstripe/standards": "^1",
         "phpstan/extension-installer": "^1.3"
     },
@@ -66,7 +67,8 @@
         "allow-plugins": {
             "composer/installers": true,
             "silverstripe/recipe-plugin": true,
-            "silverstripe/vendor-plugin": true
+            "silverstripe/vendor-plugin": true,
+            "dealerdirect/phpcodesniffer-composer-installer": true
         }
     }
 }
