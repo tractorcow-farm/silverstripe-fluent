@@ -211,7 +211,7 @@ class Domain extends DataObject
         }
 
         // Unset if not in child list
-        $inList = $this->Locales()->byID($default->ID);
+        $inList = $this->Locales()->filter('ID', $default->ID)->exists();
         if (!$inList) {
             $this->DefaultLocaleID = 0;
         }

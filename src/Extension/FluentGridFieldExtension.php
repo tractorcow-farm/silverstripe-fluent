@@ -43,7 +43,7 @@ class FluentGridFieldExtension extends Extension
 
         // Return new view, as we can't do a "virtual redirect" via the CMS Ajax
         // to the same URL (it assumes that its content is already current, and doesn't reload)
-        if ($gridField->getList()->byID($record->ID)) {
+        if ($gridField->getList()->filter('ID', $record->ID)->exists()) {
             return $this->owner->edit($request);
         }
 
