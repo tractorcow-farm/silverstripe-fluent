@@ -89,7 +89,7 @@ SQL;
                 20,
                 $params
             )
-            ->sort('"Fulltext"."Relevance" DESC');
+            ->orderBy('"Fulltext"."Relevance" DESC');
         // Filter out non-viewable
         $results = new ArrayList();
         foreach ($sitetree_objects as $sto) {
