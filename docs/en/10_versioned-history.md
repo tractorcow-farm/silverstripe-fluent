@@ -1,3 +1,9 @@
+---
+title: Versioned History
+summary: The impact of Fluent on versioned history
+icon: history
+---
+
 # Versioned history
 
 Adding Fluent to your project has a large impact on versioned history.
@@ -18,13 +24,13 @@ Archive view is available only for objects which have some archived content in c
 This does not follow locale fallbacks rule.
 
 `Restore to draft` button is only available in locales which have some archived content.
-Content author is expected to switch to the locale where the archive is available in order to allow `Restore to draft` action. 
+Content author is expected to switch to the locale where the archive is available in order to allow `Restore to draft` action.
 
 ## Site tree flags
 
 `No source` flag indicates that the page is localised in some other locale but current locale does not have its own content nor does it inherit content form other locale.
 
-## Common Versioned methods
+## Common versioned methods
 
 Methods from `Versioned` will have altered behaviour.
 The data lookup will target localised records instead of base records.
@@ -32,17 +38,19 @@ This may have impact on your CMS UI (buttons not showing up).
 
 ### Common methods which are impacted
 
-* `isOnDraft()`
-* `isPublished()`
-* `isArchived()`
-* `stagesDiffer()`
+- [`Versioned::isOnDraft()`](api:SilverStripe\Versioned\Versioned::isOnDraft())
+- [`Versioned::isPublished()`](api:SilverStripe\Versioned\Versioned::isPublished())
+- [`Versioned::isArchived()`](api:SilverStripe\Versioned\Versioned::isArchived())
+- [`Versioned::stagesDiffer()`](api:SilverStripe\Versioned\Versioned::stagesDiffer())
 
 ### How to query the base record
 
 There are some cases which need to use data lookup from base record.
 Example below shows how to do it.
 
-```
+```php
+use TractorCow\Fluent\State\FluentState;
+
 // This will query the localised record
 $object->isPublished()
 
@@ -65,13 +73,13 @@ Affected MySQL version: `< 8`
 Auto-increment values are kept in memory and when the SQL server restarts the values are recalculated to `highest used ID + 1`.
 As a consequence, IDs can get reused. Consider this scenario:
 
-* Create a new page (`ID` 4)
-* Create a new page (`ID` 5)
-* Archive the page with `ID` 5
-* At this point the next auto-increment value is 6
-* Restart SQL server
-* At this point the next auto-increment value is 5
-* Create a new page (`ID` 5)
+- Create a new page (`ID` 4)
+- Create a new page (`ID` 5)
+- Archive the page with `ID` 5
+- At this point the next auto-increment value is 6
+- Restart SQL server
+- At this point the next auto-increment value is 5
+- Create a new page (`ID` 5)
 
 What happens in this case is that the newly created page will inherit version history of the previously archived page.
 Upgrading your MySQL version to 8 or higher fixes this issue.
@@ -81,7 +89,7 @@ Upgrading your MySQL version to 8 or higher fixes this issue.
 This issues is mostly notable when you have a setup where pages have nested objects (i.e. blocks).
 When a nested object is written, no page version is created.
 
-If you properly configure `owns` and `own_by` and run publish action on your page, the versions written may end up in an inconsistent state.
+If you properly configure [`owns`](api:SilverStripe\Versioned\RecursivePublishable->owns) and [`owned_by`](api:SilverStripe\Versioned\RecursivePublishable->owned_by) and run publish action on your page, the versions written may end up in an inconsistent state.
 For example page version may end up with a different timestamp compared to the timestamp of the block version.
 This is more likely to happen if the publish action takes a long time.
 
