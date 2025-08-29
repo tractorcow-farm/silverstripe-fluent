@@ -11,10 +11,15 @@ use TractorCow\Fluent\Extension\FluentVersionedExtension;
 use TractorCow\Fluent\Model\Domain;
 use TractorCow\Fluent\Model\Locale;
 use TractorCow\Fluent\State\FluentState;
+use TractorCow\Fluent\Tests\Extension\FluentVersionedExtensionTest\TestVersionedModel;
 
 class FluentVersionedExtensionTest extends SapphireTest
 {
     protected static $fixture_file = 'FluentVersionedExtensionTest.yml';
+
+    protected static $extra_dataobjects = [
+        TestVersionedModel::class
+    ];
 
     protected static $required_extensions = [
         SiteTree::class => [
@@ -205,5 +210,165 @@ class FluentVersionedExtensionTest extends SapphireTest
 
         // No Live version
         $this->assertTrue($page->stagesDifferInLocale());
+    }
+
+    /**
+     * Tests various Versioned methods correctly identify versions in different locales
+     */
+    public function testCorrectVersionIdentified(): void
+    {
+        $recordID = null;
+        // Create a new record in the base record only, no localisation
+        FluentState::singleton()->withState(function (FluentState $newState) use (&$recordID) {
+            $newState->setLocale(null);
+            $record = new TestVersionedModel(['Title' => 'Initial value']);
+            $recordID = $record->write();
+
+            // True for anything about being on draft and not published
+            $this->assertTrue($record->isOnDraft());
+            $this->assertFalse($record->isPublished());
+            $this->assertTrue($record->isLatestDraftVersion());
+            $this->assertTrue($record->isLatestVersion());
+            $this->assertFalse($record->isLiveVersion());
+            $this->assertTrue($record->isModifiedOnDraft());
+            $this->assertFalse($record->isOnLiveOnly());
+        });
+
+        // Check all false - it's not in this locale at all yet.
+        FluentState::singleton()->withState(function (FluentState $newState) use ($recordID) {
+            $newState->setLocale('en_NZ');
+            $localisedRecord = TestVersionedModel::get()->byID($recordID);
+            $this->assertFalse($localisedRecord->isOnDraft());
+            $this->assertFalse($localisedRecord->isPublished());
+            $this->assertFalse($localisedRecord->isLatestDraftVersion());
+            $this->assertFalse($localisedRecord->isLatestVersion());
+            $this->assertFalse($localisedRecord->isLiveVersion());
+            $this->assertFalse($localisedRecord->isModifiedOnDraft());
+            $this->assertFalse($localisedRecord->isOnLiveOnly());
+        });
+
+        // Publish in the base record only, no localisation
+        FluentState::singleton()->withState(function (FluentState $newState) use (&$recordID) {
+            $newState->setLocale(null);
+            $record = TestVersionedModel::get()->byID($recordID);
+            $record->publishSingle();
+
+            // True for anything about being published and "on draft" (i.e. not deleted from draft)
+            $this->assertTrue($record->isOnDraft());
+            $this->assertTrue($record->isPublished());
+            $this->assertTrue($record->isLatestDraftVersion());
+            $this->assertTrue($record->isLatestVersion());
+            $this->assertTrue($record->isLiveVersion());
+            $this->assertFalse($record->isModifiedOnDraft());
+            $this->assertFalse($record->isOnLiveOnly());
+        });
+
+        // Check still all false - it's not in this locale at all yet.
+        FluentState::singleton()->withState(function (FluentState $newState) use ($recordID) {
+            $newState->setLocale('en_NZ');
+            $localisedRecord = TestVersionedModel::get()->byID($recordID);
+            $this->assertFalse($localisedRecord->isOnDraft());
+            $this->assertFalse($localisedRecord->isPublished());
+            $this->assertFalse($localisedRecord->isLatestDraftVersion());
+            $this->assertFalse($localisedRecord->isLatestVersion());
+            $this->assertFalse($localisedRecord->isLiveVersion());
+            $this->assertFalse($localisedRecord->isModifiedOnDraft());
+            $this->assertFalse($localisedRecord->isOnLiveOnly());
+        });
+
+        // Save the record in first locale
+        FluentState::singleton()->withState(function (FluentState $newState) use ($recordID) {
+            $newState->setLocale('en_NZ');
+            $localisedRecord = TestVersionedModel::get()->byID($recordID);
+            $localisedRecord->write();
+
+            // True for anything about being on draft and not published
+            $this->assertTrue($localisedRecord->isOnDraft());
+            $this->assertFalse($localisedRecord->isPublished());
+            $this->assertTrue($localisedRecord->isLatestDraftVersion());
+            $this->assertTrue($localisedRecord->isLatestVersion());
+            $this->assertFalse($localisedRecord->isLiveVersion());
+            $this->assertTrue($localisedRecord->isModifiedOnDraft());
+            $this->assertFalse($localisedRecord->isOnLiveOnly());
+        });
+
+        // Check all false in *alternate* locale - it's not in this locale at all yet.
+        FluentState::singleton()->withState(function (FluentState $newState) use ($recordID) {
+            $newState->setLocale('en_US');
+            $localisedRecord = TestVersionedModel::get()->byID($recordID);
+            $this->assertFalse($localisedRecord->isOnDraft());
+            $this->assertFalse($localisedRecord->isPublished());
+            $this->assertFalse($localisedRecord->isLatestDraftVersion());
+            $this->assertFalse($localisedRecord->isLatestVersion());
+            $this->assertFalse($localisedRecord->isLiveVersion());
+            $this->assertFalse($localisedRecord->isModifiedOnDraft());
+            $this->assertFalse($localisedRecord->isOnLiveOnly());
+
+            // Then save it in this locale
+            $localisedRecord->write();
+        });
+
+        // Publish the record in first locale
+        FluentState::singleton()->withState(function (FluentState $newState) use ($recordID) {
+            $newState->setLocale('en_NZ');
+            $localisedRecord = TestVersionedModel::get()->byID($recordID);
+            $localisedRecord->publishSingle();
+
+            // True for anything about being published and "on draft" (i.e. not deleted from draft)
+            $this->assertTrue($localisedRecord->isOnDraft());
+            $this->assertTrue($localisedRecord->isPublished());
+            $this->assertTrue($localisedRecord->isLatestDraftVersion());
+            $this->assertTrue($localisedRecord->isLatestVersion());
+            $this->assertTrue($localisedRecord->isLiveVersion());
+            $this->assertFalse($localisedRecord->isModifiedOnDraft());
+            $this->assertFalse($localisedRecord->isOnLiveOnly());
+        });
+
+        // Check still only true for draft stuff in *alternate* locale
+        FluentState::singleton()->withState(function (FluentState $newState) use ($recordID) {
+            $newState->setLocale('en_US');
+            $localisedRecord = TestVersionedModel::get()->byID($recordID);
+            $this->assertTrue($localisedRecord->isOnDraft());
+            $this->assertFalse($localisedRecord->isPublished());
+            $this->assertTrue($localisedRecord->isLatestDraftVersion());
+            $this->assertTrue($localisedRecord->isLatestVersion());
+            $this->assertFalse($localisedRecord->isLiveVersion());
+            $this->assertTrue($localisedRecord->isModifiedOnDraft());
+            $this->assertFalse($localisedRecord->isOnLiveOnly());
+
+            // Then publish it in this locale
+            $localisedRecord->publishSingle();
+        });
+
+        // Update, save, and publish the record in first locale
+        FluentState::singleton()->withState(function (FluentState $newState) use ($recordID) {
+            $newState->setLocale('en_NZ');
+            $localisedRecord = TestVersionedModel::get()->byID($recordID);
+            $localisedRecord->Title = 'New value';
+            $localisedRecord->write();
+            $localisedRecord->publishSingle();
+
+            // True for anything about being published and "on draft" (i.e. not deleted from draft)
+            $this->assertTrue($localisedRecord->isOnDraft());
+            $this->assertTrue($localisedRecord->isPublished());
+            $this->assertTrue($localisedRecord->isLatestDraftVersion());
+            $this->assertTrue($localisedRecord->isLatestVersion());
+            $this->assertTrue($localisedRecord->isLiveVersion());
+            $this->assertFalse($localisedRecord->isModifiedOnDraft());
+            $this->assertFalse($localisedRecord->isOnLiveOnly());
+        });
+
+        // Check *alternate* locale still thinks it's published - and on the latest published version
+        FluentState::singleton()->withState(function (FluentState $newState) use ($recordID) {
+            $newState->setLocale('en_US');
+            $localisedRecord = TestVersionedModel::get()->byID($recordID);
+            $this->assertTrue($localisedRecord->isOnDraft());
+            $this->assertTrue($localisedRecord->isPublished());
+            $this->assertTrue($localisedRecord->isLatestDraftVersion());
+            $this->assertTrue($localisedRecord->isLatestVersion());
+            $this->assertTrue($localisedRecord->isLiveVersion());
+            $this->assertFalse($localisedRecord->isModifiedOnDraft());
+            $this->assertFalse($localisedRecord->isOnLiveOnly());
+        });
     }
 }

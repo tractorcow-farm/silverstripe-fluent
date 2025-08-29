@@ -151,6 +151,15 @@ class FluentVersionedExtension extends FluentExtension implements Resettable
         DB::require_table($localisedTable . FluentVersionedExtension::SUFFIX_VERSIONS, $versionsFields, $versionsIndexes, false);
     }
 
+    protected function isFieldLocalised($field, $type, $class)
+    {
+        // Explicitly localise version columns, which are necessary for some versioning functionality to work correctly.
+        if (array_key_exists($field, $this->defaultVersionsFields)) {
+            return true;
+        }
+        return parent::isFieldLocalised($field, $type, $class);
+    }
+
     /**
      * {@inheritDoc}
      *
