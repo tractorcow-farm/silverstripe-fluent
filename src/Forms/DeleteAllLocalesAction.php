@@ -220,9 +220,10 @@ class DeleteAllLocalesAction implements GridField_ColumnProvider, GridField_Acti
             "deletefluent",
             ['RecordID' => $record->ID]
         )
-            ->addExtraClass('action--delete btn--icon-md font-icon-cancel-circled btn--no-text grid-field__icon-action action-menu--handled')
-            ->setAttribute('classNames', 'action--delete font-icon-cancel-circled')
+            ->addExtraClass('action--delete btn--icon-md btn--no-text grid-field__icon-action action-menu--handled')
+            ->setAttribute('classNames', 'action--delete')
             ->setDescription($title)
+            ->setIcon('cancel-circled')
             ->setAttribute('aria-label', $title);
 
         return $field;

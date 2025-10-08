@@ -101,9 +101,10 @@ class SaveLocaleAction extends BaseAction
                 'Locale'      => $locale->Locale,
             ]
         )
-            ->addExtraClass('action--fluentsave btn--icon-md font-icon-translatable grid-field__icon-action action-menu--handled')
-            ->setAttribute('classNames', 'action--fluentsave font-icon-translatable')
+            ->addExtraClass('action--fluentsave btn--icon-md grid-field__icon-action action-menu--handled')
+            ->setAttribute('classNames', 'action--fluentsave')
             ->setDescription($title)
+            ->setIcon('translatable')
             ->setAttribute('aria-label', $title);
     }
 }

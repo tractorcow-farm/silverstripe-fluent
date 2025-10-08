@@ -148,10 +148,11 @@ class CopyLocaleAction extends BaseAction
             ]
         )
             ->addExtraClass(
-                'action--fluentpublish btn--icon-md font-icon-translatable grid-field__icon-action action-menu--handled'
+                'action--fluentpublish btn--icon-md grid-field__icon-action action-menu--handled'
             )
-            ->setAttribute('classNames', 'action--fluentpublish font-icon-translatable')
+            ->setAttribute('classNames', 'action--fluentpublish')
             ->setDescription($title)
+            ->setIcon('translatable')
             ->setAttribute('aria-label', $title);
 
         if (!$this->validateLocalePermissions($toLocale)) {

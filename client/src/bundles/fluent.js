@@ -87,7 +87,8 @@ window.jQuery.entwine('ss', ($) => {
         return;
       }
       const selector = $(
-        `<div class='cms-fluent-selector font-icon font-icon-caret-up-down'>
+        `<div class='cms-fluent-selector'>
+          <span class="cms-fluent-selector__icon font-icon-caret-up-down" aria-hidden="true"></span>
           <select class='cms-fluent-selector-locales form-select'></select>
         </div>`
       );

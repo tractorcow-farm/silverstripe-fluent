@@ -631,8 +631,7 @@ trait FluentAdminTrait
         // update save action label to localise in case record is not localised yet
         $saveAction
             ->setTitle(_t('TractorCow\\Fluent\\Extension\\FluentExtension.Localise', 'Localise'))
-            ->removeExtraClass('font-icon-save')
-            ->addExtraClass('font-icon-translatable');
+            ->setIcon('translatable');
     }
 
     /**
@@ -670,8 +669,7 @@ trait FluentAdminTrait
         // update delete action label to unlocalise in case there are still more localised instances of the record left
         $deleteAction
             ->setTitle(_t('TractorCow\\Fluent\\Extension\\FluentExtension.Unlocalise', 'Unlocalise'))
-            ->removeExtraClass('font-icon-trash-bin')
-            ->addExtraClass('font-icon-translatable')
+            ->setIcon('translatable')
             ->setAttribute(
                 'title',
                 _t(

@@ -1246,7 +1246,7 @@ class FluentExtension extends Extension
         $titleXML = $title instanceof DBField ? $title->forTemplate() : Convert::raw2xml($title);
         $tooltip = DBField::create_field(
             'HTMLFragment',
-            HTML::createTag('span', ['class' => 'font-icon-translatable', 'title' => $tooltip])
+            HTML::createTag('span', ['class' => 'font-icon-translatable', 'title' => $tooltip, 'aria-label' => $tooltip])
             . $titleXML
         );
 
