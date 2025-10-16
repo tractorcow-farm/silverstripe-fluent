@@ -374,9 +374,10 @@ class FluentSiteTreeExtension extends FluentVersionedExtension
 
         // Make sure no other extensions have removed this field.
         if ($actionSave !== null) {
-            $actionSave->addExtraClass('btn-primary font-icon-translatable');
+            $actionSave->setIcon('translatable');
+            $actionSave->addExtraClass('btn-primary');
             $actionSave->setTitle(_t(__CLASS__ . '.LOCALECOPYTODRAFT', 'Copy to draft'));
-            $actionSave->removeExtraClass('btn-outline-primary font-icon-tick');
+            $actionSave->removeExtraClass('btn-outline-primary');
             // Override action name as some additional processing is needed
             $actionSave->setName('action_save_localised_copy');
             $actionsToAdd[] = $actionSave;
@@ -384,8 +385,9 @@ class FluentSiteTreeExtension extends FluentVersionedExtension
 
         // Make sure no other extensions have removed this field.
         if ($actionPublish !== null) {
-            $actionPublish->addExtraClass('btn-primary font-icon-rocket');
-            $actionPublish->removeExtraClass('btn-outline-primary font-icon-tick');
+            $actionPublish->setIcon('rocket');
+            $actionPublish->addExtraClass('btn-primary');
+            $actionPublish->removeExtraClass('btn-outline-primary');
             $actionPublish->setTitle(_t(__CLASS__ . '.LOCALECOPYANDPUBLISH', 'Copy & publish'));
             // Override action name as some additional processing is needed
             $actionPublish->setName('action_publish_localised_copy');

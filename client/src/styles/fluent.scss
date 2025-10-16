@@ -50,20 +50,6 @@ $fluent-color-localised: rgb(102, 15, 242);
   padding: 5px;
   position: relative;
 
-  &:before {
-    color: #fff;
-    position: absolute;
-    top: 50%;
-    line-height: 0;
-    right: 24px;
-    width: 0;
-    pointer-events: none;
-
-    .cms-panel-layout.collapsed & {
-      right: 36px;
-    }
-  }
-
   .cms-fluent-selector-locales {
     background-color: #368b39;
     background-image: url("../images/menu-icon-24-white.png");
@@ -85,6 +71,20 @@ $fluent-color-localised: rgb(102, 15, 242);
         color: #fff;
       }
     }
+  }
+}
+
+.cms-fluent-selector__icon:before {
+  color: #fff;
+  position: absolute;
+  top: 50%;
+  line-height: 0;
+  right: 24px;
+  width: 0;
+  pointer-events: none;
+
+  .cms-panel-layout.collapsed & {
+    right: 36px;
   }
 }
 

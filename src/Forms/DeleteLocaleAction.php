@@ -104,9 +104,10 @@ class DeleteLocaleAction extends BaseAction
                 'Locale'      => $locale->Locale,
             ]
         )
-            ->addExtraClass('action--fluentdelete btn--icon-md font-icon-translatable grid-field__icon-action action-menu--handled')
-            ->setAttribute('classNames', 'action--fluentdelete font-icon-translatable')
+            ->addExtraClass('action--fluentdelete btn--icon-md grid-field__icon-action action-menu--handled')
+            ->setAttribute('classNames', 'action--fluentdelete')
             ->setDescription($title)
+            ->setIcon('translatable')
             ->setAttribute('aria-label', $title);
 
         return $field;

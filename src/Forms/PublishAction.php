@@ -108,9 +108,10 @@ class PublishAction extends BaseAction
                 'Locale'      => $locale->Locale,
             ]
         )
-            ->addExtraClass('action--fluentpublish btn--icon-md font-icon-translatable grid-field__icon-action action-menu--handled')
-            ->setAttribute('classNames', 'action--fluentpublish font-icon-translatable')
+            ->addExtraClass('action--fluentpublish btn--icon-md grid-field__icon-action action-menu--handled')
+            ->setAttribute('classNames', 'action--fluentpublish')
             ->setDescription($title)
+            ->setIcon('translatable')
             ->setAttribute('aria-label', $title);
 
         if (!$this->validatePermissions($locale->Locale, $record)) {
