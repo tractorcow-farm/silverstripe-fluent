@@ -27,7 +27,6 @@ class FluentReadVersionsExtensionTest extends SapphireTest
 
             $extension = new FluentReadVersionsExtension();
             $method = new ReflectionMethod(FluentReadVersionsExtension::class, 'updateList');
-            $method->setAccessible(true);
             // Note this MUST be passed by reference, it cannot be changed not be passed by reference
             // in the extension method as the reference to the list is updated in the method
             $method->invokeArgs($extension, [&$list]);
