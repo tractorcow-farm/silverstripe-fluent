@@ -433,7 +433,7 @@ class FluentVersionedExtension extends FluentExtension implements Resettable
         $query = <<<SQL
 SELECT "VL"."Version"
 FROM "$stagedTable" as "VL"
-INNER JOIN "$liveTable" as "V"
+INNER JOIN "$liveTable" as "V" as V USE INDEX (RecordID_VERSION)
     ON "VL"."RecordID" = "V"."RecordID"
     AND "VL"."Version" = "V"."Version"
 WHERE "VL"."RecordID" = ?
