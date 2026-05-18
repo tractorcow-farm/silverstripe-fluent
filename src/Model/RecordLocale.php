@@ -202,7 +202,7 @@ class RecordLocale extends ModelData
             return $this->getLocaleObject()->getBaseURL();
         }
 
-         return FluentState::singleton()->withState(function (FluentState $state) use ($record) {
+        return FluentState::singleton()->withState(function (FluentState $state) use ($record) {
             $state->setLocale($this->getLocale());
             $state->setIsFrontend(true);
 
