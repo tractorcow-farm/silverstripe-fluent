@@ -1120,6 +1120,29 @@ SQL;
                     FROM \"$localisedTable\"
                     WHERE \"RecordID\" = ?", [$toID, $fromID]);
 
+            // Sync URLSegment in the localised _Versions table to the value we just
+            // wrote to the live localised table (parent::onAfterDuplicate ensured
+            // those are unique per locale to avoid the duplicate-collision bug).
+            if (in_array('URLSegment', $fields, true)) {
+                $liveLocalisedTable = $this->getLocalisedTable($tableName);
+                $liveRows = DB::prepared_query(
+                    sprintf(
+                        'SELECT "Locale", "URLSegment" FROM "%s" WHERE "RecordID" = ?',
+                        $liveLocalisedTable
+                    ),
+                    [$toID]
+                );
+                foreach ($liveRows as $liveRow) {
+                    DB::prepared_query(
+                        sprintf(
+                            'UPDATE "%s" SET "URLSegment" = ? WHERE "RecordID" = ? AND "Locale" = ?',
+                            $localisedTable
+                        ),
+                        [$liveRow['URLSegment'], $toID, $liveRow['Locale']]
+                    );
+                }
+            }
+
             // Also copy versions of base record
             $versionsTableName = $tableName . FluentVersionedExtension::SUFFIX_VERSIONS;
 

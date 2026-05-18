@@ -694,6 +694,11 @@ class FluentExtension extends Extension
             }
         }
 
+        // Re-uniquify the localised URLSegment of the duplicated record per locale.
+        // The raw copy above replicates the original's URLSegment into each localised
+        // row, which collides with the original on the frontend (issue #252).
+        $this->makeDuplicateLocalisedURLSegmentsUnique($localisedTables, $owner->ID);
+
         // We need to handle duplicating relations in `localised_copy` into additional locales
 
         // We don't have any localised relations to cover
@@ -1744,5 +1749,80 @@ class FluentExtension extends Extension
         }
 
         return $locales;
+    }
+
+    /**
+     * After duplicating a record, the localised URLSegment values copied from the
+     * original collide with the original on the frontend. Re-uniquify each locale's
+     * URLSegment by appending a numeric suffix until no other record in the same
+     * locale uses it. Subclasses (e.g. FluentVersionedExtension) are responsible
+     * for syncing the resulting values into their _Versions tables.
+     *
+     * @param array<string, string[]> $localisedTables
+     */
+    protected function makeDuplicateLocalisedURLSegmentsUnique(array $localisedTables, int $recordID): void
+    {
+        foreach ($localisedTables as $tableName => $fields) {
+            if (!in_array('URLSegment', $fields, true)) {
+                continue;
+            }
+
+            $localisedTable = $this->getLocalisedTable($tableName);
+            $rows = DB::prepared_query(
+                sprintf('SELECT "ID", "Locale", "URLSegment" FROM "%s" WHERE "RecordID" = ?', $localisedTable),
+                [$recordID]
+            );
+
+            foreach ($rows as $row) {
+                $segment = (string) $row['URLSegment'];
+                if ($segment === '') {
+                    continue;
+                }
+                $unique = $this->generateUniqueLocalisedURLSegment(
+                    $localisedTable,
+                    (string) $row['Locale'],
+                    $segment,
+                    $recordID
+                );
+                if ($unique === $segment) {
+                    continue;
+                }
+                DB::prepared_query(
+                    sprintf('UPDATE "%s" SET "URLSegment" = ? WHERE "ID" = ?', $localisedTable),
+                    [$unique, $row['ID']]
+                );
+            }
+        }
+    }
+
+    private function generateUniqueLocalisedURLSegment(
+        string $localisedTable,
+        string $locale,
+        string $segment,
+        int $excludeRecordID
+    ): string {
+        $base = preg_replace('/-[0-9]+$/', '', $segment) ?: $segment;
+        $candidate = $segment;
+        $count = 2;
+        while ($this->localisedURLSegmentExists($localisedTable, $locale, $candidate, $excludeRecordID)) {
+            $candidate = $base . '-' . $count++;
+        }
+        return $candidate;
+    }
+
+    private function localisedURLSegmentExists(
+        string $localisedTable,
+        string $locale,
+        string $segment,
+        int $excludeRecordID
+    ): bool {
+        $count = DB::prepared_query(
+            sprintf(
+                'SELECT COUNT(*) FROM "%s" WHERE "Locale" = ? AND "URLSegment" = ? AND "RecordID" != ?',
+                $localisedTable
+            ),
+            [$locale, $segment, $excludeRecordID]
+        )->value();
+        return ((int) $count) > 0;
     }
 }

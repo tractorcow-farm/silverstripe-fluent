@@ -521,6 +521,64 @@ class FluentSiteTreeExtensionTest extends SapphireTest
     }
 
     /**
+     * Regression test for #252: duplicating a page must produce a unique
+     * URLSegment in every localised row, not just the base table.
+     */
+    public function testDuplicateProducesUniqueLocalisedURLSegment(): void
+    {
+        FluentState::singleton()->withState(function (FluentState $state): void {
+            $state
+                ->setLocale('en_NZ')
+                ->setIsDomainMode(false);
+
+            $original = Page::create();
+            $original->Title = 'Innovation';
+            $original->URLSegment = 'innovation';
+            $original->write();
+
+            $duplicate = $original->duplicate();
+
+            // Base table is already de-duplicated by SiteTree::validURLSegment
+            $this->assertNotSame(
+                'innovation',
+                $duplicate->URLSegment,
+                'Base URLSegment should be unique after duplicate'
+            );
+
+            // The localised row for the current locale must also be unique
+            $localisedSegment = \SilverStripe\ORM\DB::prepared_query(
+                'SELECT "URLSegment" FROM "SiteTree_Localised" WHERE "RecordID" = ? AND "Locale" = ?',
+                [$duplicate->ID, 'en_NZ']
+            )->value();
+
+            $this->assertNotSame(
+                'innovation',
+                $localisedSegment,
+                'Localised URLSegment must not collide with the original (issue #252)'
+            );
+            $this->assertSame(
+                $duplicate->URLSegment,
+                $localisedSegment,
+                'Localised URLSegment should be kept in sync with the de-duplicated base value'
+            );
+
+            // _Versions row (latest version) must match too
+            $versionsSegment = \SilverStripe\ORM\DB::prepared_query(
+                'SELECT "URLSegment" FROM "SiteTree_Localised_Versions"
+                 WHERE "RecordID" = ? AND "Locale" = ?
+                 ORDER BY "Version" DESC LIMIT 1',
+                [$duplicate->ID, 'en_NZ']
+            )->value();
+
+            $this->assertSame(
+                $duplicate->URLSegment,
+                $versionsSegment,
+                'Localised _Versions URLSegment should match the live localised value'
+            );
+        });
+    }
+
+    /**
      * Normalises a test URL's trailing slash, but ignores complexities
      * such as whether the domain host in the UR matches Director::host()
      */
