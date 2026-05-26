@@ -953,9 +953,6 @@ class FluentExtension extends Extension
         // from the source row data in a controlled, single write per row.
         DB::prepared_query("DELETE FROM \"$localisedTable\" WHERE \"RecordID\" = ?", [$toID]);
 
-        // The original SQLUpdate did not filter by locale, so all locales received the current
-        // locale's has_one IDs (and the later FluentState loop re-wrote non-current locales).
-        // Preserve that behaviour by applying the override to every prepared row.
         $hasOneOverrides = [];
         foreach (array_intersect($fields, $copyHasOneRelations) as $copyFieldName) {
             $hasOneOverrides[$copyFieldName] = $duplicate->{$copyFieldName};

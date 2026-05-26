@@ -12,6 +12,7 @@ use SilverStripe\Dev\SapphireTest;
 use SilverStripe\Forms\CompositeField;
 use SilverStripe\Forms\LiteralField;
 use SilverStripe\Model\List\ArrayList;
+use SilverStripe\ORM\DB;
 use SilverStripe\Core\Validation\ValidationException;
 use SilverStripe\Versioned\Versioned;
 use TractorCow\Fluent\Extension\FluentDirectorExtension;
@@ -518,6 +519,181 @@ class FluentSiteTreeExtensionTest extends SapphireTest
                 0,
             ],
         ];
+    }
+
+    /**
+     * Regression test for #252: duplicating a page must produce a unique
+     * URLSegment in every localised row, not just the base table. Covers
+     * multiple locales — each locale's URLSegment is uniquified
+     * independently, preserving translated slugs.
+     */
+    public function testDuplicateProducesUniqueLocalisedURLSegment(): void
+    {
+        // Set up the original page with different URLSegments per locale
+        $originalID = FluentState::singleton()->withState(function (FluentState $state): int {
+            $state
+                ->setLocale('de_DE')
+                ->setIsDomainMode(false);
+
+            $page = Page::create();
+            $page->Title = 'Innovation';
+            $page->URLSegment = 'innovation';
+            $page->write();
+
+            return (int) $page->ID;
+        });
+
+        // Localise the page into en_US with a different slug
+        FluentState::singleton()->withState(function (FluentState $state) use ($originalID): void {
+            $state
+                ->setLocale('en_US')
+                ->setIsDomainMode(false);
+
+            $page = Page::get()->byID($originalID);
+            $page->URLSegment = 'innovation-en';
+            $page->write();
+        });
+
+        // Duplicate while in the default locale
+        FluentState::singleton()->withState(function (FluentState $state) use ($originalID): void {
+            $state
+                ->setLocale('de_DE')
+                ->setIsDomainMode(false);
+
+            $duplicate = Page::get()->byID($originalID)->duplicate();
+
+            // Base table is already de-duplicated by SiteTree::validURLSegment
+            $this->assertNotSame(
+                'innovation',
+                $duplicate->URLSegment,
+                'Base URLSegment should be unique after duplicate'
+            );
+
+            // de_DE locale row matches the de-duplicated base value
+            $deSegment = DB::prepared_query(
+                'SELECT "URLSegment" FROM "SiteTree_Localised" WHERE "RecordID" = ? AND "Locale" = ?',
+                [$duplicate->ID, 'de_DE']
+            )->value();
+            $this->assertNotSame(
+                'innovation',
+                $deSegment,
+                'de_DE localised URLSegment must not collide with the original (issue #252)'
+            );
+            $this->assertSame(
+                $duplicate->URLSegment,
+                $deSegment,
+                'de_DE localised URLSegment should match the de-duplicated base value'
+            );
+
+            // en_US locale row is uniquified independently from its own original
+            // value, not from the de_DE slug. Expectation: 'innovation-en' -> 'innovation-en-2'.
+            $usSegment = DB::prepared_query(
+                'SELECT "URLSegment" FROM "SiteTree_Localised" WHERE "RecordID" = ? AND "Locale" = ?',
+                [$duplicate->ID, 'en_US']
+            )->value();
+            $this->assertNotSame(
+                'innovation-en',
+                $usSegment,
+                'en_US localised URLSegment must not collide with the original'
+            );
+            $this->assertSame(
+                'innovation-en-2',
+                $usSegment,
+                'en_US localised URLSegment should be derived from the en_US slug, not the default locale'
+            );
+
+            // _Versions rows mirror the live localised values per locale
+            $deVersion = DB::prepared_query(
+                'SELECT "URLSegment" FROM "SiteTree_Localised_Versions"'
+                . ' WHERE "RecordID" = ? AND "Locale" = ? ORDER BY "Version" DESC LIMIT 1',
+                [$duplicate->ID, 'de_DE']
+            )->value();
+            $this->assertSame(
+                $deSegment,
+                $deVersion,
+                'de_DE _Versions URLSegment should match the live row'
+            );
+            $usVersion = DB::prepared_query(
+                'SELECT "URLSegment" FROM "SiteTree_Localised_Versions"'
+                . ' WHERE "RecordID" = ? AND "Locale" = ? ORDER BY "Version" DESC LIMIT 1',
+                [$duplicate->ID, 'en_US']
+            )->value();
+            $this->assertSame(
+                $usSegment,
+                $usVersion,
+                'en_US _Versions URLSegment should match the live row'
+            );
+        });
+    }
+
+    /**
+     * Regression test for #252 / #1031 review: ensure parent scoping is
+     * respected — duplicating a page must only bump its URLSegment based on
+     * siblings under the same parent, not unrelated pages elsewhere in the
+     * tree. With nested_urls = true (the SiteTree default), /foo/bar and
+     * /baz/bar are valid distinct URLs.
+     */
+    public function testDuplicateRespectsParentScope(): void
+    {
+        FluentState::singleton()->withState(function (FluentState $state): void {
+            $state
+                ->setLocale('de_DE')
+                ->setIsDomainMode(false);
+
+            // /foo
+            $foo = Page::create();
+            $foo->Title = 'Foo';
+            $foo->URLSegment = 'foo';
+            $foo->write();
+
+            // /bar
+            $bar = Page::create();
+            $bar->Title = 'Bar';
+            $bar->URLSegment = 'bar';
+            $bar->write();
+
+            // /foo/innovation-2 (unrelated sibling that would falsely bump
+            // a globally-scoped uniqueness check to "-3")
+            $fooChild = Page::create();
+            $fooChild->Title = 'Innovation';
+            $fooChild->URLSegment = 'innovation-2';
+            $fooChild->ParentID = $foo->ID;
+            $fooChild->write();
+
+            // /bar/innovation
+            $barChild = Page::create();
+            $barChild->Title = 'Innovation';
+            $barChild->URLSegment = 'innovation';
+            $barChild->ParentID = $bar->ID;
+            $barChild->write();
+
+            $duplicate = $barChild->duplicate();
+
+            // Base URLSegment is parent-scoped by SiteTree itself, so it lands on innovation-2
+            $this->assertSame(
+                'innovation-2',
+                $duplicate->URLSegment,
+                'Base URLSegment should be uniquified within the same parent'
+            );
+
+            $localisedSegment = DB::prepared_query(
+                'SELECT "URLSegment" FROM "SiteTree_Localised" WHERE "RecordID" = ? AND "Locale" = ?',
+                [$duplicate->ID, 'de_DE']
+            )->value();
+
+            // With parent scoping in the Fluent fix, the localised value also lands on innovation-2
+            // (the /foo/innovation-2 sibling lives under a different parent and is irrelevant).
+            $this->assertSame(
+                'innovation-2',
+                $localisedSegment,
+                'Localised URLSegment must be parent-scoped, not bumped by an unrelated /foo/innovation-2'
+            );
+            $this->assertSame(
+                $duplicate->URLSegment,
+                $localisedSegment,
+                'Localised and base URLSegments must stay in sync'
+            );
+        });
     }
 
     /**
