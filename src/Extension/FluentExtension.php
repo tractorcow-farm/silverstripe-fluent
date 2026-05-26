@@ -21,9 +21,9 @@ use SilverStripe\ORM\FieldType\DBHTMLVarchar;
 use SilverStripe\ORM\FieldType\DBText;
 use SilverStripe\ORM\FieldType\DBVarchar;
 use SilverStripe\ORM\Queries\SQLConditionGroup;
+use SilverStripe\ORM\Queries\SQLInsert;
 use SilverStripe\ORM\Queries\SQLSelect;
 use SilverStripe\Core\Validation\ValidationException;
-use SilverStripe\ORM\Queries\SQLUpdate;
 use SilverStripe\Versioned\Versioned;
 use SilverStripe\View\HTML;
 use TractorCow\Fluent\Extension\Traits\FluentBadgeTrait;
@@ -642,6 +642,13 @@ class FluentExtension extends Extension
 
     /**
      * If an object is duplicated also duplicate existing localised values from original to new object.
+     *
+     * Each localised row is read from the original, prepared via
+     * {@see self::prepareLocalisedRowForDuplicate()} (extension point for subclasses
+     * to mutate field values before they hit the DB), and then inserted as a single
+     * write per row. This avoids the previous DELETE + INSERT…SELECT + post-hoc
+     * UPDATE pattern and lets subclasses (e.g. FluentSiteTreeExtension) provide
+     * already-correct values rather than fix them up afterwards.
      */
     public function onAfterDuplicate($original, $doWrite, $relations): void
     {
@@ -663,35 +670,20 @@ class FluentExtension extends Extension
 
         // Add row for new duplicated page in all relevant localised tables
         foreach ($localisedTables as $tableName => $fields) {
-            // Target IDs
             $fromID = $original->ID;
             $toID = $owner->ID;
-
-            // Get localised table
             $localisedTable = $this->getLocalisedTable($tableName);
 
-            // Remove existing translations from duplicated object
-            DB::prepared_query("DELETE FROM \"$localisedTable\" WHERE \"RecordID\" = ?", [$toID]);
-
-            // Copy translations to duplicated object
-            $fields_str = '"' . implode('","', $fields) . '"';
-            DB::prepared_query("INSERT INTO \"$localisedTable\" ( \"RecordID\", \"Locale\", $fields_str)
-                    SELECT ? AS \"RecordID\", \"Locale\", $fields_str
-                    FROM \"$localisedTable\"
-                    WHERE \"RecordID\" = ?", [$toID, $fromID]);
-
-            // Make sure to update any has_one IDs - otherwise the new localised table entry will
-            // have the has_one ID from the original record.
-            // The current $owner (i.e. the newly duplicated record) may have already had its relation duplicated
-            // via cascade_duplicates prior to this extension hook being called.
-            // This only covers the current locale - see below for handling additional locales.
-            $fieldsToUpdate = [];
-            foreach (array_intersect($fields, $copyHasOneRelations) as $copyFieldName) {
-                $fieldsToUpdate[$copyFieldName] = $owner->{$copyFieldName};
-            }
-            if (!empty($fieldsToUpdate)) {
-                SQLUpdate::create($localisedTable, $fieldsToUpdate, ['RecordID' => $toID])->execute();
-            }
+            $this->duplicateLocalisedRows(
+                $tableName,
+                $localisedTable,
+                $fields,
+                $fromID,
+                $toID,
+                $original,
+                $owner,
+                $copyHasOneRelations
+            );
         }
 
         // We need to handle duplicating relations in `localised_copy` into additional locales
@@ -932,6 +924,80 @@ class FluentExtension extends Extension
 
         // Save back modifications to the manipulation
         $manipulation[$localeTable] = $localisedUpdate;
+    }
+
+    /**
+     * Replace every localised row of the duplicate with a per-row INSERT prepared from the
+     * original's localised rows. Allows subclasses to override
+     * {@see self::prepareLocalisedRowForDuplicate()} so they can supply already-correct
+     * values (e.g. a unique URLSegment) instead of fixing them up afterwards.
+     */
+    protected function duplicateLocalisedRows(
+        string $tableName,
+        string $localisedTable,
+        array $fields,
+        int $fromID,
+        int $toID,
+        DataObject $original,
+        DataObject $duplicate,
+        array $copyHasOneRelations
+    ): void {
+        $columns = array_merge(['RecordID', 'Locale'], $fields);
+        $columnList = '"' . implode('","', $columns) . '"';
+        $sourceRows = DB::prepared_query(
+            "SELECT $columnList FROM \"$localisedTable\" WHERE \"RecordID\" = ?",
+            [$fromID]
+        );
+
+        // Remove the localised row(s) that the initial duplicate write created so we can re-insert
+        // from the source row data in a controlled, single write per row.
+        DB::prepared_query("DELETE FROM \"$localisedTable\" WHERE \"RecordID\" = ?", [$toID]);
+
+        // The original SQLUpdate did not filter by locale, so all locales received the current
+        // locale's has_one IDs (and the later FluentState loop re-wrote non-current locales).
+        // Preserve that behaviour by applying the override to every prepared row.
+        $hasOneOverrides = [];
+        foreach (array_intersect($fields, $copyHasOneRelations) as $copyFieldName) {
+            $hasOneOverrides[$copyFieldName] = $duplicate->{$copyFieldName};
+        }
+
+        foreach ($sourceRows as $row) {
+            $row['RecordID'] = $toID;
+            foreach ($hasOneOverrides as $field => $value) {
+                $row[$field] = $value;
+            }
+            $row = $this->prepareLocalisedRowForDuplicate(
+                $tableName,
+                $localisedTable,
+                $row,
+                $original,
+                $duplicate
+            );
+
+            SQLInsert::create("\"$localisedTable\"", $row)->execute();
+        }
+    }
+
+    /**
+     * Extension point for subclasses: transform a single localised row before it is
+     * inserted into the duplicate's localised table. The returned array is written as-is,
+     * so subclasses can pre-compute values (e.g. uniquify URLSegment) instead of fixing
+     * them up with a follow-up UPDATE.
+     *
+     * @param string $tableName Base table the localised values belong to
+     * @param string $localisedTable Fully-qualified localised table name being written to
+     * @param array $row Row data keyed by column name (RecordID already pointing at the duplicate)
+     * @param DataObject $original The record being duplicated from
+     * @param DataObject $duplicate The newly created duplicate ($this->getOwner())
+     */
+    protected function prepareLocalisedRowForDuplicate(
+        string $tableName,
+        string $localisedTable,
+        array $row,
+        DataObject $original,
+        DataObject $duplicate
+    ): array {
+        return $row;
     }
 
     /**

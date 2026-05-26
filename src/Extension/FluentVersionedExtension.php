@@ -11,6 +11,7 @@ use SilverStripe\ORM\DataList;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\DataQuery;
 use SilverStripe\ORM\DB;
+use SilverStripe\ORM\Queries\SQLInsert;
 use SilverStripe\ORM\Queries\SQLSelect;
 use SilverStripe\Versioned\Versioned;
 use TractorCow\Fluent\Forms\PublishAction;
@@ -1093,32 +1094,31 @@ SQL;
 
     /**
      * If an object is duplicated also duplicate existing localised values from original to new object.
+     *
+     * Mirrors the parent's row-by-row approach for the localised `_Versions` tables so that
+     * subclasses can override {@see self::prepareLocalisedVersionRowForDuplicate()} and supply
+     * the correct values up-front (e.g. the same uniquified URLSegment used for the live row).
      */
     public function onAfterDuplicate($original, $doWrite, $relations): void
     {
         parent::onAfterDuplicate($original, $doWrite, $relations);
 
+        $fromID = $original->ID;
+        $toID = $this->owner->ID;
+
         $localisedTables = $this->owner->getLocalisedTables();
         foreach ($localisedTables as $tableName => $fields) {
-            // Target IDs
-            $fromID = $original->ID;
-            $toID = $this->owner->ID;
+            $versionsLocalisedTable = $this->getLocalisedTable($tableName) . FluentVersionedExtension::SUFFIX_VERSIONS;
 
-            // Get localised table
-            $localisedTable = $this->getLocalisedTable($tableName) . FluentVersionedExtension::SUFFIX_VERSIONS;
-
-            // Remove existing translation versions from duplicated object
-            DB::prepared_query("DELETE FROM \"$localisedTable\" WHERE \"RecordID\" = ?", [$toID]);
-
-            // Copy translations to duplicated object
-            $localisedFields = array_merge(['Locale', 'Version'], $fields);
-            $fields_str = '"' . implode('","', $localisedFields) . '"';
-
-            // Copy all versions of localised object
-            DB::prepared_query("INSERT INTO \"$localisedTable\" ( \"RecordID\", $fields_str)
-                    SELECT ? AS \"RecordID\", $fields_str
-                    FROM \"$localisedTable\"
-                    WHERE \"RecordID\" = ?", [$toID, $fromID]);
+            $this->duplicateLocalisedVersionRows(
+                $tableName,
+                $versionsLocalisedTable,
+                $fields,
+                $fromID,
+                $toID,
+                $original,
+                $this->owner
+            );
 
             // Also copy versions of base record
             $versionsTableName = $tableName . FluentVersionedExtension::SUFFIX_VERSIONS;
@@ -1130,12 +1130,71 @@ SQL;
             $currentDB = DB::query('SELECT DATABASE() as DB')->column('DB')[0];
 
             // Copy all versions of base record, todo: optimize to only copy needed versions
-            $fields = DB::query("SELECT \"COLUMN_NAME\" FROM \"INFORMATION_SCHEMA\".\"COLUMNS\" WHERE \"TABLE_SCHEMA\" = '$currentDB' AND \"TABLE_NAME\" = '$versionsTableName' AND \"COLUMN_NAME\" NOT IN('ID','RecordID')");
-            $fields_str = '"' . implode('","', $fields->column()) . '"';
+            $baseVersionFields = DB::query("SELECT \"COLUMN_NAME\" FROM \"INFORMATION_SCHEMA\".\"COLUMNS\" WHERE \"TABLE_SCHEMA\" = '$currentDB' AND \"TABLE_NAME\" = '$versionsTableName' AND \"COLUMN_NAME\" NOT IN('ID','RecordID')");
+            $fields_str = '"' . implode('","', $baseVersionFields->column()) . '"';
             DB::prepared_query("INSERT INTO \"$versionsTableName\" ( \"RecordID\", $fields_str)
                     SELECT ? AS \"RecordID\", $fields_str
                     FROM \"$versionsTableName\"
                     WHERE \"RecordID\" = ?", [$toID, $fromID]);
         }
+    }
+
+    /**
+     * Replace localised `_Versions` rows of the duplicate with rows prepared per source row.
+     * The hook {@see self::prepareLocalisedVersionRowForDuplicate()} lets subclasses mutate
+     * values (e.g. URLSegment) before they are written.
+     */
+    protected function duplicateLocalisedVersionRows(
+        string $tableName,
+        string $versionsLocalisedTable,
+        array $fields,
+        int $fromID,
+        int $toID,
+        DataObject $original,
+        DataObject $duplicate
+    ): void {
+        $columns = array_merge(['RecordID', 'Locale', 'Version'], $fields);
+        $columnList = '"' . implode('","', $columns) . '"';
+        $sourceRows = DB::prepared_query(
+            "SELECT $columnList FROM \"$versionsLocalisedTable\" WHERE \"RecordID\" = ?",
+            [$fromID]
+        );
+
+        DB::prepared_query("DELETE FROM \"$versionsLocalisedTable\" WHERE \"RecordID\" = ?", [$toID]);
+
+        foreach ($sourceRows as $row) {
+            $row['RecordID'] = $toID;
+            $row = $this->prepareLocalisedVersionRowForDuplicate(
+                $tableName,
+                $versionsLocalisedTable,
+                $row,
+                $original,
+                $duplicate
+            );
+
+            SQLInsert::create("\"$versionsLocalisedTable\"", $row)->execute();
+        }
+    }
+
+    /**
+     * Extension point for subclasses: transform a single localised `_Versions` row before it is
+     * inserted into the duplicate's localised versions table. Subclasses should typically reuse
+     * the value chosen in {@see FluentExtension::prepareLocalisedRowForDuplicate()} for the same
+     * locale to keep live and version history consistent.
+     *
+     * @param string $tableName Base table the versioned localised values belong to
+     * @param string $versionsLocalisedTable Fully-qualified `_Localised_Versions` table name
+     * @param array $row Row data keyed by column name (RecordID already pointing at the duplicate)
+     * @param DataObject $original The record being duplicated from
+     * @param DataObject $duplicate The newly created duplicate ($this->owner)
+     */
+    protected function prepareLocalisedVersionRowForDuplicate(
+        string $tableName,
+        string $versionsLocalisedTable,
+        array $row,
+        DataObject $original,
+        DataObject $duplicate
+    ): array {
+        return $row;
     }
 }
