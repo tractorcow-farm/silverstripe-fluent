@@ -10,4 +10,4 @@ assets
 .env
 .htaccess
 composer.lock
-
+/.yarn/
