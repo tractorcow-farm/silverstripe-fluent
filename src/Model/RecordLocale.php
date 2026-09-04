@@ -202,14 +202,19 @@ class RecordLocale extends ModelData
             return $this->getLocaleObject()->getBaseURL();
         }
 
-        // If original record implements LocaleLink, respect this
-        // note: hasMethod() will infinite loop, so don't use this.
-        if (method_exists($record, 'LocaleLink')) {
-            return $record->LocaleLink($this->getLocale());
-        }
+        return FluentState::singleton()->withState(function (FluentState $state) use ($record) {
+            $state->setLocale($this->getLocale());
+            $state->setIsFrontend(true);
 
-        // Get link from localised record
-        return $record->Link();
+            // If original record implements LocaleLink, respect this
+            // note: hasMethod() will infinite loop, so don't use this.
+            if (method_exists($record, 'LocaleLink')) {
+                return $record->LocaleLink($this->getLocale());
+            }
+
+            // Get link from localised record
+            return $record->Link();
+        });
     }
 
     /**

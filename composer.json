@@ -42,7 +42,7 @@
     },
     "require-dev": {
         "silverstripe/recipe-testing": "^4",
-        "silverstripe/documentation-lint": "^1",
+        "silverstripe/documentation-lint": "^2",
         "silverstripe/standards": "^1",
         "phpstan/extension-installer": "^1.3"
     },
