@@ -177,6 +177,12 @@ $fluent-color-localised: rgb(102, 15, 242);
   content: "Copy to" !important;// sass-lint:disable-line no-important
 }
 
+// The toggle renders its dots in a child element, which the titles above replace
+.action-group-COPY_FROM .action-menu__toggle .font-icon-dot-3,// sass-lint:disable-line class-name-format
+.action-group-COPY_TO .action-menu__toggle .font-icon-dot-3 {// sass-lint:disable-line class-name-format
+  display: none;
+}
+
 // gridfield "visible locales" column
 .fluent-visible-column .badge {
   font-size: 0.8em;
