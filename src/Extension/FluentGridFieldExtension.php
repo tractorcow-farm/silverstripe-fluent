@@ -2,6 +2,7 @@
 
 namespace TractorCow\Fluent\Extension;
 
+use SilverStripe\Admin\AdminController;
 use SilverStripe\Control\Controller;
 use SilverStripe\Control\HTTPResponse;
 use SilverStripe\Core\Extension;
@@ -47,12 +48,48 @@ class FluentGridFieldExtension extends Extension
             return $this->owner->edit($request);
         }
 
-        // Changes to the record properties might've excluded the record from
-        // a filtered list, so return back to the main view if it can't be found
-        $url = $request->getURL();
-        $noActionURL = $controller->removeAction($url);
+        // The record is gone (e.g. archived) or excluded from a filtered list,
+        // so go back to where the GridField lives, like
+        // VersionedGridFieldItemRequest::doArchive() does. Removing the action
+        // from the URL would drop the parent record of a nested GridField (e.g.
+        // an element on a page) and land on the top-level list instead.
+        if ($controller->hasMethod('getEditForm')) {
+            $controller
+                ->getEditForm()
+                ->sessionMessage($message, 'good', ValidationResult::CAST_HTML);
+        }
         $request->addHeader('X-Pjax', 'Content');
-        return $controller->redirect($noActionURL, 302);
+        $controller->getResponse()->addHeader('X-Status', rawurlencode($message));
+        return $controller->redirect($this->getBackLink(), 302);
+    }
+
+    /**
+     * Same as GridFieldDetailForm_ItemRequest::getBackLink(), which isn't public:
+     * the top-level controller's back link if it has one, else the last
+     * breadcrumb of the controller that owns the GridField.
+     *
+     * @return string
+     */
+    private function getBackLink(): string
+    {
+        $controller = $this->getToplevelController();
+        $backLink = '';
+
+        if ($controller instanceof AdminController) {
+            $parent = $this->owner->getController();
+            if ($controller->hasMethod('Backlink')) {
+                $backLink = $controller->Backlink();
+            } elseif ($parent->hasMethod('Breadcrumbs')) {
+                $crumbs = $parent->Breadcrumbs(false);
+                if ($crumbs && $crumbs->count()) {
+                    $backLink = $crumbs->last()->Link;
+                }
+            }
+        }
+
+        return $this->owner
+            ->getGridField()
+            ->addAllStateToUrl($backLink ?: $controller->Link());
     }
 
     /**
