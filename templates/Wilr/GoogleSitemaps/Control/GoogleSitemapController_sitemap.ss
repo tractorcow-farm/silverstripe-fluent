@@ -20,7 +20,7 @@
                         href="{$absoluteBaseURL.ATT}"
                 />
             <% end_if %>
-            <% if $Locales %><% loop $Locales %><% if $LinkingMode != 'invalid' %>
+            <% if $Locales %><% loop $Locales %><% if $IsPublished && $canViewInLocale %>
                 <xhtml:link
                         rel="alternate"
                         hreflang="$HrefLang"
