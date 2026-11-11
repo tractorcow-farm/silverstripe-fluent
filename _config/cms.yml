@@ -17,10 +17,6 @@ SilverStripe\Versioned\VersionedGridFieldItemRequest:
   extensions:
     FluentGridFieldExtension: TractorCow\Fluent\Extension\FluentGridFieldExtension
 
-SilverStripe\Versioned\GraphQL\Operations\ReadVersions:
-  extensions:
-    FluentReadVersionsExtension: TractorCow\Fluent\Extension\FluentReadVersionsExtension
-
 ---
 Name: fluentcms-pages
 onlyif:
