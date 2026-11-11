@@ -462,6 +462,99 @@ SQL;
     }
 
     /**
+     * Localised version of {@see Versioned::isLiveVersion()}
+     *
+     * Versioned compares the live version number with the Version of this record. The live version number is
+     * localised by {@see updateGetVersionNumberByStage()}, but the Version of a record that was read from a stage is
+     * the version of the newest write in any locale, so the two only matched in the locale that was written last.
+     *
+     * @return bool
+     */
+    public function isLiveVersion(): bool
+    {
+        $owner = $this->owner;
+        $id = $owner->ID ?: $owner->OldID;
+        if (!$id || !$owner->isPublished()) {
+            return false;
+        }
+
+        $stage = $owner->hasStages() ? Versioned::LIVE : Versioned::DRAFT;
+        $liveVersionNumber = Versioned::get_versionnumber_by_stage($owner, $stage, $id);
+
+        return $liveVersionNumber == $this->getLocalisedVersionNumber();
+    }
+
+    /**
+     * Localised version of {@see Versioned::isLatestDraftVersion()}
+     *
+     * @see isLiveVersion()
+     * @return bool
+     */
+    public function isLatestDraftVersion(): bool
+    {
+        $owner = $this->owner;
+        $id = $owner->ID ?: $owner->OldID;
+        if (!$id || !$owner->isOnDraft()) {
+            return false;
+        }
+
+        $draftVersionNumber = Versioned::get_versionnumber_by_stage($owner, Versioned::DRAFT, $id);
+
+        return $draftVersionNumber == $this->getLocalisedVersionNumber();
+    }
+
+    /**
+     * Localised version of {@see Versioned::isLatestVersion()}
+     *
+     * The latest version is looked up in the current locale only, see {@see localiseVersionsLookup()}
+     *
+     * @see isLiveVersion()
+     * @return bool
+     */
+    public function isLatestVersion(): bool
+    {
+        $owner = $this->owner;
+        if (!$owner->isInDB()) {
+            return false;
+        }
+
+        // A record has no latest version in a locale it was never saved in
+        $latest = Versioned::get_latest_version($owner->baseClass(), $owner->ID);
+
+        return $latest && $latest->Version == $this->getLocalisedVersionNumber();
+    }
+
+    /**
+     * The number of the version that this record represents in the current locale.
+     *
+     * A record that was read from a stage gets its Version from the base record, which any locale may have written
+     * last. What it represents in this locale is the localised version of the stage it was read from.
+     *
+     * Every other record already carries the number of a real version: one that was read from the versions table (the
+     * versions of other locales are not part of those queries, see {@see localiseVersionsLookup()}), or one that was
+     * just written. Without a locale there is nothing to localise.
+     *
+     * @return int|string|null
+     */
+    protected function getLocalisedVersionNumber()
+    {
+        $owner = $this->owner;
+
+        if (!FluentState::singleton()->getLocale()) {
+            return $owner->Version;
+        }
+
+        $mode = $owner->getSourceQueryParam('Versioned.mode');
+        if ($mode !== 'stage' && $mode !== 'stage_unique') {
+            return $owner->Version;
+        }
+
+        $stage = $owner->getSourceQueryParam('Versioned.stage') ?: Versioned::DRAFT;
+
+        return Versioned::get_versionnumber_by_stage($owner, $stage, $owner->ID);
+    }
+
+    /**
      * Check to see whether or not a record exists for a specific Locale in a specific stage.
      *
      * @param string $stage  Version stage
