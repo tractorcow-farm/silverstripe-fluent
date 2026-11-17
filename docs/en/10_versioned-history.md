@@ -42,6 +42,14 @@ This may have impact on your CMS UI (buttons not showing up).
 - [`Versioned::isPublished()`](api:SilverStripe\Versioned\Versioned::isPublished())
 - [`Versioned::isArchived()`](api:SilverStripe\Versioned\Versioned::isArchived())
 - [`Versioned::stagesDiffer()`](api:SilverStripe\Versioned\Versioned::stagesDiffer())
+- [`Versioned::isLiveVersion()`](api:SilverStripe\Versioned\Versioned::isLiveVersion())
+- [`Versioned::isLatestDraftVersion()`](api:SilverStripe\Versioned\Versioned::isLatestDraftVersion())
+- [`Versioned::isLatestVersion()`](api:SilverStripe\Versioned\Versioned::isLatestVersion())
+
+The last three compare the version of a record with the version it has in the current locale. A record that was read
+from a stage (for example the draft) represents the version that this stage holds in the current locale, so these
+methods don't depend on which locale happened to be written to last.
+A record that was read as one particular version (for example in the history view) is compared by the number of that version.
 
 ### How to query the base record
 
