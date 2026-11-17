@@ -468,6 +468,11 @@ SQL;
      * localised by {@see updateGetVersionNumberByStage()}, but the Version of a record that was read from a stage is
      * the version of the newest write in any locale, so the two only matched in the locale that was written last.
      *
+     * Versioned has no extension point for this, so this extension defines the method itself. When two extensions
+     * define a method, the one that was added last answers. That is this one, because FluentVersionedExtension has to
+     * be added after Versioned: {@see augmentDatabase()} throws otherwise. This goes for isLatestDraftVersion() and
+     * isLatestVersion() as well.
+     *
      * @return bool
      */
     public function isLiveVersion(): bool
