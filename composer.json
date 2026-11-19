@@ -31,17 +31,17 @@
     },
     "require": {
         "php": "^8.3",
-        "silverstripe/framework": "^6.1",
-        "silverstripe/admin": "^3",
-        "silverstripe/versioned": "^3",
-        "symbiote/silverstripe-gridfieldextensions": "^5",
+        "silverstripe/framework": "^7",
+        "silverstripe/admin": "^4",
+        "silverstripe/versioned": "^4",
+        "symbiote/silverstripe-gridfieldextensions": "^6",
         "ext-json": "*"
     },
     "suggest": {
         "silverstripe/cms": "Localise pages"
     },
     "require-dev": {
-        "silverstripe/recipe-testing": "^4",
+        "silverstripe/recipe-testing": "^5",
         "silverstripe/documentation-lint": "^2",
         "silverstripe/standards": "^1",
         "phpstan/extension-installer": "^1.3"
