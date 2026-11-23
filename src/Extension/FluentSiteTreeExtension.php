@@ -12,7 +12,10 @@ use SilverStripe\Forms\CompositeField;
 use SilverStripe\Forms\FieldList;
 use SilverStripe\Forms\Form;
 use SilverStripe\Forms\LiteralField;
+use SilverStripe\ORM\DataObject;
+use SilverStripe\ORM\DB;
 use SilverStripe\ORM\FieldType\DBHTMLText;
+use SilverStripe\View\Parsers\URLSegmentFilter;
 use TractorCow\Fluent\Extension\Traits\FluentAdminTrait;
 use TractorCow\Fluent\Model\Locale;
 use TractorCow\Fluent\State\FluentState;
@@ -426,5 +429,150 @@ class FluentSiteTreeExtension extends FluentVersionedExtension
     public function actionComplete($form, $message)
     {
         return null;
+    }
+
+    /**
+     * Per-locale URLSegment values resolved during this duplicate operation.
+     * Populated by {@see self::prepareLocalisedRowForDuplicate()} and reused by
+     * {@see self::prepareLocalisedVersionRowForDuplicate()} so live and versioned
+     * rows stay in sync without a second uniqueness lookup.
+     *
+     * @var array<string,string>
+     */
+    private array $resolvedLocalisedURLSegments = [];
+
+    /**
+     * Uniquify URLSegment for each localised row before it is inserted.
+     *
+     * FluentExtension::onAfterDuplicate previously copied the original record's localised
+     * URLSegment verbatim. SiteTree::validURLSegment only de-duplicates the base table, so
+     * the duplicate ended up with a colliding localised URLSegment — unreachable on the
+     * frontend (issue #252) and re-routed by the CMS preview iframe via x-page-id /
+     * x-cms-edit-link sync. Hooking into the new row-prep extension point means we can
+     * write the correct value once instead of fixing it up afterwards.
+     */
+    protected function prepareLocalisedRowForDuplicate(
+        string $tableName,
+        string $localisedTable,
+        array $row,
+        DataObject $original,
+        DataObject $duplicate
+    ): array {
+        $row = parent::prepareLocalisedRowForDuplicate($tableName, $localisedTable, $row, $original, $duplicate);
+
+        if (!array_key_exists('URLSegment', $row)) {
+            return $row;
+        }
+
+        $segment = (string) $row['URLSegment'];
+        if ($segment === '') {
+            return $row;
+        }
+
+        $unique = $this->generateUniqueLocalisedURLSegment(
+            $localisedTable,
+            $tableName,
+            (string) $row['Locale'],
+            $segment,
+            (int) $duplicate->ID,
+            $this->getDuplicateParentScope($duplicate)
+        );
+
+        $row['URLSegment'] = $unique;
+        $this->resolvedLocalisedURLSegments[(string) $row['Locale']] = $unique;
+
+        return $row;
+    }
+
+    /**
+     * Apply the same URLSegment that was chosen for the live row to every version row of the
+     * same locale. Keeps Live and _Versions tables consistent and avoids a second uniqueness
+     * lookup.
+     */
+    protected function prepareLocalisedVersionRowForDuplicate(
+        string $tableName,
+        string $versionsLocalisedTable,
+        array $row,
+        DataObject $original,
+        DataObject $duplicate
+    ): array {
+        $row = parent::prepareLocalisedVersionRowForDuplicate(
+            $tableName,
+            $versionsLocalisedTable,
+            $row,
+            $original,
+            $duplicate
+        );
+
+        if (!array_key_exists('URLSegment', $row)) {
+            return $row;
+        }
+
+        $locale = (string) $row['Locale'];
+        if (isset($this->resolvedLocalisedURLSegments[$locale])) {
+            $row['URLSegment'] = $this->resolvedLocalisedURLSegments[$locale];
+        }
+
+        return $row;
+    }
+
+    /**
+     * Determine the ParentID scope to use for URLSegment uniqueness for the given duplicate.
+     * Returns null when the class does not use nested URLs (uniqueness is global per locale).
+     */
+    private function getDuplicateParentScope(DataObject $duplicate): ?int
+    {
+        $nestedUrls = (bool) $duplicate::config()->get('nested_urls');
+        if (!$nestedUrls || !$duplicate->hasField('ParentID')) {
+            return null;
+        }
+        return (int) ($duplicate->ParentID ?: 0);
+    }
+
+    private function generateUniqueLocalisedURLSegment(
+        string $localisedTable,
+        string $baseTable,
+        string $locale,
+        string $segment,
+        int $excludeRecordID,
+        ?int $parentID
+    ): string {
+        $filter = URLSegmentFilter::create();
+        $segment = $filter->filter($segment) ?: $segment;
+        $base = preg_replace('/-[0-9]+$/', '', $segment) ?: $segment;
+        $candidate = $segment;
+        // If the segment already ends in a number, continue counting from there.
+        $count = preg_match('/-([0-9]+)$/', $segment, $matches) ? (int) $matches[1] + 1 : 2;
+        while ($this->localisedURLSegmentExists($localisedTable, $baseTable, $locale, $candidate, $excludeRecordID, $parentID)) {
+            $candidate = $base . '-' . $count++;
+        }
+        return $candidate;
+    }
+
+    private function localisedURLSegmentExists(
+        string $localisedTable,
+        string $baseTable,
+        string $locale,
+        string $segment,
+        int $excludeRecordID,
+        ?int $parentID
+    ): bool {
+        if ($parentID === null) {
+            $sql = sprintf(
+                'SELECT COUNT(*) FROM "%s" WHERE "Locale" = ? AND "URLSegment" = ? AND "RecordID" != ?',
+                $localisedTable
+            );
+            $params = [$locale, $segment, $excludeRecordID];
+        } else {
+            $sql = sprintf(
+                'SELECT COUNT(*) FROM "%s" loc INNER JOIN "%s" base ON base."ID" = loc."RecordID"'
+                . ' WHERE loc."Locale" = ? AND loc."URLSegment" = ? AND loc."RecordID" != ? AND base."ParentID" = ?',
+                $localisedTable,
+                $baseTable
+            );
+            $params = [$locale, $segment, $excludeRecordID, $parentID];
+        }
+        $count = DB::prepared_query($sql, $params)->value();
+        return ((int) $count) > 0;
     }
 }
