@@ -30,6 +30,11 @@ class FluentMemberExtension extends Extension
             return;
         }
 
+        // Without any locale permissions every group is enabled in every locale
+        if (!$this->hasLocalePermissions()) {
+            return;
+        }
+
         $filtered = $groups->filterByCallback(function (Group $group) use ($locale) {
             $localePermissions = $this->getLocalePermissionsForGroup($group);
 
@@ -54,6 +59,13 @@ class FluentMemberExtension extends Extension
      */
     public function getCMSAccessLocales()
     {
+        // Without any locale permissions CMS access is the same in every locale, so one check
+        // answers for all of them and the member's cached permissions can be kept.
+        if (!$this->hasLocalePermissions()) {
+            $hasAccess = Permission::checkMember($this->owner, 'CMS_ACCESS');
+            return Locale::getCached()->filterByCallback(fn () => $hasAccess);
+        }
+
         try {
             return Locale::getCached()->filterByCallback(function (Locale $locale) {
                 // Check if the user has CMS access in this locale
@@ -67,6 +79,18 @@ class FluentMemberExtension extends Extension
             // Ensure permissions aren't affected by any of the above
             Permission::reset();
         }
+    }
+
+    /**
+     * Check if any group has been limited to one or more locales.
+     *
+     * When none has, groups are not filtered by locale, so CMS access is the same in every locale.
+     */
+    private function hasLocalePermissions(): bool
+    {
+        return Permission::get()
+            ->filter('Code:StartsWith:nocase', Locale::CMS_ACCESS_FLUENT_LOCALE)
+            ->exists();
     }
 
     /**

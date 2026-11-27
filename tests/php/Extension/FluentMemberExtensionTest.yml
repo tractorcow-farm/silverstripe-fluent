@@ -1,0 +1,47 @@
+TractorCow\Fluent\Model\Locale:
+  en_NZ:
+    Title: English (NZ)
+    Locale: en_NZ
+    URLSegment: en_NZ
+    IsGlobalDefault: true
+    Sort: 1
+  de_DE:
+    Title: German
+    Locale: de_DE
+    URLSegment: de_DE
+    Sort: 2
+  fr_FR:
+    Title: French
+    Locale: fr_FR
+    URLSegment: fr_FR
+    Sort: 3
+
+SilverStripe\Security\Group:
+  authors:
+    Title: Authors
+  germanauthors:
+    Title: German authors
+  visitors:
+    Title: Visitors
+
+SilverStripe\Security\Permission:
+  authors:
+    Code: CMS_ACCESS_CMSMain
+    Group: =>SilverStripe\Security\Group.authors
+  germanauthors:
+    Code: CMS_ACCESS_CMSMain
+    Group: =>SilverStripe\Security\Group.germanauthors
+  visitors:
+    Code: SITETREE_VIEW_ALL
+    Group: =>SilverStripe\Security\Group.visitors
+
+SilverStripe\Security\Member:
+  author:
+    Email: author@example.com
+    Groups: =>SilverStripe\Security\Group.authors
+  germanauthor:
+    Email: germanauthor@example.com
+    Groups: =>SilverStripe\Security\Group.germanauthors
+  visitor:
+    Email: visitor@example.com
+    Groups: =>SilverStripe\Security\Group.visitors
