@@ -138,6 +138,13 @@ class Locale extends DataObject implements PermissionProvider
      */
     protected static $locales_by_title;
 
+    /**
+     * RecordLocale objects for this locale, keyed by record class and ID
+     *
+     * @var array<string, RecordLocale|null>
+     */
+    private array $recordLocales = [];
+
     public function requireDefaultRecords(): void
     {
         parent::requireDefaultRecords();
@@ -624,13 +631,23 @@ class Locale extends DataObject implements PermissionProvider
             return null;
         }
 
-        $record = DataObject::get($recordClass)->byID($recordID);
-
-        if ($record) {
-            return RecordLocale::create($record, $this);
+        // Each column of the localisation GridField asks for this, so read the record once per row
+        $key = $recordClass . '#' . $recordID;
+        if (array_key_exists($key, $this->recordLocales)) {
+            return $this->recordLocales[$key];
         }
 
-        return null;
+        $record = DataObject::get($recordClass)->byID($recordID);
+
+        return $this->recordLocales[$key] = $record
+            ? RecordLocale::create($record, $this)
+            : null;
+    }
+
+    public function flushCache(bool $persistent = true): static
+    {
+        $this->recordLocales = [];
+        return parent::flushCache($persistent);
     }
 
     /**
