@@ -12,6 +12,8 @@ use TractorCow\Fluent\Model\Locale;
 use TractorCow\Fluent\State\FluentState;
 use PHPUnit\Framework\Attributes\DataProvider;
 use SilverStripe\Forms\Form;
+use SilverStripe\Security\Group;
+use TractorCow\Fluent\Model\RecordLocale;
 
 class LocaleTest extends SapphireTest
 {
@@ -254,5 +256,34 @@ class LocaleTest extends SapphireTest
 
         $this->assertSame($title, $localeObj->Title);
         $this->assertSame($urlSegment, $localeObj->URLSegment);
+    }
+
+    public function testRecordLocaleIsReadOncePerRecord(): void
+    {
+        $group = Group::create(['Title' => 'Editors']);
+        $group->write();
+
+        $locale = clone Locale::getByLocale('en_NZ');
+        $this->assertNull($locale->RecordLocale(), 'No record without source query params');
+
+        $locale->setSourceQueryParams([
+            'FluentObjectID' => $group->ID,
+            'FluentObjectClass' => Group::class,
+        ]);
+        $recordLocale = $locale->RecordLocale();
+        $this->assertInstanceOf(RecordLocale::class, $recordLocale);
+        $this->assertSame($recordLocale, $locale->RecordLocale());
+
+        $other = Group::create(['Title' => 'Authors']);
+        $other->write();
+        $locale->setSourceQueryParams([
+            'FluentObjectID' => $other->ID,
+            'FluentObjectClass' => Group::class,
+        ]);
+        $this->assertNotSame($recordLocale, $locale->RecordLocale(), 'Each record has its own RecordLocale');
+
+        $otherRecordLocale = $locale->RecordLocale();
+        $locale->flushCache();
+        $this->assertNotSame($otherRecordLocale, $locale->RecordLocale(), 'flushCache() reads the record again');
     }
 }
