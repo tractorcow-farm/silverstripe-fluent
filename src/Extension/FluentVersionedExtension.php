@@ -100,6 +100,16 @@ class FluentVersionedExtension extends FluentExtension implements Resettable
     protected static $idsInLocaleCache = [];
 
     /**
+     * Whether draft and live differ, keyed by localised versions table, locale and record ID.
+     * Checked for each record in the site tree, list view and reports, and for each record a page
+     * inherits view permissions from, so it is kept for the request and cleared by reset().
+     *
+     * @internal
+     * @var array<string, bool>
+     */
+    private static array $stagesDifferCache = [];
+
+    /**
      * Used to enable or disable the prepopulation of the locale content cache
      * Defaults to true.
      *
@@ -427,6 +437,11 @@ class FluentVersionedExtension extends FluentExtension implements Resettable
         $liveTable = $stageTable . $versionSuffix;
         $stagedTable = $record->getLocalisedTable($stageTable) . $versionSuffix;
 
+        $cacheKey = $stagedTable . '|' . $locale . '|' . $id;
+        if (array_key_exists($cacheKey, FluentVersionedExtension::$stagesDifferCache)) {
+            return FluentVersionedExtension::$stagesDifferCache[$cacheKey];
+        }
+
         // notes:
         // VL - Versions localised table
         // V - Versions table
@@ -458,7 +473,7 @@ SQL;
         // When a object is published a draft version is also written
         // The same is not true for drafts so we know a draft version that's
         // higher than the live version means we have a true stage differs
-        return $draftVersion > $liveVersion;
+        return FluentVersionedExtension::$stagesDifferCache[$cacheKey] = $draftVersion > $liveVersion;
     }
 
     /**
@@ -517,6 +532,7 @@ SQL;
     public static function reset()
     {
         static::$idsInLocaleCache = [];
+        FluentVersionedExtension::$stagesDifferCache = [];
 
         $singleton = singleton(static::class);
         $singleton->flushVersionsCache();

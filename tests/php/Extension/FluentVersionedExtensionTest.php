@@ -5,6 +5,7 @@ namespace TractorCow\Fluent\Tests\Extension;
 use Page;
 use SilverStripe\CMS\Model\SiteTree;
 use SilverStripe\Dev\SapphireTest;
+use SilverStripe\ORM\DB;
 use SilverStripe\Core\Validation\ValidationException;
 use TractorCow\Fluent\Extension\FluentSiteTreeExtension;
 use TractorCow\Fluent\Extension\FluentVersionedExtension;
@@ -205,5 +206,20 @@ class FluentVersionedExtensionTest extends SapphireTest
 
         // No Live version
         $this->assertTrue($page->stagesDifferInLocale());
+    }
+
+    public function testStagesDifferInLocaleIsKeptUntilReset(): void
+    {
+        $page = Page::create(['Title' => 'Kept', 'URLSegment' => 'kept']);
+        $page->write();
+        $page->publishRecursive();
+        $this->assertFalse($page->stagesDifferInLocale());
+
+        // Mark every version as unpublished without the ORM, so only a fresh read sees it
+        DB::prepared_query('UPDATE "SiteTree_Versions" SET "WasPublished" = 0 WHERE "RecordID" = ?', [$page->ID]);
+        $this->assertFalse($page->stagesDifferInLocale(), 'The result is kept for the request');
+
+        FluentVersionedExtension::reset();
+        $this->assertTrue($page->stagesDifferInLocale(), 'reset() reads the stages again');
     }
 }
