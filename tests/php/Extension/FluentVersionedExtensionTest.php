@@ -6,6 +6,8 @@ use Page;
 use SilverStripe\CMS\Model\SiteTree;
 use SilverStripe\Dev\SapphireTest;
 use SilverStripe\Core\Validation\ValidationException;
+use SilverStripe\Versioned\Versioned;
+use ReflectionMethod;
 use TractorCow\Fluent\Extension\FluentSiteTreeExtension;
 use TractorCow\Fluent\Extension\FluentVersionedExtension;
 use TractorCow\Fluent\Model\Domain;
@@ -205,5 +207,31 @@ class FluentVersionedExtensionTest extends SapphireTest
 
         // No Live version
         $this->assertTrue($page->stagesDifferInLocale());
+    }
+
+    public function testMissingLocalisedVersionIsKept(): void
+    {
+        $page = Page::create(['Title' => 'Draft only', 'URLSegment' => 'draft-only']);
+        $page->write();
+
+        $this->assertNull(Versioned::get_versionnumber_by_stage(SiteTree::class, Versioned::LIVE, $page->ID));
+
+        // The page has no live version in this locale, which is kept rather than read again
+        $extension = SiteTree::singleton()->getExtensionInstance(FluentSiteTreeExtension::class);
+        $cached = new ReflectionMethod($extension, 'getVersionCacheItem');
+        $this->assertNull($cached->invoke($extension, SiteTree::class, Versioned::LIVE, 'en_NZ', $page->ID));
+    }
+
+    public function testPublishingIsSeenAfterAMissingVersionWasKept(): void
+    {
+        $page = Page::create(['Title' => 'Published later', 'URLSegment' => 'published-later']);
+        $page->write();
+        $this->assertNull(Versioned::get_versionnumber_by_stage(SiteTree::class, Versioned::LIVE, $page->ID));
+        $this->assertFalse($page->isPublished());
+
+        $page->publishRecursive();
+
+        $this->assertNotNull(Versioned::get_versionnumber_by_stage(SiteTree::class, Versioned::LIVE, $page->ID));
+        $this->assertTrue(Page::get()->byID($page->ID)->isPublished());
     }
 }

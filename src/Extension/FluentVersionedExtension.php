@@ -956,13 +956,7 @@ SQL;
 
         $list = $this->getCurrentVersionNumbers($className, $stage, [$id]);
 
-        if (!$list) {
-            $version = null;
-
-            return;
-        }
-
-        $localisedVersion = array_shift($list);
+        $localisedVersion = $list ? array_shift($list) : null;
 
         if ($cache) {
             $this->setVersionCacheItem($baseClass, $stage, $locale, $id, $localisedVersion);
